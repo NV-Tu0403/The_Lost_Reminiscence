@@ -64,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100028, guid: 1e4c2f610722651479daaae54d817d84, type: 3}
+  - {fileID: 2100000, guid: dcaf19f6f1c49a24a8ea77b2942f3491, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -95,6 +95,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3859011180876249658}
+  - component: {fileID: 6328863703178923383}
   - component: {fileID: 4994837534919714591}
   - component: {fileID: 8396010595906023252}
   - component: {fileID: 7434144962992043281}
@@ -122,6 +123,33 @@ Transform:
   - {fileID: 6448725508309760721}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &6328863703178923383
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8812401664173810147}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!135 &4994837534919714591
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -248,7 +276,7 @@ MonoBehaviour:
   followDistance: 1
   moveSpeed: 2
   Heght: 0.1
-  cameraOffsetY: 0.5
+  cameraOffsetY: 0.2
   cameraOffsetZ: 1.5
   smoothTime: 0.5
   hintVFX: {fileID: 0}
