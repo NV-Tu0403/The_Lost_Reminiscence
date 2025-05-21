@@ -16,7 +16,7 @@ public class ProgressionManager : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("Đang kiểm tra tài nguyên");
+        //Debug.Log("Đang kiểm tra tài nguyên");
         InitializePaths(); // Khởi tạo đường dẫn
         LoadProgression();
     }
@@ -38,7 +38,7 @@ public class ProgressionManager : MonoBehaviour
 #endif
 
         configJsonFullPath = Path.Combine(resourcesDevJsonDir, "progressionData.json");
-        Debug.Log($"Initialized configJsonFullPath: {configJsonFullPath}");
+        //Debug.Log($"Initialized configJsonFullPath: {configJsonFullPath}");
     }
 
     /// <summary>
@@ -126,8 +126,20 @@ public class ProgressionManager : MonoBehaviour
     /// </summary>
     public void LoadProgression()
     {
-        // Lấy thư mục save gần nhất
-        string saveFolder = saveGameManager.GetLatestSaveFolder();
+        if (saveGameManager == null)
+        {
+            Debug.LogError("SaveGameManager is not assigned!");
+            return;
+        }
+
+        string userName = saveGameManager.CurrentUserNamePlaying;
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogWarning("CurrentUserNamePlaying is not set!");
+            return;
+        }
+
+        string saveFolder = saveGameManager.GetLatestSaveFolder(userName);
         if (saveFolder != null)
         {
             string json = saveGameManager.LoadJsonFile(saveFolder, "playerProgression.json");
@@ -139,28 +151,22 @@ public class ProgressionManager : MonoBehaviour
             }
         }
 
-            // Nếu không có file save, thử lấy dữ liệu mặc định từ progressionData.json
-            TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
+        TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
         if (jsonText != null)
         {
             progression = JsonSerializationHelper.DeserializeGameProgression(jsonText.text);
             Debug.Log("Loaded progression from JSON: JSON/progressionData");
-
-            // Tạo thư mục save mới và lưu file
-            string newSaveFolder = saveGameManager.CreateNewSaveFolder("DefaultUser");
+            string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
             saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", jsonText.text);
             Debug.Log($"Created new player progression file in: {newSaveFolder}");
             return;
         }
 
-        // Nếu không có progressionData.json, lấy từ ScriptableObject
         if (progressionDataSO != null)
         {
             progression = progressionDataSO.ToGameProgression();
             Debug.Log("Loaded progression from ProgressionDataSO");
-
-            // Tạo thư mục save mới và lưu file
-            string newSaveFolder = saveGameManager.CreateNewSaveFolder("DefaultUser");
+            string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
             string json = JsonSerializationHelper.SerializeGameProgression(progression);
             saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
             Debug.Log($"Created new player progression file in: {newSaveFolder}");
@@ -176,7 +182,21 @@ public class ProgressionManager : MonoBehaviour
     /// </summary>
     public void SaveProgression()
     {
-        string saveFolder = saveGameManager.GetLatestSaveFolder() ?? saveGameManager.CreateNewSaveFolder("DefaultUser");
+        if (saveGameManager == null)
+        {
+            Debug.LogError("SaveGameManager is not assigned!");
+            return;
+        }
+
+        string userName = saveGameManager.CurrentUserNamePlaying;
+        if (string.IsNullOrEmpty(userName))
+
+        {
+            Debug.LogError("CurrentUserNamePlaying is not set!");
+            return;
+        }
+
+        string saveFolder = saveGameManager.GetLatestSaveFolder(userName) ?? saveGameManager.CreateNewSaveFolder(userName);
         string json = JsonSerializationHelper.SerializeGameProgression(progression);
         saveGameManager.SaveJsonFile(saveFolder, "playerProgression.json", json);
     }
@@ -192,7 +212,14 @@ public class ProgressionManager : MonoBehaviour
             return;
         }
 
-        string newSaveFolder = saveGameManager.CreateNewSaveFolder("DefaultUser");
+        string userName = saveGameManager.CurrentUserNamePlaying;
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogError("CurrentUserNamePlaying is not set!");
+            return;
+        }
+
+        string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
         TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
         string json;
         if (jsonText != null)
