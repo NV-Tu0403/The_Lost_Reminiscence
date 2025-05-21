@@ -301,7 +301,7 @@ namespace Duckle
 
             _secondaryStates.Remove(state);
             state.OnExit(_controller);
-            Debug.Log($"Removed secondary state: {state.Name}");
+            //Debug.Log($"Removed secondary state: {state.Name}");
         }
 
         /// <summary>

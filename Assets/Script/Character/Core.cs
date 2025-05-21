@@ -13,7 +13,7 @@ public class Core : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            Debug.Log("Core initialized.");
+            //Debug.Log("Core initialized.");
         }
         else
         {
