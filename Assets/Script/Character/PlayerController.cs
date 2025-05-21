@@ -181,7 +181,7 @@ namespace DuckLe
             }
 
 #if UNITY_EDITOR
-            Debug.Log($"Trạng thái: {string.Join(", ", _stateMachine.GetAllStateNames())}");
+            //Debug.Log($"Trạng thái: {string.Join(", ", _stateMachine.GetAllStateNames())}");
 #endif
         }
 
