@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.IO;
 using Newtonsoft.Json;
@@ -11,7 +12,7 @@ namespace Loc_Backend.Scripts
     public class BackendSync : MonoBehaviour
     {
         [Header("UI")]
-        public TMP_InputField emailInput;
+        public TMP_InputField emailInput; 
         public TMP_InputField passwordInput;
         public TMP_Text statusText;
 
@@ -30,7 +31,7 @@ namespace Loc_Backend.Scripts
         
         void Start()
         {
-            statusText.text = "";
+            //statusText.text = "";
         }
 
         // ==== Các hàm xử lý sự kiện UI ====
@@ -109,6 +110,74 @@ namespace Loc_Backend.Scripts
                 else
                 {
                     statusText.text = "Lỗi đăng nhập";
+                }
+            }
+        }
+
+        /// <summary>
+        /// đăng kí cloud
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="password"></param>
+        /// <param name="email"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public IEnumerator RequestCloudRegister(string userName, string password, string email, Action<bool, string> callback)
+        {
+            string url = apiBaseUrl + "/register";
+            var data = new
+            {
+                username = userName,
+                password,
+                email
+            };
+            string body = JsonConvert.SerializeObject(data);
+            using (UnityWebRequest www = UnityWebRequest.Post(url, body, "application/json"))
+            {
+                yield return www.SendWebRequest();
+
+                if (www.result == UnityWebRequest.Result.Success)
+                {
+                    callback(true, "OTP đang được gửi đến Email của bạn!");
+                }
+                else
+                {
+                    string error = www.downloadHandler?.text ?? www.error;
+                    callback(false, $"đăng kí Cloud thất baij: {error}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// xác thực OTP
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="otp"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public IEnumerator VerifyOtp( string userName, string otp, Action<bool, string> callback)
+        {
+            string url = apiBaseUrl + "/verify-otp";
+            var data = new
+            {
+                username = userName,
+                otp
+            };
+            string body = JsonConvert.SerializeObject(data);
+            using (UnityWebRequest www = UnityWebRequest.Post(url, body, "application/json"))
+            {
+                yield return www.SendWebRequest();
+                
+                if (www.result == UnityWebRequest.Result.Success)
+                {
+                    var result = JsonConvert.DeserializeObject<LoginResult>(www.downloadHandler.text);
+                    jwtToken = result.token; // Lưu token cho các request sau
+                    callback(true, "đăng kí Cloud thành công!");
+                }
+                else
+                {
+                    string error = www.downloadHandler?.text ?? www.error;
+                    callback(false, $"Xác thực OTP thất bại: {error}");
                 }
             }
         }
