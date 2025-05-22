@@ -127,7 +127,7 @@ namespace Loc_Backend.Scripts
             string url = apiBaseUrl + "/register";
             var data = new
             {
-                userName,
+                username = userName,
                 password,
                 email
             };
@@ -155,19 +155,19 @@ namespace Loc_Backend.Scripts
         /// <param name="otp"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IEnumerator VerifyOtp(string userName, string otp, Action<bool, string> callback)
+        public IEnumerator VerifyOtp( string userName, string otp, Action<bool, string> callback)
         {
-            string url = apiBaseUrl + "/otp";
+            string url = apiBaseUrl + "/verify-otp";
             var data = new
             {
-                userName,
+                username = userName,
                 otp
             };
             string body = JsonConvert.SerializeObject(data);
             using (UnityWebRequest www = UnityWebRequest.Post(url, body, "application/json"))
             {
                 yield return www.SendWebRequest();
-
+                
                 if (www.result == UnityWebRequest.Result.Success)
                 {
                     var result = JsonConvert.DeserializeObject<LoginResult>(www.downloadHandler.text);
