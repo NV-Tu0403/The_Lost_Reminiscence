@@ -452,7 +452,7 @@ public class SaveGameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Lấy tên người dùng mới nhất từ danh sách tài khoản
+    /// Lấy tên người dùng mới nhất từ danh sách tài khoản (chưa dùng)
     /// </summary>
     /// <returns></returns>
     public string GetLatestUser()
@@ -482,6 +482,12 @@ public class SaveGameManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// đồng bộ file save từ thư mục nguồn sang thư mục đích
+    /// </summary>
+    /// <param name="sourceFolderPath"></param>
+    /// <param name="errorMessage"></param>
+    /// <returns></returns>
     public bool SyncFileSave(string sourceFolderPath, out string errorMessage)
     {
         errorMessage = "";
@@ -523,6 +529,12 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sourceDir"></param>
+    /// <param name="destDir"></param>
+    /// <param name="copySubDirs"></param>
     private void DirectoryCopy(string sourceDir, string destDir, bool copySubDirs)
     {
         DirectoryInfo dir = new DirectoryInfo(sourceDir);
@@ -547,6 +559,9 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// đăng xuất
+    /// </summary>
     public void Logout()
     {
         currentUserNamePlaying = null;
