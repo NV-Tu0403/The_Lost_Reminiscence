@@ -120,6 +120,13 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// tạo tài khoản người dùng mới
+    /// </summary>
+    /// <param name="baseName"></param>
+    /// <param name="password"></param>
+    /// <param name="errorMessage"></param>
+    /// <returns></returns>
     public bool InputUserAccount(string baseName, string password, out string errorMessage)
     {
         errorMessage = "";
