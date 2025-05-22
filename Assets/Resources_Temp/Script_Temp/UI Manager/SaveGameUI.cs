@@ -4,16 +4,19 @@ using TMPro;
 using System.Collections.Generic;
 using System.IO;
 using System.Collections;
-using static System.Net.Mime.MediaTypeNames;
+using Loc_Backend.Scripts;
 
 public class SaveGameUI : MonoBehaviour
 {
     [SerializeField] private SaveGameManager saveGameManager;
+    [SerializeField] private BackendSync backendSync;
     [SerializeField] private ProgressionManager progressionManager;
+
     [SerializeField] private GameObject loginPanel;
     [SerializeField] private TMP_InputField userNameInputField;
     [SerializeField] private TMP_InputField passwordInputField;
     [SerializeField] private Button submitUserNameButton;
+
     [SerializeField] private Button createAccountButton;
     [SerializeField] private GameObject createAccountPanel;
     [SerializeField] private TMP_InputField createUserNameInputField;
@@ -21,11 +24,25 @@ public class SaveGameUI : MonoBehaviour
     [SerializeField] private Button createButton;
     [SerializeField] private Button backButton;
     [SerializeField] private TMP_Text errorText;
+
     [SerializeField] private Button continueButton;
     [SerializeField] private Button newGameButton;
     [SerializeField] private Button duplicateButton;
     [SerializeField] private Button syncButton;
     [SerializeField] private Button logoutButton;
+
+    [SerializeField] private Button cloudRegisterButton;
+    [SerializeField] private GameObject cloudRegisterPanel;
+    [SerializeField] private TMP_InputField cloudUserNameInputField;
+    [SerializeField] private TMP_InputField cloudPasswordInputField;
+    [SerializeField] private TMP_InputField cloudEmailInputField;
+    [SerializeField] private Button cloudSubmitButton;
+    [SerializeField] private Button cloudCancelButton;
+
+    [SerializeField] private GameObject otpPanel;
+    [SerializeField] private TMP_InputField otpInputField;
+    [SerializeField] private Button otpSubmitButton;
+
     [SerializeField] private GameObject saveListPanel;
     [SerializeField] private GameObject jsonContentPanel;
     [SerializeField] private GameObject saveItemTemplate;
@@ -40,9 +57,9 @@ public class SaveGameUI : MonoBehaviour
 
     void Start()
     {
-        if (saveGameManager == null || progressionManager == null)
+        if (saveGameManager == null || progressionManager == null || backendSync == null)
         {
-            Debug.LogError("SaveGameManager or ProgressionManager is not assigned!");
+            Debug.LogError("SaveGameManager, ProgressionManager, or BackendSync is not assigned!");
             return;
         }
 
@@ -55,15 +72,28 @@ public class SaveGameUI : MonoBehaviour
         duplicateButton.onClick.AddListener(OnDuplicateButtonClicked);
         syncButton.onClick.AddListener(OnSyncButtonClicked);
         logoutButton.onClick.AddListener(OnLogoutButtonClicked);
+        cloudRegisterButton.onClick.AddListener(OnCloudRegisterButtonClicked);
+        cloudSubmitButton.onClick.AddListener(OnCloudSubmitButtonClicked);
+        otpSubmitButton.onClick.AddListener(OnOtpSubmitButtonClicked);
+        cloudCancelButton.onClick.AddListener(OnCloudCancelButtonClicked);
+
 
         loginPanel.SetActive(true);
         createAccountPanel.SetActive(false);
+        cloudRegisterPanel.SetActive(false);
+        otpPanel.SetActive(false);
         syncPanelStatus.SetActive(false);
         continueButton.interactable = false;
         newGameButton.interactable = false;
         duplicateButton.interactable = false;
         syncButton.interactable = false;
         logoutButton.interactable = false;
+        cloudRegisterButton.interactable = false; // Tắt đến khi đăng nhập
+    }
+
+    private void OnCloudCancelButtonClicked()
+    {
+        cloudRegisterPanel.SetActive(false);
     }
 
     private void OnSubmitUserName()
@@ -79,6 +109,7 @@ public class SaveGameUI : MonoBehaviour
             duplicateButton.interactable = true;
             syncButton.interactable = true;
             logoutButton.interactable = true;
+            cloudRegisterButton.interactable = true;
             errorText.text = "";
             RefreshSaveList();
         }
@@ -122,8 +153,90 @@ public class SaveGameUI : MonoBehaviour
     private void OnBackButtonClicked()
     {
         createAccountPanel.SetActive(false);
+        cloudRegisterPanel.SetActive(false);
+        otpPanel.SetActive(false);
         loginPanel.SetActive(true);
         errorText.text = "";
+    }
+
+    private void OnCloudRegisterButtonClicked()
+    {
+        loginPanel.SetActive(false);
+        cloudRegisterPanel.SetActive(true);
+        errorText.text = "";
+        cloudUserNameInputField.text = saveGameManager.CurrentUserNamePlaying; // Tự điền
+        cloudPasswordInputField.text = "";
+        cloudEmailInputField.text = "";
+    }
+
+    private void OnCloudSubmitButtonClicked()
+    {
+        string userName = cloudUserNameInputField.text;
+        string password = cloudPasswordInputField.text;
+        string email = cloudEmailInputField.text;
+
+        // Kiểm tra UserName và Password local
+        if (!saveGameManager.LoginUser(userName, password, out string errorMessage))
+        {
+            errorText.text = errorMessage;
+            errorText.color = Color.red;
+            return;
+        }
+
+        // Kiểm tra email cơ bản
+        if (string.IsNullOrEmpty(email) || !email.Contains("@"))
+        {
+            errorText.text = "Please enter a valid email!";
+            errorText.color = Color.red;
+            return;
+        }
+
+        // Gửi request đăng ký cloud
+        StartCoroutine(backendSync.RequestCloudRegister(userName, password, email, (success, message) =>
+        {
+            if (success)
+            {
+                cloudRegisterPanel.SetActive(false);
+                otpPanel.SetActive(true);
+                errorText.text = "OTP sent to your email. Please enter it.";
+                errorText.color = Color.green;
+            }
+            else
+            {
+                errorText.text = message;
+                errorText.color = Color.red;
+            }
+        }));
+    }
+
+    private void OnOtpSubmitButtonClicked()
+    {
+        string otp = otpInputField.text;
+        string userName = cloudUserNameInputField.text; // Lấy từ CloudRegisterPanel
+
+        if (string.IsNullOrEmpty(otp) || otp.Length != 6)
+        {
+            errorText.text = "Please enter a valid 6-digit OTP!";
+            errorText.color = Color.red;
+            return;
+        }
+
+        // Gửi OTP để xác thực
+        StartCoroutine(backendSync.VerifyOtp(userName, otp, (success, message) =>
+        {
+            if (success)
+            {
+                otpPanel.SetActive(false);
+                loginPanel.SetActive(true);
+                errorText.text = "đăng ký Cloud thành công!";
+                errorText.color = Color.green;
+            }
+            else
+            {
+                errorText.text = message;
+                errorText.color = Color.red;
+            }
+        }));
     }
 
     private void OnContinueButtonClicked()
@@ -194,7 +307,7 @@ public class SaveGameUI : MonoBehaviour
         syncStatusText.text = "Đang sao chép...";
         syncStatusText.color = Color.yellow;
 
-        yield return new WaitForSeconds(0.5f); // Giả lập thời gian xử lý
+        yield return new WaitForSeconds(0.5f);
 
         if (saveGameManager.SyncFileSave(folderPath, out string errorMessage))
         {
@@ -220,12 +333,15 @@ public class SaveGameUI : MonoBehaviour
         saveGameManager.Logout();
         loginPanel.SetActive(true);
         createAccountPanel.SetActive(false);
+        cloudRegisterPanel.SetActive(false);
+        otpPanel.SetActive(false);
         syncPanelStatus.SetActive(false);
         continueButton.interactable = false;
         newGameButton.interactable = false;
         duplicateButton.interactable = false;
         syncButton.interactable = false;
         logoutButton.interactable = false;
+        cloudRegisterButton.interactable = false;
         selectedSaveFolder = null;
         ClearJsonContent();
         RefreshSaveList();
@@ -317,7 +433,6 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
-
     private void ClearJsonContent()
     {
         foreach (var text in jsonTextInstances)
@@ -325,16 +440,5 @@ public class SaveGameUI : MonoBehaviour
             Destroy(text);
         }
         jsonTextInstances.Clear();
-    }
-
-    private void SyncWithMongoDB(string folderPath)
-    {
-        Debug.Log($"Syncing save {folderPath} with MongoDB...");
-        var jsonFiles = Directory.GetFiles(folderPath, "*.json");
-        foreach (var file in jsonFiles)
-        {
-            string json = saveGameManager.LoadJsonFile(folderPath, Path.GetFileName(file));
-            Debug.Log($"JSON content for {Path.GetFileName(file)}: {json}");
-        }
     }
 }

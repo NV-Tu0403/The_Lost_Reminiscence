@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 using System.Text;
 
+/// <summary>
+/// Quản lý lưu trữ và tải tài khoản người dùng.(cần tách ra)
+/// </summary>
 [System.Serializable]
 public class UserAccount
 {
@@ -16,12 +19,18 @@ public class UserAccount
     public string PasswordHash;
 }
 
+/// <summary>
+/// Lớp chứa danh sách tài khoản người dùng.(cần tách ra)
+/// </summary>
 [System.Serializable]
 public class UserAccountList
 {
     public List<UserAccount> Users = new List<UserAccount>();
 }
 
+/// <summary>
+/// hệ thống quản lý Save game.
+/// </summary>
 public class SaveGameManager : MonoBehaviour
 {
     private string userDataPath;
@@ -29,12 +38,18 @@ public class SaveGameManager : MonoBehaviour
     private UserAccountList userAccounts;
     private string currentUserNamePlaying;
 
+    /// <summary>
+    /// Đường dẫn đến thư mục chứa dữ liệu người dùng.
+    /// </summary>
     public string CurrentUserNamePlaying
     {
         get => currentUserNamePlaying;
         set => currentUserNamePlaying = value;
     }
-
+    /// <summary>
+    /// đương dẫn đến thư mục chứa dữ liệu người dùng tạm thời.
+    /// </summary>
+    /// <returns></returns>
     string GetTransferFolder()
     {
 #if UNITY_EDITOR
@@ -51,12 +66,18 @@ public class SaveGameManager : MonoBehaviour
         LoadUserAccounts();
     }
 
+    /// <summary>
+    /// khởi tạo đường dẫn cho các tệp tin
+    /// </summary>
     private void InitializePaths()
     {
         userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
         userAccountsPath = Path.Combine(userDataPath, "UserAccounts.json");
     }
 
+    /// <summary>
+    /// Đảm bảo cấu trúc thư mục tồn tại
+    /// </summary>
     private void EnsureDirectoryStructure()
     {
         if (!Directory.Exists(userDataPath))
@@ -66,6 +87,9 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Tải danh sách tài khoản người dùng từ tệp JSON
+    /// </summary>
     private void LoadUserAccounts()
     {
         if (!File.Exists(userAccountsPath))
@@ -79,23 +103,26 @@ public class SaveGameManager : MonoBehaviour
             try
             {
                 string json = File.ReadAllText(userAccountsPath);
-                userAccounts = JsonUtility.FromJson<UserAccountList>(json);
+                userAccounts = JsonUtility.FromJson<UserAccountList>(json); // Chuyển đổi JSON thành danh sách tài khoản người dùng
                 Debug.Log($"Loaded UserAccounts from: {userAccountsPath}");
             }
             catch (Exception e)
             {
                 Debug.LogError($"Failed to load UserAccounts.json: {e.Message}");
-                userAccounts = new UserAccountList();
+                userAccounts = new UserAccountList(); // Nếu có lỗi, tạo danh sách mới
                 SaveUserAccounts();
             }
         }
     }
 
+    /// <summary>
+    /// Lưu danh sách tài khoản người dùng vào tệp JSON
+    /// </summary>
     private void SaveUserAccounts()
     {
         try
         {
-            string json = JsonUtility.ToJson(userAccounts, true);
+            string json = JsonUtility.ToJson(userAccounts, true); // Chuyển đổi danh sách thành JSON
             File.WriteAllText(userAccountsPath, json);
             Debug.Log($"Saved UserAccounts to: {userAccountsPath}");
         }
@@ -105,7 +132,7 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
-    // Mã hóa mật khẩu bằng SHA256
+    // Mã hóa mật khẩu bằng SHA256 (cần tách ra)
     private string HashPassword(string password)
     {
         using (SHA256 sha256 = SHA256.Create())
@@ -120,6 +147,13 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// tạo tài khoản người dùng mới (cần tách ra)
+    /// </summary>
+    /// <param name="baseName"></param>
+    /// <param name="password"></param>
+    /// <param name="errorMessage"></param>
+    /// <returns></returns>
     public bool InputUserAccount(string baseName, string password, out string errorMessage)
     {
         errorMessage = "";
@@ -163,6 +197,13 @@ public class SaveGameManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Đăng nhập người dùng (cần tách ra)
+    /// </summary>
+    /// <param name="baseName"></param>
+    /// <param name="password"></param>
+    /// <param name="errorMessage"></param>
+    /// <returns></returns>
     public bool LoginUser(string baseName, string password, out string errorMessage)
     {
         errorMessage = "";
@@ -184,6 +225,11 @@ public class SaveGameManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Tạo thư mục lưu trữ mới cho người dùng
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <returns></returns>
     public string CreateNewSaveFolder(string userName)
     {
         string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
@@ -195,14 +241,20 @@ public class SaveGameManager : MonoBehaviour
 
         string dateSave = DateTime.Now.ToString("yyyyMMdd_HHmmss");
         int index = GetNextIndex(userName, dateSave);
-        string folderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
+        string folderName = $"SaveGame_{userName}_{dateSave}_{index:D3}"; // Thay đổi định dạng tên thư mục
         string folderPath = Path.Combine(fileSavePath, folderName);
 
-        Directory.CreateDirectory(folderPath);
+        Directory.CreateDirectory(folderPath); // Tạo thư mục lưu trữ mới
         Debug.Log($"Created new save folder: {folderPath}");
         return folderPath;
     }
 
+    /// <summary>
+    /// Lấy chỉ số tiếp theo cho thư mục lưu trữ 
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <param name="dateSave"></param>
+    /// <returns></returns>
     private int GetNextIndex(string userName, string dateSave)
     {
         string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
@@ -216,6 +268,12 @@ public class SaveGameManager : MonoBehaviour
         return folders.Any() ? folders.Max() + 1 : 1;
     }
 
+    /// <summary>
+    /// Lưu tệp JSON vào thư mục lưu trữ
+    /// </summary>
+    /// <param name="saveFolderPath"></param>
+    /// <param name="fileName"></param>
+    /// <param name="jsonContent"></param>
     public void SaveJsonFile(string saveFolderPath, string fileName, string jsonContent)
     {
         try
@@ -230,6 +288,12 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Tải tệp JSON từ thư mục lưu trữ
+    /// </summary>
+    /// <param name="saveFolderPath"></param>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
     public string LoadJsonFile(string saveFolderPath, string fileName)
     {
         try
@@ -251,6 +315,11 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Lấy thư file save mới nhất cho người dùng (đang lỗi)
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <returns></returns>
     public string GetLatestSaveFolder(string userName)
     {
         string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
@@ -277,6 +346,11 @@ public class SaveGameManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Lấy tất cả các file save cho người dùng
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <returns></returns>
     public List<(string FolderPath, string ImagePath)> GetAllSaveFolders(string userName)
     {
         string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
@@ -296,6 +370,11 @@ public class SaveGameManager : MonoBehaviour
         return result;
     }
 
+    /// <summary>
+    /// Xóa file save được chọn
+    /// </summary>
+    /// <param name="folderPath"></param>
+    /// <returns></returns>
     public bool DeleteSaveFolder(string folderPath)
     {
         try
@@ -316,6 +395,12 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Nhân bản file save được chọn
+    /// </summary>
+    /// <param name="sourceFolderPath"></param>
+    /// <param name="userName"></param>
+    /// <returns></returns>
     public string DuplicateSaveFolder(string sourceFolderPath, string userName)
     {
         if (!Directory.Exists(sourceFolderPath))
@@ -349,6 +434,11 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Lấy đường dẫn thư mục lưu trữ cho người dùng (chưa dúng)
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <returns></returns>
     public string GetFileSavePathForUser(string userName)
     {
         string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
@@ -361,6 +451,10 @@ public class SaveGameManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Lấy tên người dùng mới nhất từ danh sách tài khoản (chưa dùng)
+    /// </summary>
+    /// <returns></returns>
     public string GetLatestUser()
     {
         if (userAccounts.Users.Count == 0)
@@ -388,6 +482,12 @@ public class SaveGameManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// đồng bộ file save từ thư mục nguồn sang thư mục đích
+    /// </summary>
+    /// <param name="sourceFolderPath"></param>
+    /// <param name="errorMessage"></param>
+    /// <returns></returns>
     public bool SyncFileSave(string sourceFolderPath, out string errorMessage)
     {
         errorMessage = "";
@@ -429,6 +529,12 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sourceDir"></param>
+    /// <param name="destDir"></param>
+    /// <param name="copySubDirs"></param>
     private void DirectoryCopy(string sourceDir, string destDir, bool copySubDirs)
     {
         DirectoryInfo dir = new DirectoryInfo(sourceDir);
@@ -453,6 +559,9 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// đăng xuất
+    /// </summary>
     public void Logout()
     {
         currentUserNamePlaying = null;
