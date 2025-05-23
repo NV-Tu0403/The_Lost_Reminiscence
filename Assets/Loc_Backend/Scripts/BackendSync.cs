@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using TMPro;
@@ -45,7 +46,6 @@ namespace Loc_Backend.Scripts
             StartCoroutine(Login());
         }
 
-        // ==== Hàm đăng ký ====
         IEnumerator Register() 
         {
             string url = apiBaseUrl + "/register";
@@ -80,9 +80,6 @@ namespace Loc_Backend.Scripts
             }
         }
 
-
-
-        // ==== Hàm đăng nhập ====
         IEnumerator Login()
         {
             string url = apiBaseUrl + "/login";
@@ -113,15 +110,7 @@ namespace Loc_Backend.Scripts
                 }
             }
         }
-
-        /// <summary>
-        /// đăng kí cloud
-        /// </summary>
-        /// <param name="userName"></param>
-        /// <param name="password"></param>
-        /// <param name="email"></param>
-        /// <param name="callback"></param>
-        /// <returns></returns>
+        
         public IEnumerator RequestCloudRegister(string userName, string password, string email, Action<bool, string> callback)
         {
             string url = apiBaseUrl + "/register";
@@ -148,13 +137,6 @@ namespace Loc_Backend.Scripts
             }
         }
 
-        /// <summary>
-        /// xác thực OTP
-        /// </summary>
-        /// <param name="userName"></param>
-        /// <param name="otp"></param>
-        /// <param name="callback"></param>
-        /// <returns></returns>
         public IEnumerator VerifyOtp( string userName, string otp, Action<bool, string> callback)
         {
             string url = apiBaseUrl + "/verify-otp";
@@ -181,44 +163,79 @@ namespace Loc_Backend.Scripts
                 }
             }
         }
-
-        // ==== Hàm upload file save lên cloud ====
-        public void OnUploadAllJsonFiles(int slot)
+        
+        public void OnUploadAllJsonFilesToCloud()
         {
-            StartCoroutine(UploadAllJsonFilesAsBatch(slot));
+            StartCoroutine(UploadAllJsonFilesAsBatch());
         }
 
-        IEnumerator UploadAllJsonFilesAsBatch(int slot)
+        IEnumerator UploadAllJsonFilesAsBatch()
+        {
+            if (!IsAuthenticated())
+                yield break;
+
+            string transferFolder = GetTransferFolder();
+            if (!CheckFolderExists(transferFolder))
+                yield break;
+
+            var jsonFiles = GetAllJsonFilesInFirstSubFolder(transferFolder);
+            if (jsonFiles == null || jsonFiles.Length == 0)
+            {
+                yield break;
+            }
+
+            string folderToUpload = Path.GetDirectoryName(jsonFiles[0]);
+            string folderPathCloud = Path.GetFileName(folderToUpload);
+            var filesList = BuildFilesList(jsonFiles);
+
+            if (filesList == null)
+                yield break;
+
+            var payload = new
+            {
+                folderPath = folderPathCloud,
+                files = filesList
+            };
+
+            yield return StartCoroutine(UploadPayloadToCloud(payload, folderToUpload));
+        }
+
+        bool IsAuthenticated()
         {
             if (string.IsNullOrEmpty(jwtToken))
             {
-                statusText.text = "Bạn cần đăng nhập trước khi upload!";
-                yield break;
+                return false;
             }
+            return true;
+        }
 
-            string transferFolder = GetTransferFolder();
-
-            if (!Directory.Exists(transferFolder))
+        bool CheckFolderExists(string folder)
+        {
+            if (!Directory.Exists(folder))
             {
-                statusText.text = "Không tìm thấy folder!";
-                yield break;
+                return false;
             }
+            return true;
+        }
 
-            string[] jsonFiles = Directory.GetFiles(transferFolder, "*.json", SearchOption.TopDirectoryOnly);
-            if (jsonFiles.Length == 0)
+        string[] GetAllJsonFilesInFirstSubFolder(string rootFolder)
+        {
+            var saveFolders = Directory.GetDirectories(rootFolder, "SaveGame_*", SearchOption.TopDirectoryOnly);
+            if (saveFolders.Length == 0)
             {
-                statusText.text = "Không có file JSON nào để upload!";
-                yield break;
+                return null;
             }
+            return Directory.GetFiles(saveFolders[0], "*.json", SearchOption.AllDirectories);
+        }
 
-            // Tạo list files
-            var filesList = new System.Collections.Generic.List<object>();
+        List<object> BuildFilesList(string[] jsonFiles)
+        {
+            var filesList = new List<object>();
             foreach (var filePath in jsonFiles)
             {
                 string fileContent = File.ReadAllText(filePath);
                 string fileName = Path.GetFileName(filePath);
 
-                // Parse chuỗi json thành object để gửi đúng chuẩn
                 object fileDataObj;
                 try
                 {
@@ -226,8 +243,7 @@ namespace Loc_Backend.Scripts
                 }
                 catch
                 {
-                    statusText.text = $"File {fileName} không phải JSON hợp lệ!";
-                    yield break;
+                    return null;
                 }
 
                 filesList.Add(new
@@ -236,15 +252,12 @@ namespace Loc_Backend.Scripts
                     data = fileDataObj
                 });
             }
+            return filesList;
+        }
 
-            var payload = new
-            {
-                slot = slot,
-                files = filesList
-            };
-
+        IEnumerator UploadPayloadToCloud(object payload, string folderToDelete)
+        {
             string jsonBody = JsonConvert.SerializeObject(payload);
-
             string url = apiBaseUrl + "/save";
             using (UnityWebRequest www = new UnityWebRequest(url, "POST"))
             {
@@ -258,14 +271,36 @@ namespace Loc_Backend.Scripts
 
                 if (www.result == UnityWebRequest.Result.Success)
                 {
-                    statusText.text = "Đã upload tất cả file JSON!";
-                    Debug.Log("Upload batch OK");
+                    TryDeleteFolder(folderToDelete);
                 }
                 else
                 {
-                    statusText.text = "Upload lỗi";
-                    Debug.LogError("Upload batch lỗi");
+                    Debug.LogError("Upload batch lỗi: " + www.error);
                 }
+            }
+        }
+
+        void TryDeleteFolder(string folder)
+        {
+            try
+            {
+                if (Directory.Exists(folder))
+                {
+                    Directory.Delete(folder, true);
+                    Debug.Log("Đã xóa folder local: " + folder);
+
+                    // Xóa file .meta đi kèm 
+                    string metaFile = folder + ".meta";
+                    if (File.Exists(metaFile))
+                    {
+                        File.Delete(metaFile);
+                        Debug.Log("Đã xóa file meta: " + metaFile);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"Không xóa được folder hoặc meta file {folder}: {ex.Message}");
             }
         }
 
