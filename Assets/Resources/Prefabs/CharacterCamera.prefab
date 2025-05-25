@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3285262616394827783}
   - component: {fileID: 3018665749536446471}
   - component: {fileID: 7026555493656477561}
-  - component: {fileID: 7156711933398229585}
+  - component: {fileID: 7791457416616692405}
   - component: {fileID: 5805482733843531733}
   m_Layer: 0
   m_Name: CharacterCamera
@@ -47,7 +47,7 @@ Camera:
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
-  m_GateFitMode: 1
+  m_GateFitMode: 2
   m_FOVAxisMode: 0
   m_Iso: 200
   m_ShutterSpeed: 0.005
@@ -79,8 +79,8 @@ Camera:
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
-  m_HDR: 0
-  m_AllowMSAA: 0
+  m_HDR: 1
+  m_AllowMSAA: 1
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
@@ -94,7 +94,7 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8059562880527922860}
   m_Enabled: 1
---- !u!114 &7156711933398229585
+--- !u!114 &7791457416616692405
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -117,7 +117,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -154,12 +154,12 @@ MonoBehaviour:
   rotationSpeed: 2
   followSpeed: 10
   defaultDistance: 3
-  height: 1.6
+  height: 2
   collisionLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   minDistance: 0.5
-  maxDistance: 2
+  maxDistance: 3
   useInterpolation: 0
   useDistanceAndHeightInterpolation: 1
   mainCamera: {fileID: 0}
