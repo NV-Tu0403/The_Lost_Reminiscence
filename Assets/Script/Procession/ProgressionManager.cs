@@ -13,6 +13,7 @@ public class ProgressionManager : MonoBehaviour
     [SerializeField] private WeaponDatabase weaponDatabase; // Database vũ khí
     [SerializeField] private LootDatabase lootDatabase; // Database loot
     [SerializeField] private SaveGameManager saveGameManager;
+    [SerializeField] private UserAccountManager userAccountManager; // Quản lý tài khoản người dùng
 
     void Awake()
     {
@@ -132,7 +133,7 @@ public class ProgressionManager : MonoBehaviour
             return;
         }
 
-        string userName = saveGameManager.CurrentUserNamePlaying;
+        string userName = userAccountManager.CurrentUserBaseName;
         if (string.IsNullOrEmpty(userName))
         {
             Debug.LogWarning("CurrentUserNamePlaying is not set!");
@@ -187,7 +188,7 @@ public class ProgressionManager : MonoBehaviour
             return;
         }
 
-        string userName = saveGameManager.CurrentUserNamePlaying;
+        string userName = userAccountManager.currentUserBaseName;
         if (string.IsNullOrEmpty(userName))
         {
             Debug.LogError("CurrentUserNamePlaying is not set!");
@@ -230,7 +231,7 @@ public class ProgressionManager : MonoBehaviour
             return;
         }
 
-        string userName = saveGameManager.CurrentUserNamePlaying;
+        string userName = userAccountManager.currentUserBaseName;
         if (string.IsNullOrEmpty(userName))
 
         {

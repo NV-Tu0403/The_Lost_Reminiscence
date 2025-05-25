@@ -1,44 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Text.RegularExpressions;
-using System.Security.Cryptography;
-using System.Text;
-
-[System.Serializable]
-public class UserAccount
-{
-    public string UserName;
-    public string BaseName;
-    public string TimeCheckIn;
-    public string PasswordHash;
-}
-
-[System.Serializable]
-public class UserAccountList
-{
-    public string LastAccount;
-    public string LastFileSave;
-    public double PlayTime;
-    public List<UserAccount> Users = new List<UserAccount>();
-}
 
 public class SaveGameManager : MonoBehaviour
 {
     private string userDataPath;
-    private string userAccountsPath;
-    private UserAccountList userAccounts;
-    private string currentUserNamePlaying;
 
-    public string CurrentUserNamePlaying
+    void Awake()
     {
-        get => currentUserNamePlaying;
-        set => currentUserNamePlaying = value;
+        userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
+        Debug.Log($"SaveGameManager initialized: {userDataPath}");
     }
 
-    string GetTransferFolder()
+    private string GetTransferFolder()
     {
 #if UNITY_EDITOR
         return Path.Combine(Application.dataPath, "Loc_Backend/SavePath");
@@ -47,231 +23,14 @@ public class SaveGameManager : MonoBehaviour
 #endif
     }
 
-    void Awake()
-    {
-        currentUserNamePlaying = null; // Reset để đảm bảo trạng thái sạch
-        InitializePaths();
-        EnsureDirectoryStructure();
-        LoadUserAccounts();
-    }
-
-    private void InitializePaths()
-    {
-        userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
-        userAccountsPath = Path.Combine(userDataPath, "UserAccounts.json");
-        Debug.Log($"Initialized paths: userDataPath={userDataPath}, userAccountsPath={userAccountsPath}");
-    }
-
-    private void EnsureDirectoryStructure()
-    {
-        if (!Directory.Exists(userDataPath))
-        {
-            Directory.CreateDirectory(userDataPath);
-            Debug.Log($"Created directory: {userDataPath}");
-        }
-    }
-
-    private double ConvertLegacyPlayTime(string playTime)
-    {
-        if (string.IsNullOrEmpty(playTime))
-        {
-            Debug.LogWarning("Legacy PlayTime is empty. Returning 0.");
-            return 0.0;
-        }
-
-        var parts = playTime.Split('.');
-        if (parts.Length != 6 || !parts.All(p => int.TryParse(p, out _)))
-        {
-            Debug.LogWarning($"Invalid legacy PlayTime format: '{playTime}'. Returning 0.");
-            return 0.0;
-        }
-
-        try
-        {
-            int[] values = parts.Select(int.Parse).ToArray();
-            TimeSpan timeSpan = new TimeSpan(values[2], values[3], values[4], values[5]) +
-                               TimeSpan.FromDays(values[1] * 30 + values[0] * 365);
-            double seconds = timeSpan.TotalSeconds;
-            Debug.Log($"Converted legacy PlayTime '{playTime}' to {seconds} seconds");
-            return seconds;
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning($"Failed to convert legacy PlayTime '{playTime}': {e.Message}. Returning 0.");
-            return 0.0;
-        }
-    }
-
-    private void LoadUserAccounts()
-    {
-        if (!File.Exists(userAccountsPath))
-        {
-            userAccounts = new UserAccountList
-            {
-                LastAccount = "",
-                LastFileSave = "",
-                PlayTime = 0.0
-            };
-            SaveUserAccounts();
-            Debug.Log($"Created new UserAccounts.json at: {userAccountsPath}");
-        }
-        else
-        {
-            try
-            {
-                string json = File.ReadAllText(userAccountsPath);
-                var tempJson = JsonUtility.FromJson<TempUserAccountList>(json);
-                userAccounts = new UserAccountList
-                {
-                    LastAccount = tempJson.LastAccount,
-                    LastFileSave = tempJson.LastFileSave,
-                    Users = tempJson.Users
-                };
-
-                if (!string.IsNullOrEmpty(tempJson.PlayTimeString))
-                {
-                    userAccounts.PlayTime = ConvertLegacyPlayTime(tempJson.PlayTimeString);
-                }
-                else
-                {
-                    userAccounts.PlayTime = tempJson.PlayTime;
-                }
-
-                if (userAccounts.PlayTime < 0)
-                {
-                    Debug.LogWarning("PlayTime was negative. Resetting to 0.");
-                    userAccounts.PlayTime = 0.0;
-                }
-
-                SaveUserAccounts();
-                Debug.Log($"Loaded UserAccounts from: {userAccountsPath}, Users: {userAccounts.Users.Count}, LastAccount: {userAccounts.LastAccount}");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Failed to load UserAccounts.json: {e.Message}");
-                userAccounts = new UserAccountList
-                {
-                    LastAccount = "",
-                    LastFileSave = "",
-                    PlayTime = 0.0
-                };
-                SaveUserAccounts();
-            }
-        }
-    }
-
-    private void SaveUserAccounts()
-    {
-        try
-        {
-            if (File.Exists(userAccountsPath))
-            {
-                File.Copy(userAccountsPath, userAccountsPath + ".bak", true);
-                Debug.Log("Created backup of UserAccounts.json");
-            }
-
-            string json = JsonUtility.ToJson(userAccounts, true);
-            File.WriteAllText(userAccountsPath, json);
-            Debug.Log($"Saved UserAccounts to: {userAccountsPath}");
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Failed to save UserAccounts.json: {e.Message}");
-        }
-    }
-
-    private string HashPassword(string password)
-    {
-        using (SHA256 sha256 = SHA256.Create())
-        {
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password ?? ""));
-            StringBuilder builder = new StringBuilder();
-            foreach (byte b in bytes)
-            {
-                builder.Append(b.ToString("x2"));
-            }
-            return builder.ToString();
-        }
-    }
-
-    public bool InputUserAccount(string baseName, string password, out string errorMessage)
-    {
-        errorMessage = "";
-        if (string.IsNullOrEmpty(baseName))
-        {
-            errorMessage = "UserName cannot be empty!";
-            Debug.LogWarning(errorMessage);
-            return false;
-        }
-        if (string.IsNullOrEmpty(password))
-        {
-            errorMessage = "Password cannot be empty!";
-            Debug.LogWarning(errorMessage);
-            return false;
-        }
-
-        if (userAccounts.Users.Any(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase)))
-        {
-            errorMessage = $"UserName '{baseName}' is already used!";
-            Debug.LogWarning(errorMessage);
-            return false;
-        }
-
-        string timeCheckIn = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        string userName = $"{baseName}_{timeCheckIn}";
-        userAccounts.Users.Add(new UserAccount
-        {
-            UserName = userName,
-            BaseName = baseName,
-            TimeCheckIn = timeCheckIn,
-            PasswordHash = HashPassword(password)
-        });
-        SaveUserAccounts();
-
-        string fileSavePath = Path.Combine(userDataPath, $"FileSave_{baseName}");
-        if (!Directory.Exists(fileSavePath))
-        {
-            Directory.CreateDirectory(fileSavePath);
-            Debug.Log($"Created FileSave directory: {fileSavePath}");
-        }
-
-        currentUserNamePlaying = baseName;
-        Debug.Log($"Added new user: {userName}, CurrentUserNamePlaying: {currentUserNamePlaying}");
-        return true;
-    }
-
-    public bool LoginUser(string baseName, string password, out string errorMessage)
-    {
-        errorMessage = "";
-        var user = userAccounts.Users.FirstOrDefault(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase));
-        if (user == null)
-        {
-            errorMessage = $"User '{baseName}' does not exist!";
-            Debug.LogWarning(errorMessage);
-            return false;
-        }
-
-        // Bỏ qua kiểm tra mật khẩu nếu password là null (cho tự động đăng nhập)
-        if (!string.IsNullOrEmpty(password) && user.PasswordHash != HashPassword(password))
-        {
-            errorMessage = "Incorrect password!";
-            Debug.LogWarning(errorMessage);
-            return false;
-        }
-
-        currentUserNamePlaying = baseName;
-        Debug.Log($"Logged in user: {baseName}");
-        return true;
-    }
-
-    /// <summary>
-    ///  tạo một thư mục lưu trữ mới cho người dùng với định dạng "SaveGame_{userName}_{dateSave}_{index:D3}"
-    ///  trong thư mục này sẽ chứa các tệp JSON lưu trữ trò chơi.
-    /// </summary>
-    /// <param name="userName"></param>
-    /// <returns></returns>
     public string CreateNewSaveFolder(string userName)
     {
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogError("UserName is empty. Cannot create save folder!");
+            return null;
+        }
+
         string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
         if (!Directory.Exists(fileSavePath))
         {
@@ -280,27 +39,41 @@ public class SaveGameManager : MonoBehaviour
         }
 
         string dateSave = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        int index = GetNextIndex(userName, dateSave);
+        int index = GetNextIndex(userName);
         string folderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
         string folderPath = Path.Combine(fileSavePath, folderName);
+
+        if (Directory.Exists(folderPath))
+        {
+            Debug.LogWarning($"Save folder already exists: {folderPath}. Generating new index.");
+            index = GetNextIndex(userName);
+            folderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
+            folderPath = Path.Combine(fileSavePath, folderName);
+        }
 
         Directory.CreateDirectory(folderPath);
         Debug.Log($"Created new save folder: {folderPath}");
         return folderPath;
     }
 
-    private int GetNextIndex(string userName, string dateSave)
+    private int GetNextIndex(string userName)
     {
         string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
         if (!Directory.Exists(fileSavePath)) return 1;
 
         var folders = Directory.GetDirectories(fileSavePath)
-            .Where(d => Path.GetFileName(d).StartsWith($"SaveGame_{userName}_{dateSave}_"))
-            .Select(d => int.Parse(Path.GetFileName(d).Split('_').Last()))
+            .Where(d => Path.GetFileName(d).StartsWith($"SaveGame_{userName}_"))
+            .Select(d =>
+            {
+                string[] parts = Path.GetFileName(d).Split('_');
+                if (parts.Length == 4 && int.TryParse(parts[3], out int idx))
+                    return idx;
+                return 0;
+            })
             .ToList();
 
         int nextIndex = folders.Any() ? folders.Max() + 1 : 1;
-        Debug.Log($"Next index for {userName} on {dateSave}: {nextIndex}");
+        Debug.Log($"Next index for {userName}: {nextIndex}");
         return nextIndex;
     }
 
@@ -378,21 +151,6 @@ public class SaveGameManager : MonoBehaviour
         return null;
     }
 
-    public void SaveLastSession(string lastAccount, string lastFileSave, double playTime)
-    {
-        if (playTime < 0)
-        {
-            Debug.LogWarning($"Invalid PlayTime: {playTime}. Setting to 0.");
-            playTime = 0.0;
-        }
-
-        userAccounts.LastAccount = lastAccount;
-        userAccounts.LastFileSave = lastFileSave;
-        userAccounts.PlayTime = playTime;
-        SaveUserAccounts();
-        Debug.Log($"Saved session: LastAccount={lastAccount}, LastFileSave={lastFileSave}, PlayTime={playTime} seconds");
-    }
-
     public List<(string FolderPath, string ImagePath)> GetAllSaveFolders(string userName)
     {
         string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
@@ -446,7 +204,7 @@ public class SaveGameManager : MonoBehaviour
         }
 
         string dateSave = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        int index = GetNextIndex(userName, dateSave);
+        int index = GetNextIndex(userName);
         string newFolderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
         string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
         string newFolderPath = Path.Combine(fileSavePath, newFolderName);
@@ -468,47 +226,6 @@ public class SaveGameManager : MonoBehaviour
             Debug.LogError($"Failed to duplicate save folder: {e.Message}");
             return null;
         }
-    }
-
-    [Obsolete("This method is not used and may be removed in future versions.")]
-    public string GetFileSavePathForUser(string userName)
-    {
-        string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
-        if (Directory.Exists(fileSavePath))
-        {
-            Debug.Log($"Found FileSave path for user {userName}: {fileSavePath}");
-            return fileSavePath;
-        }
-        Debug.LogWarning($"FileSave path not found for user: {userName}");
-        return null;
-    }
-
-    [Obsolete("This method is not used and may be removed in future versions.")]
-    public string GetLatestUser()
-    {
-        if (userAccounts.Users.Count == 0)
-        {
-            Debug.LogWarning("No users found in UserAccounts.json!");
-            return null;
-        }
-
-        var latestUser = userAccounts.Users
-            .OrderByDescending(u => DateTime.ParseExact(u.TimeCheckIn, "yyyyMMdd_HHmmss", null))
-            .FirstOrDefault();
-
-        if (latestUser != null)
-        {
-            string fileSavePath = Path.Combine(userDataPath, $"FileSave_{latestUser.BaseName}");
-            if (Directory.Exists(fileSavePath))
-            {
-                currentUserNamePlaying = latestUser.BaseName;
-                Debug.Log($"Selected latest user: {latestUser.UserName}, BaseName: {latestUser.BaseName}");
-                return latestUser.BaseName;
-            }
-        }
-
-        Debug.LogWarning("No matching FileSave folder found for latest user!");
-        return null;
     }
 
     public bool SyncFileSave(string sourceFolderPath, out string errorMessage)
@@ -556,7 +273,6 @@ public class SaveGameManager : MonoBehaviour
     {
         DirectoryInfo dir = new DirectoryInfo(sourceDir);
         DirectoryInfo[] dirs = dir.GetDirectories();
-
         Directory.CreateDirectory(destDir);
 
         FileInfo[] files = dir.GetFiles();
@@ -574,21 +290,5 @@ public class SaveGameManager : MonoBehaviour
                 DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
             }
         }
-    }
-
-    public void Logout()
-    {
-        currentUserNamePlaying = null;
-        Debug.Log("User logged out. CurrentUserNamePlaying reset.");
-    }
-
-    [System.Serializable]
-    private class TempUserAccountList
-    {
-        public string LastAccount;
-        public string LastFileSave;
-        public double PlayTime;
-        public string PlayTimeString;
-        public List<UserAccount> Users = new List<UserAccount>();
     }
 }
