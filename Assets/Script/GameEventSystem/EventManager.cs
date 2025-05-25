@@ -32,12 +32,14 @@ public class EventManager : MonoBehaviour
 
     /// <summary>
     /// Khởi tạo từ điển ánh xạ giữa ID và hành động cho các cutscene.
+    /// - cái này chua xong cần phải buid để có thể thêm tham chiếu trong Unity Editor
     /// </summary>
     private void InitializeCutSceneDictionary()
     {
         cutsceneMap = new Dictionary<string, Action>
         {
-            { "C_o1", () => Cutscene_Opening("C_o1") },
+            { "CutScene_Opening", () => Cutscene_Opening("CutScene_Opening") },
+            { "MeetFa_01", () => MeetFa_01("MeetFa_01") },
             //{ "C_o2", () => PlayBossIntroScene("C_o2") },
         };
     }
@@ -53,7 +55,7 @@ public class EventManager : MonoBehaviour
         Debug.Log($"Playing cutscene: {cutsceneId}");
         // Custom animation, timeLine hoặc kích hoạt cinematic ở đây
 
-        GameObject poinEventA = GameObject.Find("Poin Event");
+        GameObject poinEventA = GameObject.Find("PE_Openning_CS");
         if (poinEventA != null)
         {
             poinEventA.SetActive(false);
@@ -66,7 +68,7 @@ public class EventManager : MonoBehaviour
             {
                 Debug.LogWarning("C_Opening not found in scene!", this);
             }
-            GameObject changeMap = GameObject.Find("tree");
+            GameObject changeMap = GameObject.Find("MainTree");
             if (changeMap != null)
             {
 
@@ -81,26 +83,37 @@ public class EventManager : MonoBehaviour
                     Debug.LogWarning("MeshRenderer not found on changeMap!", this);
                 }
 
-                // Bật Box Collider
-                BoxCollider boxCollider = changeMap.GetComponent<BoxCollider>();
-                if (boxCollider != null)
-                {
-                    boxCollider.enabled = true;
-                }
-                else
-                {
-                    Debug.LogWarning("BoxCollider not found on changeMap!", this);
-                }
-                foreach (Transform child in changeMap.transform)
-                {
-                    child.gameObject.SetActive(true);
-                }
+                //// Bật Box Collider
+                //BoxCollider boxCollider = changeMap.GetComponent<BoxCollider>();
+                //if (boxCollider != null)
+                //{
+                //    boxCollider.enabled = true;
+                //}
+                //else
+                //{
+                //    Debug.LogWarning("BoxCollider not found on changeMap!", this);
+                //}
+                //foreach (Transform child in changeMap.transform)
+                //{
+                //    child.gameObject.SetActive(true);
+                //}
             }
             else
             {
-                Debug.LogWarning("tree not found in scene!", this);
+                Debug.LogWarning("Dood not found in scene!", this);
 
             }
+        }
+    }
+
+    public void MeetFa_01(string cutsceneId)
+    {
+        Debug.Log($"Playing cutscene: {cutsceneId}");
+
+        GameObject obj = GameObject.Find("Fa");
+        if (obj != null)
+        {
+            // lấy hoại thoại của sự kiện MeerFa_01 từ json Dialog database
         }
     }
 }

@@ -12,10 +12,6 @@ namespace Loc_Backend.Scripts
 {
     public class BackendSync : MonoBehaviour
     {
-        [Header("UI")]
-        public TMP_InputField emailInput; 
-        public TMP_InputField passwordInput;
-        public TMP_Text statusText;
 
         [Header("API")]
         public string apiBaseUrl = "https://backend-datn-iwqa.onrender.com/api"; 
@@ -29,87 +25,7 @@ namespace Loc_Backend.Scripts
             return Path.Combine(Application.persistentDataPath, "SavePath");
 #endif
         }
-        
-        void Start()
-        {
-            //statusText.text = "";
-        }
 
-        // ==== Các hàm xử lý sự kiện UI ====
-        public void OnRegisterButton()
-        {
-            StartCoroutine(Register());
-        }
-
-        public void OnLoginButton()
-        {
-            StartCoroutine(Login());
-        }
-
-        IEnumerator Register() 
-        {
-            string url = apiBaseUrl + "/register";
-            Debug.Log("Gửi POST đến: " + url); 
-
-            var data = new
-            {
-                email = emailInput.text,
-                password = passwordInput.text
-            };
-
-            string body = JsonConvert.SerializeObject(data);
-            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(body);
-
-            using (UnityWebRequest www = new UnityWebRequest(url, "POST"))
-            {
-                www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-                www.downloadHandler = new DownloadHandlerBuffer();
-                www.SetRequestHeader("Content-Type", "application/json");
-
-                yield return www.SendWebRequest();
-
-                if (www.result == UnityWebRequest.Result.Success)
-                {
-                    statusText.text = "Đăng ký thành công!";
-                }
-                else
-                {
-                    statusText.text = "Upload lỗi: " + www.error;
-                    Debug.LogError("Upload batch lỗi: " + www.error + " | " + www.downloadHandler.text);
-                }
-            }
-        }
-
-        IEnumerator Login()
-        {
-            string url = apiBaseUrl + "/login";
-            var data = new
-            {
-                email = emailInput.text,
-                password = passwordInput.text
-            };
-            string body = JsonConvert.SerializeObject(data);
-            using (UnityWebRequest www = UnityWebRequest.PostWwwForm(url, "POST"))
-            {
-                byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(body);
-                www.uploadHandler = new UploadHandlerRaw(jsonToSend);
-                www.downloadHandler = new DownloadHandlerBuffer();
-                www.SetRequestHeader("Content-Type", "application/json");
-                yield return www.SendWebRequest();
-
-                if (www.result == UnityWebRequest.Result.Success)
-                {
-                    // Parse token
-                    var result = JsonConvert.DeserializeObject<LoginResult>(www.downloadHandler.text);
-                    jwtToken = result.token;
-                    statusText.text = "Đăng nhập thành công!";
-                }
-                else
-                {
-                    statusText.text = "Lỗi đăng nhập";
-                }
-            }
-        }
         
         public IEnumerator RequestCloudRegister(string userName, string password, string email, Action<bool, string> callback)
         {

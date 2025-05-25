@@ -176,31 +176,6 @@ public class ProgressionManager : MonoBehaviour
         Debug.LogError("No progression data found!");
     }
 
-
-    /// <summary>
-    /// Lưu dữ liệu tiến trình vào file JSON.
-    /// </summary>
-    public void SaveProgression()
-    {
-        if (saveGameManager == null)
-        {
-            Debug.LogError("SaveGameManager is not assigned!");
-            return;
-        }
-
-        string userName = saveGameManager.CurrentUserNamePlaying;
-        if (string.IsNullOrEmpty(userName))
-
-        {
-            Debug.LogError("CurrentUserNamePlaying is not set!");
-            return;
-        }
-
-        string saveFolder = saveGameManager.GetLatestSaveFolder(userName) ?? saveGameManager.CreateNewSaveFolder(userName);
-        string json = JsonSerializationHelper.SerializeGameProgression(progression);
-        saveGameManager.SaveJsonFile(saveFolder, "playerProgression.json", json);
-    }
-
     /// <summary>
     /// Tạo một save game mới.
     /// </summary>
@@ -242,6 +217,30 @@ public class ProgressionManager : MonoBehaviour
         saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
         progression = JsonSerializationHelper.DeserializeGameProgression(json);
         Debug.Log($"Created new game save: {newSaveFolder}");
+    }
+
+    /// <summary>
+    /// Lưu dữ liệu tiến trình vào file JSON.
+    /// </summary>
+    public void SaveProgression()
+    {
+        if (saveGameManager == null)
+        {
+            Debug.LogError("SaveGameManager is not assigned!");
+            return;
+        }
+
+        string userName = saveGameManager.CurrentUserNamePlaying;
+        if (string.IsNullOrEmpty(userName))
+
+        {
+            Debug.LogError("CurrentUserNamePlaying is not set!");
+            return;
+        }
+
+        string saveFolder = saveGameManager.GetLatestSaveFolder(userName) ?? saveGameManager.CreateNewSaveFolder(userName);
+        string json = JsonSerializationHelper.SerializeGameProgression(progression);
+        saveGameManager.SaveJsonFile(saveFolder, "playerProgression.json", json);
     }
 
     /// <summary>
