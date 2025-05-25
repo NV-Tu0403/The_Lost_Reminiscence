@@ -1,27 +1,31 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 
 namespace Loc_Backend.Scripts
 {
-    public class PlayIntro : MonoBehaviour
+    public class VideoIntroPlayer : MonoBehaviour
     {
+        public string videoFileName = "intro.mp4";
         public VideoPlayer videoPlayer;
-        public GameObject videoPanel; // Panel chứa RawImage (UI)
-        public GameObject mainMenu;   // Menu chính (ẩn khi phát video)
+        public GameObject mainMenuPanel;
 
         void Start()
         {
-            videoPanel.SetActive(true);
-            mainMenu.SetActive(false);
+            mainMenuPanel.SetActive(false);
+            string videoPath = System.IO.Path.Combine(Application.streamingAssetsPath, videoFileName);
+            videoPlayer.source = VideoSource.Url;
+            videoPlayer.url = videoPath;
 
             videoPlayer.loopPointReached += OnVideoEnd;
+
             videoPlayer.Play();
         }
 
         void OnVideoEnd(VideoPlayer vp)
         {
-            videoPanel.SetActive(false);
-            mainMenu.SetActive(true);
+            mainMenuPanel.SetActive(true);
+            videoPlayer.gameObject.SetActive(false);
         }
     }
 }
