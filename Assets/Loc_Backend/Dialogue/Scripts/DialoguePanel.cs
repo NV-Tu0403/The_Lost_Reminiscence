@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization.Settings;
@@ -15,22 +16,25 @@ namespace Loc_Backend.Dialogue.Scripts
         public TextMeshProUGUI rightName;
         public TextMeshProUGUI dialogueText;
         public TextMeshProUGUI continueHint;
-        
-        [Header("Type Effect")]
         public TypewriterEffect typewriterEffect;
 
         [Header("Branching UI")]
         public Transform choicesPanel;
         public GameObject buttonChoicePrefab;
 
-        
+        private List<GameObject> spawnedChoiceButtons = new List<GameObject>();
         private DialogueSo _currentDialogue;
         private int _currentIndex = 0;
-        private Coroutine _blinkCoroutine;
         private bool _waitingForChoice = false;
 
         
-        
+        void Update()
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                HandleContinueInput();
+            }
+        }
         
         public void StartDialogue(DialogueSo dialogueSo)
         {
@@ -38,10 +42,10 @@ namespace Loc_Backend.Dialogue.Scripts
             _currentIndex = 0;
             ShowCurrentLine();
         }
-        
+
         void ShowCurrentLine()
         {
-            choicesPanel.gameObject.SetActive(false); // Ẩn UI chọn nhánh
+            choicesPanel.gameObject.SetActive(false);
             ClearChoices();
 
             if (_currentDialogue == null || _currentIndex >= _currentDialogue.lines.Length)
@@ -51,7 +55,12 @@ namespace Loc_Backend.Dialogue.Scripts
             }
 
             var line = _currentDialogue.lines[_currentIndex];
+            ShowSpeaker(line);
+            ShowDialogueLine(line);
+        }
 
+        void ShowSpeaker(DialogueLineData line)
+        {
             if (line.isLeftSpeaker)
             {
                 leftAvatar.gameObject.SetActive(true);
@@ -70,49 +79,45 @@ namespace Loc_Backend.Dialogue.Scripts
                 leftAvatar.gameObject.SetActive(false);
                 leftName.text = "";
             }
-
-            continueHint.gameObject.SetActive(false); // Ẩn hint trước khi chạy typewriter
-            _waitingForChoice = false;
-
-            string localizedText = LocalizationSettings.StringDatabase.GetLocalizedString("Dialogue", line.localizationKey);
-            typewriterEffect.StartTypewriter(localizedText, () =>
-            {
-                if (line.hasChoices && line.choices != null && line.choices.Length > 0)
-                {
-                    ShowChoices(line.choices);
-                }
-                else
-                {
-                    continueHint.gameObject.SetActive(true);
-                    if (_blinkCoroutine != null)
-                        StopCoroutine(_blinkCoroutine);
-                    _blinkCoroutine = StartCoroutine(BlinkContinueHint());
-                }
-            });
         }
 
-        IEnumerator BlinkContinueHint()
+        void ShowDialogueLine(DialogueLineData line)
         {
-            while (true)
+            continueHint.gameObject.SetActive(false);
+            _waitingForChoice = false;
+            string localizedText = LocalizationSettings.StringDatabase.GetLocalizedString("Dialogue", line.localizationKey);
+
+            typewriterEffect.StartTypewriter(localizedText, () => OnTypewriterComplete(line));
+        }
+
+        void OnTypewriterComplete(DialogueLineData line)
+        {
+            if (line.hasChoices && line.choices != null && line.choices.Length > 0)
             {
-                continueHint.alpha = 1f;
-                yield return new WaitForSeconds(0.5f);
-                continueHint.alpha = 0.2f;
-                yield return new WaitForSeconds(0.5f);
+                ShowChoices(line.choices);
+            }
+            else
+            {
+                continueHint.gameObject.SetActive(true);
+                typewriterEffect.StartBlink(continueHint);
             }
         }
 
         void ShowChoices(DialogueChoice[] choices)
         {
+            ClearChoices();
             choicesPanel.gameObject.SetActive(true);
             _waitingForChoice = true;
 
             foreach (var choice in choices)
             {
                 GameObject btnObj = Instantiate(buttonChoicePrefab, choicesPanel);
+                spawnedChoiceButtons.Add(btnObj);
+
                 var btn = btnObj.GetComponent<Button>();
                 var txt = btnObj.GetComponentInChildren<TextMeshProUGUI>();
-                string localizedChoice = LocalizationSettings.StringDatabase.GetLocalizedString("Dialogue", choice.localizationKey);
+                string localizedChoice = LocalizationSettings.StringDatabase
+                    .GetLocalizedString("Dialogue", choice.localizationKey);
                 txt.text = localizedChoice;
 
                 btn.onClick.AddListener(() =>
@@ -139,7 +144,6 @@ namespace Loc_Backend.Dialogue.Scripts
             }
             else
             {
-                // Tiếp tục dòng kế tiếp mặc định
                 _currentIndex++;
                 ShowCurrentLine();
             }
@@ -147,26 +151,24 @@ namespace Loc_Backend.Dialogue.Scripts
 
         void ClearChoices()
         {
-            foreach (Transform child in choicesPanel)
+            foreach (var btn in spawnedChoiceButtons)
             {
-                Destroy(child.gameObject);
+                if (btn != null) Destroy(btn);
             }
+            spawnedChoiceButtons.Clear();
         }
 
-        void Update()
+        public void HandleContinueInput()
         {
             if (_currentDialogue == null) return;
-            if (_waitingForChoice) return; // Đợi người chơi chọn nhánh
+            if (_waitingForChoice) return;
 
-            // Chỉ cho phép tiếp tục khi hint đang hiện (tức là typewriter đã xong)
-            if (continueHint.gameObject.activeSelf && Input.GetMouseButtonDown(0))
+            if (continueHint.gameObject.activeSelf)
             {
-                if (_blinkCoroutine != null)
-                    StopCoroutine(_blinkCoroutine);
+                typewriterEffect.StopBlink();
                 continueHint.gameObject.SetActive(false);
 
                 var line = _currentDialogue.lines[_currentIndex];
-                // Nếu dòng này có nextDialogueSO thì chuyển sang hội thoại mới
                 if (line.nextDialogueSo != null)
                 {
                     StartDialogue(line.nextDialogueSo);
