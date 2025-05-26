@@ -46,6 +46,9 @@
 		</relationship>
 	</object>
 	<object class="MixerInput" id="{702cab2b-758e-4bdd-ab4b-e1877bcabf64}">
+		<relationship name="masters">
+			<destination>{e28d3343-975c-4ee1-b5a6-dc953391809c}</destination>
+		</relationship>
 		<relationship name="effectChain">
 			<destination>{c4a21b9f-f62e-4818-b691-123b4d93a62d}</destination>
 		</relationship>
@@ -56,7 +59,11 @@
 			<destination>{d8b6045c-0502-47f8-8af3-e5587bfdd512}</destination>
 		</relationship>
 	</object>
-	<object class="EventAutomatableProperties" id="{73cfed95-7cfc-4923-8506-b26566d6f8d9}" />
+	<object class="EventAutomatableProperties" id="{73cfed95-7cfc-4923-8506-b26566d6f8d9}">
+		<property name="maximumDistance">
+			<value>90</value>
+		</property>
+	</object>
 	<object class="MarkerTrack" id="{9ee494c7-7f66-45ca-bc12-28b34ebe1378}" />
 	<object class="GroupTrack" id="{299b1540-e41a-4602-8293-42210a176c46}">
 		<relationship name="modules">
@@ -72,6 +79,9 @@
 		</relationship>
 	</object>
 	<object class="EventMixerMaster" id="{2e7215c9-4c92-4825-82ef-f14a01c1a357}">
+		<property name="volume">
+			<value>-13</value>
+		</property>
 		<relationship name="effectChain">
 			<destination>{e4c63fb5-f3a1-4ae8-ac6e-f8dd8a2c3dce}</destination>
 		</relationship>
@@ -114,6 +124,7 @@
 		<relationship name="effects">
 			<destination>{ae88e387-adaa-4dc5-b947-b4b85ff7f96c}</destination>
 			<destination>{081fea66-15c1-4f96-9adb-c61742ce5d9d}</destination>
+			<destination>{f760d1b6-b7e0-40cd-b1d2-2839f8e77f93}</destination>
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{95180b96-b442-47f5-81d0-92864a064e5a}" />
@@ -126,5 +137,16 @@
 	<object class="MixerBusPanner" id="{37168782-4665-410f-9757-08c59cc88005}" />
 	<object class="MixerBusFader" id="{ae88e387-adaa-4dc5-b947-b4b85ff7f96c}" />
 	<object class="SpatialiserEffect" id="{081fea66-15c1-4f96-9adb-c61742ce5d9d}" />
+	<object class="SFXReverbEffect" id="{f760d1b6-b7e0-40cd-b1d2-2839f8e77f93}">
+		<property name="decayTime">
+			<value>800</value>
+		</property>
+		<property name="wetLevel">
+			<value>2.5</value>
+		</property>
+		<property name="dryLevel">
+			<value>-15</value>
+		</property>
+	</object>
 	<object class="MixerBusFader" id="{8caef05e-9faa-4dc3-9dbf-0b27b28d0d5b}" />
 </objects>

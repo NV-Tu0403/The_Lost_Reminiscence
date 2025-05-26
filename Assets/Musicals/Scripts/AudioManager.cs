@@ -9,8 +9,6 @@ public class AudioManager : MonoBehaviour
         if (instance != null)
             Debug.LogError("Found more than one Audio Manager in the scene");
         instance = this;
-
-        // Add characterCamera to 
     }
 
     public void PlayOneShot(EventReference sound, Vector3 worldPos)
