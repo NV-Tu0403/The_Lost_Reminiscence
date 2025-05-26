@@ -9,9 +9,6 @@ public class PlayOneShotAudioFMOD : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (!eraserSound.IsNull) AudioManager.instance.PlayOneShot(eraserSound, this.transform.position);
-        }
+
     }
 }
