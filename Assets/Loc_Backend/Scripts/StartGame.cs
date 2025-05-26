@@ -9,7 +9,7 @@ namespace Loc_Backend.Scripts
         public GameObject mainMenu;
         public GameObject player;
         public DialoguePanel dialoguePanel;
-        public DialogueSO dialogueSO;
+        public DialogueSo dialogueSO;
 
         void Start()
         {

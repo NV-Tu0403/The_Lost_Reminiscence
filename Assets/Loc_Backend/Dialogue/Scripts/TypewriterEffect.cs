@@ -28,5 +28,6 @@ namespace Loc_Backend.Dialogue.Scripts
             }
             onComplete?.Invoke();
         }
+        
     }
 }
