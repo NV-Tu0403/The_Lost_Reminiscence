@@ -1,12 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 using FMODUnity;
 public class PlayOneShotAudioFMOD : MonoBehaviour
 {
-    [SerializeField] private EventReference theme;
     [SerializeField] private EventReference eraserSound;
     void Start()
     {
-        //AudioManager.instance.PlayOneShot(theme, this.transform.position);
     }
 
     private void Update()
