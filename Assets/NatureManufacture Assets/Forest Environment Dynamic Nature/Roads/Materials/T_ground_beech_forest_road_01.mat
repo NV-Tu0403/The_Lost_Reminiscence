@@ -2,26 +2,39 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: T_ground_beech_forest_road_01
   m_Shader: {fileID: 4800000, guid: 7a80715936a39234886da853e2fd9e3b, type: 3}
-  m_ShaderKeywords: _ALPHATEST_ON _DISPLACEMENT_LOCK_TILING_SCALE _HEIGHTMAP _MASKMAP
-    _NORMALMAP _NORMALMAP_TANGENT_SPACE _TESSELLATION_DISPLACEMENT _VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _ALPHATEST_ON
+  - _SURFACE_TYPE_TRANSPARENT
+  m_InvalidKeywords:
+  - _DISPLACEMENT_LOCK_TILING_SCALE
+  - _HEIGHTMAP
+  - _MASKMAP
+  - _NORMALMAP
+  - _NORMALMAP_TANGENT_SPACE
+  - _TESSELLATION_DISPLACEMENT
+  - _VERTEX_DISPLACEMENT_LOCK_OBJECT_SCALE
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Transparent
   disabledShaderPasses:
   - DistortionVectors
   - TransparentDepthPrepass
   - TransparentDepthPostpass
   - TransparentBackface
-  - MOTIONVECTORS
+  - DepthOnly
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -208,6 +221,7 @@ Material:
     - _AORemapMin: 0
     - _ATDistance: 1
     - _AlbedoAffectEmissive: 0
+    - _AlphaClip: 1
     - _AlphaCutoff: 0.794
     - _AlphaCutoffEnable: 1
     - _AlphaCutoffPostpass: 0.5
@@ -232,8 +246,10 @@ Material:
     - _BaseSmoothnessRemapMin: 0
     - _BaseSpecular: 1
     - _BaseUsePlanarUV: 0
+    - _Blend: 0
     - _BlendMode: 0
     - _BumpScale: 1
+    - _CastShadows: 1
     - _CleanFalloffMultiply: 1.6
     - _CleanFalloffPower: 0.34
     - _CoatMask: 0
@@ -256,6 +272,7 @@ Material:
     - _Cover_Max_Angle: 35
     - _Cover_Min_Height: -10000
     - _Cover_Min_Height_Blending: 1
+    - _Cull: 2
     - _CullMode: 2
     - _CullModeForward: 2
     - _Cutoff: 0.794
@@ -287,7 +304,7 @@ Material:
     - _DoubleSidedEnable: 0
     - _DoubleSidedNormalMode: 1
     - _Drag: 1
-    - _DstBlend: 0
+    - _DstBlend: 10
     - _EmissiveColorMode: 1
     - _EmissiveExposureWeight: 1
     - _EmissiveIntensity: 0
@@ -358,6 +375,7 @@ Material:
     - _PreRefractionPass: 0
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _ReceiveShadows: 1
     - _ReceivesSSR: 1
     - _RefractionMode: 0
     - _RefractionModel: 0
@@ -377,7 +395,7 @@ Material:
     - _SpecularAAScreenSpaceVariance: 0.1
     - _SpecularAAThreshold: 0.2
     - _SpecularHighlights: 1
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _StencilRef: 2
     - _StencilRefDepth: 0
     - _StencilRefGBuffer: 2
@@ -390,6 +408,7 @@ Material:
     - _SubsurfaceMask: 1
     - _SupportDBuffer: 1
     - _SupportDecals: 1
+    - _Surface: 1
     - _SurfaceType: 0
     - _TessellationBackFaceCullEpsilon: -0.25
     - _TessellationFactor: 4
@@ -416,10 +435,13 @@ Material:
     - _UseSecondRoadAlpha: 0
     - _UseShadowThreshold: 0
     - _WetSmoothness: 1
+    - _WorkflowMode: 1
+    - _ZTest: 4
     - _ZTestDepthEqualForOpaque: 3
     - _ZTestGBuffer: 3
     - _ZTestModeDistortion: 4
-    - _ZWrite: 1
+    - _ZWrite: 0
+    - _ZWriteControl: 0
     - __dirty: 1
     m_Colors:
     - _AlphaNoiseTilling: {r: 0, g: 0, b: 0, a: 0}
@@ -451,3 +473,4 @@ Material:
     - _UVMappingMaskEmissive: {r: 1, g: 0, b: 0, a: 0}
     - _WetColor: {r: 0.7735849, g: 0.7735849, b: 0.7735849, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
