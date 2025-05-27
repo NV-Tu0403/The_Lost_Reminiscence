@@ -110,10 +110,29 @@ public class EventManager : MonoBehaviour
     {
         Debug.Log($"Playing cutscene: {cutsceneId}");
 
-        GameObject obj = GameObject.Find("Fa");
-        if (obj != null)
+        FaController fa = GameObject.FindFirstObjectByType<FaController>();
+        if (fa != null)
         {
-            // lấy hoại thoại của sự kiện MeerFa_01 từ json Dialog database
+            // Bật tất cả component (MonoBehaviour) trên GameObject của Fa
+            var components = fa.gameObject.GetComponents<MonoBehaviour>();
+            foreach (var comp in components)
+            {
+                if (comp != null)
+                    comp.enabled = true;
+            }
+            // Bật tất cả Light component trên GameObject của Fa
+            var lights = fa.gameObject.GetComponentsInChildren<Light>(true);
+            foreach (var light in lights)
+            {
+                light.enabled = true;
+            }
+            Debug.Log("Đã bật tất cả component MonoBehaviour cho GameObject: " + fa.gameObject.name);
         }
+        else
+        {
+            Debug.LogWarning("Không tìm thấy GameObject có component FaController trong scene!");
+        }
+
+
     }
 }

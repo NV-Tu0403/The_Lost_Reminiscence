@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DuckLe;
+using Unity.VisualScripting;
 
 namespace Duckle
 {
@@ -283,29 +284,34 @@ namespace Duckle
     /// </summary>
     public class ThrowAction : CharacterAction
     {
-        private string prefabPath;
+        public Transform target;
         public float force;
         private ThrowType throwType;
 
-        public ThrowAction(PlayerController controller, float cooldown, string prefabPath, float force, ThrowType throwType)
+        public ThrowAction(PlayerController controller, float cooldown, Transform target, float force, ThrowType throwType)
             : base(controller, cooldown)
         {
-            this.prefabPath = prefabPath;
+            this.target = target;
             this.force = force;
             this.throwType = throwType;
         }
 
         protected override void PerformOffline(IUsable usable = null)
         {
-            GameObject gameObject = Resources.Load<GameObject>(prefabPath);
-            if (gameObject == null)
+            // Lấy đúng vật phẩm đã truyền vào (target)
+            if (target == null)
             {
-                Debug.LogError($"Prefab not found at path: {prefabPath}");
+                Debug.LogWarning("No target assigned for ThrowAction!");
                 return;
             }
 
-            Vector3 spawnPosition = controller.transform.position + controller.transform.forward * 1.5f + Vector3.up * 1f;
-            GameObject thrownObject = Object.Instantiate(gameObject, spawnPosition, Quaternion.identity);
+            Vector3 StartPosition = controller.transform.position + controller.transform.forward * 1.5f + Vector3.up * 1f;
+            GameObject thrownObject = target.gameObject;
+
+            thrownObject.transform.SetParent(null);
+            thrownObject.transform.position = controller.transform.position + StartPosition; // đặt vị trí ném
+            thrownObject.SetActive(true);
+
             if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
             {
                 rb.linearVelocity = controller.transform.forward * force;
