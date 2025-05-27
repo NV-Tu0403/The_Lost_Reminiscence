@@ -111,22 +111,24 @@ public class EventManager : MonoBehaviour
         Debug.Log($"Playing cutscene: {cutsceneId}");
 
         FaController fa = GameObject.FindFirstObjectByType<FaController>();
+        
+        fa.transform.SetParent(null);
         if (fa != null)
         {
-            // Bật tất cả component (MonoBehaviour) trên GameObject của Fa
-            var components = fa.gameObject.GetComponents<MonoBehaviour>();
+            var components = fa.gameObject.GetComponents<Component>();
             foreach (var comp in components)
             {
-                if (comp != null)
-                    comp.enabled = true;
-            }
-            // Bật tất cả Light component trên GameObject của Fa
-            var lights = fa.gameObject.GetComponentsInChildren<Light>(true);
-            foreach (var light in lights)
-            {
-                light.enabled = true;
+                // Kiểm tra xem component có thuộc loại có thể "disable" không
+                var type = comp.GetType();
+                var enabledProp = type.GetProperty("enabled");
+                if (enabledProp != null && enabledProp.PropertyType == typeof(bool))
+                {
+                    enabledProp.SetValue(comp, true);
+                }
             }
             Debug.Log("Đã bật tất cả component MonoBehaviour cho GameObject: " + fa.gameObject.name);
+            // goi cuscene tai day
+            fa.hintVFX.SetActive(true);
         }
         else
         {
@@ -135,4 +137,5 @@ public class EventManager : MonoBehaviour
 
 
     }
+
 }

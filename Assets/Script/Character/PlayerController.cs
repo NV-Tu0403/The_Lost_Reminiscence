@@ -510,13 +510,27 @@ namespace DuckLe
             if (CurrentSourcesLookAt.layer == LayerMask.NameToLayer("Item"))
             {
                 CurrentSourcesLookAt.transform.SetParent(ListSlot.transform);
-                // Bật tất cả component (MonoBehaviour) trên GameObject của Fa
-                var components = CurrentSourcesLookAt.gameObject.GetComponents<MonoBehaviour>();
+                //var components = CurrentSourcesLookAt.gameObject.GetComponents<MonoBehaviour>();
+                //foreach (var comp in components)
+                //{
+                //    Debug.Log($"Disabling component: {comp.GetType().Name} on {CurrentSourcesLookAt.name}");
+                //    if (comp != null)
+                //        comp.enabled = false;
+                //}
+
+                var components = CurrentSourcesLookAt.gameObject.GetComponents<Component>();
                 foreach (var comp in components)
                 {
-                    if (comp != null)
-                        comp.enabled = true;
+                    // Kiểm tra xem component có thuộc loại có thể "disable" không
+                    var type = comp.GetType();
+                    var enabledProp = type.GetProperty("enabled");
+                    if (enabledProp != null && enabledProp.PropertyType == typeof(bool))
+                    {
+                        Debug.Log($"Disabling component: {type.Name} on {CurrentSourcesLookAt.name}");
+                        enabledProp.SetValue(comp, false);
+                    }
                 }
+
                 CurrentSourcesLookAt.transform.localPosition = Vector3.zero; // Đặt vị trí của item trong ListSlot
                 CurrentSourcesLookAt.SetActive(false);
                 Debug.Log($"Added {CurrentSourcesLookAt.name} to ListSlot.");

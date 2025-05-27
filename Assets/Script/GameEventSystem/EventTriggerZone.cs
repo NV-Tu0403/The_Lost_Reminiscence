@@ -13,6 +13,7 @@ public class EventTriggerZone : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             executor.TriggerEvent(eventId);
+            gameObject.SetActive(false);
         }
     }
 }

@@ -38,7 +38,7 @@ public class PlayerConfig : ScriptableObject
     [Header("Throwing Settings")]
     public Transform target;
     public float throwForceMin = 1f;
-    public float throwForceMax = 100f;
+    public float throwForceMax =5f;
     public float throwForce = 10f;
     public float throwCooldown = 1f;
     public float maxHoldTime = 1.5f;

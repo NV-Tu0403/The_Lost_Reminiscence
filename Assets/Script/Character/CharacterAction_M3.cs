@@ -305,11 +305,24 @@ namespace Duckle
                 return;
             }
 
-            Vector3 StartPosition = controller.transform.position + controller.transform.forward * 1.5f + Vector3.up * 1f;
+            Vector3 StartPosition = controller.transform.position + controller.transform.forward /** 1.5f */+ Vector3.up * 1f;
             GameObject thrownObject = target.gameObject;
 
             thrownObject.transform.SetParent(null);
             thrownObject.transform.position = controller.transform.position + StartPosition; // đặt vị trí ném
+            var components = thrownObject.gameObject.GetComponents<Component>();
+            foreach (var comp in components)
+            {
+                // Kiểm tra xem component có thuộc loại có thể "disable" không
+                var type = comp.GetType();
+                var enabledProp = type.GetProperty("enabled");
+                if (enabledProp != null && enabledProp.PropertyType == typeof(bool))
+                {
+                    Debug.Log($"Disabling component: {type.Name} on {thrownObject.name}");
+                    enabledProp.SetValue(comp, true);
+                }
+            }
+
             thrownObject.SetActive(true);
 
             if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
