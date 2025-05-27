@@ -26,7 +26,12 @@ namespace Loc_Backend.Dialogue.Scripts
         private DialogueSo _currentDialogue;
         private int _currentIndex = 0;
         private bool _waitingForChoice = false;
-
+        private bool IsEndOfDialogue(DialogueLineData line)
+        {
+            return 
+                (line.nextLineIndex == -1 && !line.hasChoices && line.nextDialogueSo == null)
+                || (_currentIndex >= _currentDialogue.lines.Length - 1);
+        }
         
         void Update()
         {
@@ -34,6 +39,45 @@ namespace Loc_Backend.Dialogue.Scripts
             {
                 HandleContinueInput();
             }
+        }
+        
+        public void HandleContinueInput()
+        {
+            if (_currentDialogue == null || _waitingForChoice) return;
+            if (!continueHint.gameObject.activeSelf) return;
+
+            typewriterEffect.StopBlink();
+            continueHint.gameObject.SetActive(false);
+
+            var line = _currentDialogue.lines[_currentIndex];
+
+            // Nếu chuyển sang DialogueSO khác
+            if (line.nextDialogueSo != null)
+            {
+                StartDialogue(line.nextDialogueSo);
+                return;
+            }
+
+            // Nếu chuyển sang dòng chỉ định
+            if (line.nextLineIndex >= 0)
+            {
+                _currentIndex = line.nextLineIndex;
+                ShowCurrentLine();
+                return;
+            }
+
+            // Nếu là dòng kết thúc
+            if (IsEndOfDialogue(line))
+            {
+                Debug.Log("[Dialogue] End of dialogue!");
+                
+                gameObject.SetActive(false);
+                return;
+            }
+
+            // Mặc định chuyển sang dòng kế tiếp
+            _currentIndex++;
+            ShowCurrentLine();
         }
         
         public void StartDialogue(DialogueSo dialogueSo)
@@ -45,6 +89,9 @@ namespace Loc_Backend.Dialogue.Scripts
 
         void ShowCurrentLine()
         {
+            //Debug
+            Debug.Log($"Showing line {_currentIndex} of {_currentDialogue.name}");
+            
             choicesPanel.gameObject.SetActive(false);
             ClearChoices();
 
@@ -129,6 +176,8 @@ namespace Loc_Backend.Dialogue.Scripts
 
         void OnChoiceSelected(DialogueChoice choice)
         {
+            Debug.Log($"[Dialogue] Choice selected: key={choice.localizationKey}, nextSO={choice.nextDialogueSo}, nextIdx={choice.nextLineIndex}");
+            
             choicesPanel.gameObject.SetActive(false);
             _waitingForChoice = false;
             ClearChoices();
@@ -136,17 +185,26 @@ namespace Loc_Backend.Dialogue.Scripts
             if (choice.nextDialogueSo != null)
             {
                 StartDialogue(choice.nextDialogueSo);
+                return;
             }
-            else if (choice.nextLineIndex >= 0)
+            if (choice.nextLineIndex >= 0)
             {
                 _currentIndex = choice.nextLineIndex;
                 ShowCurrentLine();
+                return;
             }
-            else
+
+            var line = _currentDialogue.lines[_currentIndex];
+            if (IsEndOfDialogue(line))
             {
-                _currentIndex++;
-                ShowCurrentLine();
+                Debug.Log("[Dialogue] End of dialogue!");
+                
+                gameObject.SetActive(false);
+                return;
             }
+
+            _currentIndex++;
+            ShowCurrentLine();
         }
 
         void ClearChoices()
@@ -156,34 +214,6 @@ namespace Loc_Backend.Dialogue.Scripts
                 if (btn != null) Destroy(btn);
             }
             spawnedChoiceButtons.Clear();
-        }
-
-        public void HandleContinueInput()
-        {
-            if (_currentDialogue == null) return;
-            if (_waitingForChoice) return;
-
-            if (continueHint.gameObject.activeSelf)
-            {
-                typewriterEffect.StopBlink();
-                continueHint.gameObject.SetActive(false);
-
-                var line = _currentDialogue.lines[_currentIndex];
-                if (line.nextDialogueSo != null)
-                {
-                    StartDialogue(line.nextDialogueSo);
-                }
-                else if (line.nextLineIndex >= 0)
-                {
-                    _currentIndex = line.nextLineIndex;
-                    ShowCurrentLine();
-                }
-                else
-                {
-                    _currentIndex++;
-                    ShowCurrentLine();
-                }
-            }
         }
     }
 }
