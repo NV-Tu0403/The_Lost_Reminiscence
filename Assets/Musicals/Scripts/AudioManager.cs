@@ -34,7 +34,7 @@ public class AudioManager : MonoBehaviour
             Debug.LogError($"Failed to create FMOD instance for event: {eventReference}");
             return default;
         }
-        
+         
         return instance;
     }
 
