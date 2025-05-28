@@ -32,7 +32,7 @@ public class PlayTimeManager : MonoBehaviour
     public void StartCounting()
     {
         isCounting = true;
-        Debug.Log("Started counting PlayTime");
+        //Debug.Log("Started counting PlayTime");
     }
 
     public void StopCounting()

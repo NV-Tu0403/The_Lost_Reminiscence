@@ -110,10 +110,30 @@ public class EventManager : MonoBehaviour
     {
         Debug.Log($"Playing cutscene: {cutsceneId}");
 
-        GameObject obj = GameObject.Find("Fa");
-        if (obj != null)
+        FaController fa = GameObject.FindFirstObjectByType<FaController>();
+        
+        fa.transform.SetParent(null);
+        if (fa != null)
         {
-            // lấy hoại thoại của sự kiện MeerFa_01 từ json Dialog database
+            var components = fa.gameObject.GetComponents<Component>();
+            foreach (var comp in components)
+            {
+                var type = comp.GetType();
+                var enabledProp = type.GetProperty("enabled");
+                if (enabledProp != null && enabledProp.PropertyType == typeof(bool))
+                {
+                    enabledProp.SetValue(comp, true);
+                }
+            }
+            // goi cuscene tai day
+            
         }
+        else
+        {
+            Debug.LogWarning("Không tìm thấy GameObject có component FaController trong scene!");
+        }
+
+
     }
+
 }

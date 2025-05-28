@@ -143,6 +143,9 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Thử đăng nhập tự động nếu có thông tin người dùng đã lưu.
+    /// </summary>
     private void TryAutoLogin()
     {
         if (userAccountManager.TryAutoLogin(out string errorMessage))
@@ -174,7 +177,10 @@ public class SaveGameUI : MonoBehaviour
             loginPanel.SetActive(true);
         }
     }
-
+    /// <summary>
+    /// Lấy thư mục lưu gần nhất hợp lệ cho người dùng hiện tại.
+    /// </summary>
+    /// <returns></returns>
     private string GetValidLastSaveFolder()
     {
         string lastFileSave = userAccountManager.GetLastFileSave();
@@ -188,6 +194,7 @@ public class SaveGameUI : MonoBehaviour
             }
         }
 
+        // Nếu không có thư mục lưu gần nhất hợp lệ, trả về thư mục lưu mới nhất.
         return saveGameManager.GetLatestSaveFolder(userAccountManager.CurrentUserBaseName);
     }
 
@@ -646,7 +653,7 @@ public class SaveGameUI : MonoBehaviour
                 textComponent.text = $"File: {Path.GetFileName(file)}\nContent: {json}";
             }
         }
-        Debug.Log($"Displayed JSON content for save: {folderPath}, Found {jsonFiles.Length} JSON files");
+        //Debug.Log($"Displayed JSON content for save: {folderPath}, Found {jsonFiles.Length} JSON files");
     }
 
     private void ClearJsonContent()
@@ -656,6 +663,6 @@ public class SaveGameUI : MonoBehaviour
             Destroy(text);
         }
         jsonTextInstances.Clear();
-        Debug.Log("Cleared JSON content display");
+        //Debug.Log("Cleared JSON content display");
     }
 }

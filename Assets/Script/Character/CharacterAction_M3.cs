@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DuckLe;
+using Unity.VisualScripting;
 
 namespace Duckle
 {
@@ -283,32 +284,56 @@ namespace Duckle
     /// </summary>
     public class ThrowAction : CharacterAction
     {
-        private string prefabPath;
+        public Transform target;
         public float force;
         private ThrowType throwType;
 
-        public ThrowAction(PlayerController controller, float cooldown, string prefabPath, float force, ThrowType throwType)
+        public ThrowAction(PlayerController controller, float cooldown, Transform target, float force, ThrowType throwType)
             : base(controller, cooldown)
         {
-            this.prefabPath = prefabPath;
+            this.target = target;
             this.force = force;
             this.throwType = throwType;
         }
 
         protected override void PerformOffline(IUsable usable = null)
         {
-            GameObject gameObject = Resources.Load<GameObject>(prefabPath);
-            if (gameObject == null)
+            // Lấy đúng vật phẩm đã truyền vào (target)
+            if (target == null)
             {
-                Debug.LogError($"Prefab not found at path: {prefabPath}");
+                Debug.LogWarning("No target assigned for ThrowAction!");
                 return;
             }
 
-            Vector3 spawnPosition = controller.transform.position + controller.transform.forward * 1.5f + Vector3.up * 1f;
-            GameObject thrownObject = Object.Instantiate(gameObject, spawnPosition, Quaternion.identity);
+            // Lấy hướng từ camera nếu có, fallback về transform.forward nếu không có camera
+            Vector3 throwDirection = controller._playerInput != null
+                && controller._playerInput._characterCamera != null
+                && controller._playerInput._characterCamera.mainCamera != null
+                ? controller._playerInput._characterCamera.mainCamera.transform.forward
+                : controller.transform.forward;
+
+            Vector3 StartPosition = controller.transform.position + throwDirection + Vector3.up * 1f;
+            GameObject thrownObject = target.gameObject;
+
+            thrownObject.transform.SetParent(null);
+            thrownObject.transform.position = StartPosition;
+            var components = thrownObject.gameObject.GetComponents<Component>();
+            foreach (var comp in components)
+            {
+                var type = comp.GetType();
+                var enabledProp = type.GetProperty("enabled");
+                if (enabledProp != null && enabledProp.PropertyType == typeof(bool))
+                {
+                    Debug.Log($"Disabling component: {type.Name} on {thrownObject.name}");
+                    enabledProp.SetValue(comp, true);
+                }
+            }
+
+            thrownObject.SetActive(true);
+
             if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
             {
-                rb.linearVelocity = controller.transform.forward * force;
+                rb.linearVelocity = throwDirection.normalized * force;
             }
             if (thrownObject.TryGetComponent<ThrowableObject>(out var throwable))
             {
@@ -317,8 +342,9 @@ namespace Duckle
             }
 
             usable?.OnUse(controller);
-            controller._stateMachine.AddSecondaryState(new ThrowingState(cooldown));
+            controller._stateMachine.AddSecondaryState(new ThrowingState(cooldown)); // cập nhập trạng thái ném
         }
+
 
         protected override void PerformOnline(IUsable usable = null)
         {
