@@ -2,13 +2,16 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 
 public class ProgressionManager : MonoBehaviour
 {
     private GameProgression progression; // Dữ liệu tiến trình
+
     private string configJsonPath = "JSON/progressionData"; // Đường dẫn tương đối cho Resources
     private string configJsonFullPath; // Đường dẫn tuyệt đối cho ghi file
 
+    [SerializeField] private ProgressionSequenceDataSO progressionSequenceDataSO;
     [SerializeField] private ProgressionDataSO progressionDataSO; // ScriptableObject tổng hợp
     [SerializeField] private WeaponDatabase weaponDatabase; // Database vũ khí
     [SerializeField] private LootDatabase lootDatabase; // Database loot
@@ -19,7 +22,7 @@ public class ProgressionManager : MonoBehaviour
     {
         //Debug.Log("Đang kiểm tra tài nguyên");
         InitializePaths(); // Khởi tạo đường dẫn
-        LoadProgression();
+        //LoadProgression();
     }
 
 
@@ -61,6 +64,22 @@ public class ProgressionManager : MonoBehaviour
         }
 
         progression = progressionDataSO.ToGameProgression();
+        // Tự động cập nhật ProgressionSequenceDataSO
+        if (progressionSequenceDataSO != null && progression != null)
+        {
+            progressionSequenceDataSO.MainProcessOrder = progression.MainProcesses
+                .Select(p => p.Id)
+                .ToList();
+
+            EditorUtility.SetDirty(progressionSequenceDataSO);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log($"Updated ProgressionSequenceDataSO with {progressionSequenceDataSO.MainProcessOrder.Count} entries.");
+        }
+        else
+        {
+            Debug.LogWarning("ProgressionSequenceDataSO is not assigned or progression is null.");
+        }
         if (progression == null || progression.MainProcesses == null)
         {
             Debug.LogError("Failed to convert ProgressionDataSO to GameProgression!");
@@ -140,18 +159,22 @@ public class ProgressionManager : MonoBehaviour
             return;
         }
 
+        // Kiểm tra thư mục lưu game mới nhất của người dùng
         string saveFolder = saveGameManager.GetLatestSaveFolder(userName);
         if (saveFolder != null)
         {
+            // Nếu tìm thấy save game, tải file JSON từ thư mục đó
             string json = saveGameManager.LoadJsonFile(saveFolder, "playerProgression.json");
             if (!string.IsNullOrEmpty(json))
             {
+                // Deserialize JSON thành GameProgression
                 progression = JsonSerializationHelper.DeserializeGameProgression(json);
-                Debug.Log($"Loaded player progression from: {saveFolder}/playerProgression.json");
+                Debug.LogError($"Loaded player progression from: {saveFolder}/playerProgression.json");
                 return;
             }
         }
 
+        // Nếu không tìm thấy save game, kiểm tra file JSON trong Resources
         TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
         if (jsonText != null)
         {
@@ -163,6 +186,7 @@ public class ProgressionManager : MonoBehaviour
             return;
         }
 
+        // Nếu không tìm thấy file JSON trong Resources, kiểm tra ScriptableObject
         if (progressionDataSO != null)
         {
             progression = progressionDataSO.ToGameProgression();
@@ -175,6 +199,22 @@ public class ProgressionManager : MonoBehaviour
         }
 
         Debug.LogError("No progression data found!");
+    }
+
+    /// <summary>
+    /// load lai tien trinh
+    /// </summary>
+    public void ReLoadProgression(string filePath)
+    {
+        if (File.Exists(filePath))
+        {
+            string json = File.ReadAllText(filePath);
+            progression = JsonSerializationHelper.DeserializeGameProgression(json);
+        }
+        else
+        {
+            Debug.LogError($"File not found: {filePath}");
+        }
     }
 
     /// <summary>
@@ -467,6 +507,39 @@ public class ProgressionManager : MonoBehaviour
 
         return result;
     }
+
+    /// <summary>
+    /// Lấy tiến trình chính hiện tại hoặc tiếp theo chưa hoàn thành.
+    /// </summary>
+    /// <returns></returns>
+    public MainProcess GetCurrentOrNextMainProcess()
+    {
+        if (progression == null || progression.MainProcesses == null)
+        {
+            Debug.LogError("Progression data not loaded!");
+            return null;
+        }
+
+        foreach (var id in progressionSequenceDataSO.MainProcessOrder)
+        {
+            var main = progression.MainProcesses.Find(p => p.Id == id);
+            if (main == null)
+            {
+                Debug.LogWarning($"Progression data missing MainProcess ID: {id}");
+                continue;
+            }
+
+            if (main.Status != "Completed") // Chưa hoàn thành
+            {
+                Debug.LogError($"Current or Next Progression is: {main.Description}");
+                return main;
+            }
+        }
+
+        Debug.LogWarning("All progressions completed.");
+        return null;
+    }
+
 
 
 }

@@ -118,7 +118,6 @@ public class EventManager : MonoBehaviour
             var components = fa.gameObject.GetComponents<Component>();
             foreach (var comp in components)
             {
-                // Kiểm tra xem component có thuộc loại có thể "disable" không
                 var type = comp.GetType();
                 var enabledProp = type.GetProperty("enabled");
                 if (enabledProp != null && enabledProp.PropertyType == typeof(bool))
@@ -126,7 +125,6 @@ public class EventManager : MonoBehaviour
                     enabledProp.SetValue(comp, true);
                 }
             }
-            Debug.Log("Đã bật tất cả component MonoBehaviour cho GameObject: " + fa.gameObject.name);
             // goi cuscene tai day
             
         }

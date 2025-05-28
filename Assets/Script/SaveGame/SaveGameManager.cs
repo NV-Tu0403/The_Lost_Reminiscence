@@ -8,6 +8,8 @@ public class SaveGameManager : MonoBehaviour
 {
     private string userDataPath;
 
+    [SerializeField] private ProgressionManager progressionManager;
+
     void Awake()
     {
         userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
@@ -93,17 +95,21 @@ public class SaveGameManager : MonoBehaviour
 
     public string LoadJsonFile(string saveFolderPath, string fileName)
     {
+        string filePath = Path.Combine(saveFolderPath, fileName);
+        if (File.Exists(filePath))
+        {
+            string json = File.ReadAllText(filePath); // test 
+            Debug.Log($"Loaded JSON from: {filePath}");
+            progressionManager.ReLoadProgression(filePath);
+            progressionManager.GetCurrentOrNextMainProcess(); // Lấy tiến trình chính hiện tại hoặc tiếp theo chưa hoàn thành
+
+            return json;
+        }
+        Debug.LogWarning($"File {fileName} not found in {saveFolderPath}");
+        return null;
         try
         {
-            string filePath = Path.Combine(saveFolderPath, fileName);
-            if (File.Exists(filePath))
-            {
-                string json = File.ReadAllText(filePath);
-                Debug.Log($"Loaded JSON from: {filePath}");
-                return json;
-            }
-            Debug.LogWarning($"File {fileName} not found in {saveFolderPath}");
-            return null;
+
         }
         catch (Exception e)
         {
@@ -171,7 +177,7 @@ public class SaveGameManager : MonoBehaviour
             result.Add((folder, image));
         }
 
-        Debug.Log($"Found {result.Count} save folders for user: {userName}");
+        //Debug.Log($"Found {result.Count} save folders for user: {userName}");
         return result;
     }
 
