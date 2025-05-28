@@ -128,7 +128,7 @@ public class EventManager : MonoBehaviour
             }
             Debug.Log("Đã bật tất cả component MonoBehaviour cho GameObject: " + fa.gameObject.name);
             // goi cuscene tai day
-            fa.hintVFX.SetActive(true);
+            
         }
         else
         {

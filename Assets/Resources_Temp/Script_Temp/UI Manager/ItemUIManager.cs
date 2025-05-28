@@ -55,7 +55,7 @@ public class ItemUIManager : MonoBehaviour
         // Kiểm tra null cho playerController và ListSlot trước khi truy cập
         if (playerController == null)
         {
-            Debug.LogError("playerController is null.");
+            Debug.LogWarning("playerController is null.");
             return;
         }
         if (playerController.ListSlot == null)

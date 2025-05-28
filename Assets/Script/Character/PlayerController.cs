@@ -443,6 +443,8 @@ namespace DuckLe
 
         /// <summary>
         /// trả về đối tượng mà người chơi đang nhìn vào.
+        /// - cần cache camera, thêm LayerMask
+        /// - Khoảng cách và camera đang hardcoded
         /// </summary>
         public void CheckItemByLooking()
         {

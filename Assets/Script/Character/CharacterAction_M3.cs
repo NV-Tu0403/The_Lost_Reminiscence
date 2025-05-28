@@ -305,15 +305,21 @@ namespace Duckle
                 return;
             }
 
-            Vector3 StartPosition = controller.transform.position + controller.transform.forward /** 1.5f */+ Vector3.up * 1f;
+            // Lấy hướng từ camera nếu có, fallback về transform.forward nếu không có camera
+            Vector3 throwDirection = controller._playerInput != null
+                && controller._playerInput._characterCamera != null
+                && controller._playerInput._characterCamera.mainCamera != null
+                ? controller._playerInput._characterCamera.mainCamera.transform.forward
+                : controller.transform.forward;
+
+            Vector3 StartPosition = controller.transform.position + throwDirection + Vector3.up * 1f;
             GameObject thrownObject = target.gameObject;
 
             thrownObject.transform.SetParent(null);
-            thrownObject.transform.position = controller.transform.position + StartPosition; // đặt vị trí ném
+            thrownObject.transform.position = StartPosition;
             var components = thrownObject.gameObject.GetComponents<Component>();
             foreach (var comp in components)
             {
-                // Kiểm tra xem component có thuộc loại có thể "disable" không
                 var type = comp.GetType();
                 var enabledProp = type.GetProperty("enabled");
                 if (enabledProp != null && enabledProp.PropertyType == typeof(bool))
@@ -327,7 +333,7 @@ namespace Duckle
 
             if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
             {
-                rb.linearVelocity = controller.transform.forward * force;
+                rb.linearVelocity = throwDirection.normalized * force;
             }
             if (thrownObject.TryGetComponent<ThrowableObject>(out var throwable))
             {
@@ -336,8 +342,9 @@ namespace Duckle
             }
 
             usable?.OnUse(controller);
-            controller._stateMachine.AddSecondaryState(new ThrowingState(cooldown));
+            controller._stateMachine.AddSecondaryState(new ThrowingState(cooldown)); // cập nhập trạng thái ném
         }
+
 
         protected override void PerformOnline(IUsable usable = null)
         {
