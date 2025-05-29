@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Loc_Backend.Test
+namespace Loc_Backend.Dialogue.Scripts.UI
 {
     public class CutscenePanel : MonoBehaviour
     {

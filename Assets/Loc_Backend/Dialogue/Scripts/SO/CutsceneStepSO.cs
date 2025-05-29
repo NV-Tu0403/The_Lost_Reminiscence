@@ -1,8 +1,9 @@
+using Loc_Backend.Dialogue.Scripts.Manager;
 using UnityEngine;
 
-namespace Loc_Backend.Test
+namespace Loc_Backend.Dialogue.Scripts.SO
 {
-    [CreateAssetMenu(menuName = "Story/Cutscene Step")]
+    [CreateAssetMenu(menuName = "Dialogue/Cutscene Step")]
     public class CutsceneStepSO : StoryStepSO
     {
         public string cutsceneText;

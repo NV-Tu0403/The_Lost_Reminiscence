@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Localization;
 
-namespace Loc_Backend.Test
+namespace Loc_Backend.Dialogue.Scripts.SO
 {
     [CreateAssetMenu(menuName = "Dialogue/Dialogue Node")]
     public class DialogueNodeSO : ScriptableObject

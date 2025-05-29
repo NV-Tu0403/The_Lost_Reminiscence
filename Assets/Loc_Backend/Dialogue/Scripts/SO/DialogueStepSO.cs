@@ -1,8 +1,9 @@
+using Loc_Backend.Dialogue.Scripts.Manager;
 using UnityEngine;
 
-namespace Loc_Backend.Test
+namespace Loc_Backend.Dialogue.Scripts.SO
 {
-    [CreateAssetMenu(menuName = "Story/Dialogue Step")]
+    [CreateAssetMenu(menuName = "Dialogue/Dialogue Step")]
     public class DialogueStepSO : StoryStepSO
     {
         public DialogueNodeSO rootNode;

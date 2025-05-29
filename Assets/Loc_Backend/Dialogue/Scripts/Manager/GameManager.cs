@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using Loc_Backend.Dialogue.Scripts.SO;
+using Loc_Backend.Dialogue.Scripts.UI;
 using UnityEngine;
 
-namespace Loc_Backend.Test
+namespace Loc_Backend.Dialogue.Scripts.Manager
 {
     public class GameManager : MonoBehaviour
     {

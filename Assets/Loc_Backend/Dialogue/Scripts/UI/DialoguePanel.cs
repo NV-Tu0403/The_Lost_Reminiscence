@@ -1,9 +1,10 @@
 using System;
+using Loc_Backend.Dialogue.Scripts.SO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Loc_Backend.Test
+namespace Loc_Backend.Dialogue.Scripts.UI
 {
     public class DialoguePanel : MonoBehaviour
     {

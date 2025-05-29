@@ -1,7 +1,9 @@
 using System;
+using Loc_Backend.Dialogue.Scripts.UI;
+using Loc_Backend.Dialogue.Scripts.SO;
 using UnityEngine;
 
-namespace Loc_Backend.Test
+namespace Loc_Backend.Dialogue.Scripts.Manager
 {
     public class DialogueManager : MonoBehaviour
     {
