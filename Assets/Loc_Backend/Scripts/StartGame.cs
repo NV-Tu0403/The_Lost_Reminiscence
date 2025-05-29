@@ -7,7 +7,7 @@ namespace Loc_Backend.Scripts
     public class StartGame : MonoBehaviour
     {
         public GameObject mainMenu;
-        public GameObject player;
+        //public GameObject player;
         public DialoguePanel dialoguePanel;
         public DialogueSo dialogueSO;
 
@@ -18,7 +18,7 @@ namespace Loc_Backend.Scripts
         
         public void ShowPlayer()
         {
-            player.SetActive(true);
+            //player.SetActive(true);
             mainMenu.SetActive(false);
             dialoguePanel.gameObject.SetActive(true);
             TestDialogue();
