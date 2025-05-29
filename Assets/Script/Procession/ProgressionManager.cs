@@ -13,16 +13,16 @@ public class ProgressionManager : MonoBehaviour
 
     [SerializeField] private ProgressionSequenceDataSO progressionSequenceDataSO;
     [SerializeField] private ProgressionDataSO progressionDataSO; // ScriptableObject tổng hợp
-    [SerializeField] private WeaponDatabase weaponDatabase; // Database vũ khí
-    [SerializeField] private LootDatabase lootDatabase; // Database loot
+    [SerializeField] private WeaponDatabase weaponDatabase;
+    [SerializeField] private LootDatabase lootDatabase;
     [SerializeField] private SaveGameManager saveGameManager;
-    [SerializeField] private UserAccountManager userAccountManager; // Quản lý tài khoản người dùng
+    [SerializeField] private UserAccountManager userAccountManager;
 
     void Awake()
     {
         //Debug.Log("Đang kiểm tra tài nguyên");
         InitializePaths(); // Khởi tạo đường dẫn
-        //LoadProgression();
+        //ReLoadProgression();
     }
 
 
@@ -142,9 +142,9 @@ public class ProgressionManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Tải dữ liệu tiến trình.
+    /// Tải lại dữ liệu tiến trình.
     /// </summary>
-    public void LoadProgression()
+    public void ReLoadProgression()
     {
         if (saveGameManager == null)
         {
@@ -163,11 +163,12 @@ public class ProgressionManager : MonoBehaviour
         string saveFolder = saveGameManager.GetLatestSaveFolder(userName);
         if (saveFolder != null)
         {
-            // Nếu tìm thấy save game, tải file JSON từ thư mục đó
-            string json = saveGameManager.LoadJsonFile(saveFolder, "playerProgression.json");
-            if (!string.IsNullOrEmpty(json))
+            // Kiểm tra file JSON trong thư mục lưu game
+            var files = saveGameManager.LoadJsonFiles(saveFolder);
+            var file = files.FirstOrDefault(f => f.fileName == "playerProgression.json");
+            if (file.fileName != null)
             {
-                // Deserialize JSON thành GameProgression
+                string json = file.json;
                 progression = JsonSerializationHelper.DeserializeGameProgression(json);
                 Debug.LogError($"Loaded player progression from: {saveFolder}/playerProgression.json");
                 return;
@@ -202,18 +203,19 @@ public class ProgressionManager : MonoBehaviour
     }
 
     /// <summary>
-    /// load lai tien trinh
+    /// Tải dữ liệu tiến trình từ file đươc tryền vào.
     /// </summary>
-    public void ReLoadProgression(string filePath)
+    public void LoadProgression(string json)
     {
-        if (File.Exists(filePath))
+        if (!string.IsNullOrEmpty(json))
         {
-            string json = File.ReadAllText(filePath);
             progression = JsonSerializationHelper.DeserializeGameProgression(json);
+            GetCurrentOrNextMainProcess();
         }
         else
         {
-            Debug.LogError($"File not found: {filePath}");
+            Debug.LogError("Progression JSON content is null or empty!");
+            ReLoadProgression();
         }
     }
 
