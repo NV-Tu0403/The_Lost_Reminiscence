@@ -533,7 +533,7 @@ public class ProgressionManager : MonoBehaviour
 
             if (main.Status != "Completed") // Chưa hoàn thành
             {
-                Debug.LogError($"Current or Next Progression is: {main.Description}");
+                Debug.Log($"Current or Next Progression is: {main.Description}");
                 return main;
             }
         }
