@@ -1,18 +1,18 @@
 ﻿using UnityEngine;
 
-/// <summary>
-/// gọi TriggerEvent khi người chơi vào vùng collider.
-/// </summary>
-public class EventTriggerZone : MonoBehaviour
+namespace Script.GameEventSystem
 {
-    public string eventId;
-    public EventExecutor executor;
-
-    private void OnTriggerEnter(Collider other)
+    public class EventTriggerZone : MonoBehaviour
     {
-        if (other.CompareTag("Player"))
+        [SerializeField] public string eventId;
+        [SerializeField] public EventExecutor executor;
+
+        private void OnTriggerEnter(Collider other)
         {
-            executor.TriggerEvent(eventId);
+            if (other.CompareTag("Player"))
+            {
+                executor.TriggerEvent(eventId);
+            }
         }
     }
 }

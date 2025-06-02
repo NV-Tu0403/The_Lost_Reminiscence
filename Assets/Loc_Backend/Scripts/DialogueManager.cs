@@ -1,32 +1,34 @@
-using System;
-using Loc_Backend.Dialogue.Scripts.UI;
 using Loc_Backend.Dialogue.Scripts.SO;
+using Loc_Backend.Dialogue.Scripts.UI;
 using UnityEngine;
 
-namespace Loc_Backend.Dialogue.Scripts.Manager
+namespace Loc_Backend.Scripts
 {
     public class DialogueManager : MonoBehaviour
     {
         public static DialogueManager Instance { get; private set; }
-        public DialoguePanel dialoguePanel;
-
-        private Action onDialogueEnd;
 
         private void Awake()
         {
-            if (Instance == null) Instance = this;
-            else Destroy(gameObject);
+            if (Instance != null) Destroy(gameObject);
+            else Instance = this;
         }
 
-        public void StartDialogue(DialogueNodeSO rootNode, Action onEnd)
+        public void StartDialogue(string dialogueId)
         {
-            onDialogueEnd = onEnd;
-            dialoguePanel.ShowDialogue(rootNode, HandleDialogueEnd);
-        }
-
-        private void HandleDialogueEnd()
-        {
-            onDialogueEnd?.Invoke();
+            // Load the dialogue SO by id (using Resources for demo)
+            // 
+            var dialogue = Resources.Load<DialogueNodeSO>($"SourceSO/{dialogueId}");
+            if (dialogue != null)
+            {
+                // Show dialogue UI
+                
+                Debug.Log($"Showing dialogue: {dialogueId}");
+            }
+            else
+            {
+                Debug.LogWarning($"Dialogue SO not found: {dialogueId}");
+            }
         }
     }
 }

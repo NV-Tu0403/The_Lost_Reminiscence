@@ -468,5 +468,4 @@ public class ProgressionManager : MonoBehaviour
         return result;
     }
 
-
 }
