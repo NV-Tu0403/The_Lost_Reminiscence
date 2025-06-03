@@ -36,6 +36,12 @@ namespace Script.GameEventSystem
             else
                 Debug.LogWarning($"[EventManager] Unknown event: {eventId}");
         }
+        
+        public void OnEventFinished()
+        {
+            Debug.Log("[EventManager] Event finished.");
+            // TODO: Add logic to handle when an event is finished (e.g. trigger next event, update state, etc.)
+        }
 
         private void InitializeEventDictionary()
         {
@@ -46,3 +52,4 @@ namespace Script.GameEventSystem
         }
     }
 }
+

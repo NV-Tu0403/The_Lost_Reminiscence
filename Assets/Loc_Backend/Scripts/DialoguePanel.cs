@@ -15,16 +15,23 @@ namespace Loc_Backend.Dialogue.Scripts.UI
         public Button nextButton;
 
         private Action onDialogueEnd;
+        private DialogueNodeSO currentNode;
 
         public void ShowDialogue(DialogueNodeSO node, Action onEnd)
         {
+            Debug.Log($"[DialoguePanel] ShowDialogue: {node?.name}");
             gameObject.SetActive(true);
             onDialogueEnd = onEnd;
+            currentNode = null; // Reset current node
+            nextButton.onClick.RemoveAllListeners(); // Reset listeners
             ShowNode(node);
         }
 
         void ShowNode(DialogueNodeSO node)
         {
+            if (currentNode == node) return; // Ngăn double invoke
+            currentNode = node;
+            Debug.Log($"[DialoguePanel] ShowNode: {node?.name}");
             ShowSpeaker(node);
             ShowDialogueText(node);
             ClearChoices();
@@ -41,6 +48,7 @@ namespace Loc_Backend.Dialogue.Scripts.UI
 
         private void ShowNextButton(DialogueNodeSO node)
         {
+            Debug.Log($"[DialoguePanel] ShowNextButton: {node?.name}, nextNode: {node?.nextNode?.name}");
             choicesPanel.gameObject.SetActive(false);
             nextButton.gameObject.SetActive(true);
 
@@ -116,8 +124,10 @@ namespace Loc_Backend.Dialogue.Scripts.UI
 
         void EndDialogue()
         {
+            Debug.Log("[DialoguePanel] EndDialogue called");
             gameObject.SetActive(false);
             onDialogueEnd?.Invoke();
         }
     }
 }
+

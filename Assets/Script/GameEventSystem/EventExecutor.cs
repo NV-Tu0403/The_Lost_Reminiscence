@@ -48,6 +48,12 @@ namespace Script.GameEventSystem
                 Debug.LogWarning($"[EventExecutor] Unable to convert EventType '{data.type}' to EventType_Dl.");
             }
         }
+
+        public void OnDialogueFinished()
+        {
+            Debug.Log("[EventExecutor] Dialogue finished, notifying EventManager.");
+            EventManager.Instance.OnEventFinished();
+        }
     }
 
     public class CutsceneAction : IEventAction
@@ -85,3 +91,4 @@ namespace Script.GameEventSystem
         }
     }
 }
+
