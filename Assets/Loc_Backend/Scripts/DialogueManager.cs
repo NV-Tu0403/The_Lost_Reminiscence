@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using Loc_Backend.Dialogue.Scripts.SO;
-using Loc_Backend.Dialogue.Scripts.UI;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -13,7 +10,6 @@ namespace Loc_Backend.Scripts
         public static DialogueManager Instance { get; private set; }
 
         [SerializeField] private DialoguePanel dialoguePanel;
-        [SerializeField] private Script.GameEventSystem.EventExecutor eventExecutor;
         
         private void Awake()
         {
@@ -34,8 +30,8 @@ namespace Loc_Backend.Scripts
             {
                 if (handle.Status == AsyncOperationStatus.Succeeded)
                 {
+                    Debug.Log("Call DialoguePanle");
                     var dialogue = handle.Result;
-                    Debug.Log($"Showing dialogue: {dialogueId}");
                     dialoguePanel.ShowDialogue(dialogue, OnDialogueEnd);
                 }
                 else
@@ -47,11 +43,7 @@ namespace Loc_Backend.Scripts
         
         private void OnDialogueEnd()
         {
-            Debug.Log("Dialogue ended");
-            if (eventExecutor != null)
-                eventExecutor.OnDialogueFinished();
-            else
-                Debug.LogWarning("[DialogueManager] EventExecutor is not assigned.");
+            Debug.Log("Thông báo đối thoại đã kết thúc.");
         }
     }
 }

@@ -1,10 +1,11 @@
 using System;
+using System.Collections;
 using Loc_Backend.Dialogue.Scripts.SO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Loc_Backend.Dialogue.Scripts.UI
+namespace Loc_Backend.Scripts
 {
     public class DialoguePanel : MonoBehaviour
     {
@@ -15,27 +16,37 @@ namespace Loc_Backend.Dialogue.Scripts.UI
         public Button nextButton;
 
         private Action onDialogueEnd;
-        private DialogueNodeSO currentNode;
 
         public void ShowDialogue(DialogueNodeSO node, Action onEnd)
         {
-            Debug.Log($"[DialoguePanel] ShowDialogue: {node?.name}");
             gameObject.SetActive(true);
             onDialogueEnd = onEnd;
-            currentNode = null; // Reset current node
-            nextButton.onClick.RemoveAllListeners(); // Reset listeners
             ShowNode(node);
         }
 
         void ShowNode(DialogueNodeSO node)
         {
-            if (currentNode == node) return; // Ngăn double invoke
-            currentNode = node;
-            Debug.Log($"[DialoguePanel] ShowNode: {node?.name}");
             ShowSpeaker(node);
-            ShowDialogueText(node);
             ClearChoices();
+            StopAllCoroutines();
+            StartCoroutine(ShowDialogueTextCoroutine(node));
+        }
 
+        private IEnumerator ShowDialogueTextCoroutine(DialogueNodeSO node)
+        {
+            string fullText = "";
+            node.dialogueText.StringChanged += (localizedText) => fullText = localizedText;
+            node.dialogueText.RefreshString();
+            while (string.IsNullOrEmpty(fullText)) yield return null;
+            dialogueText.text = "";
+            for (int i = 0; i < fullText.Length; i++)
+            {
+                dialogueText.text = fullText.Substring(0, i + 1);
+                yield return new WaitForSeconds(0.02f);
+            }
+            // Đảm bảo text đầy đủ
+            dialogueText.text = fullText;
+            // Hiện next hoặc choices sau khi chạy xong
             if (node.choices != null && node.choices.Length > 0)
             {
                 ShowChoices(node);
@@ -48,7 +59,6 @@ namespace Loc_Backend.Dialogue.Scripts.UI
 
         private void ShowNextButton(DialogueNodeSO node)
         {
-            Debug.Log($"[DialoguePanel] ShowNextButton: {node?.name}, nextNode: {node?.nextNode?.name}");
             choicesPanel.gameObject.SetActive(false);
             nextButton.gameObject.SetActive(true);
 
@@ -66,34 +76,42 @@ namespace Loc_Backend.Dialogue.Scripts.UI
 
             foreach (var choice in node.choices)
             {
-                var btn = Instantiate(choiceButtonPrefab, choicesPanel);
-
-                // Lấy text từ LocalizedString
-                choice.choiceText.StringChanged += (localizedText) =>
-                {
-                    btn.GetComponentInChildren<TextMeshProUGUI>().text = localizedText;
-                };
-                choice.choiceText.RefreshString();
-
-                btn.onClick.AddListener(() => OnChoiceSelected(choice));
+                CreateChoiceButton(choice);
             }
+        }
+
+        private void CreateChoiceButton(DialogueChoiceData choice)
+        {
+            var btn = Instantiate(choiceButtonPrefab, choicesPanel);
+            var capturedChoice = choice;
+            // Lấy text từ LocalizedString
+            capturedChoice.choiceText.StringChanged += (localizedText) =>
+            {
+                if (btn != null && btn.gameObject != null)
+                {
+                    var textComp = btn.GetComponentInChildren<TextMeshProUGUI>();
+                    if (textComp != null)
+                        textComp.text = localizedText;
+                }
+            };
+            capturedChoice.choiceText.RefreshString();
+
+            btn.onClick.AddListener(() => {
+                if (btn != null && btn.gameObject != null)
+                {
+                    OnChoiceSelected(capturedChoice);
+                }
+            });
         }
 
         private void ClearChoices()
         {
             foreach (Transform child in choicesPanel)
-                Destroy(child.gameObject);
-        }
-
-        private void ShowDialogueText(DialogueNodeSO node)
-        {
-            node.dialogueText.StringChanged += SetDialogueText;
-            node.dialogueText.RefreshString(); // Cập nhật nếu đổi ngôn ngữ
-
-            void SetDialogueText(string localizedText)
             {
-                dialogueText.text = localizedText;
-                node.dialogueText.StringChanged -= SetDialogueText; // Xóa event cho node cũ
+                var btn = child.GetComponent<Button>();
+                if (btn != null)
+                    btn.onClick.RemoveAllListeners();
+                Destroy(child.gameObject);
             }
         }
 
@@ -124,7 +142,6 @@ namespace Loc_Backend.Dialogue.Scripts.UI
 
         void EndDialogue()
         {
-            Debug.Log("[DialoguePanel] EndDialogue called");
             gameObject.SetActive(false);
             onDialogueEnd?.Invoke();
         }

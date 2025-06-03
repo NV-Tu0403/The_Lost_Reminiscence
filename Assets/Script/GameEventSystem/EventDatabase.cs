@@ -32,5 +32,6 @@ namespace Script.GameEventSystem
     public interface IEventAction
     {
         void Execute(BaseEventData data);
+        void Finished();
     }
 }

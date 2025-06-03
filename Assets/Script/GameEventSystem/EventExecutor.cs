@@ -48,12 +48,6 @@ namespace Script.GameEventSystem
                 Debug.LogWarning($"[EventExecutor] Unable to convert EventType '{data.type}' to EventType_Dl.");
             }
         }
-
-        public void OnDialogueFinished()
-        {
-            Debug.Log("[EventExecutor] Dialogue finished, notifying EventManager.");
-            EventManager.Instance.OnEventFinished();
-        }
     }
 
     public class CutsceneAction : IEventAction
@@ -63,6 +57,8 @@ namespace Script.GameEventSystem
             //Debug.Log($"[Cutscene] Playing: {data.eventId}");
             EventManager.Instance.PlayEvent(data.eventId);
         }
+
+        public void Finished() { }
     }
 
     public class ChangeMapAction : IEventAction
@@ -72,14 +68,21 @@ namespace Script.GameEventSystem
             Debug.Log($"[MapChange] Loading scene for event: {data.eventId}");
             EventManager.Instance.PlayEvent(data.eventId);
         }
+
+        public void Finished() { }
     }
 
     public class DialogueAction : IEventAction
     {
         public void Execute(BaseEventData data)
         {
-            // Completed 
             EventManager.Instance.PlayEvent(data.eventId);
+        }
+        
+        public void Finished()
+        {
+            Debug.Log("[EventExecutor] Dialogue finished, notifying EventManager.");
+            EventManager.Instance.OnEventFinished();
         }
     }
 
@@ -89,6 +92,8 @@ namespace Script.GameEventSystem
         {
             EventManager.Instance.PlayEvent(data.eventId);
         }
+
+        public void Finished() { }
     }
 }
 

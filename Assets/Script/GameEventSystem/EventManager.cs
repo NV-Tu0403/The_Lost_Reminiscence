@@ -28,11 +28,6 @@ namespace Script.GameEventSystem
                 action.Invoke();
             else if (eventId.StartsWith("Dialogue_"))
                 DialogueManager.Instance.StartDialogue(eventId);
-            
-            // Mo rong sau.
-            // Vi du:
-            // CutsceneManager.Instance.Play(eventId);
-            // PuzzleManager.Instance.Load(eventId);
             else
                 Debug.LogWarning($"[EventManager] Unknown event: {eventId}");
         }
