@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using Duckle;
+using Loc_Backend.Scripts;
 using UnityEngine;
 
 namespace Script.GameEventSystem
 {
     public class EventExecutor : MonoBehaviour
     {
+        public static EventExecutor Instance { get; private set; } 
+        
         [SerializeField] private EventDatabase database;
 
         private Dictionary<EventType_Dl, IEventAction> handlers;
@@ -15,85 +18,65 @@ namespace Script.GameEventSystem
         {
             handlers = new Dictionary<EventType_Dl, IEventAction>
             {
-                { EventType_Dl.Cutscene, new CutsceneAction() },
-                { EventType_Dl.ChangeMap, new ChangeMapAction() },
                 { EventType_Dl.Dialogue, new DialogueAction() },
-                { EventType_Dl.Trap, new TrapAction() }
             };
         }
 
-
-        public void TriggerEvent(string id)
+        /// <summary>
+        /// Lấy BaseEventData từ EventDatabase qua ID.
+        /// </summary>
+        public BaseEventData GetEventDataById(string id)
         {
-            BaseEventData data = database.GetEventById(id); // Lấy sự kiện từ database
+            return database.GetEventById(id);
+        }
+
+        /// <summary>
+        /// TriggerEvent được gọi ở TriggerZone
+        /// </summary>
+        public void TriggerEvent(string eventId)
+        {
+            // 1. Tìm dữ liệu trong EventDatabase
+            BaseEventData data = database.GetEventById(eventId);
             if (data == null)
             {
-                Debug.LogWarning($"[EventExecutor] Event '{id}' not found.");
+                Debug.LogWarning($"[EventExecutor] Không tìm thấy eventId = '{eventId}' trong EventDatabase!");
                 return;
             }
 
-            if (Enum.TryParse(data.type.ToString(), out EventType_Dl convertedType))
+            // 2. Lấy handler dựa trên data.type (vd: Dialogue, Cutscene,…)
+            if (handlers.TryGetValue(data.type, out IEventAction action))
             {
-                if (handlers.TryGetValue(convertedType, out var action)) // Lấy handler tương ứng với loại sự kiện
-                {
-                    action.Execute(data); // Thực thi hành động
-                }
-                else
-                {
-                    Debug.LogWarning($"[EventExecutor] No handler for type {convertedType}");
-                }
+                action.Execute(data);
             }
             else
             {
-                Debug.LogWarning($"[EventExecutor] Unable to convert EventType '{data.type}' to EventType_Dl.");
+                Debug.LogWarning($"[EventExecutor] Không có handler cho EventType = {data.type}");
             }
         }
     }
-
-    public class CutsceneAction : IEventAction
-    {
-        public void Execute(BaseEventData data)
-        {
-            //Debug.Log($"[Cutscene] Playing: {data.eventId}");
-            EventManager.Instance.PlayEvent(data.eventId);
-        }
-
-        public void Finished() { }
-    }
-
-    public class ChangeMapAction : IEventAction
-    {
-        public void Execute(BaseEventData data)
-        {
-            Debug.Log($"[MapChange] Loading scene for event: {data.eventId}");
-            EventManager.Instance.PlayEvent(data.eventId);
-        }
-
-        public void Finished() { }
-    }
-
+    
     public class DialogueAction : IEventAction
     {
-        public void Execute(BaseEventData data)
-        {
-            EventManager.Instance.PlayEvent(data.eventId);
-        }
+        private string _eventIdCurrent;
         
-        public void Finished()
-        {
-            Debug.Log("[EventExecutor] Dialogue finished, notifying EventManager.");
-            EventManager.Instance.OnEventFinished();
-        }
-    }
-
-    public class TrapAction : IEventAction
-    {
+        // Phương thức này sẽ được gọi khi bắt đầu một hội thoại.
         public void Execute(BaseEventData data)
         {
-            EventManager.Instance.PlayEvent(data.eventId);
+            Debug.Log($"[DialogueAction] Starting dialogue for event: {data.eventId}");
+            
+            _eventIdCurrent = data.eventId;
+            DialogueManager.Instance.StartDialogue(data.eventId, ()=> Finished(data.eventId));
         }
 
-        public void Finished() { }
+        
+        // Phương thức này sẽ được gọi khi hội thoại kết thúc.
+        public void Finished(string eventId)
+        {
+            Debug.Log($"[DialogueAction] Finished dialogue: {eventId}");
+            
+            // Khi UI Dialogue kết thúc, gọi ngược về EventManager
+            EventManager.Instance.OnEventFinished(eventId);
+        }
     }
 }
 

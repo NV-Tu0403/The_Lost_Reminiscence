@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Loc_Backend.Scripts;
+using Script.Procession;
 using UnityEngine;
 
 // Script này quản lý các sự kiện trong game,
@@ -11,39 +12,40 @@ namespace Script.GameEventSystem
     public class EventManager : MonoBehaviour
     {
         public static EventManager Instance { get; private set; }
-        private Dictionary<string, Action> eventMap;
 
         private void Awake()
         {
             if (Instance != null) Destroy(gameObject);
             else Instance = this;
-            InitializeEventDictionary();
         }
 
-        
-        // Phương thức này sẽ được gọi để khởi chạy một sự kiện dựa trên ID của nó.
-        public void PlayEvent(string eventId)
+        /// <summary>
+        /// Bắt đầu một event, truyền thẳng vào EventExecutor.
+        /// </summary>
+        public void TriggerEvent(string eventId)
         {
-            if (eventMap.TryGetValue(eventId, out var action))
-                action.Invoke();
-            else if (eventId.StartsWith("Dialogue_"))
-                DialogueManager.Instance.StartDialogue(eventId);
-            else
-                Debug.LogWarning($"[EventManager] Unknown event: {eventId}");
-        }
-        
-        public void OnEventFinished()
-        {
-            Debug.Log("[EventManager] Event finished.");
-            // TODO: Add logic to handle when an event is finished (e.g. trigger next event, update state, etc.)
+            Debug.Log("[EventManager] Triggering event: " + eventId);
+            EventExecutor.Instance.TriggerEvent(eventId);
         }
 
-        private void InitializeEventDictionary()
+        /// <summary>
+        /// Callback từ IEventAction khi một event hoàn thành.
+        /// </summary>
+        public void OnEventFinished(string eventId)
         {
-            eventMap = new Dictionary<string, Action>
+            Debug.Log($"[EventManager] Event '{eventId}' đã hoàn thành");
+            // Sau đó ta gọi ProgressionManager để cập nhật progression
+            ProgressionManager.Instance.HandleEventFinished(eventId);
+
+            // Nếu progression có event kế tiếp, tự trigger
+            string nextEventId = ProgressionManager.Instance.GetNextEventId();
+            if (!string.IsNullOrEmpty(nextEventId))
             {
-                // { "Cutscene_Something", () => CutsceneManager.Instance.Play("Something") },
-            };
+                Debug.Log($"[EventManager] Trigger tiếp event: {nextEventId}");
+                TriggerEvent(nextEventId); // Tức quay lại EventExecutor.TriggerEvent(nextEventId)
+            }
+            else
+                Debug.Log("[EventManager] Không còn event nào trong progression!");
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using Loc_Backend.Dialogue.Scripts.SO;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -24,25 +25,20 @@ namespace Loc_Backend.Scripts
             dialoguePanel.gameObject.SetActive(false);
         }
 
-        public void StartDialogue(string dialogueId)
+        public void StartDialogue(string dialogueId, Action onFinish)
         {
+            if (dialogueId == null) return;
+            
             Addressables.LoadAssetAsync<DialogueNodeSO>(dialogueId).Completed += handle =>
             {
                 if (handle.Status == AsyncOperationStatus.Succeeded)
                 {
                     var dialogue = handle.Result;
-                    dialoguePanel.ShowDialogue(dialogue, OnDialogueEnd);
+                    dialoguePanel.ShowDialogue(dialogue, onFinish);
                 }
                 else
                     Debug.LogWarning($"Dialogue SO not found (Addressable): {dialogueId}");
-                
             };
-        }
-        
-        private void OnDialogueEnd()
-        {
-            Debug.Log("Thông báo đối thoại đã kết thúc.");
-            
         }
     }
 }
