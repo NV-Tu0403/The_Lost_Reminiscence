@@ -80,6 +80,10 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// kiểm tra các tham chiếu cần thiết đã được gán trong Inspector hay chưa.
+    /// </summary>
+    /// <returns></returns>
     private bool ValidateReferences()
     {
         if (userAccountManager == null || saveGameManager == null || playTimeManager == null ||
@@ -95,6 +99,9 @@ public class SaveGameUI : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Khởi tạo giao diện người dùng, ẩn các panel không cần thiết và thiết lập trạng thái ban đầu cho các nút.
+    /// </summary>
     private void InitializeUI()
     {
         loginPanel.SetActive(false);
@@ -110,6 +117,9 @@ public class SaveGameUI : MonoBehaviour
         cloudRegisterButton.interactable = false;
     }
 
+    /// <summary>
+    /// Thiết lập các lắng nghe sự kiện cho các nút trong giao diện người dùng.
+    /// </summary>
     private void SetupButtonListeners()
     {
         submitUserNameButton.onClick.AddListener(OnSubmitUserName);
@@ -128,20 +138,7 @@ public class SaveGameUI : MonoBehaviour
         quitButton.onClick.AddListener(OnQuitButtonClicked);
     }
 
-    private void CheckUserAccounts()
-    {
-        string userAccountsPath = Path.Combine(Application.persistentDataPath, "User_DataGame", "UserAccounts.json");
-        if (!File.Exists(userAccountsPath) ||
-            JsonUtility.FromJson<UserAccountData>(File.ReadAllText(userAccountsPath)).Users.Count == 0)
-        {
-            loginPanel.SetActive(true);
-            Debug.Log("No users found. Showing login panel.");
-        }
-        else
-        {
-            TryAutoLogin();
-        }
-    }
+    #region sự kiện UI nút
 
     /// <summary>
     /// Thử đăng nhập tự động nếu có thông tin người dùng đã lưu.
@@ -177,27 +174,10 @@ public class SaveGameUI : MonoBehaviour
             loginPanel.SetActive(true);
         }
     }
+
     /// <summary>
-    /// Lấy thư mục lưu gần nhất hợp lệ cho người dùng hiện tại.
+    /// đăng nhập.
     /// </summary>
-    /// <returns></returns>
-    private string GetValidLastSaveFolder()
-    {
-        string lastFileSave = userAccountManager.GetLastFileSave();
-        if (!string.IsNullOrEmpty(lastFileSave))
-        {
-            string fileSavePath = Path.Combine(Application.persistentDataPath, "User_DataGame",
-                $"FileSave_{userAccountManager.CurrentUserBaseName}", lastFileSave);
-            if (Directory.Exists(fileSavePath) && Directory.GetFiles(fileSavePath, "*.json").Length > 0)
-            {
-                return fileSavePath;
-            }
-        }
-
-        // Nếu không có thư mục lưu gần nhất hợp lệ, trả về thư mục lưu mới nhất.
-        return saveGameManager.GetLatestSaveFolder(userAccountManager.CurrentUserBaseName);
-    }
-
     private void OnSubmitUserName()
     {
         string userName = userNameInputField.text;
@@ -229,6 +209,9 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///  Tạo tài khoản.
+    /// </summary>
     private void OnCreateAccountButtonClicked()
     {
         loginPanel.SetActive(false);
@@ -238,6 +221,9 @@ public class SaveGameUI : MonoBehaviour
         createPasswordInputField.text = "";
     }
 
+    /// <summary>
+    /// Xử lý sự kiện khi người dùng nhấn nút "Tạo tài khoản".
+    /// </summary>
     private void OnCreateButtonClicked()
     {
         string userName = createUserNameInputField.text;
@@ -270,6 +256,9 @@ public class SaveGameUI : MonoBehaviour
         errorText.text = "";
     }
 
+    /// <summary>
+    /// nút "Đăng ký đám mây".
+    /// </summary>
     private void OnCloudRegisterButtonClicked()
     {
         loginPanel.SetActive(false);
@@ -321,7 +310,6 @@ public class SaveGameUI : MonoBehaviour
         }));
     }
 
-
     private void OnCloudCancelButtonClicked()
     {
         cloudRegisterPanel.SetActive(false);
@@ -362,6 +350,9 @@ public class SaveGameUI : MonoBehaviour
         }));
     }
 
+    /// <summary>
+    /// "Tiếp tục". CHƯA XONG - CẦN KIỂM TRA LẠI
+    /// </summary>
     private void OnContinueButtonClicked()
     {
         string userName = userAccountManager.CurrentUserBaseName;
@@ -376,7 +367,7 @@ public class SaveGameUI : MonoBehaviour
         string saveFolder = lastSelectedSaveFolder ?? saveGameManager.GetLatestSaveFolder(userName);
         if (saveFolder != null)
         {
-            progressionManager.LoadProgression();
+            progressionManager.ReLoadProgression();
             Debug.Log($"Continued with save: {saveFolder}");
         }
         else
@@ -538,6 +529,46 @@ public class SaveGameUI : MonoBehaviour
         Application.Quit();
     }
 
+    #endregion
+
+    #region chức năng nghiệp vụ
+
+    private void CheckUserAccounts()
+    {
+        string userAccountsPath = Path.Combine(Application.persistentDataPath, "User_DataGame", "UserAccounts.json");
+        if (!File.Exists(userAccountsPath) ||
+            JsonUtility.FromJson<UserAccountData>(File.ReadAllText(userAccountsPath)).Users.Count == 0)
+        {
+            loginPanel.SetActive(true);
+            Debug.Log("No users found. Showing login panel.");
+        }
+        else
+        {
+            TryAutoLogin();
+        }
+    }
+
+    /// <summary>
+    /// Lấy thư mục lưu gần nhất hợp lệ cho người dùng hiện tại.
+    /// </summary>
+    /// <returns></returns>
+    private string GetValidLastSaveFolder()
+    {
+        string lastFileSave = userAccountManager.GetLastFileSave();
+        if (!string.IsNullOrEmpty(lastFileSave))
+        {
+            string fileSavePath = Path.Combine(Application.persistentDataPath, "User_DataGame",
+                $"FileSave_{userAccountManager.CurrentUserBaseName}", lastFileSave);
+            if (Directory.Exists(fileSavePath) && Directory.GetFiles(fileSavePath, "*.json").Length > 0)
+            {
+                return fileSavePath;
+            }
+        }
+
+        // Nếu không có thư mục lưu gần nhất hợp lệ, trả về thư mục lưu mới nhất.
+        return saveGameManager.GetLatestSaveFolder(userAccountManager.CurrentUserBaseName);
+    }
+
     /// <summary>
     /// lưu dữ liệu phiên hiện tại, bao gồm tên người dùng, thư mục lưu gần nhất và thời gian chơi tổng.
     /// </summary>
@@ -604,16 +635,24 @@ public class SaveGameUI : MonoBehaviour
             deleteButton.onClick.AddListener(() => OnDeleteSave(save.FolderPath));
         }
 
-        Debug.Log($"Refreshed save list for user: {userName}, Found {saves.Count} saves");
+        //Debug.Log($"Refreshed save list for user: {userName}, Found {saves.Count} saves");
     }
 
+    /// <summary>
+    /// chọn một bản lưu trữ cụ thể.
+    /// </summary>
+    /// <param name="folderPath"></param>
     private void OnSelectSave(string folderPath)
     {
         selectedSaveFolder = folderPath;
         lastSelectedSaveFolder = folderPath;
         continueButton.interactable = true;
         Debug.Log($"Selected save: {folderPath}");
-        DisplayJsonContent(folderPath);
+
+        saveGameManager.LoadJsonFiles(folderPath); // đọc Fouder save đã chọn
+
+        //var jsonFiles = saveGameManager.LoadJsonFiles(folderPath); // test
+        //DisplayJsonContent(jsonFiles); // test
     }
 
     private void OnDeleteSave(string folderPath)
@@ -638,22 +677,29 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
-    private void DisplayJsonContent(string folderPath)
+    /// <summary>
+    /// Hiển thị nội dung JSON. (debug)
+    /// </summary>
+    /// <param name="folderPath"></param>
+    private void DisplayJsonContent((string fileName, string json)[] jsonFiles)
     {
         ClearJsonContent();
-        var jsonFiles = Directory.GetFiles(folderPath, "*.json");
-        foreach (var file in jsonFiles)
+
+        if (jsonFiles == null || jsonFiles.Length == 0)
         {
-            string json = saveGameManager.LoadJsonFile(folderPath, Path.GetFileName(file));
-            if (!string.IsNullOrEmpty(json))
-            {
-                GameObject jsonText = Instantiate(jsonTextTemplate, jsonContentPanel.transform);
-                jsonTextInstances.Add(jsonText);
-                var textComponent = jsonText.GetComponent<TMP_Text>();
-                textComponent.text = $"File: {Path.GetFileName(file)}\nContent: {json}";
-            }
+            Debug.LogWarning("No JSON content to display.");
+            return;
         }
-        //Debug.Log($"Displayed JSON content for save: {folderPath}, Found {jsonFiles.Length} JSON files");
+
+        foreach (var (fileName, jsonContent) in jsonFiles)
+        {
+            GameObject jsonTextObject = Instantiate(jsonTextTemplate, jsonContentPanel.transform);
+            TMP_Text jsonText = jsonTextObject.GetComponent<TMP_Text>();
+            jsonText.text = $"<b>{fileName}</b>\n{jsonContent}";
+            jsonTextInstances.Add(jsonTextObject);
+        }
+
+        Debug.Log($"Displayed {jsonFiles.Length} JSON files.");
     }
 
     private void ClearJsonContent()
@@ -665,4 +711,6 @@ public class SaveGameUI : MonoBehaviour
         jsonTextInstances.Clear();
         //Debug.Log("Cleared JSON content display");
     }
+
+    #endregion
 }

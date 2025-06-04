@@ -13,7 +13,7 @@ public class SaveGameManager : MonoBehaviour
     void Awake()
     {
         userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
-        Debug.Log($"SaveGameManager initialized: {userDataPath}");
+        //Debug.Log($"SaveGameManager initialized: {userDataPath}");
     }
 
     private string GetTransferFolder()
@@ -93,30 +93,81 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
-    public string LoadJsonFile(string saveFolderPath, string fileName)
+    /// <summary>
+    /// chỉ chuyên để đọc file JSON
+    /// trả về mảng các file JSON trong thư mục save đươc chọn
+    /// </summary>
+    /// <param name="saveFolderPath"></param>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
+    public (string fileName, string json)[] LoadJsonFiles(string folderPath)
     {
-        string filePath = Path.Combine(saveFolderPath, fileName);
-        if (File.Exists(filePath))
-        {
-            string json = File.ReadAllText(filePath); // test 
-            Debug.Log($"Loaded JSON from: {filePath}");
-            progressionManager.ReLoadProgression(filePath);
-            progressionManager.GetCurrentOrNextMainProcess(); // Lấy tiến trình chính hiện tại hoặc tiếp theo chưa hoàn thành
-
-            return json;
-        }
-        Debug.LogWarning($"File {fileName} not found in {saveFolderPath}");
-        return null;
+        var result = new List<(string fileName, string json)>(); // mảng kết quả chứa tên file và nội dung JSON
         try
         {
+            var jsonFiles = Directory.GetFiles(folderPath, "*.json"); // lấy tất cả file JSON trong thư mục
+            if (jsonFiles.Length == 0)
+            {
+                Debug.LogWarning($"No JSON files found in {folderPath}");
+                return result.ToArray();
+            }
 
+            foreach (var file in jsonFiles)
+            {
+                try
+                {
+                    string json = File.ReadAllText(file);
+                    string fileName = Path.GetFileName(file);
+                    result.Add((fileName, json));
+                    //Debug.Log($"Loaded JSON from: {file}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"Failed to read JSON file {file}: {ex.Message}");
+                }
+            }
+            var jsonArray = result.ToArray();
+
+            ProcessJsonFiles(jsonArray);
+            return jsonArray;
         }
         catch (Exception e)
         {
-            Debug.LogError($"Failed to load JSON {fileName}: {e.Message}");
-            return null;
+            Debug.LogError($"Failed to load JSON files in {folderPath}: {e.Message}");
+            return result.ToArray();
         }
     }
+
+    /// <summary>
+    /// Gán dữ liệu/Xử lý các file JSON đã đọc từ thư mục save
+    /// </summary>
+    /// <param name="files"></param>
+    public void ProcessJsonFiles((string fileName, string json)[] files)
+    {
+        foreach (var (fileName, json) in files)
+        {
+            switch (fileName)
+            {
+                
+                case "playerProgression.json":
+                    progressionManager.LoadProgression(json);
+                    break;
+
+                case "gameState.json":
+                    // gameStateManager.LoadFromJson(json);
+                    break;
+
+                case "inventory.json":
+                    // inventoryManager.LoadInventory(json);
+                    break;
+
+                default:
+                    Debug.LogWarning($"Unhandled JSON file: {fileName}");
+                    break;
+            }
+        }
+    }
+
 
     public string GetLatestSaveFolder(string userName)
     {

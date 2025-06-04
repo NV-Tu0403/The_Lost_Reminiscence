@@ -50,7 +50,7 @@ public class UserAccountManager : MonoBehaviour
         currentUserBaseName = null;
         EnsureDirectory();
         LoadUserData();
-        Debug.Log($"UserAccountManager initialized: {userAccountsPath}");
+        //Debug.Log($"UserAccountManager initialized: {userAccountsPath}");
     }
 
     private void EnsureDirectory()
@@ -104,7 +104,7 @@ public class UserAccountManager : MonoBehaviour
                 }
 
                 SaveUserData();
-                Debug.Log($"Loaded UserAccounts: Users={userData.Users.Count}, LastAccount={userData.LastAccount}");
+                //Debug.Log($"Loaded UserAccounts: Users={userData.Users.Count}, LastAccount={userData.LastAccount}");
             }
             catch (Exception e)
             {
@@ -156,12 +156,12 @@ public class UserAccountManager : MonoBehaviour
             if (File.Exists(userAccountsPath))
             {
                 File.Copy(userAccountsPath, userAccountsPath + ".bak", true);
-                Debug.Log("Created backup of UserAccounts.json");
+                //Debug.Log("Created backup of UserAccounts.json");
             }
 
             string json = JsonUtility.ToJson(userData, true);
             File.WriteAllText(userAccountsPath, json);
-            Debug.Log($"Saved UserAccounts to: {userAccountsPath}");
+            //Debug.Log($"Saved UserAccounts to: {userAccountsPath}");
         }
         catch (Exception e)
         {
@@ -265,7 +265,7 @@ public class UserAccountManager : MonoBehaviour
         }
 
         currentUserBaseName = user.BaseName;
-        Debug.Log($"Auto-logged in user: {user.BaseName}");
+        //Debug.Log($"Auto-logged in user: {user.BaseName}");
         return true;
     }
 

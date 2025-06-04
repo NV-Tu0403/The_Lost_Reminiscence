@@ -18,7 +18,7 @@ public class PlayTimeManager : MonoBehaviour
         }
         sessionPlayTime = 0f;
         isCounting = false;
-        Debug.Log("PlayTimeManager initialized");
+        //Debug.Log("PlayTimeManager initialized");
     }
 
     void Update()
