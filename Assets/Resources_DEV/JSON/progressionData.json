@@ -3,12 +3,12 @@
     {
       "Id": "white_Space",
       "Type": "Chapter",
-      "Name": "Chapter 1: The Beginning",
-      "Description": "ah Kiin suy nghi di nha. cam on :)",
+      "Name": "Chapter 1; Cỏi tiềm thức",
+      "Description": "Điểm khởi đầu của cỏi tiềm thức",
       "Order": 1,
       "SubProcesses": [
         {
-          "Id": "sub_1_1",
+          "Id": "ws_01",
           "Type": "Quest",
           "Name": "Fa",
           "Description": "Tim va tro chuyen voi Fa",
@@ -16,19 +16,84 @@
           "Conditions": [
             {
               "TargetType": "Loot",
-              "TargetName": "Stone",
+              "TargetName": "Fa",
               "RequiredAmount": 1,
               "Type": "CollectItem"
             }
           ],
-          "Rewards": [],
+          "Rewards": [
+            {
+              "ItemType": "Cutscene",
+              "ItemName": "MeetFa_01",
+              "Amount": 0,
+              "Type": "Item"
+            }
+          ],
+          "Status": "Locked"
+        },
+        {
+          "Id": "ws_02",
+          "Type": "Quest",
+          "Name": "Fa",
+          "Description": "Đi đến lổ hổng thời không và nhặt 1 hòn đá",
+          "Order": 1,
+          "Conditions": [
+            {
+              "TargetType": "Loot",
+              "TargetName": "stone",
+              "RequiredAmount": 1,
+              "Type": "CollectItem"
+            }
+          ],
+          "Rewards": [
+            {
+              "ItemType": "Loot",
+              "ItemName": "Stone",
+              "Amount": 1,
+              "Type": "Item"
+            }
+          ],
+          "Status": "Locked"
+        },
+        {
+          "Id": "ws_03",
+          "Type": "Quest",
+          "Name": "Active hole",
+          "Description": "ném hòn đa vào cách cổng",
+          "Order": 1,
+          "Conditions": [],
+          "Rewards": [
+            {
+              "ItemType": "Cutscene",
+              "ItemName": "ActiveTheHole",
+              "Amount": 1,
+              "Type": "Item"
+            }
+          ],
+          "Status": "Locked"
+        },
+        {
+          "Id": "ws_04",
+          "Type": "Quest",
+          "Name": "Active hole",
+          "Description": "noi chuyn fa",
+          "Order": 1,
+          "Conditions": [],
+          "Rewards": [
+            {
+              "ItemType": "Loot",
+              "ItemName": "cuc cuc",
+              "Amount": 1,
+              "Type": "Item"
+            }
+          ],
           "Status": "Locked"
         }
       ],
       "Rewards": [
         {
           "ItemType": "Cutscene",
-          "ItemName": "C_o1",
+          "ItemName": "ActiveFeildOfAge",
           "Amount": 1,
           "Type": "Item"
         }
@@ -36,7 +101,7 @@
       "Status": "Locked"
     },
     {
-      "Id": "Space",
+      "Id": "Feild of Age",
       "Type": "Chapter",
       "Name": "Chapter 1: The Beginning",
       "Description": "ah Kiin suy nghi di nha. cam on :)",
@@ -51,7 +116,7 @@
           "Conditions": [
             {
               "TargetType": "Loot",
-              "TargetName": "Stone",
+              "TargetName": "stone",
               "RequiredAmount": 1,
               "Type": "CollectItem"
             }
@@ -63,8 +128,8 @@
       "Rewards": [
         {
           "ItemType": "Cutscene",
-          "ItemName": "C_o1",
-          "Amount": 1,
+          "ItemName": "MeetFa_01",
+          "Amount": 0,
           "Type": "Item"
         }
       ],
