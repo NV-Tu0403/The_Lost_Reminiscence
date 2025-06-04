@@ -20,7 +20,7 @@ public class GameProgression
 public class MainProcess
 {
     //Enum
-    public enum ProcessType { Chapter, Quest }
+    public enum ProcessType { Chapter, Quest, Dialogue, Cutscene, Puzzle }
     public enum ProcessStatus { Locked, InProgress, Completed }
     
     public string Id;
