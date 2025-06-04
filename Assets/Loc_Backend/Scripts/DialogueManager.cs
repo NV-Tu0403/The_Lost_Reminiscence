@@ -30,20 +30,19 @@ namespace Loc_Backend.Scripts
             {
                 if (handle.Status == AsyncOperationStatus.Succeeded)
                 {
-                    Debug.Log("Call DialoguePanle");
                     var dialogue = handle.Result;
                     dialoguePanel.ShowDialogue(dialogue, OnDialogueEnd);
                 }
                 else
-                {
                     Debug.LogWarning($"Dialogue SO not found (Addressable): {dialogueId}");
-                }
+                
             };
         }
         
         private void OnDialogueEnd()
         {
             Debug.Log("Thông báo đối thoại đã kết thúc.");
+            
         }
     }
 }
