@@ -82,7 +82,7 @@ MonoBehaviour:
   Path: Assets/Musicals/FMOD_DATN/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 638842002013342167
+  lastModified: 638847487515672135
   FileSizes:
   - Name: Desktop
     Value: 1402
@@ -102,11 +102,58 @@ MonoBehaviour:
   Path: Assets/Musicals/FMOD_DATN/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 638842002013342167
+  lastModified: 638847487515672135
   FileSizes:
   - Name: Desktop
     Value: 1210
   Exists: 1
+--- !u!114 &-4022637472423386538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Ambient.bank
+  m_EditorClassIdentifier: 
+  Path: Assets/Musicals/FMOD_DATN/Build/Desktop/Ambient.bank
+  Name: Ambient
+  StudioPath: bank:/Ambient
+  lastModified: 638847487515657081
+  FileSizes:
+  - Name: Desktop
+    Value: 2268000
+  Exists: 1
+--- !u!114 &-2849140316582424712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Ambience
+  m_EditorClassIdentifier: 
+  Path: event:/Ambience
+  Guid:
+    Data1: -2066394824
+    Data2: 1229617331
+    Data3: -1360083056
+    Data4: -689434743
+  Banks:
+  - {fileID: -4022637472423386538}
+  IsStream: 1
+  Is3D: 0
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 108530
 --- !u!114 &-1514896076725846600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -169,28 +216,28 @@ MonoBehaviour:
   EditorBanks:
   - {fileID: -4450524097478805488}
   - {fileID: -5887250522684043371}
-  - {fileID: -7225255396228050684}
-  - {fileID: -1514896076725846600}
+  - {fileID: -4022637472423386538}
+  - {fileID: 4105914745424048517}
   EditorEvents:
-  - {fileID: -886753448672599937}
-  - {fileID: -6713660632818388486}
-  - {fileID: 5850314571649811151}
-  - {fileID: 2968255805340839039}
-  - {fileID: 4144987087811958835}
-  - {fileID: 2282768641486301933}
+  - {fileID: -2849140316582424712}
+  - {fileID: 9052786610407406877}
+  - {fileID: 232566886194000390}
+  - {fileID: 6822759771842246703}
+  - {fileID: 177294262325375137}
+  - {fileID: 1376761751361063451}
   EditorParameters: []
   MasterBanks:
   - {fileID: -5887250522684043371}
   StringsBanks:
   - {fileID: -4450524097478805488}
   cacheVersion: 131847
-  cacheTime: 638842002013367451
+  cacheTime: 638847487515772539
   SerializableEventsDict:
-  - key: event:/Bird
-    index: 0
   - key: event:/Ambience
-    index: 1
+    index: 0
   - key: event:/Nangly
+    index: 1
+  - key: event:/Bird
     index: 2
   - key: event:/Coin Collection
     index: 3
@@ -198,6 +245,87 @@ MonoBehaviour:
     index: 4
   - key: event:/PlayerFootsteps-Run
     index: 5
+--- !u!114 &177294262325375137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/PlayerFootsteps-Walk
+  m_EditorClassIdentifier: 
+  Path: event:/PlayerFootsteps-Walk
+  Guid:
+    Data1: -1501335204
+    Data2: 1322748265
+    Data3: -441216384
+    Data4: -1754096569
+  Banks:
+  - {fileID: 4105914745424048517}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 718
+--- !u!114 &232566886194000390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Bird
+  m_EditorClassIdentifier: 
+  Path: event:/Bird
+  Guid:
+    Data1: -760071420
+    Data2: 1331477496
+    Data3: -442428746
+    Data4: 1557806213
+  Banks:
+  - {fileID: 4105914745424048517}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 40
+  Length: 0
+--- !u!114 &1376761751361063451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/PlayerFootsteps-Run
+  m_EditorClassIdentifier: 
+  Path: event:/PlayerFootsteps-Run
+  Guid:
+    Data1: -596542501
+    Data2: 1318081900
+    Data3: -744859482
+    Data4: -685851518
+  Banks:
+  - {fileID: 4105914745424048517}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 718
 --- !u!114 &2282768641486301933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,6 +380,26 @@ MonoBehaviour:
   MinDistance: 0
   MaxDistance: 5
   Length: 0
+--- !u!114 &4105914745424048517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/SFX.bank
+  m_EditorClassIdentifier: 
+  Path: Assets/Musicals/FMOD_DATN/Build/Desktop/SFX.bank
+  Name: SFX
+  StudioPath: bank:/SFX
+  lastModified: 638847487515772539
+  FileSizes:
+  - Name: Desktop
+    Value: 69728
+  Exists: 1
 --- !u!114 &4144987087811958835
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -326,3 +474,57 @@ MonoBehaviour:
   - Name: Desktop
     Value: 1074
   Exists: 1
+--- !u!114 &6822759771842246703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Coin Collection
+  m_EditorClassIdentifier: 
+  Path: event:/Coin Collection
+  Guid:
+    Data1: 167371325
+    Data2: 1318275059
+    Data3: 271421589
+    Data4: -1145996030
+  Banks:
+  - {fileID: 4105914745424048517}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 0
+  MaxDistance: 5
+  Length: 0
+--- !u!114 &9052786610407406877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Nangly
+  m_EditorClassIdentifier: 
+  Path: event:/Nangly
+  Guid:
+    Data1: -94018728
+    Data2: 1129279023
+    Data3: -2006502527
+    Data4: -1048658168
+  Banks:
+  - {fileID: -4022637472423386538}
+  IsStream: 1
+  Is3D: 1
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 2.6000001
+  MaxDistance: 90
+  Length: 66528
