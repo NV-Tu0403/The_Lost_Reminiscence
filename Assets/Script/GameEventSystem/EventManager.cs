@@ -38,14 +38,14 @@ namespace Script.GameEventSystem
             ProgressionManager.Instance.HandleEventFinished(eventId);
 
             // Nếu progression có event kế tiếp, tự trigger
-            string nextEventId = ProgressionManager.Instance.GetNextEventId();
-            if (!string.IsNullOrEmpty(nextEventId))
-            {
-                Debug.Log($"[EventManager] Trigger tiếp event: {nextEventId}");
-                TriggerEvent(nextEventId); // Tức quay lại EventExecutor.TriggerEvent(nextEventId)
-            }
-            else
-                Debug.Log("[EventManager] Không còn event nào trong progression!");
+            //string nextEventId = ProgressionManager.Instance.GetNextEventId();
+            //if (!string.IsNullOrEmpty(nextEventId))
+            //{
+            //    Debug.Log($"[EventManager] Trigger tiếp event: {nextEventId}");
+            //    TriggerEvent(nextEventId); // Tức quay lại EventExecutor.TriggerEvent(nextEventId)
+            //}
+            //else
+            //    Debug.Log("[EventManager] Không còn event nào trong progression!");
         }
     }
 }
