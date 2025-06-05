@@ -12,8 +12,9 @@ namespace Script.GameEventSystem
             if (other.CompareTag("Player"))
             {
                 executor.TriggerEvent(eventId);
-                // Disable this trigger to prevent multiple activations
-                GetComponent<Collider>().enabled = false;
+                
+                //EventManager.Instance.TriggerEvent(eventId);
+                gameObject.SetActive(false);
             }
         }
     }
