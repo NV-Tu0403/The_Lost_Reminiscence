@@ -3,46 +3,72 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Lớp chính chứa toàn bộ dữ liệu tiến trình
+/// Lớp chính chứa toàn bộ dữ liệu tiến trình (Game Progression)
 /// </summary>
 [Serializable]
 public class GameProgression
 {
+    // Danh sách các tiến trình chính
     public List<MainProcess> MainProcesses;
 }
 
 /// <summary>
 /// Lớp cho tiến trình chính.
-/// định nghĩa các tiến trình con và phần thưởng cho tiến trình chính.
+/// Định nghĩa các tiến trình con và phần thưởng cho tiến trình chính.
 /// </summary>
 [Serializable]
 public class MainProcess
 {
+    //Enum
+    public enum ProcessType { Chapter, Quest, Dialogue, Cutscene, Puzzle }
+    public enum ProcessStatus { Locked, InProgress, Completed }
+    
     public string Id;
-    public string Type;                     // Loại tiến trình chính (Chapter, Campaign,...)
+    
+
+    // Loại tiến trình (gọi ra dropdown trong Inspector nếu SO sử dụng enum trực tiếp)
+    public ProcessType Type;
+
+    // Trạng thái hiện tại (mặc định là Locked)
+    public ProcessStatus Status = ProcessStatus.Locked;
+
     public string Name;
     public string Description;
-    public int Order;                       // Thứ tự
-    public List<SubProcess> SubProcesses;   // Danh sách tiến trình con
+
+    // Thứ tự xuất hiện (nhỏ → lớn)
+    public int Order;
+
+    // Danh sách tiến trình con (SubProcesses)
+    public List<SubProcess> SubProcesses;
+
+    // Danh sách phần thưởng khi MainProcess hoàn thành
     public List<Reward> Rewards;
-    public string Status;                   // Trạng thái: Locked, InProgress, Completed
 }
 
 /// <summary>
-/// Lớp cho tiến trình Con.
-/// định nghĩa các điều kiện thực hiện và phần thưởng cho tiến trình con.
+/// Lớp cho tiến trình con (SubProcess).
+/// Định nghĩa các điều kiện thực hiện và phần thưởng cho tiến trình con.
 /// </summary>
 [Serializable]
 public class SubProcess
 {
     public string Id;
-    public string Type;                     // Loại tiến trình con (Quest, Task,...)
+
+    // Sử dụng cùng enum ProcessType từ MainProcess
+    public MainProcess.ProcessType Type;
+
+    // Trạng thái hiện tại (mặc định là Locked)
+    public MainProcess.ProcessStatus Status = MainProcess.ProcessStatus.Locked;
+
     public string Name;
     public string Description;
+
+    // Thứ tự trong MainProcess
     public int Order;
-    public List<Condition> Conditions;      // Danh sách điều kiện thực hiện
+
+    // Danh sách điều kiện (Condition) để SubProcess được coi là hoàn thành
+    public List<Condition> Conditions;
+
+    // Danh sách phần thưởng khi SubProcess hoàn thành
     public List<Reward> Rewards;
-    public string Status;
 }
-
-

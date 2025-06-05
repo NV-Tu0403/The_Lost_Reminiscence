@@ -1,96 +1,82 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
 using Duckle;
-using System;
+using Loc_Backend.Scripts;
+using UnityEngine;
 
-/// <summary>
-/// Quản lý và thực thi các sự kiện trong game.
-/// dùng để kích hoạt sự kiện dựa trên ID.
-/// </summary>
-public class EventExecutor : MonoBehaviour
+namespace Script.GameEventSystem
 {
-    [SerializeField] private EventDatabase database;
-
-    private Dictionary<EventType_Dl, IEventAction> handlers;
-
-    private void Awake()
+    public class EventExecutor : MonoBehaviour
     {
-        handlers = new Dictionary<EventType_Dl, IEventAction>
-        {
-            { EventType_Dl.Cutscene, new CutsceneAction() },
-            { EventType_Dl.ChangeMap, new ChangeMapAction() },
-            { EventType_Dl.Dialogue, new DialogueAction() },
-            { EventType_Dl.Trap, new TrapAction() }
-        };
-    }
+        public static EventExecutor Instance { get; private set; } 
+        
+        [SerializeField] private EventDatabase database;
 
-    /// <summary>
-    /// Gọi sự kiện dựa trên ID.
-    /// </summary>
-    /// <param name="id"></param>
-    public void TriggerEvent(string id)
-    {
-        BaseEventData data = database.GetEventById(id); // Lấy sự kiện từ database
-        if (data == null)
+        private Dictionary<EventType_Dl, IEventAction> handlers;
+
+        private void Awake()
         {
-            Debug.LogWarning($"[EventExecutor] Event '{id}' not found.");
-            return;
+            handlers = new Dictionary<EventType_Dl, IEventAction>
+            {
+                { EventType_Dl.Dialogue, new DialogueAction() },
+            };
         }
 
-        if (Enum.TryParse(data.type.ToString(), out EventType_Dl convertedType))
+        /// <summary>
+        /// Lấy BaseEventData từ EventDatabase qua ID.
+        /// </summary>
+        public BaseEventData GetEventDataById(string id)
         {
-            if (handlers.TryGetValue(convertedType, out var action)) // Lấy handler tương ứng với loại sự kiện
+            return database.GetEventById(id);
+        }
+
+        /// <summary>
+        /// TriggerEvent được gọi ở TriggerZone
+        /// </summary>
+        public void TriggerEvent(string eventId)
+        {
+            // 1. Tìm dữ liệu trong EventDatabase
+            BaseEventData data = database.GetEventById(eventId);
+            if (data == null)
             {
-                action.Execute(data); // Thực thi hành động
+                Debug.LogWarning($"[EventExecutor] Không tìm thấy eventId = '{eventId}' trong EventDatabase!");
+                return;
+            }
+
+            // 2. Lấy handler dựa trên data.type (vd: Dialogue, Cutscene,…)
+            if (handlers.TryGetValue(data.type, out IEventAction action))
+            {
+                action.Execute(data);
             }
             else
             {
-                Debug.LogWarning($"[EventExecutor] No handler for type {convertedType}");
+                Debug.LogWarning($"[EventExecutor] Không có handler cho EventType = {data.type}");
             }
         }
-        else
+    }
+    
+    public class DialogueAction : IEventAction
+    {
+        private string _eventIdCurrent;
+        
+        // Phương thức này sẽ được gọi khi bắt đầu một hội thoại.
+        public void Execute(BaseEventData data)
         {
-            Debug.LogWarning($"[EventExecutor] Unable to convert EventType '{data.type}' to EventType_Dl.");
+            Debug.Log($"[DialogueAction] Starting dialogue for event: {data.eventId}");
+            
+            _eventIdCurrent = data.eventId;
+            DialogueManager.Instance.StartDialogue(data.eventId, ()=> Finished(data.eventId));
+        }
+
+        
+        // Phương thức này sẽ được gọi khi hội thoại kết thúc.
+        public void Finished(string eventId)
+        {
+            Debug.Log($"[DialogueAction] Finished dialogue: {eventId}");
+            
+            // Khi UI Dialogue kết thúc, gọi ngược về EventManager
+            EventManager.Instance.OnEventFinished(eventId);
         }
     }
 }
 
-/// <summary>
-/// Định nghĩa các hành động cho từng loại sự kiện Cutscene.
-/// </summary>
-public class CutsceneAction : IEventAction
-{
-    public void Execute(BaseEventData data)
-    {
-        //Debug.Log($"[Cutscene] Playing: {data.eventId}");
-        EventManager.Instance.PlayEvent(data.eventId);
-    }
-}
-
-/// <summary>
-/// Định nghĩa hành động cho sự kiện thay đổi bản đồ.
-/// </summary>
-public class ChangeMapAction : IEventAction
-{
-    public void Execute(BaseEventData data)
-    {
-        Debug.Log($"[MapChange] Loading scene for event: {data.eventId}");
-        EventManager.Instance.PlayEvent(data.eventId);
-    }
-}
-
-public class DialogueAction : IEventAction
-{
-    public void Execute(BaseEventData data)
-    {
-        EventManager.Instance.PlayEvent(data.eventId);
-    }
-}
-
-public class TrapAction : IEventAction
-{
-    public void Execute(BaseEventData data)
-    {
-        EventManager.Instance.PlayEvent(data.eventId);
-    }
-}
