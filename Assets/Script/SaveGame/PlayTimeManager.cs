@@ -1,67 +1,102 @@
 ﻿using System;
 using UnityEngine;
 
-public class PlayTimeManager : MonoBehaviour
+public class PlayTimeManager : MonoBehaviour, ISaveable
 {
     private float sessionPlayTime;
     public bool isCounting;
-    private UserAccountManager userAccountManager;
+    private readonly object saveLock = new object(); // Khóa để tránh race condition
 
+    public string FileName => "playTime.json";
     public float SessionPlayTime => sessionPlayTime;
 
-    void Awake()
+    private void Awake()
     {
-        userAccountManager = GetComponent<UserAccountManager>();
-        if (userAccountManager == null)
-        {
-            Debug.LogError("UserAccountManager is not assigned!");
-        }
         sessionPlayTime = 0f;
         isCounting = false;
-        //Debug.Log("PlayTimeManager initialized");
     }
 
-    void Update()
+    private void Update()
     {
         if (isCounting)
         {
-            sessionPlayTime += Time.deltaTime;
+            lock (saveLock) // Bảo vệ sessionPlayTime
+            {
+                sessionPlayTime += Time.deltaTime;
+            }
         }
     }
 
     public void StartCounting()
     {
         isCounting = true;
-        //Debug.Log("Started counting PlayTime");
     }
 
     public void StopCounting()
     {
         isCounting = false;
-        Debug.Log("Stopped counting PlayTime");
     }
 
-    /// <summary>
-    /// hàm đặt lại thời gian chơi trong phiên hiện tại.
-    /// </summary>
     public void ResetSession()
     {
-        sessionPlayTime = 0f;
+        lock (saveLock)
+        {
+            sessionPlayTime = 0f;
+        }
         Debug.Log("Reset session PlayTime");
     }
 
-    public double GetTotalPlayTime()
+    public string SaveToJson()
     {
-        return userAccountManager.GetPlayTime() + sessionPlayTime;
+        lock (saveLock)
+        {
+            try
+            {
+                return JsonUtility.ToJson(new PlayTimeData { sessionPlayTime = sessionPlayTime });
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to serialize PlayTimeData: {e.Message}");
+                return string.Empty;
+            }
+        }
     }
 
-    public string FormatPlayTime(double totalSeconds)
+    public void LoadFromJson(string json)
     {
-        TimeSpan timeSpan = TimeSpan.FromSeconds(totalSeconds);
-        int days = timeSpan.Days;
-        int hours = timeSpan.Hours;
-        int minutes = timeSpan.Minutes;
-        int seconds = timeSpan.Seconds;
-        return $"{days} {hours:D2}:{minutes:D2}:{seconds:D2}";
+        if (string.IsNullOrEmpty(json))
+        {
+            Debug.LogWarning("JSON data is empty or null");
+            return;
+        }
+
+        lock (saveLock)
+        {
+            try
+            {
+                var data = JsonUtility.FromJson<PlayTimeData>(json);
+                sessionPlayTime = data.sessionPlayTime;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to deserialize PlayTimeData: {e.Message}");
+                sessionPlayTime = 0f;
+            }
+        }
+    }
+
+    public string FormatPlayTime()
+    {
+        lock (saveLock)
+        {
+            TimeSpan timeSpan = TimeSpan.FromSeconds(sessionPlayTime);
+            return $"{timeSpan.Days} {timeSpan.Hours:D2}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
+        }
+    }
+
+    [Serializable]
+    private class PlayTimeData
+    {
+        public float sessionPlayTime;
     }
 }
