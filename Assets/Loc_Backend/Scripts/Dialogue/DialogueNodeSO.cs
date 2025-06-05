@@ -3,11 +3,21 @@ using UnityEngine.Localization;
 
 namespace Loc_Backend.Dialogue.Scripts.SO
 {
+    public enum SpeakerName
+    {
+        None,
+        Unknown,
+        Kien,
+        Fa
+        // Thêm các tên nhân vật khác nếu cần
+    }
+    
+    
     [CreateAssetMenu(menuName = "Dialogue/Dialogue Node")]
     public class DialogueNodeSO : ScriptableObject
     {
-        [Header("Speaker")]
-        public string speakerName;
+        [Header("Speaker")] 
+        public SpeakerName speakerName;
         public Sprite speakerAvatar;
         public bool isLeftSpeaker = true;
 
