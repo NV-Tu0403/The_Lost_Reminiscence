@@ -148,7 +148,7 @@ namespace Loc_Backend.Scripts
             {
                 leftAvatar.gameObject.SetActive(true);
                 leftAvatar.sprite = node.speakerAvatar;
-                leftName.text = node.speakerName;
+                leftName.text = node.speakerName.ToString();
 
                 rightAvatar.gameObject.SetActive(false);
                 rightName.text = "";
@@ -157,7 +157,7 @@ namespace Loc_Backend.Scripts
             {
                 rightAvatar.gameObject.SetActive(true);
                 rightAvatar.sprite = node.speakerAvatar;
-                rightName.text = node.speakerName;
+                rightName.text = node.speakerName.ToString();
 
                 leftAvatar.gameObject.SetActive(false);
                 leftName.text = "";
