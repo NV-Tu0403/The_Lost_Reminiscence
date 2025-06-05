@@ -115,7 +115,7 @@ public class SaveGameUI : MonoBehaviour
         createButton.onClick.AddListener(OnCreateButtonClicked);
         backButton.onClick.AddListener(OnBackButtonClicked);
         continueButton.onClick.AddListener(() => OnContinueButtonClickedAsync());
-        newGameButton.onClick.AddListener(() => OnNewGameButtonClickedAsync());
+          newGameButton.onClick.AddListener(() => OnNewGameButtonClickedAsync().ConfigureAwait(false));
         duplicateButton.onClick.AddListener(() => OnDuplicateButtonClickedAsync());
         syncButton.onClick.AddListener(() => OnSyncButtonClickedAsync());
         logoutButton.onClick.AddListener(() => OnLogoutButtonClickedAsync());
@@ -131,6 +131,7 @@ public class SaveGameUI : MonoBehaviour
         saveGameManager.RegisterSaveable(playTimeManager);
         // Thêm các module ISaveable khác ở đây nếu cần
     }
+
 
     private async Task CheckUserAccountsAsync()
     {

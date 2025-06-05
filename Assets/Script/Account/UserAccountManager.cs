@@ -36,6 +36,8 @@ public class TempUserAccountData
 
 public class UserAccountManager : MonoBehaviour
 {
+    public static UserAccountManager Instance { get; private set; }
+
     private string userDataPath;
     private string userAccountsPath;
     private UserAccountData userData;
@@ -45,6 +47,16 @@ public class UserAccountManager : MonoBehaviour
 
     void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.LogWarning("Multiple instances of UserAccountManager detected. Destroying duplicate.");
+            Destroy(gameObject);
+        }
+
         userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
         userAccountsPath = Path.Combine(userDataPath, "UserAccounts.json");
         currentUserBaseName = null;

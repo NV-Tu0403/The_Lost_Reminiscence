@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -8,16 +9,42 @@ using UnityEngine;
 public class SaveGameManager : MonoBehaviour
 {
     private readonly List<ISaveable> saveables = new List<ISaveable>();
+    public static SaveGameManager Instance { get; private set; }
+
     private FolderManager folderManager;
     private JsonFileHandler jsonFileHandler;
+
     private float lastSaveTime;
     private const float SAVE_COOLDOWN = 5f; // Chỉ lưu sau mỗi 5 giây
 
     private void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
         string userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
         folderManager = new FolderManager(userDataPath);
         jsonFileHandler = new JsonFileHandler();
+    }
+
+    public async Task SaveJsonFile(string folderPath, string fileName, string json)
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await jsonFileHandler.SaveJsonFileAsync(folderPath, fileName, json, cts.Token);
+    }
+
+    public async Task<string> LoadJsonFile(string folderPath, string fileName)
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var files = await jsonFileHandler.LoadJsonFilesAsync(folderPath, cts.Token);
+        var result = files.FirstOrDefault(f => f.fileName == fileName);
+        return result.json;
     }
 
     public void RegisterSaveable(ISaveable saveable)
@@ -104,6 +131,66 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    #region controller/helper
+
+    /// <summary>
+    /// Lưu ngay lập tức tất cả dữ liệu của người dùng hiện tại.
+    /// Gọi từ void, không quan tâm save xong chưa.
+    /// </summary>
+    public void SaveNow()
+    {
+        var userName = UserAccountManager.Instance?.CurrentUserBaseName;
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogWarning("[SaveGameManager] SaveNow: No user logged in.");
+            return;
+        }
+
+        _ = SaveAsyncSafe(userName);
+    }
+
+    private async Task SaveAsyncSafe(string userName)
+    {
+        try
+        {
+            await SaveAllAsync(userName);
+            Debug.Log("[SaveGameManager] SaveNow: Save completed.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[SaveGameManager] SaveNow: Save failed! {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Lưu tất cả dữ liệu của người dùng hiện tại, chờ hoàn thành.
+    /// Cần đợi lưu xong mới tiếp, hoặc cần xử lý lỗi
+    /// </summary>
+    /// <returns></returns>
+    public async Task SaveAwait()
+    {
+        var userName = UserAccountManager.Instance?.CurrentUserBaseName;
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogWarning("[SaveGameManager] SaveAwait: No user logged in.");
+            return;
+        }
+
+        try
+        {
+            await SaveAllAsync(userName);
+            Debug.Log("[SaveGameManager] SaveAwait: Save completed.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[SaveGameManager] SaveAwait: Save failed! {ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region các phương thức ánh xạ đên quản lý thư mục lưu trữ
+
     public async Task<string> GetLatestSaveFolderAsync(string userName)
     {
         return await folderManager.GetLatestSaveFolderAsync(userName);
@@ -128,4 +215,16 @@ public class SaveGameManager : MonoBehaviour
     {
         return await folderManager.SyncFileSaveAsync(folderPath);
     }
+
+    public async Task<string> CreateNewSaveFolder(string userName)
+    {
+        return await folderManager.CreateNewSaveFolderAsync(userName);
+    }
+
+    public async Task<string> GetLatestSaveFolder(string userName)
+    {
+        return await folderManager.GetLatestSaveFolderAsync(userName);
+    }
+
+    #endregion
 }
