@@ -2,17 +2,17 @@
 using UnityEditor;
 using UnityEngine;
 
-//[CustomEditor(typeof(ProgressionManager))]
-//public class ProgressionManagerEditor : Editor
-//{
-//    public override void OnInspectorGUI()
-//    {
-//        DrawDefaultInspector();
+[CustomEditor(typeof(ProgressionManager))]
+public class ProgressionManagerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
 
-//        ProgressionManager manager = (ProgressionManager)target;
-//        if (GUILayout.Button("Export ProgressionDataSO to JSON"))
-//        {
-//            manager.ExportToJson();
-//        }
-//    }
-//}
+        ProgressionManager manager = (ProgressionManager)target;
+        if (GUILayout.Button("Export ProgressionDataSO to JSON"))
+        {
+            manager.ExportToJson();
+        }
+    }
+}

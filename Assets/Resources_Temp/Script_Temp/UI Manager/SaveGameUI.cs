@@ -13,6 +13,7 @@ public class SaveGameUI : MonoBehaviour
     [SerializeField] private UserAccountManager userAccountManager;
     [SerializeField] private SaveGameManager saveGameManager;
     [SerializeField] private PlayTimeManager playTimeManager;
+    [SerializeField] private PlayerCheckPoint playerCheckPoint; 
     [SerializeField] private BackendSync backendSync;
 
     [SerializeField] private GameObject loginPanel;
@@ -129,6 +130,7 @@ public class SaveGameUI : MonoBehaviour
     private void RegisterSaveables()
     {
         saveGameManager.RegisterSaveable(playTimeManager);
+        saveGameManager.RegisterSaveable(playerCheckPoint);
         // Thêm các module ISaveable khác ở đây nếu cần
     }
 
@@ -357,7 +359,7 @@ public class SaveGameUI : MonoBehaviour
         string saveFolder = lastSelectedSaveFolder ?? await saveGameManager.GetLatestSaveFolderAsync(userName);
         if (saveFolder != null)
         {
-            await saveGameManager.LoadLatestAsync(userName);
+            await saveGameManager.LoadLatestAsync(userName); // safe load
             Debug.Log($"Continued with save: {saveFolder}");
         }
         else
@@ -479,7 +481,6 @@ public class SaveGameUI : MonoBehaviour
     private async void OnLogoutButtonClickedAsync()
     {
         await SaveSessionDataAsync();
-        userAccountManager.Logout();
         playTimeManager.StopCounting();
         playTimeManager.ResetSession();
         loginPanel.SetActive(true);
@@ -508,7 +509,6 @@ public class SaveGameUI : MonoBehaviour
 
     private void OnQuitButtonClicked()
     {
-        SaveSessionDataAsync().GetAwaiter().GetResult();
         playTimeManager.StopCounting();
         playTimeManager.ResetSession();
         OnLogoutButtonClickedAsync();

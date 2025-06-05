@@ -100,7 +100,6 @@ namespace Script.Procession
         }
 #endif
         
-
         #endregion
 
 
@@ -175,7 +174,6 @@ namespace Script.Procession
         }
 
         #endregion
-
 
         #region Lộc thêm vào để quản lý sự kiện
 
@@ -288,7 +286,6 @@ namespace Script.Procession
         }
 
         #endregion
-
 
         #region === Các hàm nâng cao (Nếu muốn mở ra các quest phụ thì dùng 3 hàm dưới) ===
         ///<summary>

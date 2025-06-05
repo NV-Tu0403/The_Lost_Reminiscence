@@ -33,12 +33,25 @@ public class SaveGameManager : MonoBehaviour
         jsonFileHandler = new JsonFileHandler();
     }
 
+    /// <summary>
+    /// Lưu một tệp JSON vào thư mục đã cho.
+    /// </summary>
+    /// <param name="folderPath"></param>
+    /// <param name="fileName"></param>
+    /// <param name="json"></param>
+    /// <returns></returns>
     public async Task SaveJsonFile(string folderPath, string fileName, string json)
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         await jsonFileHandler.SaveJsonFileAsync(folderPath, fileName, json, cts.Token);
     }
 
+    /// <summary>
+    /// Tải một tệp JSON từ thư mục đã cho.
+    /// </summary>
+    /// <param name="folderPath"></param>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
     public async Task<string> LoadJsonFile(string folderPath, string fileName)
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -47,6 +60,10 @@ public class SaveGameManager : MonoBehaviour
         return result.json;
     }
 
+    /// <summary>
+    /// Đăng ký một đối tượng ISaveable để quản lý lưu trữ.
+    /// </summary>
+    /// <param name="saveable"></param>
     public void RegisterSaveable(ISaveable saveable)
     {
         if (saveable != null && !saveables.Contains(saveable))
@@ -56,6 +73,11 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Lưu tất cả dữ liệu của người dùng hiện tại vào thư mục lưu trữ.
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <returns></returns>
     public async Task SaveAllAsync(string userName)
     {
         if (Time.time - lastSaveTime < SAVE_COOLDOWN)
@@ -118,6 +140,11 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Tải dữ liệu mới nhất từ thư mục lưu trữ của người dùng.
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <returns></returns>
     public async Task LoadLatestAsync(string userName)
     {
         string latestFolder = await folderManager.GetLatestSaveFolderAsync(userName);
