@@ -1,11 +1,12 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+﻿using Loc_Backend.Scripts;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Collections;
-using System;
-using Loc_Backend.Scripts;
+using System.Threading.Tasks;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class SaveGameUI : MonoBehaviour
 {
@@ -13,7 +14,6 @@ public class SaveGameUI : MonoBehaviour
     [SerializeField] private SaveGameManager saveGameManager;
     [SerializeField] private PlayTimeManager playTimeManager;
     [SerializeField] private BackendSync backendSync;
-    [SerializeField] private ProgressionManager progressionManager;
 
     [SerializeField] private GameObject loginPanel;
     [SerializeField] private TMP_InputField userNameInputField;
@@ -48,9 +48,7 @@ public class SaveGameUI : MonoBehaviour
     [SerializeField] private Button otpSubmitButton;
 
     [SerializeField] private GameObject saveListPanel;
-    [SerializeField] private GameObject jsonContentPanel;
     [SerializeField] private GameObject saveItemTemplate;
-    [SerializeField] private GameObject jsonTextTemplate;
     [SerializeField] private GameObject syncPanelStatus;
     [SerializeField] private TMP_Text syncSaveNameText;
     [SerializeField] private TMP_Text syncStatusText;
@@ -58,36 +56,31 @@ public class SaveGameUI : MonoBehaviour
     [SerializeField] private TMP_Text playTimeText;
     private string lastSelectedSaveFolder;
     private List<GameObject> saveItemInstances = new List<GameObject>();
-    private List<GameObject> jsonTextInstances = new List<GameObject>();
     private string selectedSaveFolder;
     private float lastNewGameTime;
     private const float NEW_GAME_COOLDOWN = 1f;
 
-    void Start()
+    private async void Start()
     {
         if (!ValidateReferences()) return;
 
         InitializeUI();
         SetupButtonListeners();
-        CheckUserAccounts();
+        RegisterSaveables();
+        await CheckUserAccountsAsync(); // safe
     }
 
-    void Update()
+    private void Update()
     {
         if (playTimeManager.isCounting && playTimeText != null)
         {
-            playTimeText.text = $"Play Time: {playTimeManager.FormatPlayTime(playTimeManager.GetTotalPlayTime())}";
+            playTimeText.text = $"Play Time: {playTimeManager.FormatPlayTime()}";
         }
     }
 
-    /// <summary>
-    /// kiểm tra các tham chiếu cần thiết đã được gán trong Inspector hay chưa.
-    /// </summary>
-    /// <returns></returns>
     private bool ValidateReferences()
     {
-        if (userAccountManager == null || saveGameManager == null || playTimeManager == null ||
-            progressionManager == null || backendSync == null)
+        if (userAccountManager == null || saveGameManager == null || playTimeManager == null || backendSync == null)
         {
             Debug.LogError("One or more managers are not assigned!");
             return false;
@@ -99,9 +92,6 @@ public class SaveGameUI : MonoBehaviour
         return true;
     }
 
-    /// <summary>
-    /// Khởi tạo giao diện người dùng, ẩn các panel không cần thiết và thiết lập trạng thái ban đầu cho các nút.
-    /// </summary>
     private void InitializeUI()
     {
         loginPanel.SetActive(false);
@@ -117,20 +107,18 @@ public class SaveGameUI : MonoBehaviour
         cloudRegisterButton.interactable = false;
     }
 
-    /// <summary>
-    /// Thiết lập các lắng nghe sự kiện cho các nút trong giao diện người dùng.
-    /// </summary>
+
     private void SetupButtonListeners()
     {
-        submitUserNameButton.onClick.AddListener(OnSubmitUserName);
+        submitUserNameButton.onClick.AddListener(() => OnSubmitUserNameAsync());
         createAccountButton.onClick.AddListener(OnCreateAccountButtonClicked);
         createButton.onClick.AddListener(OnCreateButtonClicked);
         backButton.onClick.AddListener(OnBackButtonClicked);
-        continueButton.onClick.AddListener(OnContinueButtonClicked);
-        newGameButton.onClick.AddListener(OnNewGameButtonClicked);
-        duplicateButton.onClick.AddListener(OnDuplicateButtonClicked);
-        syncButton.onClick.AddListener(OnSyncButtonClicked);
-        logoutButton.onClick.AddListener(OnLogoutButtonClicked);
+        continueButton.onClick.AddListener(() => OnContinueButtonClickedAsync());
+        newGameButton.onClick.AddListener(() => OnNewGameButtonClickedAsync());
+        duplicateButton.onClick.AddListener(() => OnDuplicateButtonClickedAsync());
+        syncButton.onClick.AddListener(() => OnSyncButtonClickedAsync());
+        logoutButton.onClick.AddListener(() => OnLogoutButtonClickedAsync());
         cloudRegisterButton.onClick.AddListener(OnCloudRegisterButtonClicked);
         cloudSubmitButton.onClick.AddListener(OnCloudSubmitButtonClicked);
         otpSubmitButton.onClick.AddListener(OnOtpSubmitButtonClicked);
@@ -138,12 +126,28 @@ public class SaveGameUI : MonoBehaviour
         quitButton.onClick.AddListener(OnQuitButtonClicked);
     }
 
-    #region sự kiện UI nút
+    private void RegisterSaveables()
+    {
+        saveGameManager.RegisterSaveable(playTimeManager);
+        // Thêm các module ISaveable khác ở đây nếu cần
+    }
 
-    /// <summary>
-    /// Thử đăng nhập tự động nếu có thông tin người dùng đã lưu.
-    /// </summary>
-    private void TryAutoLogin()
+    private async Task CheckUserAccountsAsync()
+    {
+        string userAccountsPath = Path.Combine(Application.persistentDataPath, "User_DataGame", "UserAccounts.json");
+        if (!File.Exists(userAccountsPath) ||
+            JsonUtility.FromJson<UserAccountData>(await File.ReadAllTextAsync(userAccountsPath)).Users.Count == 0)
+        {
+            loginPanel.SetActive(true);
+            Debug.Log("No users found. Showing login panel.");
+        }
+        else
+        {
+            await TryAutoLoginAsync();
+        }
+    }
+
+    private async Task TryAutoLoginAsync()
     {
         if (userAccountManager.TryAutoLogin(out string errorMessage))
         {
@@ -154,12 +158,12 @@ public class SaveGameUI : MonoBehaviour
             logoutButton.interactable = true;
             cloudRegisterButton.interactable = true;
             errorText.text = "";
-            RefreshSaveList();
+            await RefreshSaveListAsync();
 
-            var saves = saveGameManager.GetAllSaveFolders(userAccountManager.CurrentUserBaseName);
+            var saves = await saveGameManager.GetAllSaveFoldersAsync(userAccountManager.CurrentUserBaseName);
             continueButton.interactable = saves.Count > 0;
 
-            lastSelectedSaveFolder = GetValidLastSaveFolder();
+            lastSelectedSaveFolder = await GetValidLastSaveFolderAsync();
             if (lastSelectedSaveFolder != null)
             {
                 continueButton.interactable = true;
@@ -175,10 +179,7 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// đăng nhập.
-    /// </summary>
-    private void OnSubmitUserName()
+    private async void OnSubmitUserNameAsync()
     {
         string userName = userNameInputField.text;
         string password = passwordInputField.text;
@@ -192,10 +193,10 @@ public class SaveGameUI : MonoBehaviour
             logoutButton.interactable = true;
             cloudRegisterButton.interactable = true;
             errorText.text = "";
-            RefreshSaveList();
+            await RefreshSaveListAsync();
 
-            lastSelectedSaveFolder = GetValidLastSaveFolder();
-            var saves = saveGameManager.GetAllSaveFolders(userName);
+            lastSelectedSaveFolder = await GetValidLastSaveFolderAsync();
+            var saves = await saveGameManager.GetAllSaveFoldersAsync(userName);
             continueButton.interactable = saves.Count > 0;
 
             playTimeManager.StartCounting();
@@ -209,9 +210,6 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    ///  Tạo tài khoản.
-    /// </summary>
     private void OnCreateAccountButtonClicked()
     {
         loginPanel.SetActive(false);
@@ -221,9 +219,6 @@ public class SaveGameUI : MonoBehaviour
         createPasswordInputField.text = "";
     }
 
-    /// <summary>
-    /// Xử lý sự kiện khi người dùng nhấn nút "Tạo tài khoản".
-    /// </summary>
     private void OnCreateButtonClicked()
     {
         string userName = createUserNameInputField.text;
@@ -256,9 +251,6 @@ public class SaveGameUI : MonoBehaviour
         errorText.text = "";
     }
 
-    /// <summary>
-    /// nút "Đăng ký đám mây".
-    /// </summary>
     private void OnCloudRegisterButtonClicked()
     {
         loginPanel.SetActive(false);
@@ -350,10 +342,7 @@ public class SaveGameUI : MonoBehaviour
         }));
     }
 
-    /// <summary>
-    /// "Tiếp tục". CHƯA XONG - CẦN KIỂM TRA LẠI
-    /// </summary>
-    private void OnContinueButtonClicked()
+    private async void OnContinueButtonClickedAsync()
     {
         string userName = userAccountManager.CurrentUserBaseName;
         if (string.IsNullOrEmpty(userName))
@@ -364,10 +353,10 @@ public class SaveGameUI : MonoBehaviour
             return;
         }
 
-        string saveFolder = lastSelectedSaveFolder ?? saveGameManager.GetLatestSaveFolder(userName);
+        string saveFolder = lastSelectedSaveFolder ?? await saveGameManager.GetLatestSaveFolderAsync(userName);
         if (saveFolder != null)
         {
-            progressionManager.ReLoadProgression();
+            await saveGameManager.LoadLatestAsync(userName);
             Debug.Log($"Continued with save: {saveFolder}");
         }
         else
@@ -375,11 +364,11 @@ public class SaveGameUI : MonoBehaviour
             Debug.LogWarning("No save found! Starting new game.");
             errorText.text = "No save found! Starting new game.";
             errorText.color = Color.yellow;
-            OnNewGameButtonClicked();
+            await OnNewGameButtonClickedAsync();
         }
     }
 
-    private void OnNewGameButtonClicked()
+    private async Task OnNewGameButtonClickedAsync()
     {
         if (Time.time - lastNewGameTime < NEW_GAME_COOLDOWN) return;
         lastNewGameTime = Time.time;
@@ -399,12 +388,11 @@ public class SaveGameUI : MonoBehaviour
 
         try
         {
-            string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
-            lastSelectedSaveFolder = newSaveFolder;
-            progressionManager.CreateNewGame();
-            RefreshSaveList();
+            await saveGameManager.SaveAllAsync(userName);
+            lastSelectedSaveFolder = await saveGameManager.GetLatestSaveFolderAsync(userName);
+            await RefreshSaveListAsync();
             continueButton.interactable = true;
-            Debug.Log($"Started new game with save: {newSaveFolder}");
+            Debug.Log($"Started new game with save: {lastSelectedSaveFolder}");
         }
         catch (Exception e)
         {
@@ -418,7 +406,7 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
-    private void OnDuplicateButtonClicked()
+    private async void OnDuplicateButtonClickedAsync()
     {
         if (string.IsNullOrEmpty(selectedSaveFolder))
         {
@@ -429,11 +417,11 @@ public class SaveGameUI : MonoBehaviour
         }
 
         string userName = userAccountManager.CurrentUserBaseName;
-        string newSaveFolder = saveGameManager.DuplicateSaveFolder(selectedSaveFolder, userName);
+        string newSaveFolder = await saveGameManager.DuplicateSaveFolderAsync(selectedSaveFolder, userName);
         if (!string.IsNullOrEmpty(newSaveFolder))
         {
             lastSelectedSaveFolder = newSaveFolder;
-            RefreshSaveList();
+            await RefreshSaveListAsync();
             continueButton.interactable = true;
             Debug.Log($"Duplicated save to: {newSaveFolder}");
         }
@@ -444,7 +432,7 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
-    private void OnSyncButtonClicked()
+    private async void OnSyncButtonClickedAsync()
     {
         if (string.IsNullOrEmpty(selectedSaveFolder))
         {
@@ -454,23 +442,24 @@ public class SaveGameUI : MonoBehaviour
             return;
         }
 
-        StartCoroutine(SyncSaveCoroutine(selectedSaveFolder));
+        await SyncSaveAsync(selectedSaveFolder);
     }
 
-    private IEnumerator SyncSaveCoroutine(string folderPath)
+    private async Task SyncSaveAsync(string folderPath)
     {
         syncPanelStatus.SetActive(true);
         syncSaveNameText.text = $"Save: {Path.GetFileName(folderPath)}";
         syncStatusText.text = "Syncing...";
         syncStatusText.color = Color.yellow;
 
-        yield return new WaitForSeconds(0.5f);
+        await Task.Delay(500);
 
-        if (saveGameManager.SyncFileSave(folderPath, out string errorMessage))
+        var (success, errorMessage) = await saveGameManager.SyncFileSaveAsync(folderPath);
+        if (success)
         {
             syncStatusText.text = "Sync successful!";
             syncStatusText.color = Color.green;
-            yield return new WaitForSeconds(1f);
+            await Task.Delay(1000);
             syncPanelStatus.SetActive(false);
             Debug.Log($"Synced save: {folderPath}");
         }
@@ -478,7 +467,7 @@ public class SaveGameUI : MonoBehaviour
         {
             syncStatusText.text = $"Error: {errorMessage}";
             syncStatusText.color = Color.red;
-            yield return new WaitForSeconds(2f);
+            await Task.Delay(2000);
             syncPanelStatus.SetActive(false);
             errorText.text = errorMessage;
             errorText.color = Color.red;
@@ -486,10 +475,9 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
-    private void OnLogoutButtonClicked()
+    private async void OnLogoutButtonClickedAsync()
     {
-        progressionManager.SaveProgression();
-        SaveSessionData();
+        await SaveSessionDataAsync();
         userAccountManager.Logout();
         playTimeManager.StopCounting();
         playTimeManager.ResetSession();
@@ -506,8 +494,7 @@ public class SaveGameUI : MonoBehaviour
         cloudRegisterButton.interactable = false;
         selectedSaveFolder = null;
         lastSelectedSaveFolder = null;
-        ClearJsonContent();
-        RefreshSaveList();
+        await RefreshSaveListAsync();
         errorText.text = "";
         userNameInputField.text = "";
         passwordInputField.text = "";
@@ -520,39 +507,15 @@ public class SaveGameUI : MonoBehaviour
 
     private void OnQuitButtonClicked()
     {
-        progressionManager.SaveProgression();
-        SaveSessionData();
+        SaveSessionDataAsync().GetAwaiter().GetResult();
         playTimeManager.StopCounting();
         playTimeManager.ResetSession();
-        OnLogoutButtonClicked();
+        OnLogoutButtonClickedAsync();
         Debug.Log("Quitting game...");
         Application.Quit();
     }
 
-    #endregion
-
-    #region chức năng nghiệp vụ
-
-    private void CheckUserAccounts()
-    {
-        string userAccountsPath = Path.Combine(Application.persistentDataPath, "User_DataGame", "UserAccounts.json");
-        if (!File.Exists(userAccountsPath) ||
-            JsonUtility.FromJson<UserAccountData>(File.ReadAllText(userAccountsPath)).Users.Count == 0)
-        {
-            loginPanel.SetActive(true);
-            Debug.Log("No users found. Showing login panel.");
-        }
-        else
-        {
-            TryAutoLogin();
-        }
-    }
-
-    /// <summary>
-    /// Lấy thư mục lưu gần nhất hợp lệ cho người dùng hiện tại.
-    /// </summary>
-    /// <returns></returns>
-    private string GetValidLastSaveFolder()
+    private async Task<string> GetValidLastSaveFolderAsync()
     {
         string lastFileSave = userAccountManager.GetLastFileSave();
         if (!string.IsNullOrEmpty(lastFileSave))
@@ -565,14 +528,10 @@ public class SaveGameUI : MonoBehaviour
             }
         }
 
-        // Nếu không có thư mục lưu gần nhất hợp lệ, trả về thư mục lưu mới nhất.
-        return saveGameManager.GetLatestSaveFolder(userAccountManager.CurrentUserBaseName);
+        return await saveGameManager.GetLatestSaveFolderAsync(userAccountManager.CurrentUserBaseName);
     }
 
-    /// <summary>
-    /// lưu dữ liệu phiên hiện tại, bao gồm tên người dùng, thư mục lưu gần nhất và thời gian chơi tổng.
-    /// </summary>
-    private void SaveSessionData()
+    private async Task SaveSessionDataAsync()
     {
         string userName = userAccountManager.CurrentUserBaseName;
         if (string.IsNullOrEmpty(userName))
@@ -581,17 +540,13 @@ public class SaveGameUI : MonoBehaviour
             return;
         }
 
-        string saveFolder = lastSelectedSaveFolder ?? saveGameManager.GetLatestSaveFolder(userName);
+        await saveGameManager.SaveAllAsync(userName);
+        string saveFolder = lastSelectedSaveFolder ?? await saveGameManager.GetLatestSaveFolderAsync(userName);
         string lastFileSave = saveFolder != null ? Path.GetFileName(saveFolder) : "";
-        double totalPlayTime = playTimeManager.GetTotalPlayTime();
-
-        userAccountManager.UpdateLastSession(lastFileSave, totalPlayTime);
+        userAccountManager.UpdateLastSession(lastFileSave, playTimeManager.SessionPlayTime);
     }
 
-    /// <summary>
-    /// làm mới danh sách các lưu trữ hiện có cho người dùng hiện tại.
-    /// </summary>
-    private void RefreshSaveList()
+    private async Task RefreshSaveListAsync()
     {
         foreach (var item in saveItemInstances)
         {
@@ -606,7 +561,7 @@ public class SaveGameUI : MonoBehaviour
             return;
         }
 
-        var saves = saveGameManager.GetAllSaveFolders(userName);
+        var saves = await saveGameManager.GetAllSaveFoldersAsync(userName);
         foreach (var save in saves)
         {
             GameObject saveItem = Instantiate(saveItemTemplate, saveListPanel.transform);
@@ -621,7 +576,7 @@ public class SaveGameUI : MonoBehaviour
             saveNameText.text = Path.GetFileName(save.FolderPath);
             if (!string.IsNullOrEmpty(save.ImagePath))
             {
-                byte[] imageBytes = File.ReadAllBytes(save.ImagePath);
+                byte[] imageBytes = await File.ReadAllBytesAsync(save.ImagePath);
                 Texture2D texture = new Texture2D(2, 2);
                 texture.LoadImage(imageBytes);
                 saveImage.texture = texture;
@@ -631,42 +586,33 @@ public class SaveGameUI : MonoBehaviour
                 saveImage.gameObject.SetActive(false);
             }
 
-            selectButton.onClick.AddListener(() => OnSelectSave(save.FolderPath));
-            deleteButton.onClick.AddListener(() => OnDeleteSave(save.FolderPath));
+            selectButton.onClick.AddListener(() => OnSelectSaveAsync(save.FolderPath));
+            deleteButton.onClick.AddListener(() => OnDeleteSaveAsync(save.FolderPath));
         }
 
-        //Debug.Log($"Refreshed save list for user: {userName}, Found {saves.Count} saves");
+        Debug.Log($"Refreshed save list for user: {userName}, Found {saves.Count} saves");
     }
 
-    /// <summary>
-    /// chọn một bản lưu trữ cụ thể.
-    /// </summary>
-    /// <param name="folderPath"></param>
-    private void OnSelectSave(string folderPath)
+    private async void OnSelectSaveAsync(string folderPath)
     {
         selectedSaveFolder = folderPath;
         lastSelectedSaveFolder = folderPath;
         continueButton.interactable = true;
+        await saveGameManager.LoadLatestAsync(userAccountManager.CurrentUserBaseName);
         Debug.Log($"Selected save: {folderPath}");
-
-        saveGameManager.LoadJsonFiles(folderPath); // đọc Fouder save đã chọn
-
-        //var jsonFiles = saveGameManager.LoadJsonFiles(folderPath); // test
-        //DisplayJsonContent(jsonFiles); // test
     }
 
-    private void OnDeleteSave(string folderPath)
+    private async void OnDeleteSaveAsync(string folderPath)
     {
-        if (saveGameManager.DeleteSaveFolder(folderPath))
+        if (await saveGameManager.DeleteSaveFolderAsync(folderPath))
         {
             if (folderPath == selectedSaveFolder)
             {
                 selectedSaveFolder = null;
                 lastSelectedSaveFolder = null;
-                ClearJsonContent();
             }
-            RefreshSaveList();
-            var saves = saveGameManager.GetAllSaveFolders(userAccountManager.CurrentUserBaseName);
+            await RefreshSaveListAsync();
+            var saves = await saveGameManager.GetAllSaveFoldersAsync(userAccountManager.CurrentUserBaseName);
             continueButton.interactable = saves.Count > 0;
             Debug.Log($"Deleted save: {folderPath}");
         }
@@ -676,41 +622,4 @@ public class SaveGameUI : MonoBehaviour
             errorText.color = Color.red;
         }
     }
-
-    /// <summary>
-    /// Hiển thị nội dung JSON. (debug)
-    /// </summary>
-    /// <param name="folderPath"></param>
-    private void DisplayJsonContent((string fileName, string json)[] jsonFiles)
-    {
-        ClearJsonContent();
-
-        if (jsonFiles == null || jsonFiles.Length == 0)
-        {
-            Debug.LogWarning("No JSON content to display.");
-            return;
-        }
-
-        foreach (var (fileName, jsonContent) in jsonFiles)
-        {
-            GameObject jsonTextObject = Instantiate(jsonTextTemplate, jsonContentPanel.transform);
-            TMP_Text jsonText = jsonTextObject.GetComponent<TMP_Text>();
-            jsonText.text = $"<b>{fileName}</b>\n{jsonContent}";
-            jsonTextInstances.Add(jsonTextObject);
-        }
-
-        Debug.Log($"Displayed {jsonFiles.Length} JSON files.");
-    }
-
-    private void ClearJsonContent()
-    {
-        foreach (var text in jsonTextInstances)
-        {
-            Destroy(text);
-        }
-        jsonTextInstances.Clear();
-        //Debug.Log("Cleared JSON content display");
-    }
-
-    #endregion
 }
