@@ -1,8 +1,9 @@
 using Functions.Dialogue.Scripts;
-using Loc_Backend.Scripts;
+using Script.GameEventSystem;
+using Script.GameEventSystem.EventAction;
 using UnityEngine;
 
-namespace Script.GameEventSystem.EventAction
+namespace Events.Dialogue.Scripts
 {
       
     public class DialogueAction : IEventAction

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Duckle;
 using Events.Cutscene.Scripts;
+using Events.Dialogue.Scripts;
 using Script.GameEventSystem.EventAction;
 using UnityEngine;
 

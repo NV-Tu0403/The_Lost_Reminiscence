@@ -1,10 +1,10 @@
 using System;
-using Loc_Backend.Scripts;
+using Functions.Dialogue.Scripts;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace Functions.Dialogue.Scripts
+namespace Events.Dialogue.Scripts
 {
     public class DialogueManager : MonoBehaviour
     {

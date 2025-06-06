@@ -31,36 +31,23 @@ namespace Events.Cutscene.Scripts
         public void StartCutscene(string cutsceneId, Action onFinished)
         {
             if (cutsceneId == null) return;
-            
             _onFinished = onFinished;
             
             //  Tự load CutsceneDataSO asset từ Resources/Cutscenes/eventId
-            var data = Resources.Load<CutsceneSO>($"Cutscenes/{cutsceneId}");
-            if (data == null)
-            {
-                Debug.LogError($"[CutsceneManager] Không tìm thấy CutsceneDataSO với ID: {cutsceneId}");
-                onFinished?.Invoke();
-                return;
-            }
+            if (GetCutsceneDataFromResource(cutsceneId, onFinished, out var data)) return;
 
             // Lấy VideoClip từ data
-            var clip = data.videoClip;
-            if (clip == null)
-            {
-                Debug.LogError($"[CutsceneManager] videoClip null trong CutsceneDataSO {cutsceneId}");
-                onFinished?.Invoke();
-                return;
-            }
+            if (GetVideoClipFormData(cutsceneId, onFinished, data, out var clip)) return;
 
-            // Hiển thị UI panel, bật/tắt skip theo data.skippable
-            cutscenePanel.SetActive(true);
-            skipButton.gameObject.SetActive(data.skippable);
+            ShowUI(data, out var rt);
 
-            // Tạo RenderTexture theo độ phân giải clip 
-            RenderTexture rt = new RenderTexture(1920, 1080, 0);
-            videoPlayer.targetTexture = rt;
-            cutsceneImage.texture = rt;
+            PlayCutscene(data);
 
+            Debug.Log($"[CutsceneManager] Playing cutscene: {cutsceneId} (clip: {clip.name})");
+        }
+
+        private void PlayCutscene(CutsceneSO data)
+        {
             // Play video
             videoPlayer.clip = data.videoClip;
             videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
@@ -73,10 +60,46 @@ namespace Events.Cutscene.Scripts
                 audioSource.Play();
             }
             videoPlayer.loopPointReached += OnVideoEnd;
-
-            Debug.Log($"[CutsceneManager] Playing cutscene: {cutsceneId} (clip: {clip.name})");
         }
-        
+
+        private void ShowUI(CutsceneSO data, out RenderTexture rt)
+        {
+            // Hiển thị UI panel, bật/tắt skip theo data.skippable
+            cutscenePanel.SetActive(true);
+            skipButton.gameObject.SetActive(data.skippable);
+
+            // Tạo RenderTexture theo độ phân giải clip 
+            rt = new RenderTexture(1920, 1080, 0);
+            videoPlayer.targetTexture = rt;
+            cutsceneImage.texture = rt;
+        }
+
+        private static bool GetVideoClipFormData(string cutsceneId, Action onFinished, CutsceneSO data, out VideoClip clip)
+        {
+            clip = data.videoClip;
+            if (clip == null)
+            {
+                Debug.LogError($"[CutsceneManager] videoClip null trong CutsceneDataSO {cutsceneId}");
+                onFinished?.Invoke();
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool GetCutsceneDataFromResource(string cutsceneId, Action onFinished, out CutsceneSO data)
+        {
+            data = Resources.Load<CutsceneSO>($"Cutscenes/{cutsceneId}");
+            if (data == null)
+            {
+                Debug.LogError($"[CutsceneManager] Không tìm thấy CutsceneDataSO với ID: {cutsceneId}");
+                onFinished?.Invoke();
+                return true;
+            }
+
+            return false;
+        }
+
         private void OnVideoEnd(VideoPlayer vp)
         {
             Debug.Log("[CutsceneManager] Cutscene ended.");
