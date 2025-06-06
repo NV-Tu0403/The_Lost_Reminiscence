@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Duckle;
-using Loc_Backend.Scripts;
+using Events.Cutscene.Scripts;
+using Script.GameEventSystem.EventAction;
 using UnityEngine;
 
 namespace Script.GameEventSystem
@@ -19,6 +19,7 @@ namespace Script.GameEventSystem
             handlers = new Dictionary<EventType_Dl, IEventAction>
             {
                 { EventType_Dl.Dialogue, new DialogueAction() },
+                { EventType_Dl.Cutscene, new CutsceneAction() }
             };
         }
 
@@ -52,30 +53,6 @@ namespace Script.GameEventSystem
             {
                 Debug.LogWarning($"[EventExecutor] Không có handler cho EventType = {data.type}");
             }
-        }
-    }
-    
-    public class DialogueAction : IEventAction
-    {
-        private string _eventIdCurrent;
-        
-        // Phương thức này sẽ được gọi khi bắt đầu một hội thoại.
-        public void Execute(BaseEventData data)
-        {
-            Debug.Log($"[DialogueAction] Starting dialogue for event: {data.eventId}");
-            
-            _eventIdCurrent = data.eventId;
-            DialogueManager.Instance.StartDialogue(data.eventId, ()=> Finished(data.eventId));
-        }
-
-        
-        // Phương thức này sẽ được gọi khi hội thoại kết thúc.
-        public void Finished(string eventId)
-        {
-            Debug.Log($"[DialogueAction] Finished dialogue: {eventId}");
-            
-            // Khi UI Dialogue kết thúc, gọi ngược về EventManager
-            EventManager.Instance.OnEventFinished(eventId);
         }
     }
 }

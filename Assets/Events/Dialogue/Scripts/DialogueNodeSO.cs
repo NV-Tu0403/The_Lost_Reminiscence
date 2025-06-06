@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Localization;
 
-namespace Loc_Backend.Dialogue.Scripts.SO
+namespace Functions.Dialogue.Scripts
 {
     public enum SpeakerName
     {
@@ -13,7 +13,7 @@ namespace Loc_Backend.Dialogue.Scripts.SO
     }
     
     
-    [CreateAssetMenu(menuName = "Dialogue/Dialogue Node")]
+    [CreateAssetMenu(fileName = "Dialogue_" ,menuName = "Events/Dialogue", order = 2)]
     public class DialogueNodeSO : ScriptableObject
     {
         [Header("Speaker")] 

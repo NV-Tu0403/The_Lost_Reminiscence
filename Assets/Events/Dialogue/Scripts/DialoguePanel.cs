@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
-using Loc_Backend.Dialogue.Scripts.SO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Loc_Backend.Scripts
+namespace Functions.Dialogue.Scripts
 {
     /// <summary>
     /// DialoguePanel chỉ chuyên trách phần UI:
