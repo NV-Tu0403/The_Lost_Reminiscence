@@ -83,7 +83,6 @@ namespace Events.Cutscene.Scripts
                 onFinished?.Invoke();
                 return true;
             }
-
             return false;
         }
 

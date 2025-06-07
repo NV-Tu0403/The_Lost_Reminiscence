@@ -13,7 +13,7 @@ namespace Events.Puzzle.Scripts
         {
             Debug.Log($"[PuzzleAction] Starting puzzle for event: {data.eventId}");
             _eventIdCurrent = data.eventId;
-            PuzzleManager.Instance.StartPuzzle(data.eventId);
+            PuzzleManager.Instance.StartPuzzle(data.eventId, () => Finished(data.eventId));
         }
 
         // Phương thức này sẽ được gọi khi câu đố kết thúc.
