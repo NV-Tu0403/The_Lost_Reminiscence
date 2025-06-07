@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Script.GameEventSystem;
+using Script.Procession.Reward.Base;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -299,7 +300,7 @@ namespace Script.Procession
         /// <summary>
         /// Cấp phần thưởng cho một danh sách Reward.
         /// </summary>
-        private void GrantRewards(List<Reward> rewards)
+        private void GrantRewards(List<Reward.Base.Reward> rewards)
         {
             if (rewards == null) return;
             foreach (var reward in rewards)
@@ -309,7 +310,7 @@ namespace Script.Procession
         /// <summary>
         /// Cấp phần thưởng cho một Reward đơn lẻ.
         /// </summary>
-        private void GrantReward(Reward reward)
+        private void GrantReward(Reward.Base.Reward reward)
         {
             if (reward == null) return;
             if (reward is ItemReward itemReward && itemReward.ItemType == "Loot")

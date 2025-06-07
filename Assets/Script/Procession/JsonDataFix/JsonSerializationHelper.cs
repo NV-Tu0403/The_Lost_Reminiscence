@@ -2,7 +2,9 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using Script.Procession;
 using Script.Procession.Conditions;
+using Script.Procession.Reward.Base;
 using UnityEngine;
 
 /// <summary>
