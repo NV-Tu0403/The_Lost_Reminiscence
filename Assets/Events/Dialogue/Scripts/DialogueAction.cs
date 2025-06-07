@@ -1,6 +1,7 @@
 using Functions.Dialogue.Scripts;
 using Script.GameEventSystem;
 using Script.GameEventSystem.EventAction;
+using Script.Procession;
 using UnityEngine;
 
 namespace Events.Dialogue.Scripts
@@ -27,6 +28,8 @@ namespace Events.Dialogue.Scripts
             
             // Khi UI Dialogue kết thúc, gọi ngược về EventManager
             EventManager.Instance.OnEventFinished(eventId);
+            
+            bool isProgressionComplete = ProgressionManager.Instance.CheckProcessCompletion(eventId, true);
         }
     }
 }

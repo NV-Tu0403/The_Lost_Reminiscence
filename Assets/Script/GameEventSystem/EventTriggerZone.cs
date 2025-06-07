@@ -11,16 +11,16 @@ namespace Script.GameEventSystem
         {
             if (!other.CompareTag("Player")) return;
 
-            if (ProgressionManager.Instance.CanTrigger(eventId))
+            if (!ProgressionManager.Instance.CanTrigger(eventId))
             {
-                ProgressionManager.Instance.UnlockProcess(eventId);
-                EventExecutor.Instance.TriggerEvent(eventId);    
-                gameObject.SetActive(false);
+                Debug.Log($"[EventTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
+                return;
             }
-            else
-            {
-                Debug.Log($"[EventTriggerZone] Không thể kích hoạt sự kiện '{eventId}' vì điều kiện chưa được đáp ứng.");
-            }
+
+            // Unlock → Trigger → Disable zone
+            ProgressionManager.Instance.UnlockProcess(eventId);
+            EventExecutor.Instance.TriggerEvent(eventId);
+            gameObject.SetActive(false);
         }
     }
 }

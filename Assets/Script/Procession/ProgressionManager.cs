@@ -527,22 +527,39 @@ namespace Script.Procession
             return false;
         }
 
-        public bool CanTrigger(string eventId)
+        /// <summary>
+        /// Kiểm tra xem process này đã unlock chưa và mọi condition (nếu có) đã thoả chưa.
+        /// </summary>
+        public bool CanTrigger(string id)
         {
-            if (_eventSequence == null || _eventSequence.Count == 0)
+            // 1) Tìm SubProcess
+            foreach (var main in progression.MainProcesses)
             {
-                Debug.LogWarning("[ProgressionManager] _eventSequence is empty when CanTrigger()");
-                return false;
+                var sub = main.SubProcesses.Find(s => s.Id == id);
+                if (sub != null)
+                {
+                    // 2) Chỉ allow khi đang Locked
+                    if (sub.Status != MainProcess.ProcessStatus.Locked)
+                        return false;
+
+                    // 3) Nếu có điều kiện, phải tất cả thoả
+                    if (sub.Conditions != null && sub.Conditions.Count > 0)
+                    {
+                        bool allMet = sub.Conditions.All(c => c.IsSatisfied(true));
+                        return allMet;
+                    }
+
+                    // Không có condition thì ok luôn
+                    return true;
+                }
             }
 
-            // Kiểm tra nếu eventId là sự kiện tiếp theo trong sequence
-            if (_currentEventIndex < _eventSequence.Count && _eventSequence[_currentEventIndex] == eventId)
-            {
+            // Nếu là MainProcess ở top-level (hiếm khi trigger trực tiếp)
+            var top = progression.MainProcesses.Find(m => m.Id == id);
+            if (top != null && top.Status == MainProcess.ProcessStatus.Locked)
                 return true;
-            }
 
-            // Hoặc nếu eventId nằm trong danh sách đã hoàn thành
-            return progression.MainProcesses.Any(mp => mp.SubProcesses.Any(sp => sp.Id == eventId && sp.Status == MainProcess.ProcessStatus.Completed));
+            return false;
         }
         
         
