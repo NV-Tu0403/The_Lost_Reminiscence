@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class PlayerCheckPoint : MonoBehaviour, ISaveable
@@ -6,8 +7,12 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
     public string FileName => "PlayerCheckPoint.json";
 
     [SerializeField] private Transform playerTransform;
+    public Transform PlayerTransform => playerTransform; 
     public string CurrentMap { get; private set; } = "Unknown";
     private string _lastSceneName;
+    private PlayerCheckPointData _lastLoadedData;
+
+    private static readonly string[] ExcludedScenes = { "Menu" }; // Danh sách scene bỏ qua
 
     private void Awake()
     {
@@ -16,52 +21,114 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
             if (playerTransform == null)
             {
-                Debug.LogError("[PlayerCheckPoint] Player Transform not found!");
+                Debug.LogError("[PlayerCheckPoint] Player Transform not found in initial scene!");
             }
         }
     }
 
-    private void Update()
+    private void OnEnable()
     {
-        //Debug.Log($"[PlayerCheckPoint] Current Map: {CurrentMap}, Player Position: {playerTransform.position}");
-        string currentScene = SceneManager.GetActiveScene().name;
-        if (_lastSceneName != currentScene)
-        {
-            CurrentMap = currentScene;
-            _lastSceneName = currentScene;
-        }
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    /// <summary>
-    /// Đặt tên bản đồ hiện tại mà người chơi đang ở bằng tên scene hiện tại.
-    /// </summary>
-    public void SetCurrentMapToCurrentScene()
+    private void OnDisable()
     {
-        CurrentMap = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     public string SaveToJson()
     {
+        if (playerTransform == null)
+        {
+            Debug.LogError("[PlayerCheckPoint] Player Transform is null during save!");
+            return JsonUtility.ToJson(new PlayerCheckPointData { mapName = CurrentMap, position = new SerializableVector3(Vector3.zero) }, true);
+        }
+
+        if (ExcludedScenes.Contains(CurrentMap))
+        {
+            Debug.LogWarning($"[PlayerCheckPoint] Attempted to save excluded scene: {CurrentMap}. Using default map.");
+            CurrentMap = "Unknown"; // Hoặc một scene gameplay mặc định
+        }
+
         var data = new PlayerCheckPointData
         {
             mapName = CurrentMap,
             position = new SerializableVector3(playerTransform.position)
         };
-
+        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}");
         return JsonUtility.ToJson(data, true);
     }
 
     public void LoadFromJson(string json)
     {
-        if (string.IsNullOrEmpty(json)) return;
+        if (string.IsNullOrEmpty(json))
+        {
+            Debug.LogWarning("[PlayerCheckPoint] Empty JSON data, skipping load.");
+            return;
+        }
+
+        if (playerTransform == null)
+        {
+            Debug.LogError("[PlayerCheckPoint] Player Transform is null during load!");
+            return;
+        }
 
         var data = JsonUtility.FromJson<PlayerCheckPointData>(json);
+        if (ExcludedScenes.Contains(data.mapName))
+        {
+            Debug.LogWarning($"[PlayerCheckPoint] Loaded excluded scene: {data.mapName}. Using default map.");
+            data.mapName = "Unknown"; // Hoặc một scene gameplay mặc định
+        }
+
+        _lastLoadedData = data;
         CurrentMap = data.mapName;
-
-        // Di chuyển player tới vị trí cũ
         playerTransform.position = data.position.ToVector3();
+        Debug.Log($"[PlayerCheckPoint] Loaded - Position: {data.position.ToVector3()}, Map: {CurrentMap}");
+    }
 
-        Debug.Log($"[PlayerPositionManager] Loaded Player position: {data.position.ToVector3()}, Map: {CurrentMap}");
+    /// <summary>
+    /// Sự kiện được gọi khi một scene mới được tải.
+    /// </summary>
+    /// <param name="scene"></param>
+    /// <param name="mode"></param>
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        SetCurrentMapToCurrentScene();
+    }
+
+    /// <summary>
+    /// Cập nhật CurrentMap thành tên của scene hiện tại nếu nó khác với tên trước đó.
+    /// </summary>
+    public void SetCurrentMapToCurrentScene()
+    {
+        string currentScene = SceneManager.GetActiveScene().name;
+        if (_lastSceneName != currentScene && !ExcludedScenes.Contains(currentScene))
+        {
+            CurrentMap = currentScene;
+            _lastSceneName = currentScene;
+            Debug.Log($"[PlayerCheckPoint] CurrentMap updated to: {CurrentMap}");
+        }
+    }
+
+    public PlayerCheckPointData GetLastLoadedData() => _lastLoadedData;
+
+    /// <summary>
+    /// Đặt lại vị trí của người chơi về (0, 0, 0).
+    /// </summary>
+    /// <returns></returns>
+    public bool ResetPlayerPosition()
+    {
+        if (playerTransform != null)
+        {
+            playerTransform.position = Vector3.zero; // (0, 0, 0)
+            Debug.Log($"[PlayerCheckPoint] Player position reset to: {playerTransform.position}");
+            return true;
+        }
+        else
+        {
+            Debug.LogError("[PlayerCheckPoint] Player Transform is null, cannot reset position!");
+            return false;
+        }
     }
 }
 

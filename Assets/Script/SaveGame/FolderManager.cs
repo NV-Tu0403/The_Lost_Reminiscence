@@ -17,6 +17,12 @@ public class FolderManager
         this.userDataPath = userDataPath;
     }
 
+    /// <summary>
+    /// Tạo một thư mục lưu trữ mới cho người dùng.
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<string> CreateNewSaveFolderAsync(string userName, CancellationToken cancellationToken = default)
     {
         await semaphore.WaitAsync(cancellationToken);
@@ -93,6 +99,12 @@ public class FolderManager
         }
     }
 
+    /// <summary>
+    /// Lấy thư mục lưu trữ mới nhất cho người dùng.
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<string> GetLatestSaveFolderAsync(string userName, CancellationToken cancellationToken = default)
     {
         await semaphore.WaitAsync(cancellationToken);
@@ -195,6 +207,12 @@ public class FolderManager
         }
     }
 
+    /// <summary>
+    /// Xóa thư mục lưu trữ theo đường dẫn đã cho (sử dụng SemaphoreSlim để đồng bộ hóa I/O).
+    /// </summary>
+    /// <param name="folderPath"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<bool> DeleteSaveFolderAsync(string folderPath, CancellationToken cancellationToken = default)
     {
         await semaphore.WaitAsync(cancellationToken);
@@ -225,6 +243,12 @@ public class FolderManager
             semaphore.Release();
         }
     }
+
+    /// <summary>
+    /// Xóa thư mục lưu trữ theo đường dẫn đã cho (không sử dụng SemaphoreSlim).
+    /// </summary>
+    /// <param name="folderPath"></param>
+    /// <returns></returns>
     public async Task<bool> DeleteSaveFolderAsync(string folderPath)
     {
         try
@@ -245,6 +269,12 @@ public class FolderManager
         }
     }
 
+    /// <summary>
+    /// Tạo một bản sao của thư mục lưu trữ từ đường dẫn nguồn sang thư mục mới cho người dùng.
+    /// </summary>
+    /// <param name="sourceFolderPath"></param>
+    /// <param name="userName"></param>
+    /// <returns></returns>
     public async Task<string> DuplicateSaveFolderAsync(string sourceFolderPath, string userName)
     {
         if (!Directory.Exists(sourceFolderPath))
@@ -278,6 +308,11 @@ public class FolderManager
         }
     }
 
+    /// <summary>
+    /// Đồng bộ hóa thư mục lưu trữ từ đường dẫn nguồn sang thư mục lưu trữ đã chỉ định.
+    /// </summary>
+    /// <param name="sourceFolderPath"></param>
+    /// <returns></returns>
     public async Task<(bool Success, string ErrorMessage)> SyncFileSaveAsync(string sourceFolderPath)
     {
         if (!Directory.Exists(sourceFolderPath))
@@ -318,6 +353,10 @@ public class FolderManager
         }
     }
 
+    /// <summary>
+    /// Lấy đường dẫn thư mục lưu trữ để chuyển giao dữ liệu.
+    /// </summary>
+    /// <returns></returns>
     private string GetTransferFolder()
     {
 #if UNITY_EDITOR
@@ -327,6 +366,13 @@ public class FolderManager
 #endif
     }
 
+    /// <summary>
+    /// Sao chép một thư mục từ đường dẫn nguồn sang đích, bao gồm cả các thư mục con nếu cần.
+    /// </summary>
+    /// <param name="sourceDir"></param>
+    /// <param name="destDir"></param>
+    /// <param name="copySubDirs"></param>
+    /// <returns></returns>
     private async Task DirectoryCopyAsync(string sourceDir, string destDir, bool copySubDirs)
     {
         DirectoryInfo dir = new DirectoryInfo(sourceDir);

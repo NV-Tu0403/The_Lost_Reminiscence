@@ -14,14 +14,14 @@ public class ItemUIManager : MonoBehaviour
 
     private void Start()
     {
-        DisplayItems();
+        //DisplayItems();
 
-        GetData();
+        //GetData();
     }
 
     private void Update()
     {
-        GetData();
+        //GetData();
         int currentCount = playerController.ListSlot != null ? playerController.ListSlot.transform.childCount : 0;
         if (currentCount != oldItemCount)
         {

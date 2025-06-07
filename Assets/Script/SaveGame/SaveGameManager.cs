@@ -8,14 +8,15 @@ using UnityEngine;
 
 public class SaveGameManager : MonoBehaviour
 {
-    private readonly List<ISaveable> saveables = new List<ISaveable>();
+    private readonly object saveablesLock = new object();//  để bảo vệ truy cập đồng thời đến danh sách saveables
+    private readonly HashSet<ISaveable> saveables = new HashSet<ISaveable>();
     public static SaveGameManager Instance { get; private set; }
 
     private FolderManager folderManager;
     private JsonFileHandler jsonFileHandler;
 
     private float lastSaveTime;
-    private const float SAVE_COOLDOWN = 5f; // Chỉ lưu sau mỗi 5 giây
+    private const float SAVE_COOLDOWN = 5f; 
 
     private void Awake()
     {
@@ -47,7 +48,7 @@ public class SaveGameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Tải một tệp JSON từ thư mục đã cho.
+    /// Tải một tệp JSON đơn từ thư mục đã cho.
     /// </summary>
     /// <param name="folderPath"></param>
     /// <param name="fileName"></param>
@@ -55,26 +56,84 @@ public class SaveGameManager : MonoBehaviour
     public async Task<string> LoadJsonFile(string folderPath, string fileName)
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var files = await jsonFileHandler.LoadJsonFilesAsync(folderPath, cts.Token);
-        var result = files.FirstOrDefault(f => f.fileName == fileName);
-        return result.json;
+        return await jsonFileHandler.LoadSingleJsonFileAsync(folderPath, fileName, cts.Token);
     }
 
     /// <summary>
     /// Đăng ký một đối tượng ISaveable để quản lý lưu trữ.
+    /// lock để đảm bảo an toàn khi truy cập đồng thời từ nhiều luồng.
     /// </summary>
     /// <param name="saveable"></param>
     public void RegisterSaveable(ISaveable saveable)
     {
-        if (saveable != null && !saveables.Contains(saveable))
+        if (saveable == null || string.IsNullOrEmpty(saveable.FileName)) return;
+
+        lock (saveablesLock)
         {
             saveables.Add(saveable);
-            Debug.Log($"Registered saveable: {saveable.FileName}");
         }
     }
 
     /// <summary>
-    /// Lưu tất cả dữ liệu của người dùng hiện tại vào thư mục lưu trữ.
+    /// Hủy đăng ký một đối tượng ISaveable khỏi quản lý lưu trữ.
+    /// </summary>
+    /// <param name="saveable"></param>
+    public void UnregisterSaveable(ISaveable saveable)
+    {
+        if (saveable == null) return;
+
+        lock (saveablesLock)
+        {
+            saveables.Remove(saveable);
+        }
+    }
+
+    /// <summary>
+    /// Xóa tất cả các đối tượng ISaveable khỏi quản lý lưu trữ.
+    /// </summary>
+    public void ClearAllSaveables()
+    {
+        lock (saveablesLock)
+        {
+            saveables.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Lưu tất cả dữ liệu của người dùng hiện tại vào thư mục tạm thời.
+    /// </summary>
+    /// <param name="tempFolderPath"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    private async Task<bool> SaveAllToTempFolderAsync(string tempFolderPath, CancellationToken token)
+    {
+        bool hasError = false;
+
+        Directory.CreateDirectory(tempFolderPath);
+        List<Task> saveTasks = new();
+
+        lock (saveablesLock)
+        {
+            foreach (var saveable in saveables)
+            {
+                var json = saveable.SaveToJson();
+                if (string.IsNullOrEmpty(json))
+                {
+                    Debug.LogError($"Failed to serialize {saveable.FileName}");
+                    hasError = true;
+                    continue;
+                }
+
+                saveTasks.Add(jsonFileHandler.SaveJsonFileAsync(tempFolderPath, saveable.FileName, json, token));
+            }
+        }
+
+        await Task.WhenAll(saveTasks);
+        return !hasError;
+    }
+
+    /// <summary>
+    /// Di chuyển tất cả tệp từ thư mục tạm thời sang thư mục lưu trữ chính thức của người dùng.
     /// </summary>
     /// <param name="userName"></param>
     /// <returns></returns>
@@ -88,56 +147,45 @@ public class SaveGameManager : MonoBehaviour
 
         lastSaveTime = Time.time;
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        string tempFolderPath = Path.Combine(Application.persistentDataPath, "TempSave_" + Guid.NewGuid().ToString());
+        string tempFolderPath = Path.Combine(Application.persistentDataPath, $"TempSave_{Guid.NewGuid()}");
         string saveFolderPath = await folderManager.CreateNewSaveFolderAsync(userName, cts.Token);
         if (saveFolderPath == null) return;
 
         try
         {
-            // Tạo thư mục tạm thời
-            await Task.Run(() => Directory.CreateDirectory(tempFolderPath), cts.Token);
+            if (!await SaveAllToTempFolderAsync(tempFolderPath, cts.Token))
+                throw new Exception("One or more saveable objects failed to save.");
 
-            // Lưu tất cả ISaveable vào thư mục tạm
-            foreach (var saveable in saveables)
-            {
-                string json;
-                lock (saveable)
-                {
-                    json = saveable.SaveToJson();
-                    if (string.IsNullOrEmpty(json))
-                    {
-                        throw new Exception($"Failed to serialize {saveable.FileName}");
-                    }
-                }
-                await jsonFileHandler.SaveJsonFileAsync(tempFolderPath, saveable.FileName, json, cts.Token);
-            }
-
-            // Di chuyển từ thư mục tạm sang thư mục chính thức
-            await Task.Run(() =>
-            {
-                foreach (var file in Directory.GetFiles(tempFolderPath))
-                {
-                    string destFile = Path.Combine(saveFolderPath, Path.GetFileName(file));
-                    File.Move(file, destFile);
-                }
-                Directory.Delete(tempFolderPath, true);
-            }, cts.Token);
-
+            await MoveFilesAsync(tempFolderPath, saveFolderPath, cts.Token);
             Debug.Log($"Successfully saved all files to {saveFolderPath}");
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.LogError($"Save failed: {e.Message}");
-            // Rollback: Xóa thư mục tạm nếu có lỗi
-            if (Directory.Exists(tempFolderPath))
-            {
-                await Task.Run(() => Directory.Delete(tempFolderPath, true), cts.Token);
-            }
-            if (Directory.Exists(saveFolderPath))
-            {
-                await folderManager.DeleteSaveFolderAsync(saveFolderPath, cts.Token);
-            }
+            Debug.LogError($"Save failed: {ex.Message}");
+            await RollbackSave(tempFolderPath, saveFolderPath, cts.Token);
         }
+    }
+
+    private async Task MoveFilesAsync(string sourceFolder, string destFolder, CancellationToken token)
+    {
+        await Task.Run(() =>
+        {
+            foreach (var file in Directory.GetFiles(sourceFolder))
+            {
+                string dest = Path.Combine(destFolder, Path.GetFileName(file));
+                File.Move(file, dest);
+            }
+            Directory.Delete(sourceFolder, true);
+        }, token);
+    }
+
+    private async Task RollbackSave(string tempFolder, string saveFolder, CancellationToken token)
+    {
+        if (Directory.Exists(tempFolder))
+            await Task.Run(() => Directory.Delete(tempFolder, true), token);
+
+        if (Directory.Exists(saveFolder))
+            await folderManager.DeleteSaveFolderAsync(saveFolder, token);
     }
 
     /// <summary>
@@ -153,7 +201,7 @@ public class SaveGameManager : MonoBehaviour
         var jsonFiles = await jsonFileHandler.LoadJsonFilesAsync(latestFolder);
         foreach (var (fileName, json) in jsonFiles)
         {
-            var saveable = saveables.Find(s => s.FileName == fileName);
+            var saveable = saveables.FirstOrDefault(s => s.FileName == fileName);
             saveable?.LoadFromJson(json);
         }
     }

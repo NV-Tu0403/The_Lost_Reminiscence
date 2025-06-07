@@ -13,6 +13,22 @@ public class Core : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            // Đặt game object cha (nếu có) thành DontDestroyOnLoad
+            if (transform.parent != null)
+            {
+                DontDestroyOnLoad(transform.parent.gameObject);
+            }
+            else
+            {
+                DontDestroyOnLoad(gameObject);
+            }
+
+            // Đặt gameObject "canvas" thành DontDestroyOnLoad nếu tồn tại trong scene
+            var canvasObj = GameObject.Find("Canvas");
+            if (canvasObj != null)
+            {
+                DontDestroyOnLoad(canvasObj);
+            }
             //Debug.Log("Core initialized.");
         }
         else

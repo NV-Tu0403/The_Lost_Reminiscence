@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -7,6 +7,14 @@ using UnityEngine;
 
 public class JsonFileHandler
 {
+    /// <summary>
+    /// lưu một tệp JSON vào thư mục đã cho.
+    /// </summary>
+    /// <param name="saveFolderPath"></param>
+    /// <param name="fileName"></param>
+    /// <param name="jsonContent"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task SaveJsonFileAsync(string saveFolderPath, string fileName, string jsonContent, CancellationToken cancellationToken = default)
     {
         try
@@ -25,6 +33,34 @@ public class JsonFileHandler
         }
     }
 
+    /// <summary>
+    /// Tải một tệp JSON đơn từ thư mục đã cho.
+    /// </summary>
+    /// <param name="folderPath"></param>
+    /// <param name="fileName"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<string> LoadSingleJsonFileAsync(string folderPath, string fileName, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            string filePath = Path.Combine(folderPath, fileName);
+            if (!File.Exists(filePath)) return null;
+            return await File.ReadAllTextAsync(filePath, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to load single JSON file {fileName}: {e.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Tải tất cả các tệp JSON từ thư mục đã cho.
+    /// </summary>
+    /// <param name="folderPath"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<(string fileName, string json)[]> LoadJsonFilesAsync(string folderPath, CancellationToken cancellationToken = default)
     {
         var result = new List<(string fileName, string json)>();
@@ -68,4 +104,6 @@ public class JsonFileHandler
             return result.ToArray();
         }
     }
+
+
 }

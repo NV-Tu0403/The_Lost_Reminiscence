@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class SaveGameUI : MonoBehaviour
@@ -13,9 +14,13 @@ public class SaveGameUI : MonoBehaviour
     [SerializeField] private UserAccountManager userAccountManager;
     [SerializeField] private SaveGameManager saveGameManager;
     [SerializeField] private PlayTimeManager playTimeManager;
-    [SerializeField] private PlayerCheckPoint playerCheckPoint; 
+    [SerializeField] private PlayerCheckPoint playerCheckPoint;
     [SerializeField] private BackendSync backendSync;
+    [SerializeField] private TMP_Text currentSaveText; // hiển thị file save đang chơi
+    [SerializeField] private GameObject MainUI;
+    [SerializeField] private Button BackMainUI;
 
+    [Header("UI Elements")]
     [SerializeField] private GameObject loginPanel;
     [SerializeField] private TMP_InputField userNameInputField;
     [SerializeField] private TMP_InputField passwordInputField;
@@ -60,6 +65,8 @@ public class SaveGameUI : MonoBehaviour
     private string selectedSaveFolder;
     private float lastNewGameTime;
     private const float NEW_GAME_COOLDOWN = 1f;
+    private float lastPlayTimeUpdate;
+    private const float PLAY_TIME_UPDATE_INTERVAL = 1f;
 
     private async void Start()
     {
@@ -68,14 +75,15 @@ public class SaveGameUI : MonoBehaviour
         InitializeUI();
         SetupButtonListeners();
         RegisterSaveables();
-        await CheckUserAccountsAsync(); // safe
+        await CheckUserAccountsAsync();
+        UpdateCurrentSaveTextAsync(); // Cập nhật thông tin file save khi khởi động
     }
-
     private void Update()
     {
-        if (playTimeManager.isCounting && playTimeText != null)
+        if (playTimeManager.isCounting && playTimeText != null && Time.time - lastPlayTimeUpdate >= PLAY_TIME_UPDATE_INTERVAL)
         {
             playTimeText.text = $"Play Time: {playTimeManager.FormatPlayTime()}";
+            lastPlayTimeUpdate = Time.time;
         }
     }
 
@@ -108,7 +116,6 @@ public class SaveGameUI : MonoBehaviour
         cloudRegisterButton.interactable = false;
     }
 
-
     private void SetupButtonListeners()
     {
         submitUserNameButton.onClick.AddListener(() => OnSubmitUserNameAsync());
@@ -116,7 +123,7 @@ public class SaveGameUI : MonoBehaviour
         createButton.onClick.AddListener(OnCreateButtonClicked);
         backButton.onClick.AddListener(OnBackButtonClicked);
         continueButton.onClick.AddListener(() => OnContinueButtonClickedAsync());
-          newGameButton.onClick.AddListener(() => OnNewGameButtonClickedAsync().ConfigureAwait(false));
+        newGameButton.onClick.AddListener(() => OnNewGameButtonClickedAsync().ConfigureAwait(false));
         duplicateButton.onClick.AddListener(() => OnDuplicateButtonClickedAsync());
         syncButton.onClick.AddListener(() => OnSyncButtonClickedAsync());
         logoutButton.onClick.AddListener(() => OnLogoutButtonClickedAsync());
@@ -125,8 +132,72 @@ public class SaveGameUI : MonoBehaviour
         otpSubmitButton.onClick.AddListener(OnOtpSubmitButtonClicked);
         cloudCancelButton.onClick.AddListener(OnCloudCancelButtonClicked);
         quitButton.onClick.AddListener(OnQuitButtonClicked);
+        BackMainUI.onClick.AddListener(() =>
+        {
+            OnBackMenuUIClicked();
+        });
     }
 
+    private async void OnBackMenuUIClicked()
+    {
+        string userName = userAccountManager.CurrentUserBaseName;
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogError("[SaveGameUI] No user logged in, cannot save position!");
+            await SceneController.Instance.UnloadAllAdditiveScenesAsync();
+            MainUI.SetActive(true);
+            return;
+        }
+
+        // Lưu tọa độ hiện tại trước khi đặt lại vị trí
+        if (playerCheckPoint != null && playerCheckPoint.PlayerTransform != null)
+        {
+            Vector3 currentPosition = playerCheckPoint.PlayerTransform.position;
+            PlayerCheckPointData lastData = playerCheckPoint.GetLastLoadedData();
+            if (lastData == null || lastData.position.ToVector3() != currentPosition)
+            {
+                await saveGameManager.SaveAllAsync(userName);
+                Debug.Log($"[SaveGameUI] Saved player position: {currentPosition}");
+            }
+            else
+            {
+                Debug.Log("[SaveGameUI] Position unchanged, skipping save.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[SaveGameUI] PlayerCheckPoint or PlayerTransform is null, skipping save.");
+        }
+
+        // Đặt lại vị trí player trước khi unload
+        bool resetSuccess = false;
+        if (playerCheckPoint != null)
+        {
+            resetSuccess = playerCheckPoint.ResetPlayerPosition();
+        }
+        else
+        {
+            Debug.LogError("[SaveGameUI] PlayerCheckPoint is null, cannot reset player position!");
+        }
+
+        // Chỉ unload nếu đặt lại vị trí thành công
+        if (resetSuccess)
+        {
+            await SceneController.Instance.UnloadAllAdditiveScenesAsync();
+            MainUI.SetActive(true);
+            Debug.Log("[SaveGameUI] Unloaded additive scenes after successful position reset.");
+        }
+        else
+        {
+            Debug.LogWarning("[SaveGameUI] Position reset failed, skipping unload.");
+        }
+
+        
+    }
+
+    /// <summary>
+    /// Đăng ký các module ISaveable với SaveGameManager.
+    /// </summary>
     private void RegisterSaveables()
     {
         saveGameManager.RegisterSaveable(playTimeManager);
@@ -134,7 +205,10 @@ public class SaveGameUI : MonoBehaviour
         // Thêm các module ISaveable khác ở đây nếu cần
     }
 
-
+    /// <summary>
+    /// Kiểm tra xem có tài khoản người dùng nào đã được tạo hay không.
+    /// </summary>
+    /// <returns></returns>
     private async Task CheckUserAccountsAsync()
     {
         string userAccountsPath = Path.Combine(Application.persistentDataPath, "User_DataGame", "UserAccounts.json");
@@ -171,7 +245,7 @@ public class SaveGameUI : MonoBehaviour
             {
                 continueButton.interactable = true;
             }
-
+            UpdateCurrentSaveTextAsync(); // Cập nhật UI
             playTimeManager.StartCounting();
             Debug.Log($"Auto-logged in user: {userAccountManager.CurrentUserBaseName}, Save: {lastSelectedSaveFolder}");
         }
@@ -359,8 +433,16 @@ public class SaveGameUI : MonoBehaviour
         string saveFolder = lastSelectedSaveFolder ?? await saveGameManager.GetLatestSaveFolderAsync(userName);
         if (saveFolder != null)
         {
-            await saveGameManager.LoadLatestAsync(userName); // safe load
-            Debug.Log($"Continued with save: {saveFolder}");
+            await saveGameManager.LoadLatestAsync(userName);
+            lastSelectedSaveFolder = saveFolder; // Cập nhật thư mục save đang chơi
+            UpdateCurrentSaveTextAsync(); // Cập nhật UI
+            if (playerCheckPoint != null)
+            {
+                string sceneToLoad = playerCheckPoint.CurrentMap;
+                Debug.Log($"[SaveGameUI] Loading additive scene from checkpoint: {sceneToLoad}");
+                await SceneController.Instance.LoadAdditiveSceneAsync(sceneToLoad, playerCheckPoint);
+            }
+            MainUI.SetActive(false); // Ẩn UI chính khi tiếp tục chơi
         }
         else
         {
@@ -373,8 +455,8 @@ public class SaveGameUI : MonoBehaviour
 
     private async Task OnNewGameButtonClickedAsync()
     {
-        if (Time.time - lastNewGameTime < NEW_GAME_COOLDOWN) return;
-        lastNewGameTime = Time.time;
+        //if (Time.time - lastNewGameTime < NEW_GAME_COOLDOWN) return;
+        //lastNewGameTime = Time.time;
 
         if (!newGameButton.interactable) return;
         newGameButton.interactable = false;
@@ -478,11 +560,30 @@ public class SaveGameUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Cập nhật văn bản hiển thị file save hiện tại.
+    /// </summary>
+    private void UpdateCurrentSaveTextAsync()
+    {
+        if (currentSaveText == null) return;
+
+        if (string.IsNullOrEmpty(lastSelectedSaveFolder))
+        {
+            currentSaveText.text = "Current Save: None";
+        }
+        else
+        {
+            string saveName = Path.GetFileName(lastSelectedSaveFolder);
+            currentSaveText.text = $"Current Save: {saveName}";
+        }
+    }
+
     private async void OnLogoutButtonClickedAsync()
     {
-        await SaveSessionDataAsync();
+        //await SaveSessionDataAsync();
         playTimeManager.StopCounting();
         playTimeManager.ResetSession();
+        await SceneController.Instance.UnloadAllAdditiveScenesAsync(); // Unload các scene additive
         loginPanel.SetActive(true);
         createAccountPanel.SetActive(false);
         cloudRegisterPanel.SetActive(false);
@@ -496,6 +597,8 @@ public class SaveGameUI : MonoBehaviour
         cloudRegisterButton.interactable = false;
         selectedSaveFolder = null;
         lastSelectedSaveFolder = null;
+        lastSelectedSaveFolder = null; // Xóa thư mục save đang chơi
+        UpdateCurrentSaveTextAsync(); // Cập nhật UI
         await RefreshSaveListAsync();
         errorText.text = "";
         userNameInputField.text = "";
@@ -512,6 +615,7 @@ public class SaveGameUI : MonoBehaviour
         playTimeManager.StopCounting();
         playTimeManager.ResetSession();
         OnLogoutButtonClickedAsync();
+
         Debug.Log("Quitting game...");
         Application.Quit();
     }
@@ -541,7 +645,19 @@ public class SaveGameUI : MonoBehaviour
             return;
         }
 
-        await saveGameManager.SaveAllAsync(userName);
+        string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (currentScene == "Menu")
+        {
+            Debug.Log("[SaveGameUI] Skipped saving PlayerCheckPoint in Menu scene.");
+            // Save các dữ liệu khác như playTimeManager thôi
+            //await saveGameManager.SaveOnlyAsync(userName, excludeType: typeof(PlayerCheckPoint));
+        }
+        else
+        {
+            Debug.Log("[SaveGameUI] Saving PlayerCheckPoint and others...");
+            await saveGameManager.SaveAllAsync(userName);
+        }
+
         string saveFolder = lastSelectedSaveFolder ?? await saveGameManager.GetLatestSaveFolderAsync(userName);
         string lastFileSave = saveFolder != null ? Path.GetFileName(saveFolder) : "";
         userAccountManager.UpdateLastSession(lastFileSave, playTimeManager.SessionPlayTime);
@@ -577,10 +693,7 @@ public class SaveGameUI : MonoBehaviour
             saveNameText.text = Path.GetFileName(save.FolderPath);
             if (!string.IsNullOrEmpty(save.ImagePath))
             {
-                byte[] imageBytes = await File.ReadAllBytesAsync(save.ImagePath);
-                Texture2D texture = new Texture2D(2, 2);
-                texture.LoadImage(imageBytes);
-                saveImage.texture = texture;
+                StartCoroutine(LoadImageAsync(save.ImagePath, saveImage));
             }
             else
             {
@@ -592,6 +705,15 @@ public class SaveGameUI : MonoBehaviour
         }
 
         Debug.Log($"Refreshed save list for user: {userName}, Found {saves.Count} saves");
+    }
+
+    private IEnumerator LoadImageAsync(string imagePath, RawImage saveImage)
+    {
+        byte[] imageBytes = File.ReadAllBytes(imagePath);
+        Texture2D texture = new Texture2D(2, 2);
+        texture.LoadImage(imageBytes);
+        saveImage.texture = texture;
+        yield return null;
     }
 
     private async void OnSelectSaveAsync(string folderPath)
