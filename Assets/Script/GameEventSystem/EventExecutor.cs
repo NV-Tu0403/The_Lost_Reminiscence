@@ -17,6 +17,19 @@ namespace Script.GameEventSystem
 
         private void Awake()
         {
+            // Singleton pattern
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+                return;
+            }
+            
+            // Khoi tạo handlers
             handlers = new Dictionary<EventType_Dl, IEventAction>
             {
                 { EventType_Dl.Dialogue, new DialogueAction() },
