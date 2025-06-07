@@ -37,16 +37,6 @@ public class InteractCondition : Condition
             return itemType == TargetType && itemId == TargetName && amount >= RequiredAmount;
         }
         return false;
-
-        //  bạn hoàn toàn có thể mở rộng tuple để kiểm tra thêm nhiều điều kiện khác, ví dụ:
-        //if (data is (string itemId, int amount, string itemType))
-        //{
-        //    // Kiểm tra thêm itemType hoặc các điều kiện khác
-        //    return itemId == Target && amount >= RequiredAmount && itemType == "Weapon";
-        //}
-        //•	Khi truyền dữ liệu vào phương thức, bạn cũng phải truyền đúng định dạng tuple, ví dụ:
-        //  IsSatisfied(("sword01", 5, "Weapon"))
-        //•	Nếu số lượng trường quá nhiều, nên cân nhắc tạo một class hoặc struct để truyền dữ liệu cho dễ quản lý và mở rộng.
     }
 }
 

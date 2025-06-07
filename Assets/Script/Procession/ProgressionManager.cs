@@ -355,6 +355,25 @@ namespace Script.Procession
             return false;
         }
 
+        public bool CanTrigger(string eventId)
+        {
+            if (_eventSequence == null || _eventSequence.Count == 0)
+            {
+                Debug.LogWarning("[ProgressionManager] _eventSequence is empty when CanTrigger()");
+                return false;
+            }
+
+            // Kiểm tra nếu eventId là sự kiện tiếp theo trong sequence
+            if (_currentEventIndex < _eventSequence.Count && _eventSequence[_currentEventIndex] == eventId)
+            {
+                return true;
+            }
+
+            // Hoặc nếu eventId nằm trong danh sách đã hoàn thành
+            return progression.MainProcesses.Any(mp => mp.SubProcesses.Any(sp => sp.Id == eventId && sp.Status == MainProcess.ProcessStatus.Completed));
+        }
+        
+        
         /// <summary>
         /// Kiểm tra điều kiện hoàn thành tiến trình con và cấp phần thưởng nếu hoàn thành.
         /// trả về true nếu tiến trình con đã hoàn thành.

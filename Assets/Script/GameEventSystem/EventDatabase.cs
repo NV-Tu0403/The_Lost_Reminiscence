@@ -28,10 +28,4 @@ namespace Script.GameEventSystem
         public EventType_Dl type;
         [TextArea] public string description;
     }
-
-    public interface IEventAction
-    {
-        void Execute(BaseEventData data);
-        void Finished(string eventId = null);
-    }
 }
