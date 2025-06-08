@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
@@ -104,42 +105,50 @@ public class ProfessionalSkilMenu : MonoBehaviour
         //}
     }
 
-    //public async Task<SaveListContext> RefreshSaveList()
-    //{
-    //    foreach (var item in saveItemInstances)
-    //    {
-    //        Destroy(item);
-    //    }
-    //    saveItemInstances.Clear();
+    public async Task<SaveListContext> RefreshSaveList()
+    {
+        foreach (var item in saveItemInstances)
+        {
+            Destroy(item);
+        }
+        saveItemInstances.Clear();
 
-    //    string userName = UserAccountManager.Instance.CurrentUserBaseName;
-    //    if (string.IsNullOrEmpty(userName))
-    //    {
-    //        Debug.LogWarning("[Test] No user logged in. Cannot refresh save list.");
-    //        return new SaveListContext
-    //        {
-    //            UserName = userName,
-    //            Saves = new List<SaveFolder>(),
-    //            IsContinueEnabled = false
-    //        };
-    //    }
+        string userName = UserAccountManager.Instance.CurrentUserBaseName;
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogWarning("[Test] No user logged in. Cannot refresh save list.");
+            return new SaveListContext
+            {
+                UserName = userName,
+                Saves = new List<SaveFolder>(),
+                IsContinueEnabled = false
+            };
+        }
 
-    //    var saves = await SaveGameManager.Instance.GetAllSaveFoldersAsync(userName);
+        var saves = await SaveGameManager.Instance.GetAllSaveFoldersAsync(userName);
 
-    //    if (!string.IsNullOrEmpty(lastSelectedSaveFolder) &&
-    //        !Directory.Exists(lastSelectedSaveFolder))
-    //    {
-    //        lastSelectedSaveFolder = null;
-    //    }
+        // Convert the list of tuples to a list of SaveFolder objects
+        var saveFolders = saves.Select(s => new SaveFolder
+        {
+            FolderPath = s.FolderPath,
+            ImagePath = s.ImagePath
+        }).ToList();
 
-    //    //return new SaveListContext
-    //    //{
-    //    //    UserName = userName,
-    //    //    Saves = saves,
-    //    //    IsContinueEnabled = !string.IsNullOrEmpty(lastSelectedSaveFolder) &&
-    //    //                        Directory.Exists(lastSelectedSaveFolder)
-    //    //};
-    //}
+        if (!string.IsNullOrEmpty(lastSelectedSaveFolder) &&
+            !Directory.Exists(lastSelectedSaveFolder))
+        {
+            lastSelectedSaveFolder = null;
+        }
+
+        return new SaveListContext
+        {
+            UserName = userName,
+            Saves = saveFolders,
+            IsContinueEnabled = !string.IsNullOrEmpty(lastSelectedSaveFolder) &&
+                                Directory.Exists(lastSelectedSaveFolder)
+        };
+    }
+
 
     private async Task<string> GetValidLastSaveFolderAsync()
     {
