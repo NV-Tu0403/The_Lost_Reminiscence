@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using Script.Procession.Conditions;
+using Script.Procession.Reward.ScriptableObjects;
 
 // ScriptableObject tổng hợp chứa tất cả MainProcess
 [CreateAssetMenu(fileName = "ProgressionData", menuName = "Progression/ProgressionData")]
