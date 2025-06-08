@@ -132,38 +132,59 @@ public class SaveGameManager : MonoBehaviour
         return !hasError;
     }
 
+    public async Task SaveToFolderAsync(string folderPath, CancellationToken token)
+    {
+        if (Time.time - lastSaveTime < SAVE_COOLDOWN)
+        {
+            Debug.LogWarning("[SaveGameManager] Save cooldown active, skipping save.");
+            return;
+        }
+
+        lastSaveTime = Time.time;
+        string tempFolderPath = Path.Combine(Application.persistentDataPath, $"TempSave_{Guid.NewGuid()}");
+
+        try
+        {
+            if (!await SaveAllToTempFolderAsync(tempFolderPath, token))
+                throw new Exception("One or more saveable objects failed to save.");
+
+            // Xóa các file cũ trong folder đích
+            if (Directory.Exists(folderPath))
+            {
+                foreach (var file in Directory.GetFiles(folderPath))
+                {
+                    File.Delete(file);
+                }
+            }
+            else
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            // Di chuyển file từ temp sang folder đích
+            await MoveFilesAsync(tempFolderPath, folderPath, token);
+            Debug.Log($"[SaveGameManager] Successfully saved to {folderPath}");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[SaveGameManager] Save failed: {ex.Message}");
+            await RollbackSave(tempFolderPath, folderPath, token);
+            throw;
+        }
+    }
+
     /// <summary>
     /// Di chuyển tất cả tệp từ thư mục tạm thời sang thư mục lưu trữ chính thức của người dùng.
     /// </summary>
     /// <param name="userName"></param>
     /// <returns></returns>
-    public async Task SaveAllAsync(string userName)
+    public async Task SaveAllAsync(string userName, string folderPath = null)
     {
-        if (Time.time - lastSaveTime < SAVE_COOLDOWN)
-        {
-            Debug.Log("Save cooldown active, skipping save.");
-            return;
-        }
-
-        lastSaveTime = Time.time;
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        string tempFolderPath = Path.Combine(Application.persistentDataPath, $"TempSave_{Guid.NewGuid()}");
-        string saveFolderPath = await folderManager.CreateNewSaveFolderAsync(userName, cts.Token);
+        string saveFolderPath = folderPath ?? await folderManager.CreateNewSaveFolderAsync(userName, cts.Token);
         if (saveFolderPath == null) return;
 
-        try
-        {
-            if (!await SaveAllToTempFolderAsync(tempFolderPath, cts.Token))
-                throw new Exception("One or more saveable objects failed to save.");
-
-            await MoveFilesAsync(tempFolderPath, saveFolderPath, cts.Token);
-            Debug.Log($"Successfully saved all files to {saveFolderPath}");
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"Save failed: {ex.Message}");
-            await RollbackSave(tempFolderPath, saveFolderPath, cts.Token);
-        }
+        await SaveToFolderAsync(saveFolderPath, cts.Token);
     }
 
     private async Task MoveFilesAsync(string sourceFolder, string destFolder, CancellationToken token)

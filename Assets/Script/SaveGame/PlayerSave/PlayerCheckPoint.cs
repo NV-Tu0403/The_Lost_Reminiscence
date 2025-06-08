@@ -82,7 +82,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
         _lastLoadedData = data;
         CurrentMap = data.mapName;
-        playerTransform.position = data.position.ToVector3();
+        playerTransform.position = data.position.ToVector3() + new Vector3(0, 3, 0);
         Debug.Log($"[PlayerCheckPoint] Loaded - Position: {data.position.ToVector3()}, Map: {CurrentMap}");
     }
 
@@ -101,12 +101,15 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
     /// </summary>
     public void SetCurrentMapToCurrentScene()
     {
-        string currentScene = SceneManager.GetActiveScene().name;
-        if (_lastSceneName != currentScene && !ExcludedScenes.Contains(currentScene))
+        Scene currentScene = SceneManager.GetActiveScene();
+        if (currentScene != null && !string.IsNullOrEmpty(currentScene.name) && currentScene.name != "Menu")
         {
-            CurrentMap = currentScene;
-            _lastSceneName = currentScene;
-            Debug.Log($"[PlayerCheckPoint] CurrentMap updated to: {CurrentMap}");
+            CurrentMap = currentScene.name;
+            Debug.Log($"[PlayerCheckPoint] Set CurrentMap to: {CurrentMap}");
+        }
+        else
+        {
+            Debug.LogWarning($"[PlayerCheckPoint] Invalid scene, keeping CurrentMap as: {CurrentMap}");
         }
     }
 
