@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Script.GameEventSystem;
 using Script.Procession.Reward.Base;
 using UnityEngine;
@@ -8,9 +9,11 @@ using Debug = UnityEngine.Debug;
 
 namespace Script.Procession
 {
-    public class ProgressionManager : MonoBehaviour
+    public class ProgressionManager : MonoBehaviour, ISaveable
     {
         public static ProgressionManager Instance { get; private set; }
+
+        public string FileName => "progressionData.json";
 
         private GameProgression progression;                                            // Dữ liệu tiến trình hiện tại
         private string configJsonPath = "JSON/progressionData";                         // Đường dẫn tương đối cho Resources
@@ -18,7 +21,6 @@ namespace Script.Procession
 
         [SerializeField] private ProgressionDataSO progressionDataSO;                   // ScriptableObject tổng hợp
         [SerializeField] private LootDatabase lootDatabase;                             // Database loot
-        //[SerializeField] private SaveGameManager saveGameManager;
         [SerializeField] private UserAccountManager userAccountManager;                 // Quản lý tài khoản người dùng
         
         // Danh sách tuần tự eventId (lấy từ progression.MainProcesses → SubProcesses theo Order)
@@ -35,13 +37,18 @@ namespace Script.Procession
             }
             Instance = this;
 
+            RegisterSaveables();              // Đăng ký ProgressionManager là một Saveable
             InitializePaths();              // Khởi tạo đường dẫn file JSON
-            //LoadProgression();              // Tải dữ liệu tiến trình từ file JSON hoặc ScriptableObject
             BuildEventSequence();           // Xây danh sách tuần tự eventId
             AutoTriggerFirstEvent();        // Tự động trigger event đầu tiên
         }
 
         #region === CÁC HÀM SAVE/LOAD ===
+
+        private void RegisterSaveables()
+        {
+            SaveGameManager.Instance.RegisterSaveable(this);
+        }
 
         /// <summary>
         /// Khởi tạo các đường dẫn file.
@@ -141,136 +148,178 @@ namespace Script.Procession
     #endif
         }
 
+        public string SaveToJson()
+        {
+            if (progression == null)
+            {
+                Debug.LogWarning("[ProgressionManager] progression is null, cannot save.");
+                return null;
+            }
+
+            try
+            {
+                string json = JsonSerializationHelper.SerializeGameProgression(progression);
+                Debug.Log("[ProgressionManager] SaveToJson success.");
+                return json;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[ProgressionManager] Failed to serialize progression: {ex.Message}");
+                return null;
+            }
+        }
+        
+        public void LoadFromJson(string json)
+        {
+            if (string.IsNullOrEmpty(json))
+            {
+                Debug.LogWarning("[ProgressionManager] LoadFromJson: input json is null or empty.");
+                return;
+            }
+
+            try
+            {
+                progression = JsonSerializationHelper.DeserializeGameProgression(json);
+                BuildEventSequence();        // Xây lại danh sách sự kiện sau khi load
+                AutoTriggerFirstEvent();     // Tự động trigger nếu cần
+                Debug.Log("[ProgressionManager] LoadFromJson success.");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[ProgressionManager] Failed to deserialize progression: {ex.Message}");
+            }
+        }
+
         /// <summary>
         /// Tải dữ liệu tiến trình từ file JSON hoặc ScriptableObject.
         /// </summary>
-        public void LoadProgression()
-        {
-            // ----- Bỏ qua save JSON, chỉ dùng SO trực tiếp ----- Lộc thêm vào để debug, xóa sau nhé, tại vì cái này dính tới phần save
-            if (progressionDataSO != null)
-            {
-                progression = progressionDataSO.ToGameProgression();
-                Debug.Log("Loaded progression trực tiếp từ ProgressionDataSO (bypass save).");
-                return;
-            }
-            Debug.LogError("ProgressionDataSO bị null, không thể load progression!");
-            
-            
-            //if (saveGameManager == null)
-            //{
-            //    Debug.LogError("SaveGameManager is not assigned!");
-            //    return;
-            //}
+        //public async Task LoadProgression()
+        //{
+        //    // ----- Bỏ qua save JSON, chỉ dùng SO trực tiếp ----- Lộc thêm vào để debug, xóa sau nhé, tại vì cái này dính tới phần save
+        //    if (progressionDataSO != null)
+        //    {
+        //        progression = progressionDataSO.ToGameProgression();
+        //        Debug.Log("Loaded progression trực tiếp từ ProgressionDataSO (bypass save).");
+        //        return;
+        //    }
+        //    Debug.LogError("ProgressionDataSO bị null, không thể load progression!");
 
-            string userName = userAccountManager.CurrentUserBaseName;
-            if (string.IsNullOrEmpty(userName))
-            {
-                Debug.LogWarning("CurrentUserNamePlaying is not set!");
-                return;
-            }
 
-            //string saveFolder = await SaveGameManager.Instance.GetLatestSaveFolder(userName);
-            //if (saveFolder != null)
-            //{
-            //    string json = saveGameManager.LoadJsonFile(saveFolder, "playerProgression.json");
-            //    if (!string.IsNullOrEmpty(json))
-            //    {
-            //        progression = JsonSerializationHelper.DeserializeGameProgression(json);
-            //       Debug.Log($"Loaded player progression from: {saveFolder}/playerProgression.json");
-            //        return;
-            //    }
-            //}
+        //    //if (saveGameManager == null)
+        //    //{
+        //    //    Debug.LogError("SaveGameManager is not assigned!");
+        //    //    return;
+        //    //}
 
-        //     TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
-        //     if (jsonText != null)
-        //     {
-        //         progression = JsonSerializationHelper.DeserializeGameProgression(jsonText.text);
-        //         Debug.Log("Loaded progression from JSON: JSON/progressionData");
-        //         string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
-        //         saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", jsonText.text);
-        //         Debug.Log($"Created new player progression file in: {newSaveFolder}");
-        //         return;
-        //     }
-        //
-        //     if (progressionDataSO != null)
-        //     {
-        //         progression = progressionDataSO.ToGameProgression();
-        //         Debug.Log("Loaded progression from ProgressionDataSO");
-        //         string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
-        //         string json = JsonSerializationHelper.SerializeGameProgression(progression);
-        //         saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
-        //         Debug.Log($"Created new player progression file in: {newSaveFolder}");
-        //         return;
-        //     }
-        //
-        //     Debug.LogError("No progression data found!");
-        // }
-        //
-        // /// <summary>
-        // /// Tạo một save game mới.
-        // /// </summary>
-        // public void CreateNewGame()
-        // {
-        //     if (saveGameManager == null)
-        //     {
-        //         Debug.LogError("SaveGameManager is not assigned!");
-        //         return;
-        //     }
-        //
-        //     string userName = userAccountManager.currentUserBaseName;
-        //     if (string.IsNullOrEmpty(userName))
-        //     {
-        //         Debug.LogError("CurrentUserNamePlaying is not set!");
-        //         return;
-        //     }
-        //
-        //     string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
-        //     TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
-        //     string json;
-        //     if (jsonText != null)
-        //     {
-        //         json = jsonText.text;
-        //         Debug.Log("Using default progression from JSON/progressionData");
-        //     }
-        //     else if (progressionDataSO != null)
-        //     {
-        //         progression = progressionDataSO.ToGameProgression();
-        //         json = JsonSerializationHelper.SerializeGameProgression(progression);
-        //         Debug.Log("Using default progression từ ProgressionDataSO");
-        //     }
-        //     else
-        //     {
-        //         Debug.LogError("No default progression data found!");
-        //         return;
-        //     }
-        //
-        //     saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
-        //     progression = JsonSerializationHelper.DeserializeGameProgression(json);
-        //     Debug.Log($"Created new game save: {newSaveFolder}");
-        // }
-        //
-        // /// <summary>
-        // /// Lưu dữ liệu tiến trình vào file JSON.
-        // /// </summary>
-        // public void SaveProgression()
-        // {
-        //     if (saveGameManager == null)
-        //     {
-        //         Debug.LogError("SaveGameManager is not assigned!");
-        //         return;
-        //     }
-        //
-        //     string userName = userAccountManager.currentUserBaseName;
-        //     if (string.IsNullOrEmpty(userName))
-        //     {
-        //         Debug.LogError("CurrentUserNamePlaying is not set!");
-        //         return;
-        //     }
-        //
-        //     string saveFolder = saveGameManager.GetLatestSaveFolder(userName) ?? saveGameManager.CreateNewSaveFolder(userName);
-        //     string json = JsonSerializationHelper.SerializeGameProgression(progression);
-        //     saveGameManager.SaveJsonFile(saveFolder, "playerProgression.json", json);
-        }
+        //    string userName = userAccountManager.CurrentUserBaseName;
+        //    if (string.IsNullOrEmpty(userName))
+        //    {
+        //        Debug.LogWarning("CurrentUserNamePlaying is not set!");
+        //        return;
+        //    }
+
+        //    string saveFolder = await SaveGameManager.Instance.GetLatestSaveFolder(userName);
+        //    if (saveFolder != null)
+        //    {
+        //        string json = saveGameManager.LoadJsonFile(saveFolder, "playerProgression.json");
+        //        if (!string.IsNullOrEmpty(json))
+        //        {
+        //            progression = JsonSerializationHelper.DeserializeGameProgression(json);
+        //            Debug.Log($"Loaded player progression from: {saveFolder}/playerProgression.json");
+        //            return;
+        //        }
+        //    }
+
+        //    TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
+        //    if (jsonText != null)
+        //    {
+        //        progression = JsonSerializationHelper.DeserializeGameProgression(jsonText.text);
+        //        Debug.Log("Loaded progression from JSON: JSON/progressionData");
+        //        string newSaveFolder = await SaveGameManager.CreateNewSaveFolder(userName);
+        //        saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", jsonText.text);
+        //        Debug.Log($"Created new player progression file in: {newSaveFolder}");
+        //        return;
+        //    }
+
+        //    if (progressionDataSO != null)
+        //    {
+        //        progression = progressionDataSO.ToGameProgression();
+        //        Debug.Log("Loaded progression from ProgressionDataSO");
+        //        string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
+        //        string json = JsonSerializationHelper.SerializeGameProgression(progression);
+        //        saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
+        //        Debug.Log($"Created new player progression file in: {newSaveFolder}");
+        //        return;
+        //    }
+
+        //    Debug.LogError("No progression data found!");
+        //}
+
+        /// <summary>
+        /// Tạo một save game mới.
+        /// </summary>
+        //public void CreateNewGame()
+        //{
+        //    if (saveGameManager == null)
+        //    {
+        //        Debug.LogError("SaveGameManager is not assigned!");
+        //        return;
+        //    }
+
+        //    string userName = userAccountManager.currentUserBaseName;
+        //    if (string.IsNullOrEmpty(userName))
+        //    {
+        //        Debug.LogError("CurrentUserNamePlaying is not set!");
+        //        return;
+        //    }
+
+        //    string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
+        //    TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
+        //    string json;
+        //    if (jsonText != null)
+        //    {
+        //        json = jsonText.text;
+        //        Debug.Log("Using default progression from JSON/progressionData");
+        //    }
+        //    else if (progressionDataSO != null)
+        //    {
+        //        progression = progressionDataSO.ToGameProgression();
+        //        json = JsonSerializationHelper.SerializeGameProgression(progression);
+        //        Debug.Log("Using default progression từ ProgressionDataSO");
+        //    }
+        //    else
+        //    {
+        //        Debug.LogError("No default progression data found!");
+        //        return;
+        //    }
+
+        //    saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
+        //    progression = JsonSerializationHelper.DeserializeGameProgression(json);
+        //    Debug.Log($"Created new game save: {newSaveFolder}");
+        //}
+
+        /// <summary>
+        /// Lưu dữ liệu tiến trình vào file JSON.
+        /// </summary>
+        //public void SaveProgression()
+        //{
+        //    if (saveGameManager == null)
+        //    {
+        //        Debug.LogError("SaveGameManager is not assigned!");
+        //        return;
+        //    }
+
+        //    string userName = userAccountManager.currentUserBaseName;
+        //    if (string.IsNullOrEmpty(userName))
+        //    {
+        //        Debug.LogError("CurrentUserNamePlaying is not set!");
+        //        return;
+        //    }
+
+        //    string saveFolder = saveGameManager.GetLatestSaveFolder(userName) ?? saveGameManager.CreateNewSaveFolder(userName);
+        //    string json = JsonSerializationHelper.SerializeGameProgression(progression);
+        //    saveGameManager.SaveJsonFile(saveFolder, "playerProgression.json", json);
+        //}
 
         #endregion
 
@@ -338,7 +387,7 @@ namespace Script.Procession
             if (TryCompleteSubProcess(eventId))
             {
                 UpdateEventIndex(eventId);
-                //SaveProgression();
+                SaveGameManager.Instance.SaveNow(); // Lưu tiến trình ngay lập tức
                 // Tự động trigger event tiếp theo nếu đủ điều kiện
                 TryTriggerNextEvent();
                 return;
@@ -346,7 +395,7 @@ namespace Script.Procession
             if (TryCompleteMainProcess(eventId))
             {
                 UpdateEventIndex(eventId);
-                //SaveProgression();
+                SaveGameManager.Instance.SaveNow(); // Lưu tiến trình ngay lập tức
                 TryTriggerNextEvent();
                 return;
             }
@@ -600,6 +649,7 @@ namespace Script.Procession
                 }
             }
         }
+
     }
 }
 

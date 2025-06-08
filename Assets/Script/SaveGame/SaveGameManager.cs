@@ -49,6 +49,7 @@ public class SaveGameManager : MonoBehaviour
         jsonFileHandler = new JsonFileHandler();
     }
 
+
     /// <summary>
     /// Lưu một tệp JSON vào thư mục đã cho.
     /// </summary>
@@ -189,9 +190,10 @@ public class SaveGameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Di chuyển tất cả tệp từ thư mục tạm thời sang thư mục lưu trữ chính thức của người dùng.
+    /// Lưu tất cả dữ liệu của người dùng hiện tại vào thư mục lưu trữ.
     /// </summary>
     /// <param name="userName"></param>
+    /// <param name="folderPath"></param>
     /// <returns></returns>
     public async Task SaveAllAsync(string userName, string folderPath = null)
     {

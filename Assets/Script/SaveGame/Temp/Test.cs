@@ -142,9 +142,8 @@ public class Test : MonoBehaviour
 
     private void RegisterSaveables()
     {
-        saveGameManager.RegisterSaveable(playTimeManager);
-        saveGameManager.RegisterSaveable(playerCheckPoint);
-        // Thêm các module ISaveable khác ở đây nếu cần
+        SaveGameManager.Instance.RegisterSaveable(playTimeManager);
+        SaveGameManager.Instance.RegisterSaveable(playerCheckPoint);
     }
 
     private async Task CheckUserAccountsAsync()
@@ -304,7 +303,6 @@ public class Test : MonoBehaviour
         saveImage.texture = texture;
         yield return null;
     }
-
 
     #endregion
 
