@@ -339,12 +339,15 @@ namespace Script.Procession
             {
                 UpdateEventIndex(eventId);
                 SaveProgression();
+                // Tự động trigger event tiếp theo nếu đủ điều kiện
+                TryTriggerNextEvent();
                 return;
             }
             if (TryCompleteMainProcess(eventId))
             {
                 UpdateEventIndex(eventId);
                 SaveProgression();
+                TryTriggerNextEvent();
                 return;
             }
             Debug.LogWarning($"[ProgressionManager] Không tìm thấy bất kỳ Main/Sub Process nào có ID = '{eventId}'");
@@ -557,6 +560,46 @@ namespace Script.Procession
             return false;
         }
 
+        // Kiểm tra event (SubProcess hoặc MainProcess) đã hoàn thành chưa
+        public bool IsEventCompleted(string eventId)
+        {
+            if (progression?.MainProcesses == null) return false;
+            // Kiểm tra SubProcess
+            foreach (var main in progression.MainProcesses)
+            {
+                var sub = main.SubProcesses?.Find(s => s.Id == eventId);
+                if (sub != null)
+                    return sub.Status == MainProcess.ProcessStatus.Completed;
+            }
+            // Kiểm tra MainProcess
+            var mainProcess = progression.MainProcesses.Find(m => m.Id == eventId);
+            if (mainProcess != null)
+                return mainProcess.Status == MainProcess.ProcessStatus.Completed;
+            return false;
+        }
+
         #endregion
+
+        // Hàm tự động trigger event tiếp theo nếu đủ điều kiện
+        private void TryTriggerNextEvent()
+        {
+            string nextEventId = GetNextEventId();
+            if (string.IsNullOrEmpty(nextEventId)) return;
+            Debug.Log($"[ProgressionManager] Trying next event ID '{nextEventId}'");
+
+            // Lấy dữ liệu tiến trình tiếp theo
+            var processData = GetProcessData(nextEventId);
+            var sub = processData as SubProcess;
+            if (sub != null)
+            {
+                bool canTrigger = sub.Conditions == null || sub.Conditions.Count == 0 || sub.Conditions.All(c => c.IsSatisfied(null));
+                if (canTrigger)
+                {
+                    Debug.Log($"[ProgressionManager] Auto trigger next event: {nextEventId}");
+                    Script.GameEventSystem.EventExecutor.Instance.TriggerEvent(nextEventId);
+                }
+            }
+        }
     }
 }
+
