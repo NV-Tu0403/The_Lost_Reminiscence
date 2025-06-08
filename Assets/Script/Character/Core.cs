@@ -4,7 +4,7 @@ using System;
 public class Core : MonoBehaviour
 {
     public static Core Instance { get; private set; }
-    public static bool IsInitialized => Instance != null;   
+    public static bool IsInitialized => Instance != null;   // Kiểm tra xem Core đã được khởi tạo hay chưa
     public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
     public event Action OnModeChanged;                      // Sự kiện khi chế độ thay đổi
 
@@ -13,22 +13,6 @@ public class Core : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            // Đặt game object cha (nếu có) thành DontDestroyOnLoad
-            if (transform.parent != null)
-            {
-                DontDestroyOnLoad(transform.parent.gameObject);
-            }
-            else
-            {
-                DontDestroyOnLoad(gameObject);
-            }
-
-            // Đặt gameObject "canvas" thành DontDestroyOnLoad nếu tồn tại trong scene
-            var canvasObj = GameObject.Find("Canvas");
-            if (canvasObj != null)
-            {
-                DontDestroyOnLoad(canvasObj);
-            }
             //Debug.Log("Core initialized.");
         }
         else
