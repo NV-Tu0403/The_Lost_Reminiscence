@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class SceneController : MonoBehaviour
 {
     public static SceneController Instance { get; private set; }
+
     private List<string> loadedScenes = new List<string>();
     private string initialSceneName;
     private static readonly string[] ExcludedScenes = { "Menu" }; // Scene không được unload
@@ -16,13 +17,13 @@ public class SceneController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
             initialSceneName = SceneManager.GetActiveScene().name;
             Debug.Log($"[SceneController] Initial scene set to: {initialSceneName}");
         }
         else
         {
-            Destroy(gameObject);
+            //Destroy(gameObject);
         }
     }
 

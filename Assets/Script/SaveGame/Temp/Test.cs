@@ -19,6 +19,8 @@ public class Test : MonoBehaviour
     [SerializeField] private PlayerCheckPoint playerCheckPoint;
     [SerializeField] private BackendSync backendSync;
 
+
+
     [Header ("UI log")]
     [SerializeField] private TMP_Text currentSaveText;
 
@@ -77,6 +79,7 @@ public class Test : MonoBehaviour
     [SerializeField] private Button QuitSession_Bt;
 
     [SerializeField] private TMP_Text playTimeText;
+
     private string lastSelectedSaveFolder;
     private List<GameObject> saveItemInstances = new List<GameObject>();
     private string selectedSaveFolder;
@@ -120,7 +123,7 @@ public class Test : MonoBehaviour
         NewGame_Bt.onClick.AddListener(OnNewGameClicked);
         ContinueGame_Bt.onClick.AddListener(OnContinueGameClicked);
         QuitGame_Bt.onClick.AddListener(OnQuitGameClicked);
-        SaveSession_Bt.onClick.AddListener(() => _ = OnSaveSessionClicked());
+        SaveSession_Bt.onClick.AddListener(() => OnSaveSessionClicked());
         Menu_Bt.onClick.AddListener(OnMenuClicked);
         QuitSession_Bt.onClick.AddListener(OnQuitSessionClicked);
         logoutButton.onClick.AddListener(OnLogoutClicked); 
@@ -211,22 +214,9 @@ public class Test : MonoBehaviour
 
     private async Task RefreshSaveListAsync()
     {
-        foreach (var item in saveItemInstances)
-        {
-            Destroy(item);
-        }
-        saveItemInstances.Clear();
+        var context = await ProfessionalSkilMenu.Instance.RefreshSaveList();
 
-        string userName = userAccountManager.CurrentUserBaseName;
-        if (string.IsNullOrEmpty(userName))
-        {
-            Debug.LogWarning("[Test] No user logged in. Cannot refresh save list.");
-            ContinueGame_Bt.interactable = false;
-            return;
-        }
-
-        var saves = await saveGameManager.GetAllSaveFoldersAsync(userName);
-        foreach (var save in saves)
+        foreach (var save in context.Saves)
         {
             GameObject saveItem = Instantiate(saveItemTemplate, saveListPanel.transform);
             saveItemInstances.Add(saveItem);
@@ -251,14 +241,8 @@ public class Test : MonoBehaviour
             deleteButton.onClick.AddListener(() => OnDeleteSaveAsync(save.FolderPath));
         }
 
-        // Kiểm tra sự tồn tại của lastSelectedSaveFolder
-        if (!string.IsNullOrEmpty(lastSelectedSaveFolder) && !Directory.Exists(lastSelectedSaveFolder))
-        {
-            lastSelectedSaveFolder = null;
-        }
-        ContinueGame_Bt.interactable = !string.IsNullOrEmpty(lastSelectedSaveFolder) && Directory.Exists(lastSelectedSaveFolder);
-
-        Debug.Log($"[Test] Refreshed save list for user: {userName}, Found {saves.Count} saves");
+        ContinueGame_Bt.interactable = context.IsContinueEnabled;
+        Debug.Log($"[Test] Refreshed save list for user: {context.UserName}, Found {context.Saves.Count} saves");
     }
 
     private IEnumerator ResetSaveSelectionAfterDelay()
@@ -321,10 +305,6 @@ public class Test : MonoBehaviour
         yield return null;
     }
 
-    private void OnquitSesion()
-    {
-
-    }
 
     #endregion
 
@@ -732,27 +712,13 @@ public class Test : MonoBehaviour
 
         try
         {
-            await OnSaveSessionClicked();
+            await ProfessionalSkilMenu.Instance.OnQuitSesion();
 
-            // Log danh sách scene trước khi unload
-            var loadedScenes = SceneController.Instance.GetLoadedAdditiveScenes();
-            Debug.Log($"[Test] Loaded scenes before unload: {string.Join(", ", loadedScenes)}");
-
-            // Unload tất cả scene additive
-            await SceneController.Instance.UnloadAllAdditiveScenesAsync();
-
-            loadedScenes = SceneController.Instance.GetLoadedAdditiveScenes();
-            Debug.Log($"[Test] Loaded scenes after unload: {string.Join(", ", loadedScenes)}");
-
-            await RefreshSaveListAsync();
-            lastSelectedSaveFolder = null;
             ContinueGame_Bt.interactable = false;
             InitializeUI();
             GamePlayUI.SetActive(false);
 
             Debug.Log("[Test] Quit session successfully!");
-
-           
         }
         catch (Exception ex)
         {
@@ -768,37 +734,14 @@ public class Test : MonoBehaviour
         }
     }
 
-    private async Task OnSaveSessionClicked()
+    private async void OnSaveSessionClicked()
     {
         LoadingUI.SetActive(true);
 
         try
         {
-            string userName = userAccountManager.CurrentUserBaseName;
-            if (string.IsNullOrEmpty(userName))
-                throw new Exception("No user logged in!");
+            await ProfessionalSkilMenu.Instance.OnSaveSession();
 
-            // Kiểm tra và cập nhật CurrentMap
-            string currentScene = SceneManager.GetActiveScene().name;
-            if (string.IsNullOrEmpty(playerCheckPoint.CurrentMap) || playerCheckPoint.CurrentMap == "Unknown" || playerCheckPoint.CurrentMap != currentScene)
-            {
-                playerCheckPoint.SetCurrentMapToCurrentScene();
-                Debug.Log($"[Test] Updated CurrentMap to: {playerCheckPoint.CurrentMap}");
-            }
-
-            string saveFolder = lastSelectedSaveFolder;
-            if (string.IsNullOrEmpty(saveFolder) || !Directory.Exists(saveFolder))
-            {
-                saveFolder = await GetValidLastSaveFolderAsync();
-                if (string.IsNullOrEmpty(saveFolder))
-                {
-                    saveFolder = await saveGameManager.CreateNewSaveFolder(userName);
-                }
-                lastSelectedSaveFolder = saveFolder;
-                ContinueGame_Bt.interactable = true;
-            }
-
-            await saveGameManager.SaveToFolderAsync(saveFolder, CancellationToken.None);
             errorText.text = "Game saved successfully!";
             errorText.color = Color.green;
             await RefreshSaveListAsync();
@@ -851,7 +794,7 @@ public class Test : MonoBehaviour
         NewGame_Bt.onClick.RemoveListener(OnNewGameClicked);
         ContinueGame_Bt.onClick.RemoveListener(OnContinueGameClicked);
         QuitGame_Bt.onClick.RemoveListener(OnQuitGameClicked);
-        SaveSession_Bt.onClick.RemoveListener(() => _ = OnSaveSessionClicked());
+        SaveSession_Bt.onClick.RemoveListener(() => OnSaveSessionClicked());
         Menu_Bt.onClick.RemoveListener(OnMenuClicked);
         QuitSession_Bt.onClick.RemoveListener(OnQuitGameClicked);
         submitUserNameButton.onClick.RemoveListener(() => OnSubmitUserNameAsync());

@@ -6,6 +6,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
+public class SaveFolder
+{
+    public string FolderPath { get; set; }
+    public string ImagePath { get; set; }  // Nếu bạn lưu ảnh đại diện cho save
+}
+
+public class SaveListContext
+{
+    public string UserName { get; set; }
+    public List<SaveFolder> Saves { get; set; }
+    public bool IsContinueEnabled { get; set; }
+}
+
 public class SaveGameManager : MonoBehaviour
 {
     private readonly object saveablesLock = new object();//  để bảo vệ truy cập đồng thời đến danh sách saveables
@@ -16,18 +29,20 @@ public class SaveGameManager : MonoBehaviour
     private JsonFileHandler jsonFileHandler;
 
     private float lastSaveTime;
-    private const float SAVE_COOLDOWN = 5f; 
+    private const float SAVE_COOLDOWN = 5f;
 
     private void Awake()
     {
-        if (Instance != null)
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
         {
             Destroy(gameObject);
             return;
         }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
 
         string userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
         folderManager = new FolderManager(userDataPath);

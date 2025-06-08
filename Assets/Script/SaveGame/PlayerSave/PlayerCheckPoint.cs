@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 
 public class PlayerCheckPoint : MonoBehaviour, ISaveable
 {
+    public static PlayerCheckPoint Instance { get; private set; }
+
     public string FileName => "PlayerCheckPoint.json";
 
     [SerializeField] private Transform playerTransform;
@@ -16,6 +18,15 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.LogError("[PlayerCheckPoint] Another instance of PlayerCheckPoint already exists. Destroying this instance.");
+        }
+
         if (playerTransform == null)
         {
             playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;

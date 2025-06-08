@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Script.GameEventSystem;
 using Script.Procession.Reward.Base;
 using UnityEngine;
@@ -144,7 +145,7 @@ namespace Script.Procession
         /// <summary>
         /// Tải dữ liệu tiến trình từ file JSON hoặc ScriptableObject.
         /// </summary>
-        public void LoadProgression()
+        public async Task LoadProgression()
         {
             // ----- Bỏ qua save JSON, chỉ dùng SO trực tiếp ----- Lộc thêm vào để debug, xóa sau nhé, tại vì cái này dính tới phần save
             if (progressionDataSO != null)
@@ -169,10 +170,10 @@ namespace Script.Procession
                 return;
             }
 
-            string saveFolder = saveGameManager.GetLatestSaveFolder(userName);
+            string saveFolder =await saveGameManager.GetLatestSaveFolder(userName);
             if (saveFolder != null)
             {
-                string json = saveGameManager.LoadJsonFile(saveFolder, "playerProgression.json");
+                string json = await saveGameManager.LoadJsonFile(saveFolder, "playerProgression.json");
                 if (!string.IsNullOrEmpty(json))
                 {
                     progression = JsonSerializationHelper.DeserializeGameProgression(json);
@@ -186,8 +187,8 @@ namespace Script.Procession
             {
                 progression = JsonSerializationHelper.DeserializeGameProgression(jsonText.text);
                 Debug.Log("Loaded progression from JSON: JSON/progressionData");
-                string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
-                saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", jsonText.text);
+                string newSaveFolder = await saveGameManager.CreateNewSaveFolder(userName);
+                await saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", jsonText.text);
                 Debug.Log($"Created new player progression file in: {newSaveFolder}");
                 return;
             }
@@ -196,9 +197,9 @@ namespace Script.Procession
             {
                 progression = progressionDataSO.ToGameProgression();
                 Debug.Log("Loaded progression from ProgressionDataSO");
-                string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
+                string newSaveFolder =await saveGameManager.CreateNewSaveFolder(userName);
                 string json = JsonSerializationHelper.SerializeGameProgression(progression);
-                saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
+                await saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
                 Debug.Log($"Created new player progression file in: {newSaveFolder}");
                 return;
             }
@@ -209,7 +210,7 @@ namespace Script.Procession
         /// <summary>
         /// Tạo một save game mới.
         /// </summary>
-        public void CreateNewGame()
+        public async Task CreateNewGame()
         {
             if (saveGameManager == null)
             {
@@ -224,7 +225,7 @@ namespace Script.Procession
                 return;
             }
 
-            string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
+            string newSaveFolder = await saveGameManager.CreateNewSaveFolder(userName);
             TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
             string json;
             if (jsonText != null)
@@ -244,7 +245,7 @@ namespace Script.Procession
                 return;
             }
 
-            saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
+            await saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
             progression = JsonSerializationHelper.DeserializeGameProgression(json);
             Debug.Log($"Created new game save: {newSaveFolder}");
         }
@@ -252,7 +253,7 @@ namespace Script.Procession
         /// <summary>
         /// Lưu dữ liệu tiến trình vào file JSON.
         /// </summary>
-        public void SaveProgression()
+        public async Task SaveProgression()
         {
             if (saveGameManager == null)
             {
@@ -267,9 +268,9 @@ namespace Script.Procession
                 return;
             }
 
-            string saveFolder = saveGameManager.GetLatestSaveFolder(userName) ?? saveGameManager.CreateNewSaveFolder(userName);
+            string saveFolder = await saveGameManager.GetLatestSaveFolder(userName) ?? await saveGameManager.CreateNewSaveFolder(userName);
             string json = JsonSerializationHelper.SerializeGameProgression(progression);
-            saveGameManager.SaveJsonFile(saveFolder, "playerProgression.json", json);
+            await saveGameManager.SaveJsonFile(saveFolder, "playerProgression.json", json);
         }
 
         #endregion
