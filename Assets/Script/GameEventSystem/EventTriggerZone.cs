@@ -10,8 +10,9 @@ namespace Script.GameEventSystem
         private void OnTriggerEnter(Collider other)
         {
             if (!other.CompareTag("Player")) return;
-
-            if (!ProgressionManager.Instance.CanTrigger(eventId))
+            
+            if (!ProgressionManager.Instance.CanTrigger(eventId) && 
+                !ProgressionManager.Instance.IsWaitingForEvent(eventId))
             {
                 Debug.Log($"[EventTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
                 return;

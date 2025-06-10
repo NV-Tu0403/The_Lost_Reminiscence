@@ -8,7 +8,7 @@ using Script.Procession.Reward.ScriptableObjects;
 public class ProgressionDataSO : ScriptableObject
 {
     public List<MainProcessSO> MainProcesses;
-
+    
     /// <summary>
     /// Chuyển từ SO → đối tượng GameProgression
     /// </summary>
@@ -74,7 +74,9 @@ public class SubProcessSO
     public string Name;
     public string Description;
     public int Order;
-
+    
+    public MainProcess.TriggerType Trigger;
+    
     public List<ConditionSO> Conditions;
     public List<RewardSO> Rewards;
     
@@ -89,6 +91,7 @@ public class SubProcessSO
             Name       = Name,
             Description= Description,
             Order      = Order,
+            Trigger    = Trigger,
             Conditions = Conditions.ConvertAll(so => so.ToCondition()),
             Rewards    = Rewards.ConvertAll(so => so.ToReward()),
             Status     = Status
