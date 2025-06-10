@@ -213,6 +213,13 @@ public class Test : MonoBehaviour
 
     private async Task RefreshSaveListAsync()
     {
+
+        foreach (var item in saveItemInstances)
+        {
+            Destroy(item);
+        }
+        saveItemInstances.Clear();
+
         var context = await ProfessionalSkilMenu.Instance.RefreshSaveList();
 
         foreach (var save in context.Saves)
@@ -309,8 +316,6 @@ public class Test : MonoBehaviour
     // hiển thị panel xác nhận
     private async Task<bool> ShowConfirmationPanel(string message)
     {
-        // TODO: Thêm logic hiển thị panel xác nhận với message
-        // Ví dụ: Hiển thị UI với 2 nút Confirm/Cancel và chờ phản hồi
         await Task.Delay(100); // Giả lập chờ người dùng
         return true; // Giả định người dùng xác nhận
     }
@@ -601,7 +606,7 @@ public class Test : MonoBehaviour
                 throw new Exception("Failed to create new save folder!");
             }
 
-            playerCheckPoint.ResetPlayerPosition();
+            playerCheckPoint.ResetPlayerPositionWord();
             playerCheckPoint.SetCurrentMapToCurrentScene();
             playTimeManager.ResetSession();
             playTimeManager.StartCounting();
@@ -652,6 +657,7 @@ public class Test : MonoBehaviour
                 Debug.LogWarning("[Test] Invalid or unknown scene in checkpoint, using default: white_Space");
             }
 
+            // Load scene và chờ cho đến khi nó hoàn tất
             if (!SceneController.Instance.GetLoadedAdditiveScenes().Contains(sceneToLoad))
             {
                 await SceneController.Instance.LoadAdditiveSceneAsync(sceneToLoad, playerCheckPoint);
@@ -660,6 +666,9 @@ public class Test : MonoBehaviour
             {
                 SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneToLoad));
             }
+
+            // sau scene đã được load xong thì yêu cầu PlayerCheckPoint áp dụng vị trí
+            PlayerCheckPoint.Instance.ApplyLoadedPosition();
 
             playTimeManager.StartCounting();
             GamePlayUI.SetActive(true);
@@ -673,7 +682,7 @@ public class Test : MonoBehaviour
         }
         finally
         {
-            await Task.Delay(3000);
+            await Task.Delay(1000);
             LoadingUI.SetActive(false);
         }
     }
@@ -710,7 +719,10 @@ public class Test : MonoBehaviour
 
         try
         {
+
             await ProfessionalSkilMenu.Instance.OnQuitSesion();
+            await PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+            await RefreshSaveListAsync(); // cập nhật danh sách lưu sau khi thoát session
 
             ContinueGame_Bt.interactable = false;
             InitializeUI();
@@ -770,7 +782,7 @@ public class Test : MonoBehaviour
         try
         {
             // Lưu trạng thái trước khi thoát
-            await saveGameManager.SaveAwait();
+            await SaveGameManager.Instance.SaveAwait();
             Debug.Log("Game state saved before quitting.");
             Application.Quit();
         }

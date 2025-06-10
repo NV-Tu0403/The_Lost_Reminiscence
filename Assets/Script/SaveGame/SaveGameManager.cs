@@ -150,13 +150,13 @@ public class SaveGameManager : MonoBehaviour
 
     public async Task SaveToFolderAsync(string folderPath, CancellationToken token)
     {
-        if (Time.time - lastSaveTime < SAVE_COOLDOWN)
-        {
-            Debug.LogWarning("[SaveGameManager] Save cooldown active, skipping save.");
-            return;
-        }
+        //if (Time.time - lastSaveTime < SAVE_COOLDOWN)
+        //{
+        //    Debug.LogWarning("[SaveGameManager] Save cooldown active, skipping save.");
+        //    return;
+        //}
 
-        lastSaveTime = Time.time;
+        //lastSaveTime = Time.time;
         string tempFolderPath = Path.Combine(Application.persistentDataPath, $"TempSave_{Guid.NewGuid()}");
 
         try

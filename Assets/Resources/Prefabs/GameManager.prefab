@@ -48,6 +48,11 @@ GameObject:
   - component: {fileID: 8307391089780246344}
   - component: {fileID: 498174671285304566}
   - component: {fileID: 5699872147668311414}
+  - component: {fileID: 8192913521711630080}
+  - component: {fileID: 4337217740543440558}
+  - component: {fileID: 9019252248850096984}
+  - component: {fileID: 4302067406921403228}
+  - component: {fileID: 5195663086917124839}
   m_Layer: 0
   m_Name: Core
   m_TagString: Untagged
@@ -132,9 +137,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   progressionDataSO: {fileID: 11400000, guid: 9493437d946315e4d8c16de7a61d0844, type: 2}
-  weaponDatabase: {fileID: 11400000, guid: 2fb3226106a138648b5c5b732389770a, type: 2}
   lootDatabase: {fileID: 11400000, guid: bd7a90ba8e4ee424d804ad014ee31745, type: 2}
-  saveGameManager: {fileID: 4835086859005481531}
+  userAccountManager: {fileID: 0}
 --- !u!114 &5699872147668311414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,6 +152,69 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   apiBaseUrl: https://backend-datn-iwqa.onrender.com/api
+--- !u!114 &8192913521711630080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4872049796582545324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95fbfba15b43b264384982fac98729e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTransform: {fileID: 0}
+--- !u!114 &4337217740543440558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4872049796582545324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1eab956390ccfa846811e0bf0fd94238, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &9019252248850096984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4872049796582545324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f1baf1896ab4a54da29d5a0172e7b5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentUserBaseName: 
+--- !u!114 &4302067406921403228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4872049796582545324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f2be298156c7994e8bce9ba7a83b6fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isCounting: 0
+--- !u!114 &5195663086917124839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4872049796582545324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c79a0296b1f908c4e8e9c132b4c83fc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6939454908600164398
 GameObject:
   m_ObjectHideFlags: 0
@@ -302,4 +369,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   eventId: C_o1
-  executor: {fileID: 6818468614257780478}

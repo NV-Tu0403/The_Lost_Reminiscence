@@ -1,4 +1,5 @@
-﻿using Loc_Backend.Scripts;
+﻿using DuckLe;
+using Loc_Backend.Scripts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -150,9 +151,9 @@ public class SaveGameUI : MonoBehaviour
         }
 
         // Lưu tọa độ hiện tại trước khi đặt lại vị trí
-        if (playerCheckPoint != null && playerCheckPoint.PlayerTransform != null)
+        if (playerCheckPoint != null)
         {
-            Vector3 currentPosition = playerCheckPoint.PlayerTransform.position;
+            Vector3 currentPosition = PlayerController.Instance.transform.position;
             PlayerCheckPointData lastData = playerCheckPoint.GetLastLoadedData();
             if (lastData == null || lastData.position.ToVector3() != currentPosition)
             {
@@ -173,7 +174,7 @@ public class SaveGameUI : MonoBehaviour
         bool resetSuccess = false;
         if (playerCheckPoint != null)
         {
-            resetSuccess = playerCheckPoint.ResetPlayerPosition();
+            //resetSuccess = playerCheckPoint.ResetPlayerPositionWord();
         }
         else
         {

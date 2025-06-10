@@ -33,6 +33,8 @@ namespace DuckLe
     public class PlayerController : MonoBehaviour
     {
 
+        public static PlayerController Instance { get; private set; }
+
         [SerializeField] public PlayerConfig config; // Tham chiếu đến PlayerConfig
         private CCData_M3 _data;
         private ref CCData_M3 Data => ref _data;
@@ -92,6 +94,18 @@ namespace DuckLe
             if (config == null)
             {
                 Debug.LogError("PlayerConfig is not assigned in PlayerController!");
+                return;
+            }
+
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Debug.LogError("Another instance of PlayerController already exists. Destroying this instance.");
+                Destroy(gameObject);
                 return;
             }
 

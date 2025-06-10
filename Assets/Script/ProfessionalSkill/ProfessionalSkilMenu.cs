@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DuckLe;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -27,43 +28,40 @@ public class ProfessionalSkilMenu : MonoBehaviour
         if (Instance == null )
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
         }
     }
 
+    /// <summary>
+    /// xử lí ghiệp vụ khi thoát phiên làm chơi.
+    /// </summary>
+    /// <returns></returns>
     public async Task OnQuitSesion()
     {
         try
         {
             await OnSaveSession();
 
-            var loadedScenes = SceneController.Instance.GetLoadedAdditiveScenes();
-            Debug.Log($"[Test] Loaded scenes before unload: {string.Join(", ", loadedScenes)}");
-
-            // Unload tất cả scene additive
+            //Unload hết scene (khi này player có thể bị destroy)
             await SceneController.Instance.UnloadAllAdditiveScenesAsync();
 
-            loadedScenes = SceneController.Instance.GetLoadedAdditiveScenes();
-            Debug.Log($"[Test] Loaded scenes after unload: {string.Join(", ", loadedScenes)}");
+            // Reset vị trí Player
+            await PlayerCheckPoint.Instance.ResetPlayerPositionWord();
 
-            //await RefreshSaveList();
+            Debug.Log($"[QuitSession] Player position AFTER RESET: {PlayerController.Instance.transform.position}");
+
             lastSelectedSaveFolder = null;
         }
         catch (Exception ex)
         {
             Debug.LogError($"[ProfessionalSkilMenu] Error during session quit: {ex}");
-
-        }
-        finally
-        {
-            //Debug.Log($"");
         }
     }
 
+
+    /// <summary>
+    /// Lưu phiên chơi hiện tại vào thư mục đã chọn hoặc tạo mới nếu không có.
+    /// </summary>
+    /// <returns></returns>
     public async Task OnSaveSession()
     {
         try
@@ -99,12 +97,12 @@ public class ProfessionalSkilMenu : MonoBehaviour
             Debug.LogError($"[ProfessionalSkilMenu] Error during save session: {ex}");
             throw;
         }
-        //finally
-        //{
-        //    //Debug.Log($"");
-        //}
     }
 
+    /// <summary>
+    /// Làm mới danh sách các thư mục lưu trữ.
+    /// </summary>
+    /// <returns></returns>
     public async Task<SaveListContext> RefreshSaveList()
     {
         foreach (var item in saveItemInstances)
@@ -117,39 +115,43 @@ public class ProfessionalSkilMenu : MonoBehaviour
         if (string.IsNullOrEmpty(userName))
         {
             Debug.LogWarning("[Test] No user logged in. Cannot refresh save list.");
-            return new SaveListContext
-            {
-                UserName = userName,
-                Saves = new List<SaveFolder>(),
-                IsContinueEnabled = false
-            };
+            return new SaveListContext { UserName = userName, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
         }
 
-        var saves = await SaveGameManager.Instance.GetAllSaveFoldersAsync(userName);
+        var saves = (await SaveGameManager.Instance.GetAllSaveFoldersAsync(userName))
+            .Select(s => new SaveFolder { FolderPath = s.FolderPath, ImagePath = s.ImagePath })
+            .Distinct(new SaveFolderComparer()) // Thêm comparer dựa trên FolderPath hoặc timestamp
+            .ToList();
 
-        // Convert the list of tuples to a list of SaveFolder objects
-        var saveFolders = saves.Select(s => new SaveFolder
-        {
-            FolderPath = s.FolderPath,
-            ImagePath = s.ImagePath
-        }).ToList();
-
-        if (!string.IsNullOrEmpty(lastSelectedSaveFolder) &&
-            !Directory.Exists(lastSelectedSaveFolder))
-        {
-            lastSelectedSaveFolder = null;
-        }
 
         return new SaveListContext
         {
             UserName = userName,
-            Saves = saveFolders,
-            IsContinueEnabled = !string.IsNullOrEmpty(lastSelectedSaveFolder) &&
-                                Directory.Exists(lastSelectedSaveFolder)
+            Saves = saves,
+            IsContinueEnabled = !string.IsNullOrEmpty(lastSelectedSaveFolder) && Directory.Exists(lastSelectedSaveFolder)
         };
     }
 
+    /// <summary>
+    /// So sánh hai thư mục lưu trữ dựa trên đường dẫn của chúng.
+    /// </summary>
+    public class SaveFolderComparer : IEqualityComparer<SaveFolder>
+    {
+        public bool Equals(SaveFolder x, SaveFolder y)
+        {
+            return x.FolderPath == y.FolderPath;
+        }
 
+        public int GetHashCode(SaveFolder obj)
+        {
+            return obj.FolderPath.GetHashCode();
+        }
+    }
+
+    /// <summary>
+    /// Lấy thư mục lưu trữ hợp lệ cuối cùng đã được sử dụng.
+    /// </summary>
+    /// <returns></returns>
     private async Task<string> GetValidLastSaveFolderAsync()
     {
         string lastFileSave = UserAccountManager.Instance.GetLastFileSave();

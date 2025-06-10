@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DuckLe;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -17,13 +18,8 @@ public class SceneController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            //DontDestroyOnLoad(gameObject);
             initialSceneName = SceneManager.GetActiveScene().name;
             Debug.Log($"[SceneController] Initial scene set to: {initialSceneName}");
-        }
-        else
-        {
-            //Destroy(gameObject);
         }
     }
 
@@ -32,6 +28,12 @@ public class SceneController : MonoBehaviour
         return SceneManager.GetActiveScene().name;
     }
 
+    /// <summary>
+    /// Tải một scene mới, unload scene hiện tại và giữ lại các scene đã tải additively.
+    /// </summary>
+    /// <param name="sceneName"></param>
+    /// <param name="playerCheckPoint"></param>
+    /// <returns></returns>
     public async Task LoadAdditiveSceneAsync(string sceneName, PlayerCheckPoint playerCheckPoint = null)
     {
         if (string.IsNullOrEmpty(sceneName) || !IsSceneInBuildSettings(sceneName))
@@ -47,9 +49,10 @@ public class SceneController : MonoBehaviour
         }
 
         var asyncOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        // Đợi cho scene được tải xong
         while (!asyncOp.isDone)
         {
-            await Task.Yield();
+            await Task.Yield(); // Chờ đến frame tiếp theo
         }
 
         Scene newScene = SceneManager.GetSceneByName(sceneName);
@@ -57,9 +60,11 @@ public class SceneController : MonoBehaviour
         {
             SceneManager.SetActiveScene(newScene);
             loadedScenes.Add(sceneName);
-            if (playerCheckPoint != null && playerCheckPoint.PlayerTransform != null)
+            if (playerCheckPoint != null)
             {
-                Debug.Log($"[SceneController] Player position set: {playerCheckPoint.PlayerTransform.position}");
+                // áp dụng vị trí đã lưu
+                playerCheckPoint.ApplyLoadedPosition();
+                Debug.Log($"[SceneController] Player position set: {PlayerController.Instance.transform.position}");
             }
             else
             {
@@ -68,6 +73,11 @@ public class SceneController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Unload một scene đã tải additively.
+    /// </summary>
+    /// <param name="sceneName"></param>
+    /// <returns></returns>
     public async Task UnloadAdditiveScenes(string sceneName)
     {
         if (string.IsNullOrEmpty(sceneName) || !IsSceneInBuildSettings(sceneName))
@@ -108,6 +118,12 @@ public class SceneController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Unload tất cả các scene đã tải additively, ngoại trừ các scene được giữ lại.
+    /// </summary>
+    /// <param name="keepSpecificScenes"></param>
+    /// <param name="scenesToKeep"></param>
+    /// <returns></returns>
     public async Task UnloadAllAdditiveScenesAsync(bool keepSpecificScenes = false, params string[] scenesToKeep)
     {
         // Đồng bộ loadedScenes với Hierarchy
@@ -128,9 +144,10 @@ public class SceneController : MonoBehaviour
             loadedScenes = actualLoadedScenes;
         }
 
-        var scenesToUnload = new List<string>(loadedScenes);
+        var scenesToUnload = new List<string>(loadedScenes); // sao chép danh sách hiện tại
         if (keepSpecificScenes)
         {
+            // Giữ lại các scene cụ thể nếu được chỉ định
             scenesToUnload.RemoveAll(scene => scenesToKeep.Contains(scene) || ExcludedScenes.Contains(scene));
         }
         else
@@ -151,6 +168,7 @@ public class SceneController : MonoBehaviour
                 Debug.Log($"[SceneController] Unloaded scene: {sceneName}");
             }
         }
+        // Cập nhật danh sách loadedScenes sau khi unload
         loadedScenes.RemoveAll(scene => !scenesToKeep.Contains(scene) && !ExcludedScenes.Contains(scene));
 
         if (loadedScenes.Count == 0)
@@ -158,12 +176,18 @@ public class SceneController : MonoBehaviour
             Scene initialScene = SceneManager.GetSceneByName(initialSceneName);
             if (initialScene.IsValid())
             {
+                // Đặt lại scene Menu làm active
                 SceneManager.SetActiveScene(initialScene);
                 Debug.Log($"[SceneController] Set active scene to: {initialSceneName}");
             }
         }
     }
 
+    /// <summary>
+    /// Kiểm tra xem scene có trong Build Settings không.
+    /// </summary>
+    /// <param name="sceneName"></param>
+    /// <returns></returns>
     private bool IsSceneInBuildSettings(string sceneName)
     {
         for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
@@ -175,7 +199,10 @@ public class SceneController : MonoBehaviour
         return false;
     }
 
-    // Lấy danh sách các scene additive đang được tải
+    /// <summary>
+    /// Lấy danh sách các scene đã được tải additively.
+    /// </summary>
+    /// <returns></returns>
     public List<string> GetLoadedAdditiveScenes()
     {
         return new List<string>(loadedScenes);
@@ -230,8 +257,8 @@ public class SceneController : MonoBehaviour
         return scene.IsValid() && scene.isLoaded;
     }
 
-    public void LogLoadedScenes()
-    {
-        Debug.Log($"[SceneController] Loaded scenes: {string.Join(",", loadedScenes)}");
-    }
+    //public void LogLoadedScenes()
+    //{
+    //    Debug.Log($"[SceneController] Loaded scenes: {string.Join(",", loadedScenes)}");
+    //}
 }

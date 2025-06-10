@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -78,23 +79,44 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             return;
         }
 
-        if (playerTransform == null)
-        {
-            Debug.LogError("[PlayerCheckPoint] Player Transform is null during load!");
-            return;
-        }
-
         var data = JsonUtility.FromJson<PlayerCheckPointData>(json);
         if (ExcludedScenes.Contains(data.mapName))
         {
             Debug.LogWarning($"[PlayerCheckPoint] Loaded excluded scene: {data.mapName}. Using default map.");
-            data.mapName = "Unknown"; // Hoặc một scene gameplay mặc định
+            data.mapName = "Unknown";
         }
 
+        // CHỈ LƯU DỮ LIỆU, KHÔNG ÁP DỤNG NGAY LẬP TỨC
         _lastLoadedData = data;
         CurrentMap = data.mapName;
-        playerTransform.position = data.position.ToVector3() + new Vector3(0, 3, 0);
-        Debug.Log($"[PlayerCheckPoint] Loaded - Position: {data.position.ToVector3()}, Map: {CurrentMap}");
+        Debug.Log($"[PlayerCheckPoint] Data loaded - Map: {CurrentMap}, Position: {_lastLoadedData.position.ToVector3()}");
+    }
+
+    /// <summary>
+    /// Áp dụng vị trí đã được load trước đó cho player.
+    /// Phương thức này sẽ được gọi từ bên ngoài sau khi scene đã sẵn sàng.
+    /// </summary>
+    public void ApplyLoadedPosition()
+    {
+        if (_lastLoadedData == null)
+        {
+            Debug.LogWarning("[PlayerCheckPoint] No loaded data to apply.");
+            return;
+        }
+
+        if (playerTransform == null)
+        {
+            // Cố gắng tìm lại playerTransform nếu nó bị null (ví dụ: player được spawn cùng scene)
+            playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
+            if (playerTransform == null)
+            {
+                Debug.LogError("[PlayerCheckPoint] Player Transform is null, cannot apply position!");
+                return;
+            }
+        }
+
+        playerTransform.position = _lastLoadedData.position.ToVector3() + new Vector3(0, 5, 0); // Offset của bạn
+        Debug.Log($"[PlayerCheckPoint] Applied loaded position: {playerTransform.position}");
     }
 
     /// <summary>
@@ -128,20 +150,25 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
     /// <summary>
     /// Đặt lại vị trí của người chơi về (0, 0, 0).
+    /// chờ đến khi vị trí được cập nhật trong frame tiếp theo.
+    /// Lưu ý: Phương thức này chỉ nên được gọi khi playerTransform đã được khởi tạo.
     /// </summary>
     /// <returns></returns>
-    public bool ResetPlayerPosition()
+    public async Task ResetPlayerPositionWord()
     {
         if (playerTransform != null)
         {
-            playerTransform.position = Vector3.zero; // (0, 0, 0)
+            playerTransform.position = new Vector3(0,3,0);
+
+            while (playerTransform.position != new Vector3(0, 3, 0))
+            {
+                await Task.Yield();
+            }
             Debug.Log($"[PlayerCheckPoint] Player position reset to: {playerTransform.position}");
-            return true;
         }
         else
         {
             Debug.LogError("[PlayerCheckPoint] Player Transform is null, cannot reset position!");
-            return false;
         }
     }
 }
