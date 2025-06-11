@@ -5,6 +5,10 @@ public interface ISaveable
     string FileName { get; }
     string SaveToJson();
     void LoadFromJson(string json);
+    bool ShouldSave(); // Chỉ lưu nếu cần thiết
+    bool IsDirty { get; } // Đánh dấu dữ liệu đã thay đổi
+    void BeforeSave(); // Hook trước khi lưu
+    void AfterLoad(); // Hook sau khi tải
 }
 
 

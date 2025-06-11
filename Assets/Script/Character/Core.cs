@@ -6,7 +6,7 @@ public class Core : MonoBehaviour
     public static Core Instance { get; private set; }
     public static bool IsInitialized => Instance != null;   
     public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
-    public event Action OnModeChanged;                      // Sự kiện khi chế độ thay đổi
+    //public event Action OnModeChanged;                      // Sự kiện khi chế độ thay đổi
 
     private void Start()
     {

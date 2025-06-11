@@ -54,7 +54,6 @@ public class UserAccountManager : MonoBehaviour
         else
         {
             Debug.LogWarning("Multiple instances of UserAccountManager detected. Destroying duplicate.");
-            Destroy(gameObject);
         }
 
         userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
@@ -62,7 +61,6 @@ public class UserAccountManager : MonoBehaviour
         currentUserBaseName = null;
         EnsureDirectory();
         LoadUserData();
-        //Debug.Log($"UserAccountManager initialized: {userAccountsPath}");
     }
 
     private void EnsureDirectory()

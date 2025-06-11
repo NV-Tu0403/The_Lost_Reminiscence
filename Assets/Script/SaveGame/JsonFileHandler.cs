@@ -7,25 +7,13 @@ using UnityEngine;
 
 public class JsonFileHandler
 {
-    /// <summary>
-    /// lưu một tệp JSON vào thư mục đã cho.
-    /// </summary>
-    /// <param name="saveFolderPath"></param>
-    /// <param name="fileName"></param>
-    /// <param name="jsonContent"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task SaveJsonFileAsync(string saveFolderPath, string fileName, string jsonContent, CancellationToken cancellationToken = default)
+    public void SaveJsonFile(string saveFolderPath, string fileName, string jsonContent)
     {
         try
         {
             string filePath = Path.Combine(saveFolderPath, fileName);
-            await File.WriteAllTextAsync(filePath, jsonContent, cancellationToken);
+            File.WriteAllText(filePath, jsonContent);
             Debug.Log($"Saved JSON to: {filePath}");
-        }
-        catch (OperationCanceledException)
-        {
-            Debug.LogWarning($"Save JSON operation canceled for {fileName}");
         }
         catch (Exception e)
         {
@@ -33,40 +21,27 @@ public class JsonFileHandler
         }
     }
 
-    /// <summary>
-    /// Tải một tệp JSON đơn từ thư mục đã cho.
-    /// </summary>
-    /// <param name="folderPath"></param>
-    /// <param name="fileName"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<string> LoadSingleJsonFileAsync(string folderPath, string fileName, CancellationToken cancellationToken = default)
+    public string LoadSingleJsonFile(string folderPath, string fileName)
     {
         try
         {
             string filePath = Path.Combine(folderPath, fileName);
             if (!File.Exists(filePath)) return null;
-            return await File.ReadAllTextAsync(filePath, cancellationToken);
+            return File.ReadAllText(filePath);
         }
         catch (Exception e)
         {
-            Debug.LogError($"Failed to load single JSON file {fileName}: {e.Message}");
+            Debug.LogError($"Failed to load JSON file {fileName}: {e.Message}");
             return null;
         }
     }
 
-    /// <summary>
-    /// Tải tất cả các tệp JSON từ thư mục đã cho.
-    /// </summary>
-    /// <param name="folderPath"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<(string fileName, string json)[]> LoadJsonFilesAsync(string folderPath, CancellationToken cancellationToken = default)
+    public (string fileName, string json)[] LoadJsonFiles(string folderPath)
     {
         var result = new List<(string fileName, string json)>();
         try
         {
-            var jsonFiles = await Task.Run(() => Directory.GetFiles(folderPath, "*.json"), cancellationToken);
+            var jsonFiles = Directory.GetFiles(folderPath, "*.json");
             if (jsonFiles.Length == 0)
             {
                 Debug.LogWarning($"No JSON files found in {folderPath}");
@@ -77,14 +52,10 @@ public class JsonFileHandler
             {
                 try
                 {
-                    string json = await File.ReadAllTextAsync(file, cancellationToken);
+                    string json = File.ReadAllText(file);
                     string fileName = Path.GetFileName(file);
                     result.Add((fileName, json));
                     Debug.Log($"Loaded JSON from: {file}");
-                }
-                catch (OperationCanceledException)
-                {
-                    Debug.LogWarning($"Load JSON operation canceled for {file}");
                 }
                 catch (Exception ex)
                 {
@@ -93,17 +64,10 @@ public class JsonFileHandler
             }
             return result.ToArray();
         }
-        catch (OperationCanceledException)
-        {
-            Debug.LogWarning($"Load JSON files operation canceled in {folderPath}");
-            return result.ToArray();
-        }
         catch (Exception e)
         {
             Debug.LogError($"Failed to load JSON files in {folderPath}: {e.Message}");
             return result.ToArray();
         }
     }
-
-
 }

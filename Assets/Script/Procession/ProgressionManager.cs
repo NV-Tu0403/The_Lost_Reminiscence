@@ -15,8 +15,10 @@ namespace Script.Procession
 
         public string FileName => "progressionData.json";
 
+        public bool IsDirty => throw new System.NotImplementedException();
+
         private GameProgression progression;                                            // Dữ liệu tiến trình hiện tại
-        private string configJsonPath = "JSON/progressionData";                         // Đường dẫn tương đối cho Resources
+        //private string configJsonPath = "JSON/progressionData";                         // Đường dẫn tương đối cho Resources
         private string configJsonFullPath;                                              // Đường dẫn tuyệt đối cho ghi file
 
         [SerializeField] private ProgressionDataSO progressionDataSO;                   // ScriptableObject tổng hợp
@@ -387,7 +389,7 @@ namespace Script.Procession
             if (TryCompleteSubProcess(eventId))
             {
                 UpdateEventIndex(eventId);
-                SaveGameManager.Instance.SaveNow(); // Lưu tiến trình ngay lập tức
+                //SaveGameManager.Instance.SaveAll(); // Lưu tiến trình ngay lập tức
                 // Tự động trigger event tiếp theo nếu đủ điều kiện
                 TryTriggerNextEvent();
                 return;
@@ -395,7 +397,7 @@ namespace Script.Procession
             if (TryCompleteMainProcess(eventId))
             {
                 UpdateEventIndex(eventId);
-                SaveGameManager.Instance.SaveNow(); // Lưu tiến trình ngay lập tức
+                //SaveGameManager.Instance.SaveAll(); // Lưu tiến trình ngay lập tức
                 TryTriggerNextEvent();
                 return;
             }
@@ -650,6 +652,20 @@ namespace Script.Procession
             }
         }
 
+        public bool ShouldSave()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void BeforeSave()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void AfterLoad()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
 

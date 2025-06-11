@@ -9,7 +9,7 @@ using UnityEngine;
 public class FolderManager
 {
     private readonly string userDataPath;
-    private readonly SemaphoreSlim semaphore = new SemaphoreSlim(2, 2); // Giới hạn 2 tác vụ I/O đồng thời
+    private readonly object folderLock = new object();
     private Dictionary<string, List<string>> folderCache = new Dictionary<string, List<string>>();
 
     public FolderManager(string userDataPath)
@@ -17,68 +17,54 @@ public class FolderManager
         this.userDataPath = userDataPath;
     }
 
-    /// <summary>
-    /// Tạo một thư mục lưu trữ mới cho người dùng.
-    /// </summary>
-    /// <param name="userName"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<string> CreateNewSaveFolderAsync(string userName, CancellationToken cancellationToken = default)
+    public string CreateNewSaveFolder(string userName)
     {
-        await semaphore.WaitAsync(cancellationToken);
-        try
+        lock (folderLock)
         {
             if (string.IsNullOrEmpty(userName))
             {
-                Debug.LogError("UserName is empty. Cannot create save folder!");
+                Debug.LogError("UserName is empty!");
                 return null;
             }
 
             string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
             if (!Directory.Exists(fileSavePath))
             {
-                await Task.Run(() => Directory.CreateDirectory(fileSavePath), cancellationToken);
+                Directory.CreateDirectory(fileSavePath);
                 Debug.Log($"Created FileSave directory: {fileSavePath}");
             }
 
             string dateSave = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            int index = await GetNextIndexAsync(userName, cancellationToken);
+            int index = GetNextIndex(userName);
             string folderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
             string folderPath = Path.Combine(fileSavePath, folderName);
 
             if (Directory.Exists(folderPath))
             {
-                Debug.LogWarning($"Save folder already exists: {folderPath}. Generating new index.");
-                index = await GetNextIndexAsync(userName, cancellationToken);
+                index = GetNextIndex(userName);
                 folderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
                 folderPath = Path.Combine(fileSavePath, folderName);
             }
 
-            await Task.Run(() => Directory.CreateDirectory(folderPath), cancellationToken);
+            Directory.CreateDirectory(folderPath);
             Debug.Log($"Created new save folder: {folderPath}");
 
-            // Cập nhật cache
             if (!folderCache.ContainsKey(userName))
                 folderCache[userName] = new List<string>();
             folderCache[userName].Add(folderPath);
 
             return folderPath;
         }
-        finally
-        {
-            semaphore.Release();
-        }
     }
 
-    private async Task<int> GetNextIndexAsync(string userName, CancellationToken cancellationToken)
+    private int GetNextIndex(string userName)
     {
-        await semaphore.WaitAsync(cancellationToken);
-        try
+        lock (folderLock)
         {
             string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
             if (!Directory.Exists(fileSavePath)) return 1;
 
-            var folders = await Task.Run(() => Directory.GetDirectories(fileSavePath)
+            var folders = Directory.GetDirectories(fileSavePath)
                 .Where(d => Path.GetFileName(d).StartsWith($"SaveGame_{userName}_"))
                 .Select(d =>
                 {
@@ -87,30 +73,16 @@ public class FolderManager
                         return idx;
                     return 0;
                 })
-                .ToList(), cancellationToken);
+                .ToList();
 
-            int nextIndex = folders.Any() ? folders.Max() + 1 : 1;
-            Debug.Log($"Next index for {userName}: {nextIndex}");
-            return nextIndex;
-        }
-        finally
-        {
-            semaphore.Release();
+            return folders.Any() ? folders.Max() + 1 : 1;
         }
     }
 
-    /// <summary>
-    /// Lấy thư mục lưu trữ mới nhất cho người dùng.
-    /// </summary>
-    /// <param name="userName"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<string> GetLatestSaveFolderAsync(string userName, CancellationToken cancellationToken = default)
+    public string GetLatestSaveFolder(string userName)
     {
-        await semaphore.WaitAsync(cancellationToken);
-        try
+        lock (folderLock)
         {
-            // Làm mới cache: loại bỏ các thư mục không tồn tại
             if (folderCache.ContainsKey(userName))
             {
                 folderCache[userName].RemoveAll(d => !Directory.Exists(d));
@@ -118,12 +90,8 @@ public class FolderManager
 
             if (folderCache.ContainsKey(userName) && folderCache[userName].Any())
             {
-                var cachedFolders = folderCache[userName]
-                    .Select(d => new
-                    {
-                        Path = d,
-                        Name = Path.GetFileName(d)
-                    })
+                var latestFolder = folderCache[userName]
+                    .Select(d => new { Path = d, Name = Path.GetFileName(d) })
                     .OrderByDescending(d =>
                     {
                         string[] parts = d.Name.Split('_');
@@ -134,12 +102,11 @@ public class FolderManager
                         }
                         return DateTime.MinValue;
                     })
-                    .ToList();
+                    .FirstOrDefault()?.Path;
 
-                string latestFolder = cachedFolders.FirstOrDefault()?.Path;
                 if (latestFolder != null)
                 {
-                    Debug.Log($"Found latest save folder from cache for user {userName}: {latestFolder}");
+                    Debug.Log($"Found latest save folder from cache: {latestFolder}");
                     return latestFolder;
                 }
             }
@@ -151,31 +118,9 @@ public class FolderManager
                 return null;
             }
 
-            var folders = await Task.Run(() => Directory.GetDirectories(fileSavePath)
-                .Where(d =>
-                {
-                    if (!Path.GetFileName(d).StartsWith($"SaveGame_{userName}_"))
-                        return false;
-                    if (!Directory.Exists(d))
-                    {
-                        Debug.LogWarning($"Folder does not exist: {d}");
-                        return false;
-                    }
-                    try
-                    {
-                        return Directory.GetFiles(d, "*.json").Length > 0;
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"Failed to check JSON files in {d}: {ex.Message}");
-                        return false;
-                    }
-                })
-                .Select(d => new
-                {
-                    Path = d,
-                    Name = Path.GetFileName(d)
-                })
+            var latestFolderPath = Directory.GetDirectories(fileSavePath)
+                .Where(d => Path.GetFileName(d).StartsWith($"SaveGame_{userName}_") && Directory.GetFiles(d, "*.json").Length > 0)
+                .Select(d => new { Path = d, Name = Path.GetFileName(d) })
                 .OrderByDescending(d =>
                 {
                     string[] parts = d.Name.Split('_');
@@ -186,12 +131,10 @@ public class FolderManager
                     }
                     return DateTime.MinValue;
                 })
-                .ToList(), cancellationToken);
+                .FirstOrDefault()?.Path;
 
-            string latestFolderPath = folders.FirstOrDefault()?.Path;
             if (latestFolderPath != null)
             {
-                Debug.Log($"Found latest save folder for user {userName}: {latestFolderPath}");
                 if (!folderCache.ContainsKey(userName))
                     folderCache[userName] = new List<string>();
                 folderCache[userName].Add(latestFolderPath);
@@ -201,29 +144,16 @@ public class FolderManager
             Debug.LogWarning($"No valid save folder found for user: {userName}");
             return null;
         }
-        finally
-        {
-            semaphore.Release();
-        }
     }
 
-    /// <summary>
-    /// Xóa thư mục lưu trữ theo đường dẫn đã cho (sử dụng SemaphoreSlim để đồng bộ hóa I/O).
-    /// </summary>
-    /// <param name="folderPath"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<bool> DeleteSaveFolderAsync(string folderPath, CancellationToken cancellationToken = default)
+    public bool DeleteSaveFolder(string folderPath)
     {
-        await semaphore.WaitAsync(cancellationToken);
-        try
+        lock (folderLock)
         {
             if (Directory.Exists(folderPath))
             {
-                await Task.Run(() => Directory.Delete(folderPath, true), cancellationToken);
+                Directory.Delete(folderPath, true);
                 Debug.Log($"Deleted save folder: {folderPath}");
-
-                // Xóa thư mục khỏi cache
                 foreach (var cacheEntry in folderCache)
                 {
                     cacheEntry.Value.Remove(folderPath);
@@ -233,191 +163,33 @@ public class FolderManager
             Debug.LogWarning($"Save folder not found: {folderPath}");
             return false;
         }
-        catch (Exception e)
-        {
-            Debug.LogError($"Failed to delete save folder {folderPath}: {e.Message}");
-            return false;
-        }
-        finally
-        {
-            semaphore.Release();
-        }
     }
 
-    /// <summary>
-    /// Xóa thư mục lưu trữ theo đường dẫn đã cho (không sử dụng SemaphoreSlim).
-    /// </summary>
-    /// <param name="folderPath"></param>
-    /// <returns></returns>
-    public async Task<bool> DeleteSaveFolderAsync(string folderPath)
+    public List<(string FolderPath, string ImagePath)> GetAllSaveFolders(string userName)
     {
-        try
+        lock (folderLock)
         {
-            if (Directory.Exists(folderPath))
+            string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
+            var result = new List<(string, string)>();
+            if (!Directory.Exists(fileSavePath))
             {
-                await Task.Run(() => Directory.Delete(folderPath, true));
-                Debug.Log($"Deleted save folder: {folderPath}");
-                return true;
-            }
-            Debug.LogWarning($"Save folder not found: {folderPath}");
-            return false;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Failed to delete save folder {folderPath}: {e.Message}");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Tạo một bản sao của thư mục lưu trữ từ đường dẫn nguồn sang thư mục mới cho người dùng.
-    /// </summary>
-    /// <param name="sourceFolderPath"></param>
-    /// <param name="userName"></param>
-    /// <returns></returns>
-    public async Task<string> DuplicateSaveFolderAsync(string sourceFolderPath, string userName)
-    {
-        if (!Directory.Exists(sourceFolderPath))
-        {
-            Debug.LogError($"Source save folder does not exist: {sourceFolderPath}");
-            return null;
-        }
-
-        string dateSave = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        int index = await GetNextIndexAsync(userName, CancellationToken.None);
-        string newFolderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
-        string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
-        string newFolderPath = Path.Combine(fileSavePath, newFolderName);
-
-        try
-        {
-            await Task.Run(() => Directory.CreateDirectory(newFolderPath));
-            foreach (string file in Directory.GetFiles(sourceFolderPath))
-            {
-                string fileName = Path.GetFileName(file);
-                string destFile = Path.Combine(newFolderPath, fileName);
-                await Task.Run(() => File.Copy(file, destFile));
-            }
-            Debug.Log($"Duplicated save from {sourceFolderPath} to {newFolderPath}");
-            return newFolderPath;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Failed to duplicate save folder: {e.Message}");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Đồng bộ hóa thư mục lưu trữ từ đường dẫn nguồn sang thư mục lưu trữ đã chỉ định.
-    /// </summary>
-    /// <param name="sourceFolderPath"></param>
-    /// <returns></returns>
-    public async Task<(bool Success, string ErrorMessage)> SyncFileSaveAsync(string sourceFolderPath)
-    {
-        if (!Directory.Exists(sourceFolderPath))
-        {
-            string errorMessage = $"Source save folder does not exist: {sourceFolderPath}";
-            Debug.LogError(errorMessage);
-            return (false, errorMessage);
-        }
-
-        string savePath = GetTransferFolder();
-
-        try
-        {
-            if (!Directory.Exists(savePath))
-            {
-                await Task.Run(() => Directory.CreateDirectory(savePath));
-                Debug.Log($"Created SavePath directory: {savePath}");
+                Debug.LogWarning($"No FileSave directory for user: {userName}");
+                return result;
             }
 
-            string folderName = Path.GetFileName(sourceFolderPath);
-            string destFolderPath = Path.Combine(savePath, folderName);
+            var folders = Directory.GetDirectories(fileSavePath)
+                .Where(d => Path.GetFileName(d).StartsWith($"SaveGame_{userName}_"))
+                .ToList();
 
-            if (Directory.Exists(destFolderPath))
+            foreach (var folder in folders)
             {
-                await Task.Run(() => Directory.Delete(destFolderPath, true));
-                Debug.Log($"Deleted existing destination folder: {destFolderPath}");
+                string imagePath = Path.Combine(folder, "screenshot.png");
+                string image = File.Exists(imagePath) ? imagePath : null;
+                result.Add((folder, image));
             }
 
-            await DirectoryCopyAsync(sourceFolderPath, destFolderPath, true);
-            Debug.Log($"Synced entire folder from {sourceFolderPath} to {destFolderPath}");
-            return (true, string.Empty);
-        }
-        catch (Exception e)
-        {
-            string errorMessage = $"Failed to sync folder: {e.Message}";
-            Debug.LogError(errorMessage);
-            return (false, errorMessage);
-        }
-    }
-
-    /// <summary>
-    /// Lấy đường dẫn thư mục lưu trữ để chuyển giao dữ liệu.
-    /// </summary>
-    /// <returns></returns>
-    private string GetTransferFolder()
-    {
-#if UNITY_EDITOR
-        return Path.Combine(Application.dataPath, "Loc_Backend/SavePath");
-#else
-        return Path.Combine(Application.persistentDataPath, "SavePath");
-#endif
-    }
-
-    /// <summary>
-    /// Sao chép một thư mục từ đường dẫn nguồn sang đích, bao gồm cả các thư mục con nếu cần.
-    /// </summary>
-    /// <param name="sourceDir"></param>
-    /// <param name="destDir"></param>
-    /// <param name="copySubDirs"></param>
-    /// <returns></returns>
-    private async Task DirectoryCopyAsync(string sourceDir, string destDir, bool copySubDirs)
-    {
-        DirectoryInfo dir = new DirectoryInfo(sourceDir);
-        DirectoryInfo[] dirs = dir.GetDirectories();
-        await Task.Run(() => Directory.CreateDirectory(destDir));
-
-        FileInfo[] files = dir.GetFiles();
-        foreach (FileInfo file in files)
-        {
-            string tempPath = Path.Combine(destDir, file.Name);
-            await Task.Run(() => file.CopyTo(tempPath, false));
-        }
-
-        if (copySubDirs)
-        {
-            foreach (DirectoryInfo subdir in dirs)
-            {
-                string tempPath = Path.Combine(destDir, subdir.Name);
-                await DirectoryCopyAsync(subdir.FullName, tempPath, copySubDirs);
-            }
-        }
-    }
-
-    public async Task<List<(string FolderPath, string ImagePath)>> GetAllSaveFoldersAsync(string userName)
-    {
-        string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
-        var result = new List<(string, string)>();
-        if (!Directory.Exists(fileSavePath))
-        {
-            Debug.LogWarning($"No FileSave directory for user: {userName}");
+            Debug.Log($"Found {result.Count} save folders for user: {userName}");
             return result;
         }
-
-        var folders = await Task.Run(() => Directory.GetDirectories(fileSavePath)
-            .Where(d => Path.GetFileName(d).StartsWith($"SaveGame_{userName}_"))
-            .ToList());
-
-        foreach (var folder in folders)
-        {
-            string imagePath = Path.Combine(folder, "screenshot.png");
-            string image = File.Exists(imagePath) ? imagePath : null;
-            result.Add((folder, image));
-        }
-
-        Debug.Log($"Found {result.Count} save folders for user: {userName}");
-        return result;
     }
 }

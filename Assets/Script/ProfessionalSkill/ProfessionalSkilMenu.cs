@@ -1,169 +1,146 @@
 ﻿using DuckLe;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+
 
 public class ProfessionalSkilMenu : MonoBehaviour
 {
     public static ProfessionalSkilMenu Instance { get; private set; }
 
-    private string lastSelectedSaveFolder;
-    private List<GameObject> saveItemInstances = new List<GameObject>();
-    private string selectedSaveFolder;
-    private float lastNewGameTime;
-    private const float NEW_GAME_COOLDOWN = 1f;
-    private float lastPlayTimeUpdate;
-    private const float PLAY_TIME_UPDATE_INTERVAL = 1f;
-    private Coroutine resetSaveSelectionCoroutine;
-
     private void Awake()
     {
-        if (Instance == null )
+        if (Instance == null)
         {
             Instance = this;
         }
     }
 
-    /// <summary>
-    /// xử lí ghiệp vụ khi thoát phiên làm chơi.
-    /// </summary>
-    /// <returns></returns>
-    public async Task OnQuitSesion()
+    public SaveListContext RefreshSaveList()
     {
-        try
-        {
-            // Lưu trạng thái sau khi reset
-            await OnSaveSession();
-
-            // Unload scene
-            await SceneController.Instance.UnloadAllAdditiveScenesAsync();
-
-            lastSelectedSaveFolder = null;
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[ProfessionalSkilMenu] Error during session quit: {ex}");
-        }
-    }
-
-
-    /// <summary>
-    /// Lưu phiên chơi hiện tại vào thư mục đã chọn hoặc tạo mới nếu không có.
-    /// </summary>
-    /// <returns></returns>
-    public async Task OnSaveSession()
-    {
-        try
-        {
-            string userName = UserAccountManager.Instance.CurrentUserBaseName;
-            if (string.IsNullOrEmpty(userName))
-                throw new Exception("No user logged in!");
-
-            // Kiểm tra và cập nhật CurrentMap
-            string currentScene = SceneManager.GetActiveScene().name;
-            if (string.IsNullOrEmpty(PlayerCheckPoint.Instance.CurrentMap) || PlayerCheckPoint.Instance.CurrentMap == "Unknown" || PlayerCheckPoint.Instance.CurrentMap != currentScene)
-            {
-                PlayerCheckPoint.Instance.SetCurrentMapToCurrentScene();
-                Debug.Log($"[Test] Updated CurrentMap to: {PlayerCheckPoint.Instance.CurrentMap}");
-            }
-
-            string saveFolder = lastSelectedSaveFolder;
-            if (string.IsNullOrEmpty(saveFolder) || !Directory.Exists(saveFolder))
-            {
-                saveFolder = await GetValidLastSaveFolderAsync();
-                if (string.IsNullOrEmpty(saveFolder))
-                {
-                    saveFolder = await SaveGameManager.Instance.CreateNewSaveFolder(userName);
-                }
-                lastSelectedSaveFolder = saveFolder;
-                //ContinueGame_Bt.interactable = true;
-            }
-
-            await SaveGameManager.Instance.SaveToFolderAsync(saveFolder, CancellationToken.None); // Lưu vào thư mục đã chọn
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[ProfessionalSkilMenu] Error during save session: {ex}");
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Làm mới danh sách các thư mục lưu trữ.
-    /// </summary>
-    /// <returns></returns>
-    public async Task<SaveListContext> RefreshSaveList()
-    {
-        foreach (var item in saveItemInstances)
-        {
-            Destroy(item);
-        }
-        saveItemInstances.Clear();
-
-        string userName = UserAccountManager.Instance.CurrentUserBaseName;
-        if (string.IsNullOrEmpty(userName))
-        {
-            Debug.LogWarning("[Test] No user logged in. Cannot refresh save list.");
-            return new SaveListContext { UserName = userName, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
-        }
-
-        var saves = (await SaveGameManager.Instance.GetAllSaveFoldersAsync(userName))
-            .Select(s => new SaveFolder { FolderPath = s.FolderPath, ImagePath = s.ImagePath })
-            .Distinct(new SaveFolderComparer())
-            .ToList();
-
-
+        var saves = SaveGameManager.Instance.GetAllSaveFolders(UserAccountManager.Instance.currentUserBaseName);
+        bool isContinueEnabled = saves.Any();
         return new SaveListContext
         {
-            UserName = userName,
-            Saves = saves,
-            IsContinueEnabled = !string.IsNullOrEmpty(lastSelectedSaveFolder) && Directory.Exists(lastSelectedSaveFolder)
+            UserName = UserAccountManager.Instance.currentUserBaseName,
+            Saves = saves.Select(s => new SaveFolder { FolderPath = s.FolderPath, ImagePath = s.ImagePath }).ToList(),
+            IsContinueEnabled = isContinueEnabled
         };
     }
 
-    /// <summary>
-    /// So sánh hai thư mục lưu trữ dựa trên đường dẫn của chúng.
-    /// </summary>
-    public class SaveFolderComparer : IEqualityComparer<SaveFolder>
+    public void OnSaveSession()
     {
-        public bool Equals(SaveFolder x, SaveFolder y)
+        if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
-            return x.FolderPath == y.FolderPath;
+            throw new Exception("No user logged in!");
         }
-
-        public int GetHashCode(SaveFolder obj)
-        {
-            return obj.FolderPath.GetHashCode();
-        }
+        SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
     }
 
-    /// <summary>
-    /// Lấy thư mục lưu trữ hợp lệ cuối cùng đã được sử dụng.
-    /// </summary>
-    /// <returns></returns>
-    private async Task<string> GetValidLastSaveFolderAsync()
+    public void OnQuitSession(string currentSaveFolder)
     {
-        string lastFileSave = UserAccountManager.Instance.GetLastFileSave();
-        if (!string.IsNullOrEmpty(lastFileSave))
+        if (!string.IsNullOrEmpty(currentSaveFolder))
         {
-            string fileSavePath = Path.Combine(Application.persistentDataPath, "User_DataGame",
-                $"FileSave_{UserAccountManager.Instance.CurrentUserBaseName}", lastFileSave);
-            if (Directory.Exists(fileSavePath) && Directory.GetFiles(fileSavePath, "*.json").Length > 0)
+            try
             {
-                return fileSavePath;
+                SaveGameManager.Instance.SaveToFolder(currentSaveFolder);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[OnQuitSession] Failed to save before unloading: {ex.Message}");
             }
         }
 
-        var saves = await SaveGameManager.Instance.GetAllSaveFoldersAsync(UserAccountManager.Instance.CurrentUserBaseName);
-        string latestFolder = saves.Count > 0 ? saves[0].FolderPath : null;
-        //ContinueGame_Bt.interactable = !string.IsNullOrEmpty(latestFolder);
-        return latestFolder;
+        // Sau khi đã save xong mới unload
+        SceneController.Instance.UnloadAllAdditiveScenes(() =>
+        {
+            Debug.Log("[OnQuitSession] Unload complete.");
+            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+        });
+
+
+    }
+
+    public string OnNewGame()
+    {
+        if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
+        {
+            Debug.LogError($"currentUserBaseName == {UserAccountManager.Instance.currentUserBaseName}");
+        }
+
+        string newSaveFolder = SaveGameManager.Instance.CreateNewSaveFolder(UserAccountManager.Instance.currentUserBaseName);
+
+        PlayTimeManager.Instance.ResetSession();
+        PlayTimeManager.Instance.StartCounting();
+
+        if (SceneController.Instance == null)
+        {
+            Debug.LogError("[OnNewGame] SceneController.Instance is null!");
+            return null;
+        }
+
+        if (PlayerCheckPoint.Instance == null)
+        {
+            Debug.LogError("[OnNewGame] PlayerCheckPoint.Instance is null!");
+            return null;
+        }
+
+        // Load scene và chờ callback khi load xong
+        SceneController.Instance.LoadAdditiveScene("white_Space", PlayerCheckPoint.Instance, () =>
+        {
+            //Đảm bảo Player đã tồn tại sau khi load scene
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                Debug.LogError("[OnNewGame] Player not found after loading scene.");
+                return;
+            }
+
+            //án playerTransform
+            PlayerCheckPoint.Instance.SetPlayerTransform(player.transform);
+            //Đặt vị trí mặc định
+            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+            SaveGameManager.Instance.SaveToFolder(newSaveFolder);
+        });
+
+        return newSaveFolder;
+    }
+
+    public void OnContinueGame(string saveFolder)
+    {
+        if (string.IsNullOrEmpty(saveFolder) || !Directory.Exists(saveFolder))
+        {
+            throw new Exception("Invalid save folder!");
+        }
+
+        SaveGameManager.Instance.LoadLatest(UserAccountManager.Instance.currentUserBaseName);
+        string sceneToLoad = PlayerCheckPoint.Instance.CurrentMap;
+        if (string.IsNullOrEmpty(sceneToLoad) || sceneToLoad == "Unknown" || sceneToLoad == "Menu")
+        {
+            sceneToLoad = "white_Space";
+        }
+
+        SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>
+        {
+            PlayTimeManager.Instance.StartCounting();
+            PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
+        });
+    }
+
+    private IEnumerator WaitUntilPlayerAndApply()
+    {
+        Transform p = null;
+        while (p == null)
+        {
+            p = GameObject.FindGameObjectWithTag("Player")?.transform;
+            yield return null;
+        }
+
+        //PlayerCheckPoint.Instance.SetPlayerTransform(p);
+        PlayerCheckPoint.Instance.ApplyLoadedPosition();
+        Debug.Log("[WaitUntil] Player position applied.");
     }
 }

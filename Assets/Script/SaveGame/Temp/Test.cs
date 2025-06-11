@@ -58,8 +58,8 @@ public class Test : MonoBehaviour
     [SerializeField] private GameObject saveListPanel;
     [SerializeField] private GameObject saveItemTemplate;
     [SerializeField] private GameObject syncPanelStatus;
-    [SerializeField] private TMP_Text syncSaveNameText;
-    [SerializeField] private TMP_Text syncStatusText;
+    //[SerializeField] private TMP_Text syncSaveNameText;
+    //[SerializeField] private TMP_Text syncStatusText;
 
     [Header("Loading UI")]
     [SerializeField] private GameObject LoadingUI;
@@ -91,13 +91,13 @@ public class Test : MonoBehaviour
     private Coroutine resetSaveSelectionCoroutine;
 
 
-    private async void Start()
+    private void Start()
     {
         InitializeUI();
         SetupButtonListeners();
         RegisterSaveables();
-        await CheckUserAccountsAsync();
-        UpdateCurrentSaveTextAsync();
+        CheckUserAccounts();
+        UpdateCurrentSaveText();
     }
 
     private void InitializeUI()
@@ -120,15 +120,14 @@ public class Test : MonoBehaviour
 
     private void SetupButtonListeners()
     {
-        submitUserNameButton.onClick.AddListener(() => OnSubmitUserNameAsync());
+        submitUserNameButton.onClick.AddListener(OnSubmitUserName);
         NewGame_Bt.onClick.AddListener(OnNewGameClicked);
         ContinueGame_Bt.onClick.AddListener(OnContinueGameClicked);
         QuitGame_Bt.onClick.AddListener(OnQuitGameClicked);
-        SaveSession_Bt.onClick.AddListener(() => OnSaveSessionClicked());
+        SaveSession_Bt.onClick.AddListener(OnSaveSessionClicked);
         Menu_Bt.onClick.AddListener(OnMenuClicked);
         QuitSession_Bt.onClick.AddListener(OnQuitSessionClicked);
-        logoutButton.onClick.AddListener(OnLogoutClicked); 
-
+        logoutButton.onClick.AddListener(OnLogoutClicked);
         createAccountButton.onClick.AddListener(OnCreateAccountButtonClicked);
         createButton.onClick.AddListener(OnCreateButtonClicked);
         backButton.onClick.AddListener(OnBackButtonClicked);
@@ -136,34 +135,34 @@ public class Test : MonoBehaviour
         cloudSubmitButton.onClick.AddListener(OnCloudSubmitButtonClicked);
         cloudCancelButton.onClick.AddListener(OnCloudCancelButtonClicked);
         otpSubmitButton.onClick.AddListener(OnOtpSubmitButtonClicked);
-        duplicateButton.onClick.AddListener(async () => await RefreshSaveListAsync());
+        duplicateButton.onClick.AddListener(RefreshSaveList);
     }
 
     #region nghiệp vụ cần tách ra
 
     private void RegisterSaveables()
     {
-        SaveGameManager.Instance.RegisterSaveable(playTimeManager);
-        SaveGameManager.Instance.RegisterSaveable(playerCheckPoint);
+        saveGameManager.RegisterSaveable(playTimeManager);
+        saveGameManager.RegisterSaveable(playerCheckPoint);
     }
 
-    private async Task CheckUserAccountsAsync()
+    private void CheckUserAccounts()
     {
         string userAccountsPath = Path.Combine(Application.persistentDataPath, "User_DataGame", "UserAccounts.json");
         if (!File.Exists(userAccountsPath) ||
-            JsonUtility.FromJson<UserAccountData>(await File.ReadAllTextAsync(userAccountsPath)).Users.Count == 0)
+            JsonUtility.FromJson<UserAccountData>(File.ReadAllText(userAccountsPath)).Users.Count == 0)
         {
             loginPanel.SetActive(true);
-            lastSelectedSaveFolder = null; // Reset để tránh giữ giá trị cũ
+            lastSelectedSaveFolder = null;
             Debug.Log("[Test] No users found. Showing login panel.");
         }
         else
         {
-            await TryAutoLoginAsync();
+            TryAutoLogin();
         }
     }
 
-    private async Task TryAutoLoginAsync()
+    private void TryAutoLogin()
     {
         if (userAccountManager.TryAutoLogin(out string errorMessage))
         {
@@ -174,26 +173,22 @@ public class Test : MonoBehaviour
             logoutButton.interactable = true;
             cloudRegisterButton.interactable = true;
             errorText.text = "";
-            await RefreshSaveListAsync();
+            RefreshSaveList();
 
-            // Kiểm tra sự tồn tại của lastSelectedSaveFolder
-            lastSelectedSaveFolder = await GetValidLastSaveFolderAsync();
-            ContinueGame_Bt.interactable = !string.IsNullOrEmpty(lastSelectedSaveFolder) && Directory.Exists(lastSelectedSaveFolder);
-
-            UpdateCurrentSaveTextAsync();
+            lastSelectedSaveFolder = GetValidLastSaveFolder();
+            ContinueGame_Bt.interactable = !string.IsNullOrEmpty(lastSelectedSaveFolder);
+            UpdateCurrentSaveText();
             playTimeManager.StartCounting();
-            Debug.Log($"[Test] Auto-logged in user: {userAccountManager.CurrentUserBaseName}, Save: {lastSelectedSaveFolder}");
         }
         else
         {
-            Debug.LogWarning($"[Test] Auto-login failed: {errorMessage}");
             loginPanel.SetActive(true);
-            lastSelectedSaveFolder = null; // Reset để tránh giữ giá trị cũ
+            lastSelectedSaveFolder = null;
             ContinueGame_Bt.interactable = false;
         }
     }
 
-    private async Task<string> GetValidLastSaveFolderAsync()
+    private string GetValidLastSaveFolder()
     {
         string lastFileSave = userAccountManager.GetLastFileSave();
         if (!string.IsNullOrEmpty(lastFileSave))
@@ -206,26 +201,23 @@ public class Test : MonoBehaviour
             }
         }
 
-        var saves = await saveGameManager.GetAllSaveFoldersAsync(userAccountManager.CurrentUserBaseName);
+        var saves = saveGameManager.GetAllSaveFolders(userAccountManager.CurrentUserBaseName);
         string latestFolder = saves.Count > 0 ? saves[0].FolderPath : null;
         ContinueGame_Bt.interactable = !string.IsNullOrEmpty(latestFolder);
         return latestFolder;
     }
 
-    private async Task RefreshSaveListAsync(bool autoLoad = false)
+    private void RefreshSaveList()
     {
-        // 1. Clear UI cũ
         foreach (var item in saveItemInstances)
         {
             Destroy(item);
         }
         saveItemInstances.Clear();
 
-        // 2. Lấy context từ hệ thống save
-        var context = await ProfessionalSkilMenu.Instance.RefreshSaveList();
+        var context = ProfessionalSkilMenu.Instance.RefreshSaveList();
         var saves = context.Saves;
 
-        // 3. Cập nhật UI cho từng save
         foreach (var save in saves)
         {
             GameObject saveItem = Instantiate(saveItemTemplate, saveListPanel.transform);
@@ -241,43 +233,23 @@ public class Test : MonoBehaviour
 
             if (!string.IsNullOrEmpty(save.ImagePath))
             {
-                StartCoroutine(LoadImageAsync(save.ImagePath, saveImage));
+                byte[] imageBytes = File.ReadAllBytes(save.ImagePath);
+                Texture2D texture = new Texture2D(2, 2);
+                texture.LoadImage(imageBytes);
+                saveImage.texture = texture;
             }
             else
             {
                 saveImage.gameObject.SetActive(false);
             }
 
-            // 4. Xử lý nút chọn save
-            selectButton.onClick.RemoveAllListeners(); // Xóa listener cũ
-            selectButton.onClick.AddListener(() =>
-            {
-                Debug.Log($"[UI] Save selected: {save.FolderPath}");
-                OnSelectSaveAsync(save.FolderPath); // async void ok trong UI callback
-            });
-
-            // 5. Xử lý nút xóa save
-            deleteButton.onClick.RemoveAllListeners();
-            deleteButton.onClick.AddListener(() =>
-            {
-                OnDeleteSaveAsync(save.FolderPath);
-            });
+            selectButton.onClick.AddListener(() => OnSelectSave(save.FolderPath));
+            deleteButton.onClick.AddListener(() => OnDeleteSave(save.FolderPath));
         }
 
-        // 6. Xử lý autoLoad nếu yêu cầu
-        if (autoLoad && !string.IsNullOrEmpty(lastSelectedSaveFolder) && Directory.Exists(lastSelectedSaveFolder))
-        {
-            Debug.Log($"[RefreshSaveListAsync] Auto-loading save: {lastSelectedSaveFolder}");
-            OnSelectSaveAsync(lastSelectedSaveFolder);
-        }
-
-        // 7. Cập nhật trạng thái UI
         ContinueGame_Bt.interactable = context.IsContinueEnabled;
-        UpdateCurrentSaveTextAsync();
-
-        Debug.Log($"[UI] Refreshed save list: {saves.Count} saves for user {context.UserName}");
+        UpdateCurrentSaveText();
     }
-
 
     private IEnumerator ResetSaveSelectionAfterDelay()
     {
@@ -286,37 +258,15 @@ public class Test : MonoBehaviour
         {
             lastSelectedSaveFolder = null;
             ContinueGame_Bt.interactable = false;
-            UpdateCurrentSaveTextAsync();
+            //UpdateCurrentSaveTextAsync();
             Debug.Log("[Test] Save selection reset after 10 seconds.");
         }
     }
 
-    private async void OnDeleteSaveAsync(string folderPath)
-    {
-        if (await saveGameManager.DeleteSaveFolderAsync(folderPath))
-        {
-            if (folderPath == lastSelectedSaveFolder)
-            {
-                lastSelectedSaveFolder = null;
-                selectedSaveFolder = null;
-                ContinueGame_Bt.interactable = false;
-            }
-            await RefreshSaveListAsync();
-            UpdateCurrentSaveTextAsync();
-            Debug.Log($"[Test] Deleted save: {folderPath}");
-        }
-        else
-        {
-            errorText.text = "Failed to delete save!";
-            errorText.color = Color.red;
-        }
-    }
-
-    private async void OnSelectSaveAsync(string folderPath)
+    private void OnSelectSave(string folderPath)
     {
         if (!Directory.Exists(folderPath))
         {
-            Debug.LogWarning($"[Test] Selected save folder {folderPath} does not exist!");
             errorText.text = "Selected save no longer exists!";
             errorText.color = Color.red;
             return;
@@ -325,9 +275,28 @@ public class Test : MonoBehaviour
         selectedSaveFolder = folderPath;
         lastSelectedSaveFolder = folderPath;
         ContinueGame_Bt.interactable = true;
-        await saveGameManager.LoadLatestAsync(userAccountManager.CurrentUserBaseName);
-        UpdateCurrentSaveTextAsync();
-        Debug.Log($"[Test] Selected save: {folderPath}");
+        saveGameManager.LoadLatest(userAccountManager.CurrentUserBaseName);
+        UpdateCurrentSaveText();
+    }
+
+    private void OnDeleteSave(string folderPath)
+    {
+        if (saveGameManager.DeleteSaveFolder(folderPath))
+        {
+            if (folderPath == lastSelectedSaveFolder)
+            {
+                lastSelectedSaveFolder = null;
+                selectedSaveFolder = null;
+                ContinueGame_Bt.interactable = false;
+            }
+            RefreshSaveList();
+            UpdateCurrentSaveText();
+        }
+        else
+        {
+            errorText.text = "Failed to delete save!";
+            errorText.color = Color.red;
+        }
     }
 
     private IEnumerator LoadImageAsync(string imagePath, RawImage saveImage)
@@ -348,7 +317,7 @@ public class Test : MonoBehaviour
         return true; // Giả định người dùng xác nhận
     }
 
-    private async void OnSubmitUserNameAsync()
+    private void OnSubmitUserName()
     {
         string userName = userNameInputField.text;
         string password = passwordInputField.text;
@@ -361,169 +330,53 @@ public class Test : MonoBehaviour
             logoutButton.interactable = true;
             cloudRegisterButton.interactable = true;
             errorText.text = "";
-            await RefreshSaveListAsync();
+            RefreshSaveList();
 
-            lastSelectedSaveFolder = await GetValidLastSaveFolderAsync();
-            var saves = await saveGameManager.GetAllSaveFoldersAsync(userName);
+            lastSelectedSaveFolder = GetValidLastSaveFolder();
+            var saves = saveGameManager.GetAllSaveFolders(userName);
             ContinueGame_Bt.interactable = saves.Count > 0;
 
             playTimeManager.StartCounting();
-            Debug.Log($"Logged in user: {userName}, Save: {lastSelectedSaveFolder}");
         }
         else
         {
             errorText.text = errorMessage;
             errorText.color = Color.red;
-            Debug.LogWarning($"Login failed: {errorMessage}");
         }
     }
 
-    private void UpdateCurrentSaveTextAsync()
+    private void UpdateCurrentSaveText()
     {
         if (currentSaveText == null) return;
-
-        if (string.IsNullOrEmpty(lastSelectedSaveFolder))
-        {
-            currentSaveText.text = "Current Save: None";
-        }
-        else
-        {
-            string saveName = Path.GetFileName(lastSelectedSaveFolder);
-            currentSaveText.text = $"Current Save: {saveName}";
-        }
+        currentSaveText.text = string.IsNullOrEmpty(lastSelectedSaveFolder) ? "Current Save: None" : $"Current Save: {Path.GetFileName(lastSelectedSaveFolder)}";
     }
 
 
     #region bt
 
-    private async void OnNewGameClicked()
+    private void OnNewGameClicked()
     {
-        if (Time.time - lastNewGameTime < NEW_GAME_COOLDOWN)
-        {
-            Debug.LogWarning("[Test] New game button on cooldown!");
-            errorText.text = "Please wait before starting a new game!";
-            errorText.color = Color.yellow;
-            return;
-        }
-
-        lastNewGameTime = Time.time;
-        MainUI.SetActive(false);
         LoadingUI.SetActive(true);
 
-        try
-        {
-            string userName = userAccountManager.CurrentUserBaseName;
-            if (string.IsNullOrEmpty(userName))
-            {
-                throw new Exception("No user logged in!");
-            }
+        lastSelectedSaveFolder = ProfessionalSkilMenu.Instance.OnNewGame();
 
-            string newSaveFolder = await saveGameManager.CreateNewSaveFolder(userName);
-            if (string.IsNullOrEmpty(newSaveFolder))
-            {
-                throw new Exception("Failed to create new save folder!");
-            }
-
-            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
-            playerCheckPoint.SetCurrentMapToCurrentScene();
-            playTimeManager.ResetSession();
-            playTimeManager.StartCounting();
-
-            await saveGameManager.SaveToFolderAsync(newSaveFolder, CancellationToken.None);
-            lastSelectedSaveFolder = newSaveFolder;
-            ContinueGame_Bt.interactable = true;
-            UpdateCurrentSaveTextAsync();
-
-            await SceneController.Instance.LoadAdditiveSceneAsync("white_Space", playerCheckPoint);
-            GamePlayUI.SetActive(true);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[Test] Failed to start new game: {ex.Message}");
-            errorText.text = "Failed to start new game!";
-            errorText.color = Color.red;
-            InitializeUI();
-        }
-        finally
-        {
-            LoadingUI.SetActive(false);
-        }
-    }
-
-    private async void OnContinueGameClicked()
-    {
-        if (string.IsNullOrEmpty(lastSelectedSaveFolder) || !Directory.Exists(lastSelectedSaveFolder))
-        {
-            errorText.text = "No valid save selected!";
-            errorText.color = Color.red;
-            ContinueGame_Bt.interactable = false;
-            lastSelectedSaveFolder = null;
-            UpdateCurrentSaveTextAsync();
-            return;
-        }
+        UpdateCurrentSaveText();
+        ContinueGame_Bt.interactable = true;
 
         MainUI.SetActive(false);
-        LoadingUI.SetActive(true);
-
-        try
-        {
-            await saveGameManager.LoadLatestAsync(userAccountManager.CurrentUserBaseName);
-            string sceneToLoad = playerCheckPoint.CurrentMap;
-            if (string.IsNullOrEmpty(sceneToLoad) || sceneToLoad == "Unknown" || sceneToLoad == "Menu")
-            {
-                sceneToLoad = "white_Space";
-                Debug.LogWarning("[Test] Invalid or unknown scene in checkpoint, using default: white_Space");
-            }
-
-            // Load scene và chờ cho đến khi nó hoàn tất
-            if (!SceneController.Instance.GetLoadedAdditiveScenes().Contains(sceneToLoad))
-            {
-                await SceneController.Instance.LoadAdditiveSceneAsync(sceneToLoad, playerCheckPoint);
-            }
-            else
-            {
-                SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneToLoad));
-            }
-
-            // sau scene đã được load xong thì yêu cầu PlayerCheckPoint áp dụng vị trí
-            PlayerCheckPoint.Instance.ApplyLoadedPosition();
-
-            playTimeManager.StartCounting();
-            GamePlayUI.SetActive(true);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[Test] Failed to continue game: {ex.Message}");
-            errorText.text = "Failed to load game!";
-            errorText.color = Color.red;
-            InitializeUI();
-        }
-        finally
-        {
-            await Task.Delay(1000);
-            LoadingUI.SetActive(false);
-        }
-    }
-
-    private void OnMenuClicked()
-    {
-        MainUI.SetActive(true);
-
+        GamePlayUI.SetActive(true);
+        LoadingUI.SetActive(false);
         //try
         //{
-        //    await OnSaveSessionClickedAsync();
-        //    await SceneController.Instance.UnloadAllAdditiveScenesAsync();
-        //    await RefreshSaveListAsync();
-        //    lastSelectedSaveFolder = null; // Reset save selection
-        //    ContinueGame_Bt.interactable = false;
-        //    InitializeUI();
-        //    GamePlayUI.SetActive(false);
+        //    lastSelectedSaveFolder = ProfessionalSkilMenu.Instance.OnNewGame();
+        //    ContinueGame_Bt.interactable = true;
+        //    UpdateCurrentSaveText();
         //}
-        //catch (Exception ex)
+        //catch (Exception)
         //{
-        //    Debug.LogError($"[Test] Failed to return to menu: {ex.Message}");
-        //    errorText.text = "Failed to return to menu!";
+        //    errorText.text = "Failed to start new game!";
         //    errorText.color = Color.red;
+        //    InitializeUI();
         //}
         //finally
         //{
@@ -531,53 +384,80 @@ public class Test : MonoBehaviour
         //}
     }
 
-    private async void OnQuitSessionClicked()
+    private void OnContinueGameClicked()
     {
-        LoadingUI.SetActive(true);
+        if (string.IsNullOrEmpty(lastSelectedSaveFolder) || !Directory.Exists(lastSelectedSaveFolder))
+        {
+            errorText.text = "No valid save selected!";
+            errorText.color = Color.red;
+            ContinueGame_Bt.interactable = false;
+            lastSelectedSaveFolder = null;
+            UpdateCurrentSaveText();
+            return;
+        }
 
+        LoadingUI.SetActive(true);
         try
         {
-            await ProfessionalSkilMenu.Instance.OnQuitSesion();
-            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
-            await RefreshSaveListAsync(autoLoad: false);
-
-            ContinueGame_Bt.interactable = false;
-            InitializeUI();
-            GamePlayUI.SetActive(false);
-
-            Debug.Log("[Test] Quit session successfully!");
+            ProfessionalSkilMenu.Instance.OnContinueGame(lastSelectedSaveFolder);
+            GamePlayUI.SetActive(true);
+            MainUI.SetActive(false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Debug.LogError($"[Test] Failed to quit session: {ex.Message}");
-            errorText.text = "Failed to quit session!";
+            errorText.text = "Failed to load game!";
             errorText.color = Color.red;
             InitializeUI();
-            UpdateCurrentSaveTextAsync();
         }
         finally
         {
             LoadingUI.SetActive(false);
-            Debug.Log($"[PlayerCheckPoint] Player position reset to: {PlayerController.Instance.transform.position}");
         }
     }
 
-    private async void OnSaveSessionClicked()
+    private void OnMenuClicked()
+    {
+        MainUI.SetActive(true);
+        GamePlayUI.SetActive(false);
+    }
+
+    private void OnQuitSessionClicked()
     {
         LoadingUI.SetActive(true);
-
         try
         {
-            await ProfessionalSkilMenu.Instance.OnSaveSession();
+            ProfessionalSkilMenu.Instance.OnQuitSession(lastSelectedSaveFolder);
+            lastSelectedSaveFolder = null;
+            ContinueGame_Bt.interactable = false;
+            RefreshSaveList();
+            InitializeUI();
+            GamePlayUI.SetActive(false);
+        }
+        catch (Exception)
+        {
+            errorText.text = "Failed to quit session!";
+            errorText.color = Color.red;
+            InitializeUI();
+        }
+        finally
+        {
+            LoadingUI.SetActive(false);
+        }
+    }
 
+    private void OnSaveSessionClicked()
+    {
+        LoadingUI.SetActive(true);
+        try
+        {
+            ProfessionalSkilMenu.Instance.OnSaveSession();
             errorText.text = "Game saved successfully!";
             errorText.color = Color.green;
-            await RefreshSaveListAsync();
-            UpdateCurrentSaveTextAsync();
+            RefreshSaveList();
+            UpdateCurrentSaveText();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Debug.LogError($"[Test] Failed to save session: {ex.Message}");
             errorText.text = "Failed to save game!";
             errorText.color = Color.red;
         }
@@ -587,25 +467,11 @@ public class Test : MonoBehaviour
         }
     }
 
-    private async void OnLogoutClicked()
+    private void OnLogoutClicked()
     {
-        bool confirmed = await ShowConfirmationPanel("Are you sure you want to logout?");
-        if (!confirmed)
-        {
-            return;
-        }
-
         LoadingUI.SetActive(true);
-
         try
         {
-            //// Lưu trạng thái nếu đang trong session chơi
-            //if (GamePlayUI.activeSelf)
-            //{
-            //    await OnSaveSessionClicked();
-            //}
-
-            // Đăng xuất tài khoản
             userAccountManager.Logout();
             lastSelectedSaveFolder = null;
             ContinueGame_Bt.interactable = false;
@@ -615,54 +481,20 @@ public class Test : MonoBehaviour
             logoutButton.interactable = false;
             cloudRegisterButton.interactable = false;
 
-            // Hiển thị panel đăng nhập
             loginPanel.SetActive(true);
             MainUI.SetActive(true);
             GamePlayUI.SetActive(false);
-            await RefreshSaveListAsync();
-            UpdateCurrentSaveTextAsync();
-
-            Debug.Log("[Test] Logged out successfully.");
+            RefreshSaveList();
+            UpdateCurrentSaveText();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Debug.LogError($"[Test] Failed to logout: {ex.Message}");
             errorText.text = "Failed to logout!";
             errorText.color = Color.red;
         }
         finally
         {
             LoadingUI.SetActive(false);
-        }
-    }
-
-    private async Task SyncSaveAsync(string folderPath)
-    {
-        syncPanelStatus.SetActive(true);
-        syncSaveNameText.text = $"Save: {Path.GetFileName(folderPath)}";
-        syncStatusText.text = "Syncing...";
-        syncStatusText.color = Color.yellow;
-
-        await Task.Delay(500);
-
-        var (success, errorMessage) = await saveGameManager.SyncFileSaveAsync(folderPath);
-        if (success)
-        {
-            syncStatusText.text = "Sync successful!";
-            syncStatusText.color = Color.green;
-            await Task.Delay(1000);
-            syncPanelStatus.SetActive(false);
-            Debug.Log($"Synced save: {folderPath}");
-        }
-        else
-        {
-            syncStatusText.text = $"Error: {errorMessage}";
-            syncStatusText.color = Color.red;
-            await Task.Delay(2000);
-            syncPanelStatus.SetActive(false);
-            errorText.text = errorMessage;
-            errorText.color = Color.red;
-            Debug.LogWarning($"Sync failed: {errorMessage}");
         }
     }
 
@@ -688,13 +520,11 @@ public class Test : MonoBehaviour
             errorText.color = Color.green;
             userNameInputField.text = userName;
             passwordInputField.text = "";
-            Debug.Log($"Created account: {userName}");
         }
         else
         {
             errorText.text = errorMessage;
             errorText.color = Color.red;
-            Debug.LogWarning($"Create account failed: {errorMessage}");
         }
     }
 
@@ -811,7 +641,7 @@ public class Test : MonoBehaviour
         try
         {
             // Lưu trạng thái trước khi thoát
-            await SaveGameManager.Instance.SaveAwait();
+            //await SaveGameManager.Instance.SaveAwait();
             Debug.Log("Game state saved before quitting.");
             Application.Quit();
         }
@@ -836,7 +666,7 @@ public class Test : MonoBehaviour
         SaveSession_Bt.onClick.RemoveListener(() => OnSaveSessionClicked());
         Menu_Bt.onClick.RemoveListener(OnMenuClicked);
         QuitSession_Bt.onClick.RemoveListener(OnQuitGameClicked);
-        submitUserNameButton.onClick.RemoveListener(() => OnSubmitUserNameAsync());
+        //submitUserNameButton.onClick.RemoveListener(() SubmitUserNameAs());
         createAccountButton.onClick.RemoveListener(OnCreateAccountButtonClicked);
         createButton.onClick.RemoveListener(OnCreateButtonClicked);
         backButton.onClick.RemoveListener(OnBackButtonClicked);
@@ -870,8 +700,8 @@ public class Test : MonoBehaviour
         saveListPanel = null;
         saveItemTemplate = null;
         syncPanelStatus = null;
-        syncSaveNameText = null;
-        syncStatusText = null;
+        //syncSaveNameText = null;
+        //syncStatusText = null;
         LoadingUI = null;
         MainUI = null;
         GamePlayUI = null;
