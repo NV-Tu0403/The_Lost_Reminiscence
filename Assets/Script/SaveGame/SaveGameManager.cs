@@ -116,6 +116,21 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
+    public void LoadFromFolder(string folderPath)
+    {
+        var jsonFiles = jsonFileHandler.LoadJsonFiles(folderPath);
+        foreach (var (fileName, json) in jsonFiles)
+        {
+            var saveable = saveables.FirstOrDefault(s => s.FileName == fileName);
+            if (saveable != null)
+            {
+                saveable.LoadFromJson(json);
+                saveable.AfterLoad();
+            }
+        }
+    }
+
+
     private bool SaveAllToTempFolder(string tempFolderPath)
     {
         bool hasError = false;

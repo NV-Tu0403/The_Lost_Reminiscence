@@ -116,7 +116,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
             throw new Exception("Invalid save folder!");
         }
 
-        SaveGameManager.Instance.LoadLatest(UserAccountManager.Instance.currentUserBaseName);
+        SaveGameManager.Instance.LoadFromFolder(saveFolder);
         string sceneToLoad = PlayerCheckPoint.Instance.CurrentMap;
         if (string.IsNullOrEmpty(sceneToLoad) || sceneToLoad == "Unknown" || sceneToLoad == "Menu")
         {

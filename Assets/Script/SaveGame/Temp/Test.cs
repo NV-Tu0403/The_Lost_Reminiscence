@@ -274,10 +274,23 @@ public class Test : MonoBehaviour
 
         selectedSaveFolder = folderPath;
         lastSelectedSaveFolder = folderPath;
+
         ContinueGame_Bt.interactable = true;
-        saveGameManager.LoadLatest(userAccountManager.CurrentUserBaseName);
+
+        saveGameManager.LoadFromFolder(folderPath);
+
+        // Log all JSON file contents in the selected save folder
+        var jsonFileHandler = new JsonFileHandler();
+        var jsonFiles = jsonFileHandler.LoadJsonFiles(folderPath);
+        foreach (var (fileName, json) in jsonFiles)
+        {
+            Debug.Log($"[SaveContent] {fileName}:\n{json}");
+        }
+
         UpdateCurrentSaveText();
     }
+
+
 
     private void OnDeleteSave(string folderPath)
     {

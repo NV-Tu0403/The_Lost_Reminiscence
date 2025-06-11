@@ -130,6 +130,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             playerTransform.position = loadedPos;
         }
 
+        _lastLoadedData = null;
         Debug.Log($"[PlayerCheckPoint] Applied position: {playerTransform.position}");
     }
 
@@ -164,6 +165,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             position = new SerializableVector3(playerTransform.position)
         };
 
+        _lastLoadedData = null;
         _isDirty = true;
         Debug.Log($"[PlayerCheckPoint] Reset position to: {playerTransform.position}");
     }
