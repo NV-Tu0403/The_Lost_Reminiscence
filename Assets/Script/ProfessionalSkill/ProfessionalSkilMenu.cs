@@ -39,15 +39,11 @@ public class ProfessionalSkilMenu : MonoBehaviour
     {
         try
         {
+            // Lưu trạng thái sau khi reset
             await OnSaveSession();
 
-            //Unload hết scene (khi này player có thể bị destroy)
+            // Unload scene
             await SceneController.Instance.UnloadAllAdditiveScenesAsync();
-
-            // Reset vị trí Player
-            await PlayerCheckPoint.Instance.ResetPlayerPositionWord();
-
-            Debug.Log($"[QuitSession] Player position AFTER RESET: {PlayerController.Instance.transform.position}");
 
             lastSelectedSaveFolder = null;
         }
@@ -120,7 +116,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
 
         var saves = (await SaveGameManager.Instance.GetAllSaveFoldersAsync(userName))
             .Select(s => new SaveFolder { FolderPath = s.FolderPath, ImagePath = s.ImagePath })
-            .Distinct(new SaveFolderComparer()) // Thêm comparer dựa trên FolderPath hoặc timestamp
+            .Distinct(new SaveFolderComparer())
             .ToList();
 
 

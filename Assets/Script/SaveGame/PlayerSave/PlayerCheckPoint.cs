@@ -154,16 +154,17 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
     /// Lưu ý: Phương thức này chỉ nên được gọi khi playerTransform đã được khởi tạo.
     /// </summary>
     /// <returns></returns>
-    public async Task ResetPlayerPositionWord()
+    public void ResetPlayerPositionWord()
     {
         if (playerTransform != null)
         {
-            playerTransform.position = new Vector3(0,3,0);
-
-            while (playerTransform.position != new Vector3(0, 3, 0))
+            playerTransform.position = new Vector3(0, 3, 0);
+            _lastLoadedData = new PlayerCheckPointData
             {
-                await Task.Yield();
-            }
+                mapName = CurrentMap,
+                position = new SerializableVector3(playerTransform.position)
+            };
+
             Debug.Log($"[PlayerCheckPoint] Player position reset to: {playerTransform.position}");
         }
         else
