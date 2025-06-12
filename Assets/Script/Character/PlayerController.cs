@@ -337,7 +337,7 @@ namespace DuckLe
             }
             else
             {
-                Debug.LogWarning("ListBody[1] is null or has no children!");
+                //Debug.LogWarning("ListBody[1] is null or has no children!");
             }
         }
         #endregion

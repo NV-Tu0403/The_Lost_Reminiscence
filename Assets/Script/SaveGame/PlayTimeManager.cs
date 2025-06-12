@@ -7,7 +7,7 @@ public class PlayTimeManager : MonoBehaviour, ISaveable
     private float sessionPlayTime;
     private bool _isDirty;
     public bool isCounting;
-    private readonly object saveLock = new object(); // Lock to avoid race condition
+    private readonly object saveLock = new object();
 
     public string FileName => "playTime.json";
     public float SessionPlayTime => sessionPlayTime;
@@ -31,7 +31,7 @@ public class PlayTimeManager : MonoBehaviour, ISaveable
             lock (saveLock)
             {
                 sessionPlayTime += Time.deltaTime;
-                _isDirty = true; // Mark as dirty when time changes
+                _isDirty = true;
             }
         }
     }
@@ -41,7 +41,7 @@ public class PlayTimeManager : MonoBehaviour, ISaveable
         lock (saveLock)
         {
             isCounting = true;
-            _isDirty = true; // Mark as dirty when counting starts
+            _isDirty = true;
         }
     }
 
@@ -50,7 +50,7 @@ public class PlayTimeManager : MonoBehaviour, ISaveable
         lock (saveLock)
         {
             isCounting = false;
-            _isDirty = true; // Mark as dirty when counting stops
+            _isDirty = true;
         }
     }
 
@@ -59,7 +59,7 @@ public class PlayTimeManager : MonoBehaviour, ISaveable
         lock (saveLock)
         {
             sessionPlayTime = 0f;
-            _isDirty = true; // Mark as dirty on reset
+            _isDirty = true;
         }
         Debug.Log("Reset session PlayTime");
     }
@@ -68,7 +68,6 @@ public class PlayTimeManager : MonoBehaviour, ISaveable
     {
         lock (saveLock)
         {
-            // Only save if counting is active or time has been modified
             return isCounting || _isDirty;
         }
     }
@@ -88,8 +87,7 @@ public class PlayTimeManager : MonoBehaviour, ISaveable
     {
         lock (saveLock)
         {
-            // No additional prep needed, but can add logic if required
-            _isDirty = false; // Reset dirty flag before saving
+            _isDirty = false; 
         }
     }
 
@@ -97,9 +95,8 @@ public class PlayTimeManager : MonoBehaviour, ISaveable
     {
         lock (saveLock)
         {
-            _isDirty = false; // Reset dirty flag after loading
-            // Optionally adjust isCounting based on loaded state
-            isCounting = sessionPlayTime > 0f; // Resume counting if time exists
+            _isDirty = false; 
+            isCounting = sessionPlayTime > 0f; 
         }
     }
 

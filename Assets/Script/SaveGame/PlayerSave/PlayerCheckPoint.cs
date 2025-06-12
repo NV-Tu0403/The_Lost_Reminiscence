@@ -37,11 +37,11 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
     public bool ShouldSave()
     {
-        if (playerTransform == null)
-        {
-            Debug.LogWarning("[PlayerCheckPoint] Cannot save, playerTransform is null.");
-            return false;
-        }
+        //if (playerTransform == null)
+        //{
+        //    Debug.LogWarning("[PlayerCheckPoint] Cannot save, playerTransform is null.");
+        //    return false;
+        //}
 
         if (ExcludedScenes.Contains(CurrentMap))
         {
@@ -84,7 +84,6 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}");
         return JsonUtility.ToJson(data, true);
     }
-
 
     public void LoadFromJson(string json)
     {
