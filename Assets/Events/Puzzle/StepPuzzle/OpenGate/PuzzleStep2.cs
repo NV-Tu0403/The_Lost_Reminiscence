@@ -3,7 +3,7 @@ using DG.Tweening;
 using Events.Puzzle.Scripts;
 using UnityEngine;
 
-namespace Events.Puzzle.StepPuzzle
+namespace Events.Puzzle.StepPuzzle.OpenGate
 {
     public class PuzzleStep2 : MonoBehaviour, IPuzzleStep
     {
@@ -60,4 +60,3 @@ namespace Events.Puzzle.StepPuzzle
         }
     }
 }
-

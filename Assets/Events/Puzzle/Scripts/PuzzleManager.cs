@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Events.Puzzle.StepPuzzle;
+using Events.Puzzle.StepPuzzle.InteractBridge;
+using Events.Puzzle.StepPuzzle.OpenGate;
 using UnityEngine;
 
 namespace Events.Puzzle.Scripts
@@ -31,6 +33,18 @@ namespace Events.Puzzle.Scripts
             // Test: Đăng ký bước câu đố 2
             var step2 = GetComponentInChildren<PuzzleStep2>();
             RegisterStep("Puzzle_2", step2);
+            
+            // Test: Đăng ký bước câu đố 3
+            var step3 = GetComponentInChildren<PuzzleStep3>();
+            RegisterStep("Puzzle_3", step3);
+            
+            // Test: Đăng ký bước câu đố 4
+            var step4 = GetComponentInChildren<PuzzleStep4>();
+            RegisterStep("Puzzle_4", step4);
+            
+            // Test: Đăng ký bước câu đố 5
+            var step5 = GetComponentInChildren<PuzzleStep5>();
+            RegisterStep("Puzzle_5", step5);
         }
 
         public void RegisterStep(string stepId, IPuzzleStep step)

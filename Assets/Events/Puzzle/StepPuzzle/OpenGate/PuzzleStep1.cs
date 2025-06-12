@@ -3,7 +3,7 @@ using DG.Tweening;
 using Events.Puzzle.Scripts;
 using UnityEngine;
 
-namespace Events.Puzzle.StepPuzzle
+namespace Events.Puzzle.StepPuzzle.OpenGate
 {
     public class PuzzleStep1 : MonoBehaviour, IPuzzleStep
     {
@@ -23,7 +23,6 @@ namespace Events.Puzzle.StepPuzzle
                 onComplete?.Invoke();
                 return;
             }
-            
             // Sử dụng DOTween để di chuyển camera 
             var seq = DOTween.Sequence();
             seq.Append(mainCamera.transform.DOMove(cameraTarget.position, cameraMoveDuration));
