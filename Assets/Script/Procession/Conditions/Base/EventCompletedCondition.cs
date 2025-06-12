@@ -1,5 +1,3 @@
-using Events.Cutscene.Scripts;
-
 namespace Script.Procession.Conditions
 {
     public class EventCompletedCondition : Condition

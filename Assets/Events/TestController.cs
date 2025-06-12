@@ -2,21 +2,21 @@ using UnityEngine;
 
 namespace Events
 {
-    [RequireComponent(typeof(CharacterController))]
-    public class CharacterController : MonoBehaviour
+    [RequireComponent(typeof(TestController))]
+    public class TestController : MonoBehaviour
     {
         [Header("Movement")]
         public float moveSpeed = 5f;
         public float gravity = -9.81f;
         private float verticalVelocity;
-        private UnityEngine.CharacterController controller;
+        private CharacterController controller;
 
         [Header("Control")]
         public bool isActive = true;
 
         void Awake()
         {
-            controller = GetComponent<UnityEngine.CharacterController>();
+            controller = GetComponent<CharacterController>();
         }
 
         void Update()

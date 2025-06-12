@@ -36,8 +36,8 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             var player = GameObject.FindGameObjectWithTag("Player");
             if (fa != null && player != null)
             {
-                var faController = fa.GetComponent<CharacterController>();
-                var playerController = player.GetComponent<CharacterController>();
+                var faController = fa.GetComponent<TestController>();
+                var playerController = player.GetComponent<TestController>();
                 if (faController != null) faController.isActive = true;
                 if (playerController != null) playerController.isActive = false;
             }
