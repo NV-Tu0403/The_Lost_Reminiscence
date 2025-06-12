@@ -4,6 +4,6 @@ namespace Events.Puzzle.Scripts
 {
     public interface IPuzzleStep
     {
-        void StartStep(Action onComplete, bool isRetry = false);
+        void StartStep(Action onComplete);
     }
 }

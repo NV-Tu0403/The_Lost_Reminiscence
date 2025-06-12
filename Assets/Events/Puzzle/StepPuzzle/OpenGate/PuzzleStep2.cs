@@ -17,14 +17,8 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
         [SerializeField] private Transform gate;
         [SerializeField] private Vector3 openOffset = new Vector3(0, -5, 0);
 
-        public void StartStep(Action onComplete, bool isRetry = false)
+        public void StartStep(Action onComplete)
         {
-            if (isRetry)
-            {
-                // Bỏ qua hiệu ứng, chỉ báo hoàn thành step (hoặc chuyển điều khiển/camera nếu cần)
-                onComplete?.Invoke();
-                return;
-            }
             var mainCamera = Camera.main;
             if (mainCamera == null)
             {

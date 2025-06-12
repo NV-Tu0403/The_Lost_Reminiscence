@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Loc_Backend.Scripts
+namespace Events
 {
     [RequireComponent(typeof(CharacterController))]
     public class CharacterController : MonoBehaviour

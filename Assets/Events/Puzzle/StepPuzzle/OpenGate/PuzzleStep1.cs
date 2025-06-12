@@ -13,14 +13,8 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
         [SerializeField] private float cameraMoveDuration = 1f;
         [SerializeField] private float cameraHoldDuration = 2f;  
         
-        public void StartStep(Action onComplete, bool isRetry = false)
+        public void StartStep(Action onComplete)
         {
-            if (isRetry)
-            {
-                // Bỏ qua hiệu ứng, chỉ báo hoàn thành step
-                onComplete?.Invoke();
-                return;
-            }
             // Lấy camera chính
             var mainCamera = Camera.main;
             if (mainCamera == null)

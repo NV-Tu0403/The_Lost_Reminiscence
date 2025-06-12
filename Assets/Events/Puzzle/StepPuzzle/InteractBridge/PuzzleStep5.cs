@@ -5,43 +5,44 @@ using Events.Puzzle.Scripts;
 using TMPro;
 using UnityEngine;
 using DG.Tweening;
+using Events.Puzzle.Config.Base;
+using Events.Puzzle.SO;
 
 namespace Events.Puzzle.StepPuzzle.InteractBridge
 {
     // Step 5: Dựng cầu, đếm ngược, player qua cầu
     public class PuzzleStep5 : MonoBehaviour, IPuzzleStep
     {
-        [Header("Bridge Pieces")]
-        [SerializeField] private List<Transform> bridgePieces;
-        [SerializeField] private float raiseHeight = 1.5f;
-        [SerializeField] private float raiseDuration = 0.5f;
-        [SerializeField] private float raiseDelay = 0.2f;
+        [Header("Config Scriptable Object")]
+        [SerializeField] private PuzzleConfigSO puzzleConfig;
+        
+        [Header("Bridge Pieces")] 
+        [Tooltip("Danh sách các khối của cầu (bridge piece) sẽ được nâng lên hoặc thả xuống.")]
+        public List<Transform> bridgePieces;
+        
+        [Header("UI Countdown")] 
+        [Tooltip("Text đếm ngược hiển thị trên màn hình.")]
+        public TextMeshProUGUI countdownText;
 
-        [Header("Collapse Settings")]
-        [SerializeField] private float countdownTime = 5f;
-        [SerializeField] private float fallDelayBetweenPieces = 0.2f;
-        [SerializeField] private float fallDistance = 5f;
-        [SerializeField] private float fallDuration = 0.6f;
-        [SerializeField] private Vector3 shakeStrength = new Vector3(0.2f, 0.2f, 0.2f);
+        [Tooltip("Canvas chứa text đếm ngược.")]
+        public Canvas countdownCanvas;
 
-        [Header("UI Countdown")]
-        [SerializeField] private TextMeshProUGUI countdownText;
-        [SerializeField] private Canvas countdownCanvas;
-        [SerializeField] private Transform playerResetPoint;
-
+        [Tooltip("Vị trí reset của người chơi sau khi cầu sập.")]
+        public Transform playerResetPoint;
+        
+        
+        private PuzzleConfig _puzzleConfig;
+        
+        
         private bool puzzleStarted = false;
         private Vector3[] originalPositions;
         private Action _onComplete;
 
-        public void StartStep(Action onComplete, bool isRetry = false)
+        public void StartStep(Action onComplete)
         {
+            _puzzleConfig = puzzleConfig.ToRunTimeData();
+            
             _onComplete = onComplete;
-            if (!isRetry)
-            {
-                // TODO: Hiện dialogue/cutscene nếu cần
-                // Sau khi dialogue xong, bắt đầu dựng cầu và đếm ngược
-            }
-            // Luôn bắt đầu dựng cầu và đếm ngược
             if (!puzzleStarted)
             {
                 puzzleStarted = true;
@@ -55,7 +56,7 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             for (int i = 0; i < bridgePieces.Count; i++)
             {
                 originalPositions[i] = bridgePieces[i].position;
-                bridgePieces[i].position -= Vector3.up * raiseHeight;
+                bridgePieces[i].position -= Vector3.up * puzzleConfig.raiseHeight;
             }
             countdownCanvas.enabled = false;
         }
@@ -65,8 +66,8 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             for (int i = 0; i < bridgePieces.Count; i++)
             {
                 var piece = bridgePieces[i];
-                piece.DOMoveY(piece.position.y + raiseHeight, raiseDuration).SetEase(Ease.OutBack);
-                yield return new WaitForSeconds(raiseDelay);
+                piece.DOMoveY(piece.position.y + puzzleConfig.raiseHeight, puzzleConfig.raiseDuration).SetEase(Ease.OutBack);
+                yield return new WaitForSeconds(puzzleConfig.raiseDelay);
             }
             yield return StartCoroutine(StartCountdown());
             yield return StartCoroutine(CollapseBridgeSequence());
@@ -75,7 +76,7 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
         private IEnumerator StartCountdown()
         {
             countdownCanvas.enabled = true;
-            float timeLeft = countdownTime;
+            float timeLeft = puzzleConfig.countdownTime;
             while (timeLeft > 0)
             {
                 countdownText.text = Mathf.CeilToInt(timeLeft).ToString();
@@ -91,10 +92,11 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             for (int i = 0; i < bridgePieces.Count; i++)
             {
                 var piece = bridgePieces[i];
-                piece.DOShakePosition(0.3f, shakeStrength);
+                piece.DOShakePosition(0.3f, puzzleConfig.shakeStrength);
                 yield return new WaitForSeconds(0.2f);
-                piece.DOMoveY(piece.position.y - fallDistance, fallDuration).SetEase(Ease.InBack);
-                yield return new WaitForSeconds(fallDelayBetweenPieces);
+                piece.DOMoveY(piece.position.y - puzzleConfig.fallDistance, puzzleConfig.fallDuration)
+                    .SetEase(Ease.InBack);
+                yield return new WaitForSeconds(puzzleConfig.fallDelayBetweenPieces);
             }
             yield return new WaitForSeconds(1f);
             // Kiểm tra player đã qua cầu thành công hay chưa
@@ -135,7 +137,8 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             yield return new WaitForSeconds(1f);
             for (int i = 0; i < bridgePieces.Count; i++)
             {
-                bridgePieces[i].position = originalPositions[i] - Vector3.up * raiseHeight;
+                bridgePieces[i].position = 
+                    originalPositions[i] - Vector3.up * puzzleConfig.raiseHeight;
             }
             puzzleStarted = false;
             countdownText.text = "";
@@ -143,4 +146,3 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
         }
     }
 }
-

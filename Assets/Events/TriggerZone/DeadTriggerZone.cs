@@ -1,3 +1,4 @@
+using Events.TestPuzzle;
 using Script.GameEventSystem;
 using Script.Procession;
 using UnityEngine;
@@ -13,12 +14,15 @@ namespace Events.TriggerZone
 
         protected override void OnTriggered(Collider other)
         {
-            // Kiểm tra điều kiện progression
-            if (!ProgressionManager.Instance.CanTrigger(eventId) &&
-                !ProgressionManager.Instance.IsWaitingForEvent(eventId))
+            var puzzleStep5 = FindObjectOfType<Events.Puzzle.StepPuzzle.InteractBridge.PuzzleStep5>();
+            if (puzzleStep5 != null)
             {
-                Debug.Log($"[DeadTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
-                return;
+                puzzleStep5.ResetPlayer();
+                puzzleStep5.StartCoroutine(puzzleStep5.ResetPuzzleAfterFail());
+            }
+            else
+            {
+                Debug.LogWarning("[DeadTriggerZone] Không tìm thấy PuzzleStep5 để reset!");
             }
         }
     }
