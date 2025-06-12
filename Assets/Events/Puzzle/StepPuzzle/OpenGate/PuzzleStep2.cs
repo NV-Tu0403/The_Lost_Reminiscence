@@ -3,7 +3,7 @@ using DG.Tweening;
 using Events.Puzzle.Scripts;
 using UnityEngine;
 
-namespace Events.Puzzle.StepPuzzle
+namespace Events.Puzzle.StepPuzzle.OpenGate
 {
     public class PuzzleStep2 : MonoBehaviour, IPuzzleStep
     {
@@ -17,8 +17,14 @@ namespace Events.Puzzle.StepPuzzle
         [SerializeField] private Transform gate;
         [SerializeField] private Vector3 openOffset = new Vector3(0, -5, 0);
 
-        public void StartStep(Action onComplete)
+        public void StartStep(Action onComplete, bool isRetry = false)
         {
+            if (isRetry)
+            {
+                // Bỏ qua hiệu ứng, chỉ báo hoàn thành step (hoặc chuyển điều khiển/camera nếu cần)
+                onComplete?.Invoke();
+                return;
+            }
             var mainCamera = Camera.main;
             if (mainCamera == null)
             {
@@ -60,4 +66,3 @@ namespace Events.Puzzle.StepPuzzle
         }
     }
 }
-

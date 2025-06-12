@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Events.Puzzle.StepPuzzle;
+using Events.Puzzle.StepPuzzle.OpenGate;
 using UnityEngine;
 
 namespace Events.Puzzle.Scripts

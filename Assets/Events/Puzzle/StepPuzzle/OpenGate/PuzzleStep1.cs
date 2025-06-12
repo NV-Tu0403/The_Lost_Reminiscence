@@ -3,7 +3,7 @@ using DG.Tweening;
 using Events.Puzzle.Scripts;
 using UnityEngine;
 
-namespace Events.Puzzle.StepPuzzle
+namespace Events.Puzzle.StepPuzzle.OpenGate
 {
     public class PuzzleStep1 : MonoBehaviour, IPuzzleStep
     {
@@ -13,8 +13,14 @@ namespace Events.Puzzle.StepPuzzle
         [SerializeField] private float cameraMoveDuration = 1f;
         [SerializeField] private float cameraHoldDuration = 2f;  
         
-        public void StartStep(Action onComplete)
+        public void StartStep(Action onComplete, bool isRetry = false)
         {
+            if (isRetry)
+            {
+                // Bỏ qua hiệu ứng, chỉ báo hoàn thành step
+                onComplete?.Invoke();
+                return;
+            }
             // Lấy camera chính
             var mainCamera = Camera.main;
             if (mainCamera == null)
@@ -23,7 +29,6 @@ namespace Events.Puzzle.StepPuzzle
                 onComplete?.Invoke();
                 return;
             }
-            
             // Sử dụng DOTween để di chuyển camera 
             var seq = DOTween.Sequence();
             seq.Append(mainCamera.transform.DOMove(cameraTarget.position, cameraMoveDuration));
