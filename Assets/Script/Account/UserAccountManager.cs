@@ -36,6 +36,8 @@ public class TempUserAccountData
 
 public class UserAccountManager : MonoBehaviour
 {
+    public static UserAccountManager Instance { get; private set; }
+
     private string userDataPath;
     private string userAccountsPath;
     private UserAccountData userData;
@@ -45,12 +47,20 @@ public class UserAccountManager : MonoBehaviour
 
     void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.LogWarning("Multiple instances of UserAccountManager detected. Destroying duplicate.");
+        }
+
         userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
         userAccountsPath = Path.Combine(userDataPath, "UserAccounts.json");
         currentUserBaseName = null;
         EnsureDirectory();
         LoadUserData();
-        Debug.Log($"UserAccountManager initialized: {userAccountsPath}");
     }
 
     private void EnsureDirectory()
@@ -104,7 +114,7 @@ public class UserAccountManager : MonoBehaviour
                 }
 
                 SaveUserData();
-                Debug.Log($"Loaded UserAccounts: Users={userData.Users.Count}, LastAccount={userData.LastAccount}");
+                //Debug.Log($"Loaded UserAccounts: Users={userData.Users.Count}, LastAccount={userData.LastAccount}");
             }
             catch (Exception e)
             {
@@ -156,12 +166,12 @@ public class UserAccountManager : MonoBehaviour
             if (File.Exists(userAccountsPath))
             {
                 File.Copy(userAccountsPath, userAccountsPath + ".bak", true);
-                Debug.Log("Created backup of UserAccounts.json");
+                //Debug.Log("Created backup of UserAccounts.json");
             }
 
             string json = JsonUtility.ToJson(userData, true);
             File.WriteAllText(userAccountsPath, json);
-            Debug.Log($"Saved UserAccounts to: {userAccountsPath}");
+            //Debug.Log($"Saved UserAccounts to: {userAccountsPath}");
         }
         catch (Exception e)
         {
@@ -265,7 +275,7 @@ public class UserAccountManager : MonoBehaviour
         }
 
         currentUserBaseName = user.BaseName;
-        Debug.Log($"Auto-logged in user: {user.BaseName}");
+        //Debug.Log($"Auto-logged in user: {user.BaseName}");
         return true;
     }
 
