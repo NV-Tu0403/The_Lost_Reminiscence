@@ -2,293 +2,182 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
+
+public class SaveFolder
+{
+    public string FolderPath { get; set; }
+    public string ImagePath { get; set; }  // Nếu bạn lưu ảnh đại diện cho save
+}
+
+public class SaveListContext
+{
+    public string UserName { get; set; }
+    public List<SaveFolder> Saves { get; set; }
+    public bool IsContinueEnabled { get; set; }
+}
 
 public class SaveGameManager : MonoBehaviour
 {
-    private string userDataPath;
+    private readonly object saveablesLock = new object();
+    private readonly HashSet<ISaveable> saveables = new HashSet<ISaveable>();
+    public static SaveGameManager Instance { get; private set; }
 
-    void Awake()
-    {
-        userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
-        Debug.Log($"SaveGameManager initialized: {userDataPath}");
-    }
+    private FolderManager folderManager;
+    private JsonFileHandler jsonFileHandler;
 
-    private string GetTransferFolder()
+    private void Awake()
     {
-#if UNITY_EDITOR
-        return Path.Combine(Application.dataPath, "Loc_Backend/SavePath");
-#else
-        return Path.Combine(Application.persistentDataPath, "SavePath");
-#endif
-    }
-
-    public string CreateNewSaveFolder(string userName)
-    {
-        if (string.IsNullOrEmpty(userName))
+        if (Instance == null)
         {
-            Debug.LogError("UserName is empty. Cannot create save folder!");
-            return null;
+            Instance = this;
+        }
+        else
+        {
+            Debug.LogError("SaveGameManager ==  oke");
         }
 
-        string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
-        if (!Directory.Exists(fileSavePath))
-        {
-            Directory.CreateDirectory(fileSavePath);
-            Debug.Log($"Created FileSave directory: {fileSavePath}");
-        }
-
-        string dateSave = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        int index = GetNextIndex(userName);
-        string folderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
-        string folderPath = Path.Combine(fileSavePath, folderName);
-
-        if (Directory.Exists(folderPath))
-        {
-            Debug.LogWarning($"Save folder already exists: {folderPath}. Generating new index.");
-            index = GetNextIndex(userName);
-            folderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
-            folderPath = Path.Combine(fileSavePath, folderName);
-        }
-
-        Directory.CreateDirectory(folderPath);
-        Debug.Log($"Created new save folder: {folderPath}");
-        return folderPath;
+        string userDataPath = Path.Combine(Application.persistentDataPath, "User_DataGame");
+        folderManager = new FolderManager(userDataPath);
+        jsonFileHandler = new JsonFileHandler();
     }
 
-    private int GetNextIndex(string userName)
+    public void RegisterSaveable(ISaveable saveable)
     {
-        string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
-        if (!Directory.Exists(fileSavePath)) return 1;
-
-        var folders = Directory.GetDirectories(fileSavePath)
-            .Where(d => Path.GetFileName(d).StartsWith($"SaveGame_{userName}_"))
-            .Select(d =>
-            {
-                string[] parts = Path.GetFileName(d).Split('_');
-                if (parts.Length == 4 && int.TryParse(parts[3], out int idx))
-                    return idx;
-                return 0;
-            })
-            .ToList();
-
-        int nextIndex = folders.Any() ? folders.Max() + 1 : 1;
-        Debug.Log($"Next index for {userName}: {nextIndex}");
-        return nextIndex;
-    }
-
-    public void SaveJsonFile(string saveFolderPath, string fileName, string jsonContent)
-    {
-        try
+        if (saveable == null || string.IsNullOrEmpty(saveable.FileName)) return;
+        lock (saveablesLock)
         {
-            string filePath = Path.Combine(saveFolderPath, fileName);
-            File.WriteAllText(filePath, jsonContent);
-            Debug.Log($"Saved JSON to: {filePath}");
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Failed to save JSON {fileName}: {e.Message}");
+            saveables.Add(saveable);
         }
     }
 
-    public string LoadJsonFile(string saveFolderPath, string fileName)
+    public void UnregisterSaveable(ISaveable saveable)
     {
-        try
+        if (saveable == null) return;
+        lock (saveablesLock)
         {
-            string filePath = Path.Combine(saveFolderPath, fileName);
-            if (File.Exists(filePath))
-            {
-                string json = File.ReadAllText(filePath);
-                Debug.Log($"Loaded JSON from: {filePath}");
-                return json;
-            }
-            Debug.LogWarning($"File {fileName} not found in {saveFolderPath}");
-            return null;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Failed to load JSON {fileName}: {e.Message}");
-            return null;
+            saveables.Remove(saveable);
         }
     }
 
-    public string GetLatestSaveFolder(string userName)
+    public void SaveToFolder(string folderPath)
     {
-        string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
-        if (!Directory.Exists(fileSavePath))
-        {
-            Debug.LogWarning($"No FileSave directory for user: {userName}");
-            return null;
-        }
+        string tempFolderPath = Path.Combine(Application.persistentDataPath, $"TempSave_{Guid.NewGuid()}");
+        string backupFolderPath = folderPath + "_backup";
 
-        var folders = Directory.GetDirectories(fileSavePath)
-            .Where(d => Path.GetFileName(d).StartsWith($"SaveGame_{userName}_") && Directory.GetFiles(d, "*.json").Length > 0)
-            .Select(d => new
-            {
-                Path = d,
-                Name = Path.GetFileName(d)
-            })
-            .OrderByDescending(d =>
-            {
-                string[] parts = d.Name.Split('_');
-                if (parts.Length >= 4 && DateTime.TryParseExact(parts[2], "yyyyMMdd_HHmmss", null, System.Globalization.DateTimeStyles.None, out DateTime date))
-                {
-                    int index = int.Parse(parts[3]);
-                    return new DateTime(date.Ticks + index);
-                }
-                return DateTime.MinValue;
-            })
-            .ToList();
-
-        string latestFolder = folders.FirstOrDefault()?.Path;
-        if (latestFolder != null)
-        {
-            Debug.Log($"Found latest save folder for user {userName}: {latestFolder}");
-            return latestFolder;
-        }
-
-        Debug.LogWarning($"No valid save folder found for user: {userName}");
-        return null;
-    }
-
-    public List<(string FolderPath, string ImagePath)> GetAllSaveFolders(string userName)
-    {
-        string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
-        var result = new List<(string, string)>();
-        if (!Directory.Exists(fileSavePath))
-        {
-            Debug.LogWarning($"No FileSave directory for user: {userName}");
-            return result;
-        }
-
-        var folders = Directory.GetDirectories(fileSavePath)
-            .Where(d => Path.GetFileName(d).StartsWith($"SaveGame_{userName}_"));
-
-        foreach (var folder in folders)
-        {
-            string imagePath = Path.Combine(folder, "screenshot.png");
-            string image = File.Exists(imagePath) ? imagePath : null;
-            result.Add((folder, image));
-        }
-
-        Debug.Log($"Found {result.Count} save folders for user: {userName}");
-        return result;
-    }
-
-    public bool DeleteSaveFolder(string folderPath)
-    {
         try
         {
             if (Directory.Exists(folderPath))
             {
-                Directory.Delete(folderPath, true);
-                Debug.Log($"Deleted save folder: {folderPath}");
-                return true;
+                Directory.Move(folderPath, backupFolderPath); // sao lưu
             }
-            Debug.LogWarning($"Save folder not found: {folderPath}");
-            return false;
+
+            if (!SaveAllToTempFolder(tempFolderPath))
+                throw new Exception("One or more saveable objects failed to save.");
+
+            Directory.CreateDirectory(folderPath);
+            MoveFiles(tempFolderPath, folderPath);
+
+            if (Directory.Exists(backupFolderPath))
+                Directory.Delete(backupFolderPath, true);
+
+            Debug.Log($"[SaveGameManager] Successfully saved to {folderPath}");
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.LogError($"Failed to delete save folder {folderPath}: {e.Message}");
-            return false;
+            Debug.LogError($"[SaveGameManager] Save failed: {ex.Message}");
+            RollbackSave(tempFolderPath, folderPath, backupFolderPath);
         }
     }
 
-    public string DuplicateSaveFolder(string sourceFolderPath, string userName)
+    public void SaveAll(string userName, string folderPath = null)
     {
-        if (!Directory.Exists(sourceFolderPath))
-        {
-            Debug.LogError($"Source save folder does not exist: {sourceFolderPath}");
-            return null;
-        }
-
-        string dateSave = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        int index = GetNextIndex(userName);
-        string newFolderName = $"SaveGame_{userName}_{dateSave}_{index:D3}";
-        string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
-        string newFolderPath = Path.Combine(fileSavePath, newFolderName);
-
-        try
-        {
-            Directory.CreateDirectory(newFolderPath);
-            foreach (string file in Directory.GetFiles(sourceFolderPath))
-            {
-                string fileName = Path.GetFileName(file);
-                string destFile = Path.Combine(newFolderPath, fileName);
-                File.Copy(file, destFile);
-            }
-            Debug.Log($"Duplicated save from {sourceFolderPath} to {newFolderPath}");
-            return newFolderPath;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Failed to duplicate save folder: {e.Message}");
-            return null;
-        }
+        string saveFolderPath = folderPath ?? folderManager.CreateNewSaveFolder(userName);
+        if (saveFolderPath == null) return;
+        SaveToFolder(saveFolderPath);
     }
 
-    public bool SyncFileSave(string sourceFolderPath, out string errorMessage)
+    public void LoadLatest(string userName)
     {
-        errorMessage = "";
-        if (!Directory.Exists(sourceFolderPath))
-        {
-            errorMessage = $"Source save folder does not exist: {sourceFolderPath}";
-            Debug.LogError(errorMessage);
-            return false;
-        }
+        string latestFolder = folderManager.GetLatestSaveFolder(userName);
+        if (latestFolder == null) return;
 
-        string savePath = GetTransferFolder();
-
-        try
+        var jsonFiles = jsonFileHandler.LoadJsonFiles(latestFolder);
+        foreach (var (fileName, json) in jsonFiles)
         {
-            if (!Directory.Exists(savePath))
+            var saveable = saveables.FirstOrDefault(s => s.FileName == fileName);
+            if (saveable != null)
             {
-                Directory.CreateDirectory(savePath);
-                Debug.Log($"Created SavePath directory: {savePath}");
+                saveable.LoadFromJson(json);
+                saveable.AfterLoad();
             }
-
-            string folderName = Path.GetFileName(sourceFolderPath);
-            string destFolderPath = Path.Combine(savePath, folderName);
-
-            if (Directory.Exists(destFolderPath))
-            {
-                Directory.Delete(destFolderPath, true);
-                Debug.Log($"Deleted existing destination folder: {destFolderPath}");
-            }
-
-            DirectoryCopy(sourceFolderPath, destFolderPath, true);
-            Debug.Log($"Synced entire folder from {sourceFolderPath} to {destFolderPath}");
-            return true;
-        }
-        catch (Exception e)
-        {
-            errorMessage = $"Failed to sync folder: {e.Message}";
-            Debug.LogError(errorMessage);
-            return false;
         }
     }
 
-    private void DirectoryCopy(string sourceDir, string destDir, bool copySubDirs)
+    public void LoadFromFolder(string folderPath)
     {
-        DirectoryInfo dir = new DirectoryInfo(sourceDir);
-        DirectoryInfo[] dirs = dir.GetDirectories();
-        Directory.CreateDirectory(destDir);
-
-        FileInfo[] files = dir.GetFiles();
-        foreach (FileInfo file in files)
+        var jsonFiles = jsonFileHandler.LoadJsonFiles(folderPath);
+        foreach (var (fileName, json) in jsonFiles)
         {
-            string tempPath = Path.Combine(destDir, file.Name);
-            file.CopyTo(tempPath, false);
-        }
-
-        if (copySubDirs)
-        {
-            foreach (DirectoryInfo subdir in dirs)
+            var saveable = saveables.FirstOrDefault(s => s.FileName == fileName);
+            if (saveable != null)
             {
-                string tempPath = Path.Combine(destDir, subdir.Name);
-                DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                saveable.LoadFromJson(json);
+                saveable.AfterLoad();
             }
         }
     }
+
+
+    private bool SaveAllToTempFolder(string tempFolderPath)
+    {
+        bool hasError = false;
+        Directory.CreateDirectory(tempFolderPath);
+
+        lock (saveablesLock)
+        {
+            foreach (var saveable in saveables)
+            {
+                if (!saveable.ShouldSave()) continue;
+                saveable.BeforeSave();
+                var json = saveable.SaveToJson();
+                if (string.IsNullOrEmpty(json))
+                {
+                    Debug.LogWarning($"[SaveGameManager] Failed to serialize {saveable.FileName}");
+                    hasError = true;
+                    continue;
+                }
+                jsonFileHandler.SaveJsonFile(tempFolderPath, saveable.FileName, json);
+            }
+        }
+
+        return !hasError;
+    }
+
+    private void MoveFiles(string sourceFolder, string destFolder)
+    {
+        foreach (var file in Directory.GetFiles(sourceFolder))
+        {
+            string dest = Path.Combine(destFolder, Path.GetFileName(file));
+            File.Move(file, dest);
+        }
+        Directory.Delete(sourceFolder, true);
+    }
+
+    private void RollbackSave(string tempFolder, string saveFolder, string backupFolder)
+    {
+        if (Directory.Exists(tempFolder))
+            Directory.Delete(tempFolder, true);
+        if (Directory.Exists(saveFolder))
+            Directory.Delete(saveFolder, true);
+        if (Directory.Exists(backupFolder))
+            Directory.Move(backupFolder, saveFolder);
+    }
+
+    public string GetLatestSaveFolder(string userName) => folderManager.GetLatestSaveFolder(userName);
+    public List<(string FolderPath, string ImagePath)> GetAllSaveFolders(string userName) => folderManager.GetAllSaveFolders(userName);
+    public bool DeleteSaveFolder(string folderPath) => folderManager.DeleteSaveFolder(folderPath);
+    public string CreateNewSaveFolder(string userName) => folderManager.CreateNewSaveFolder(userName);
 }
