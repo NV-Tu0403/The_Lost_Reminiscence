@@ -12,6 +12,13 @@
     /// </summary>
     public class TouchPad : MonoBehaviour
     {
+#if ENABLE_INPUT_SYSTEM
+        /// <summary>
+        /// New Input System actions mapping
+        /// </summary>
+        protected BookInputActions _bookInputActions;
+#endif
+
         /// <summary>
         /// Touchpad collider names
         /// </summary>
@@ -98,8 +105,31 @@
         /// </summary>
         public Action tableOfContentsDetected;
 
+#if ENABLE_INPUT_SYSTEM
+        private void OnEnable()
+        {
+            // set up the new input system actions
+            _bookInputActions = new BookInputActions();
+            _bookInputActions.TouchPad.Enable();
+        }
+
+        private void OnDisable()
+        {
+            // disable the new input system actions
+            _bookInputActions.TouchPad.Disable();
+        }
+#endif
+
         void Awake()
         {
+#if ENABLE_INPUT_SYSTEM
+            Debug.Log("TouchPad: Using new Input System");
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            Debug.Log("TouchPad: Using old Input System");
+#endif
+
             // set up collider rects
 
             pageRects = new Rect[2];
@@ -111,6 +141,9 @@
 
         void Update()
         {
+#if ENABLE_LEGACY_INPUT_MANAGER
+            // Old Input System
+
             if (Input.GetMouseButtonDown(0))
             {
                 // left mouse button pressed
@@ -126,6 +159,27 @@
                 // dragging
                 DetectDrag(Input.mousePosition);
             }
+#endif
+
+#if ENABLE_INPUT_SYSTEM
+            // New Input System
+
+            if (_bookInputActions.TouchPad.Press.WasPressedThisFrame())
+            {
+                // left mouse button pressed
+                DetectTouchDown(UnityEngine.InputSystem.Mouse.current.position.ReadValue());
+            }
+            else if (_bookInputActions.TouchPad.Press.WasReleasedThisFrame())
+            {
+                // left mouse button un-pressed
+                DetectTouchUp(UnityEngine.InputSystem.Mouse.current.position.ReadValue());
+            }
+            else if (touchDown && _bookInputActions.TouchPad.Press.IsPressed())
+            {
+                // dragging
+                DetectDrag(UnityEngine.InputSystem.Mouse.current.position.ReadValue());
+            }        
+#endif
         }
 
         /// <summary>
