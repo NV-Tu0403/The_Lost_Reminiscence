@@ -24,6 +24,7 @@ public class MainProcess
     //Enum
     public enum ProcessType { Chapter, Quest, Dialogue, Cutscene, Puzzle }
     public enum ProcessStatus { Locked, InProgress, Completed }
+    public enum TriggerType { Manual, Automatic }
     
     public string Id;
     
@@ -64,7 +65,9 @@ public class SubProcess
 
     public string Name;
     public string Description;
-
+    
+    public MainProcess.TriggerType Trigger;
+    
     // Thứ tự trong MainProcess
     public int Order;
 

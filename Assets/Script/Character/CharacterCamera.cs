@@ -149,9 +149,6 @@ public class CharacterCamera : Core
         }
     }
 
-    /// <summary>
-    /// Cập nhật vị trí và góc nhìn của camera dựa trên góc xoay và khoảng cách hiện tại.
-    /// </summary>
     private void UpdateLocationAngle()
     {
         if (target == null) return;

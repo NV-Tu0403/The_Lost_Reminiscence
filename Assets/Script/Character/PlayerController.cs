@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
-using UnityEditor;
 using UnityEngine;
 
 namespace DuckLe
@@ -50,11 +49,11 @@ namespace DuckLe
         private Dictionary<InteractType, InteractAction> interactAction;
 
         [Header("Weapon Settings")]
-        [SerializeField] public List<Transform> ListBody;// chổ chứa vật phẩm trên bođy vd: tay trái, tay phải, lưng, túi đồ, v.v.
+        [SerializeField] private List<Transform> ListBody; //   Danh sách các slot vũ khí
         [SerializeField] private GameObject _Object;
 
         [Header("Slot Settings")]
-        [SerializeField] public GameObject ListSlot; // Danh sách Slot (tạm thời)
+        [SerializeField] private GameObject ListSlot; // Danh sách Slot (tạm thời)
 
         [Header("Resource Settings")]
         public CharacterStateMachine _stateMachine; // Changed from private to public
@@ -255,8 +254,8 @@ namespace DuckLe
 
             throwActions = new Dictionary<ThrowType, ThrowAction>
             {
-                { ThrowType.ThrowWeapon, new ThrowAction(this, config.throwCooldown, config.target, 100f, ThrowType.ThrowWeapon) },
-                { ThrowType.ThrowItem, new ThrowAction(this, config.throwCooldown, config.target, 10f, ThrowType.ThrowItem) }
+                { ThrowType.ThrowWeapon, new ThrowAction(this, config.throwCooldown, config.prefabPath, 100f, ThrowType.ThrowWeapon) },
+                { ThrowType.ThrowItem, new ThrowAction(this, config.throwCooldown, config.prefabPath, 10f, ThrowType.ThrowItem) }
             };
 
             moveActions = new Dictionary<MoveType, MoveAction>
@@ -288,9 +287,6 @@ namespace DuckLe
             Debug.Log($"Equipped usable: {CurrentUsable.Name}");
         }
 
-        /// <summary>
-        /// đặt trạng thái đang Sử dụng cho tài nguyên trong tay phải 
-        /// </summary>
         public void UsingResource()
         {
             if (ListBody == null)
@@ -331,7 +327,7 @@ namespace DuckLe
                     }
                     else
                     {
-                        Debug.LogWarning($"No usable component found in {childObject.name}!");
+                        Debug.LogWarning($"Weapons component not found on {_Object.name}!");
                     }
                 }
                 else
@@ -342,7 +338,6 @@ namespace DuckLe
             else
             {
                 //Debug.LogWarning("ListBody[1] is null or has no children!");
-                return;
             }
         }
         #endregion
@@ -383,12 +378,11 @@ namespace DuckLe
             _stateMachine.AddSecondaryState(new MeleeAttackingState(config.attackDuration, meleeType));
         }
 
-        public void PerformThrowInput( Transform target, ThrowType throwType, float force)
+        public void PerformThrowInput(ThrowType throwType, float force)
         {
-            throwActions[throwType].target = target;
             throwActions[throwType].force = force;
-            throwActions[throwType].Perform(CurrentUsable); //  để thực hiện hành động ném.
-            _stateMachine.AddSecondaryState(new ThrowingState((config.throwCooldown))); // đánh dấu nhân vật đang trong trạng thái ném.
+            throwActions[throwType].Perform(CurrentUsable);
+            _stateMachine.AddSecondaryState(new ThrowingState((config.throwCooldown)));
         }
 
         public void PerformInteractInput(InteractType interactType, GameObject currentSources)
@@ -424,31 +418,21 @@ namespace DuckLe
             IsAction = true;
         }
 
-        /// <summary>
-        /// Yêu cầu thực hiện hành động ném một vật thể.
-        /// </summary>
-        /// <param name="position"></param>
-        /// <param name="forward"></param>
-        /// <param name="throwType"></param>
-        /// <param name="force"></param>
-        /// <param name="usableName"></param>
-        /// <param name="effectValue"></param>
         public void RPC_RequestPerformThrow(Vector3 position, Vector3 forward, ThrowType throwType, float force, string usableName = "Default", float effectValue = 0f)
         {
-            //GameObject prefab = Resources.Load<GameObject>(config.target);
-            Transform obj = config.target;
-            if (obj == null) return;
+            GameObject prefab = Resources.Load<GameObject>(config.prefabPath);
+            if (prefab == null) return;
 
-            //Vector3 spawnPosition = position + transform.forward + transform.right * 0.5f + Vector3.up * 1.5f;
-            //GameObject networkObject = Object.Instantiate(obj, spawnPosition, Quaternion.identity);
-            if (obj.TryGetComponent<Rigidbody>(out var rb))
+            Vector3 spawnPosition = position + transform.forward + transform.right * 0.5f + Vector3.up * 1.5f;
+            GameObject networkObject = Object.Instantiate(prefab, spawnPosition, Quaternion.identity);
+            if (networkObject.TryGetComponent<Rigidbody>(out var rb))
             {
                 rb.linearVelocity = forward * force;
             }
-            if (obj.TryGetComponent<ThrowableObject>(out var throwable))
+            if (networkObject.TryGetComponent<ThrowableObject>(out var throwable))
             {
                 throwable.SetThrower(this);
-                //Debug.Log($"Spawned ThrowableObject at {spawnPosition} with force: {force}");
+                Debug.Log($"Spawned ThrowableObject at {spawnPosition} with force: {force}");
             }
             _stateMachine.AddSecondaryState(new ThrowingState(config.throwCooldown));
             _throwActionEndTime = Time.time + (config.throwCooldown);
@@ -457,8 +441,6 @@ namespace DuckLe
 
         /// <summary>
         /// trả về đối tượng mà người chơi đang nhìn vào.
-        /// - cần cache camera, thêm LayerMask
-        /// - Khoảng cách và camera đang hardcoded
         /// </summary>
         public void CheckItemByLooking()
         {
@@ -519,41 +501,19 @@ namespace DuckLe
         //    customCursor.transform.position = worldPosition;
         //}
 
-        public void PickUp()    
+        public void PickUp()
         {
             if (CurrentSourcesLookAt == null) return;
 
             if (CurrentSourcesLookAt.layer == LayerMask.NameToLayer("Item"))
             {
                 CurrentSourcesLookAt.transform.SetParent(ListSlot.transform);
-                //var components = CurrentSourcesLookAt.gameObject.GetComponents<MonoBehaviour>();
-                //foreach (var comp in components)
-                //{
-                //    Debug.Log($"Disabling component: {comp.GetType().Name} on {CurrentSourcesLookAt.name}");
-                //    if (comp != null)
-                //        comp.enabled = false;
-                //}
-
-                var components = CurrentSourcesLookAt.gameObject.GetComponents<Component>();
-                foreach (var comp in components)
-                {
-                    // Kiểm tra xem component có thuộc loại có thể "disable" không
-                    var type = comp.GetType();
-                    var enabledProp = type.GetProperty("enabled");
-                    if (enabledProp != null && enabledProp.PropertyType == typeof(bool))
-                    {
-                        Debug.Log($"Disabling component: {type.Name} on {CurrentSourcesLookAt.name}");
-                        enabledProp.SetValue(comp, false);
-                    }
-                }
-
-                CurrentSourcesLookAt.transform.localPosition = Vector3.zero; // Đặt vị trí của item trong ListSlot
                 CurrentSourcesLookAt.SetActive(false);
                 Debug.Log($"Added {CurrentSourcesLookAt.name} to ListSlot.");
             }
             else
             {
-                Debug.LogWarning($"The {CurrentSourcesLookAt.name} is not an item and cannot be added to ListSlot.");
+                Debug.LogWarning("The object is not an item and cannot be added to ListSlot.");
             }
         }
 
@@ -613,14 +573,14 @@ namespace DuckLe
                 Debug.LogWarning("CharacterCamera is null in Aim!");
                 return;
             }
-            
+
             // Lưu trạng thái camera hiện tại nếu chưa lưu
             if (!isCameraSettingsSaved)
             {
                 savedDistance = _playerInput._characterCamera.maxDistance;
                 savedHeight = _playerInput._characterCamera.height;
                 isCameraSettingsSaved = true;
-                //Debug.Log($"Aim: Saved camera state - Distance={savedDistance}, Height={savedHeight}");
+                Debug.Log($"Aim: Saved camera state - Distance={savedDistance}, Height={savedHeight}");
             }
 
             if (Input_M)
@@ -629,14 +589,14 @@ namespace DuckLe
                 _playerInput._characterCamera.transform.SetParent(transform);
                 _playerInput._characterCamera.SetTargetValues(1f, 1.7f, 0.7f, true);
                 //_playerInput._characterCamera.useInterpolation = false;
-                //Debug.Log("Aim: Entered aiming mode");
+                Debug.Log("Aim: Entered aiming mode");
             }
             else
             {
                 _playerInput._characterCamera.transform.SetParent(null);
                 _playerInput._characterCamera.useInterpolation = true;
                 _playerInput._characterCamera.SetTargetValues(savedDistance, savedHeight, 0f, false);
-                //Debug.Log($"Aim: Exited aiming mode, Restored - Distance={savedDistance}, Height={savedHeight}");
+                Debug.Log($"Aim: Exited aiming mode, Restored - Distance={savedDistance}, Height={savedHeight}");
                 isCameraSettingsSaved = false;
             }
         }

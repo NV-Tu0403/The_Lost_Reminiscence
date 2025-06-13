@@ -117,22 +117,8 @@ namespace DuckLe
 
         private void GetAttackInput()
         {
-            Transform target = null;
-            try
-            {
-                // Lấy vật phẩm trong tay phải, nếu có
-                if (_pc.ListBody != null && _pc.ListBody.Count > 1 && _pc.ListBody[1] != null && _pc.ListBody[1].childCount > 0)
-                {
-                    target = _pc.ListBody[1].GetChild(0);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogWarning($"Lỗi khi lấy vật phẩm trong tay phải: {ex.Message}");
-            }// hiện tại iem việt đang cho nó target thằng vào tay phải để lấy vật phẩm cần ném hay gì đó, sẽ tối ưu sau../
-
             if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
-            if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(target, Duckle.ThrowType.ThrowItem, 2f);
+            if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(Duckle.ThrowType.ThrowItem, 2f);
 
             if (Input.GetMouseButtonDown(1))
             {
@@ -146,7 +132,7 @@ namespace DuckLe
             {
                 _pc.Aim(false);
                 _pc.config.throwForce = _pc.CalculateThrowForce();
-                _pc.PerformThrowInput(target, Duckle.ThrowType.ThrowWeapon, _pc.config.throwForce);
+                _pc.PerformThrowInput(Duckle.ThrowType.ThrowWeapon, _pc.config.throwForce);
             }
         }
 

@@ -2,6 +2,7 @@
 using Duckle;
 using Events.Cutscene.Scripts;
 using Events.Dialogue.Scripts;
+using Events.Puzzle.Scripts;
 using Script.GameEventSystem.EventAction;
 using UnityEngine;
 
@@ -31,7 +32,8 @@ namespace Script.GameEventSystem
             handlers = new Dictionary<EventType_Dl, IEventAction>
             {
                 { EventType_Dl.Dialogue, new DialogueAction() },
-                { EventType_Dl.Cutscene, new CutsceneAction() }
+                { EventType_Dl.Cutscene, new CutsceneAction() },
+                { EventType_Dl.Puzzle, new PuzzleAction() } // Thêm handler cho Puzzle
             };
         }
 
@@ -68,4 +70,3 @@ namespace Script.GameEventSystem
         }
     }
 }
-

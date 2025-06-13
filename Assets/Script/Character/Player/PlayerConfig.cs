@@ -36,9 +36,9 @@ public class PlayerConfig : ScriptableObject
     public float attackDuration = 0.5f;
 
     [Header("Throwing Settings")]
-    public Transform target;
+    public string prefabPath = "Fusion_M3/Prefabs/Item/Capsule";
     public float throwForceMin = 1f;
-    public float throwForceMax =5f;
+    public float throwForceMax = 100f;
     public float throwForce = 10f;
     public float throwCooldown = 1f;
     public float maxHoldTime = 1.5f;
