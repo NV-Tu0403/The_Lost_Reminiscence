@@ -41,7 +41,8 @@ namespace Functions.Dialogue.Scripts
 
         // Thời gian delay giữa các ký tự (0.05s) => Lưu ý GIỮA CÁC KÝ TỰ, không phải giữa các từ.
         private const float TYPEWRITER_DELAY = 0.05f;
-
+        
+        
         /// <summary>
         /// Được gọi từ DialogueManager:
         /// - node gốc

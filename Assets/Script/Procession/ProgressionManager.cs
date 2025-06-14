@@ -39,7 +39,7 @@ namespace Script.Procession
             InitializePaths(); // Khởi tạo đường dẫn file JSON
             LoadProgression(); // Tải dữ liệu tiến trình từ file JSON hoặc ScriptableObject
             BuildEventSequence(); // Xây danh sách tuần tự eventId
-            AutoTriggerFirstEvent(); // Tự động trigger event đầu tiên
+            //AutoTriggerFirstEvent(); // Tự động trigger event đầu tiên
         }
 
         #region === CÁC HÀM SAVE/LOAD ===
@@ -149,15 +149,14 @@ namespace Script.Procession
         /// </summary>
         public void LoadProgression()
         {
-            // ----- Bỏ qua save JSON, chỉ dùng SO trực tiếp ----- Lộc thêm vào để debug, xóa sau nhé, tại vì cái này dính tới phần save
-            if (progressionDataSO != null)
-            {
-                progression = progressionDataSO.ToGameProgression();
-                Debug.Log("Loaded progression trực tiếp từ ProgressionDataSO (bypass save).");
-                return;
-            }
-
-            Debug.LogError("ProgressionDataSO bị null, không thể load progression!");
+             // ----- Bỏ qua save JSON, chỉ dùng SO trực tiếp ----- Lộc thêm vào để debug, xóa sau nhé, tại vì cái này dính tới phần save
+             if (progressionDataSO != null)
+             {
+                 progression = progressionDataSO.ToGameProgression();
+                 Debug.Log("Loaded progression trực tiếp từ ProgressionDataSO (bypass save).");
+                 return;
+             }
+             Debug.LogError("ProgressionDataSO bị null, không thể load progression!");
 
 
             if (saveGameManager == null)
@@ -446,8 +445,9 @@ namespace Script.Procession
         /// </summary>
         private void AutoTriggerFirstEvent()
         {
-            if (_eventSequence == null || _eventSequence.Count == 0 || _currentEventIndex >= _eventSequence.Count)
+            if (_eventSequence == null || _eventSequence.Count == 0 || _currentEventIndex >= _eventSequence.Count) 
                 return;
+            
             string firstEventId = _eventSequence[_currentEventIndex];
             foreach (var main in progression.MainProcesses)
             {
@@ -455,7 +455,7 @@ namespace Script.Procession
                 if (sub != null && sub.Status == MainProcess.ProcessStatus.Locked)
                 {
                     Debug.Log($"[ProgressionManager] Auto trigger first event: {firstEventId}");
-                    Script.GameEventSystem.EventExecutor.Instance.TriggerEvent(firstEventId);
+                    EventExecutor.Instance.TriggerEvent(firstEventId);
                     return;
                 }
             }

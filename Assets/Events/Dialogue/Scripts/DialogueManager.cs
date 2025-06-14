@@ -17,12 +17,8 @@ namespace Events.Dialogue.Scripts
             if (Instance != null) Destroy(gameObject);
             else Instance = this;
             
-            if (dialoguePanel == null)
-            {
-                Debug.LogError("DialoguePanel is not assigned in DialogueManager.");
-            }
-            
-            dialoguePanel.gameObject.SetActive(false);
+            if (dialoguePanel != null) dialoguePanel.gameObject.SetActive(false);
+            else Debug.Log("Hệ thống chưa gán:" + dialoguePanel );
         }
 
         public void StartDialogue(string dialogueId, Action onFinish)
@@ -37,7 +33,7 @@ namespace Events.Dialogue.Scripts
                     dialoguePanel.ShowDialogue(dialogue, onFinish);
                 }
                 else
-                    Debug.LogWarning($"Dialogue SO not found (Addressable): {dialogueId}");
+                    Debug.Log($"Hệ thống không truy xuất được dialogue với ID: {dialogueId}");
             };
         }
     }
