@@ -39,7 +39,7 @@ namespace Script.Procession
             InitializePaths(); // Khởi tạo đường dẫn file JSON
             LoadProgression(); // Tải dữ liệu tiến trình từ file JSON hoặc ScriptableObject
             BuildEventSequence(); // Xây danh sách tuần tự eventId
-            //AutoTriggerFirstEvent(); // Tự động trigger event đầu tiên
+            AutoTriggerFirstEvent(); // Tự động trigger event đầu tiên
         }
 
         #region === CÁC HÀM SAVE/LOAD ===

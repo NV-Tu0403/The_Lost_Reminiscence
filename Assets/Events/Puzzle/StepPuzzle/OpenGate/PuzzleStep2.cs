@@ -29,6 +29,7 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
                 return;
             }
             if (GetPosPlayerCamera(onComplete, out var playerCam)) return;
+            SyncCameraWithPlayer(out var eventCam);
             PlayCameraAndGateSequence(onComplete);
         }
 
@@ -47,18 +48,33 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
             return false;
         }
 
+        // Đặt vị trí và rotation của EventCamera trùng với camera player trước khi tween
+
+        private void SyncCameraWithPlayer(out EventCamera eventCam)
+        {
+            eventCam = EventCamera.Instance;
+            eventCam.transform.position = _playerCamPosition;
+            eventCam.transform.rotation = _playerCamRotation;
+        }
+
+        
         private void PlayCameraAndGateSequence(Action onComplete)
         {
             var eventCam = EventCamera.Instance;
+            
             eventCam.SwitchToEventCamera();
+            
+            // Chuyẻn camera đến vị trí cổng và nhìn về cánh cửa
             var seq = DOTween.Sequence();
             seq.Append(eventCam.transform.DOMove(cameraTarget.position, cameraMoveDuration));
+            seq.Join(eventCam.transform.DOLookAt(gate.position, cameraMoveDuration)); // Camera vừa di chuyển vừa xoay nhìn về cánh cửa
             seq.AppendCallback(() => {
                 Debug.Log("[PuzzleStep2] Camera đã tới vị trí cổng → bắt đầu mở cửa");
                 OpenGate();
             });
             
-            seq.AppendInterval(gateOpenDuration); // Đợi cửa mở
+            // Đợi cửa mở
+            seq.AppendInterval(gateOpenDuration); 
             seq.Append(eventCam.transform.DOMove(_playerCamPosition, cameraMoveDuration));
             seq.Join(eventCam.transform.DORotateQuaternion(_playerCamRotation, cameraMoveDuration));
             seq.OnComplete(() => {
@@ -75,6 +91,7 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
                 Debug.LogError("[PuzzleStep2] Không tìm thấy gate!");
                 return;
             }
+
             Vector3 targetPos = gate.position + openOffset;
             gate.DOMove(targetPos, gateOpenDuration)
                 .SetEase(Ease.OutQuad)
