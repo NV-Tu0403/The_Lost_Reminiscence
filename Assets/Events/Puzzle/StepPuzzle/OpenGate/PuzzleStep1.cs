@@ -12,6 +12,7 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
         [SerializeField] private Transform cameraTarget;       // Vị trí camera khi nhìn vào cổng
         [SerializeField] private float cameraMoveDuration = 1f;
         [SerializeField] private float cameraHoldDuration = 2f;  
+        [SerializeField] private Transform gate; // Thêm tham chiếu tới cánh cổng
         
         private Vector3 _playerCamPosition;
         private Quaternion _playerCamRotation;
@@ -26,6 +27,7 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
             }
             
             if (GetPosPlayerCamera(onComplete, out var playerCam)) return;
+            SyncCameraWithPlayer(out var eventCam);
             PlayCameraSequence(onComplete);
         }
 
@@ -43,16 +45,31 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
             _playerCamRotation = playerCam.transform.rotation;
             return false;
         }
-
+        
+        private void SyncCameraWithPlayer(out EventCamera eventCam)
+        {
+            eventCam = EventCamera.Instance;
+            eventCam.transform.position = _playerCamPosition;
+            eventCam.transform.rotation = _playerCamRotation;
+        }
+        
         private void PlayCameraSequence(Action onComplete)
         {
             var eventCam = EventCamera.Instance;
             eventCam.SwitchToEventCamera();
+            SyncCameraWithPlayer(out eventCam);
             var seq = DOTween.Sequence();
-            seq.Append(eventCam.transform.DOMove(cameraTarget.position, cameraMoveDuration));
+            seq.AppendCallback(() => {
+                eventCam.MoveTo(cameraTarget, cameraMoveDuration);
+                if (gate != null)
+                    eventCam.LookAt(gate, cameraMoveDuration);
+                else
+                    eventCam.LookAt(cameraTarget, cameraMoveDuration);
+            });
+            seq.AppendInterval(cameraMoveDuration);
             seq.AppendInterval(cameraHoldDuration);
-            seq.Append(eventCam.transform.DOMove(_playerCamPosition, cameraMoveDuration));
-            seq.Join(eventCam.transform.DORotateQuaternion(_playerCamRotation, cameraMoveDuration));
+            seq.AppendCallback(() => eventCam.MoveTo(_playerCamPosition, _playerCamRotation, cameraMoveDuration));
+            seq.AppendInterval(cameraMoveDuration);
             seq.OnComplete(() => {
                 eventCam.SwitchToPlayerCamera();
                 Debug.Log("[PuzzleStep1] Camera event xong → báo progression hoàn thành bước này");

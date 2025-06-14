@@ -43,8 +43,8 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
                 onComplete?.Invoke();
                 return true;
             }
-            _playerCamPosition = playerCam.transform.position;
-            _playerCamRotation = playerCam.transform.rotation;
+            //_playerCamPosition = playerCam.transform.position;
+            //_playerCamRotation = playerCam.transform.rotation;
             return false;
         }
 
@@ -61,22 +61,21 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
         private void PlayCameraAndGateSequence(Action onComplete)
         {
             var eventCam = EventCamera.Instance;
-            
             eventCam.SwitchToEventCamera();
-            
-            // Chuyẻn camera đến vị trí cổng và nhìn về cánh cửa
+            SyncCameraWithPlayer(out eventCam);
             var seq = DOTween.Sequence();
-            seq.Append(eventCam.transform.DOMove(cameraTarget.position, cameraMoveDuration));
-            seq.Join(eventCam.transform.DOLookAt(gate.position, cameraMoveDuration)); // Camera vừa di chuyển vừa xoay nhìn về cánh cửa
+            seq.AppendCallback(() => {
+                eventCam.MoveTo(cameraTarget, cameraMoveDuration);
+                eventCam.LookAt(gate, cameraMoveDuration); // Camera vừa di chuyển vừa xoay về cánh cổng
+            });
+            seq.AppendInterval(cameraMoveDuration);
             seq.AppendCallback(() => {
                 Debug.Log("[PuzzleStep2] Camera đã tới vị trí cổng → bắt đầu mở cửa");
                 OpenGate();
             });
-            
-            // Đợi cửa mở
-            seq.AppendInterval(gateOpenDuration); 
-            seq.Append(eventCam.transform.DOMove(_playerCamPosition, cameraMoveDuration));
-            seq.Join(eventCam.transform.DORotateQuaternion(_playerCamRotation, cameraMoveDuration));
+            seq.AppendInterval(gateOpenDuration);
+            seq.AppendCallback(() => eventCam.MoveTo(_playerCamPosition, _playerCamRotation, cameraMoveDuration));
+            seq.AppendInterval(cameraMoveDuration);
             seq.OnComplete(() => {
                 eventCam.SwitchToPlayerCamera();
                 Debug.Log("[PuzzleStep2] Camera quay lại vị trí ban đầu sau khi mở cổng");

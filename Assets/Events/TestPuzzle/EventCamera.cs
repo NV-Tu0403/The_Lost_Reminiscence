@@ -45,6 +45,15 @@ namespace Events.TestPuzzle
             _moveTween = transform.DOMove(target.position, duration).OnComplete(onComplete);
         }
 
+        public void MoveTo(Vector3 position, Quaternion rotation, float duration, TweenCallback onComplete = null)
+        {
+            if (_moveTween != null && _moveTween.IsActive())
+                _moveTween.Kill();
+            _moveTween = transform.DOMove(position, duration)
+                .OnComplete(onComplete);
+            transform.DORotateQuaternion(rotation, duration);
+        }
+
         public void LookAt(Transform target, float duration)
         {
             transform.DOLookAt(target.position, duration);
