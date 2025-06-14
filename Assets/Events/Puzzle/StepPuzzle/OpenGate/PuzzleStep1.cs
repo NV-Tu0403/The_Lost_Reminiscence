@@ -1,6 +1,7 @@
 using System;
 using DG.Tweening;
 using Events.Puzzle.Scripts;
+using Events.TestPuzzle;
 using UnityEngine;
 
 namespace Events.Puzzle.StepPuzzle.OpenGate
@@ -9,27 +10,52 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
     {
         [Header("Camera")]
         [SerializeField] private Transform cameraTarget;       // Vị trí camera khi nhìn vào cổng
-        [SerializeField] private Transform cameraDefault;      // Vị trí ban đầu của camera
         [SerializeField] private float cameraMoveDuration = 1f;
         [SerializeField] private float cameraHoldDuration = 2f;  
         
+        private Vector3 _playerCamPosition;
+        private Quaternion _playerCamRotation;
+
         public void StartStep(Action onComplete)
         {
-            // Lấy camera chính
-            var mainCamera = Camera.main;
-            if (mainCamera == null)
+            if (EventCamera.Instance == null)
             {
-                Debug.LogError("[PuzzleStep1] Không tìm thấy Camera chính!");
+                Debug.LogError("[PuzzleStep1] Không tìm thấy EventCamera!");
                 onComplete?.Invoke();
                 return;
             }
-            // Sử dụng DOTween để di chuyển camera 
+            
+            if (GetPosPlayerCamera(onComplete, out var playerCam)) return;
+            PlayCameraSequence(onComplete);
+        }
+
+        // Lưu vị trí và rotation hiện tại của camera player
+        private bool GetPosPlayerCamera(Action onComplete, out Camera playerCam)
+        {
+            playerCam = Camera.main;
+            if (playerCam == null)
+            {
+                Debug.LogError("[PuzzleStep1] Không tìm thấy Camera player!");
+                onComplete?.Invoke();
+                return true;
+            }
+            _playerCamPosition = playerCam.transform.position;
+            _playerCamRotation = playerCam.transform.rotation;
+            return false;
+        }
+
+        private void PlayCameraSequence(Action onComplete)
+        {
+            var eventCam = EventCamera.Instance;
+            eventCam.SwitchToEventCamera();
             var seq = DOTween.Sequence();
-            seq.Append(mainCamera.transform.DOMove(cameraTarget.position, cameraMoveDuration));
+            seq.Append(eventCam.transform.DOMove(cameraTarget.position, cameraMoveDuration));
             seq.AppendInterval(cameraHoldDuration);
-            seq.Append(mainCamera.transform.DOMove(cameraDefault.position, cameraMoveDuration));
+            seq.Append(eventCam.transform.DOMove(_playerCamPosition, cameraMoveDuration));
+            seq.Join(eventCam.transform.DORotateQuaternion(_playerCamRotation, cameraMoveDuration));
             seq.OnComplete(() => {
-                Debug.Log("[PuzzleStep1] Camera xong → báo progression hoàn thành bước này");
+                eventCam.SwitchToPlayerCamera();
+                Debug.Log("[PuzzleStep1] Camera event xong → báo progression hoàn thành bước này");
                 onComplete?.Invoke();
             });
         }

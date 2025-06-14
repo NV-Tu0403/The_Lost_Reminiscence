@@ -1,6 +1,5 @@
-using Events.TestPuzzle;
-using Script.GameEventSystem;
-using Script.Procession;
+using System;
+using Events.Puzzle.StepPuzzle.InteractBridge;
 using UnityEngine;
 
 namespace Events.TriggerZone
@@ -12,9 +11,10 @@ namespace Events.TriggerZone
             return other.CompareTag("Player");
         }
 
+
         protected override void OnTriggered(Collider other)
         {
-            var puzzleStep5 = FindObjectOfType<Events.Puzzle.StepPuzzle.InteractBridge.PuzzleStep5>();
+            var puzzleStep5 = FindObjectOfType<PuzzleStep5>();
             if (puzzleStep5 != null)
             {
                 puzzleStep5.ResetPlayer();

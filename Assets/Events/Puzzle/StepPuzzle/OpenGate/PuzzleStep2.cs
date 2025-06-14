@@ -1,6 +1,7 @@
 using System;
 using DG.Tweening;
 using Events.Puzzle.Scripts;
+using Events.TestPuzzle;
 using UnityEngine;
 
 namespace Events.Puzzle.StepPuzzle.OpenGate
@@ -9,7 +10,6 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
     {
         [Header("Camera")]
         [SerializeField] private Transform cameraTarget;
-        [SerializeField] private Transform cameraDefault;
         [SerializeField] private float cameraMoveDuration = 1f;
         [SerializeField] private float gateOpenDuration = 2f;
 
@@ -17,30 +17,52 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
         [SerializeField] private Transform gate;
         [SerializeField] private Vector3 openOffset = new Vector3(0, -5, 0);
 
+        private Vector3 _playerCamPosition;
+        private Quaternion _playerCamRotation;
+
         public void StartStep(Action onComplete)
         {
-            var mainCamera = Camera.main;
-            if (mainCamera == null)
+            if (EventCamera.Instance == null)
             {
-                Debug.LogError("[PuzzleStep2] Không tìm thấy Camera chính!");
+                Debug.LogError("[PuzzleStep2] Không tìm thấy EventCamera!");
                 onComplete?.Invoke();
                 return;
             }
-            // Di chuyển camera tới cổng, mở cửa, rồi trả camera về vị trí cũ
-            MoveCameraToDoor(onComplete, mainCamera);
+            if (GetPosPlayerCamera(onComplete, out var playerCam)) return;
+            PlayCameraAndGateSequence(onComplete);
         }
 
-        private void MoveCameraToDoor(Action onComplete, Camera mainCamera)
+        private bool GetPosPlayerCamera(Action onComplete, out Camera playerCam)
         {
-            Sequence seq = DOTween.Sequence();
-            seq.Append(mainCamera.transform.DOMove(cameraTarget.position, cameraMoveDuration));
+            // Lưu vị trí và rotation hiện tại của camera player
+            playerCam = Camera.main;
+            if (playerCam == null)
+            {
+                Debug.LogError("[PuzzleStep2] Không tìm thấy Camera player!");
+                onComplete?.Invoke();
+                return true;
+            }
+            _playerCamPosition = playerCam.transform.position;
+            _playerCamRotation = playerCam.transform.rotation;
+            return false;
+        }
+
+        private void PlayCameraAndGateSequence(Action onComplete)
+        {
+            var eventCam = EventCamera.Instance;
+            eventCam.SwitchToEventCamera();
+            var seq = DOTween.Sequence();
+            seq.Append(eventCam.transform.DOMove(cameraTarget.position, cameraMoveDuration));
             seq.AppendCallback(() => {
                 Debug.Log("[PuzzleStep2] Camera đã tới vị trí cổng → bắt đầu mở cửa");
                 OpenGate();
             });
+            
             seq.AppendInterval(gateOpenDuration); // Đợi cửa mở
-            seq.Append(mainCamera.transform.DOMove(cameraDefault.position, cameraMoveDuration));
+            seq.Append(eventCam.transform.DOMove(_playerCamPosition, cameraMoveDuration));
+            seq.Join(eventCam.transform.DORotateQuaternion(_playerCamRotation, cameraMoveDuration));
             seq.OnComplete(() => {
+                eventCam.SwitchToPlayerCamera();
                 Debug.Log("[PuzzleStep2] Camera quay lại vị trí ban đầu sau khi mở cổng");
                 onComplete?.Invoke();
             });
