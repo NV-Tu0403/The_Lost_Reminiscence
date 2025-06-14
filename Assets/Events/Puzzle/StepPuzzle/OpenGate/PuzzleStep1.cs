@@ -1,7 +1,6 @@
 using System;
 using DG.Tweening;
 using Events.Puzzle.Scripts;
-using Events.TestPuzzle;
 using UnityEngine;
 
 namespace Events.Puzzle.StepPuzzle.OpenGate
@@ -9,72 +8,71 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
     public class PuzzleStep1 : MonoBehaviour, IPuzzleStep
     {
         [Header("Camera")]
-        [SerializeField] private Transform cameraTarget;       // Vị trí camera khi nhìn vào cổng
-        [SerializeField] private float cameraMoveDuration = 1f;
-        [SerializeField] private float cameraHoldDuration = 2f;  
-        [SerializeField] private Transform gate; // Thêm tham chiếu tới cánh cổng
+        [Tooltip("Vị trí vật thể camera sẽ nhìn vào")]
+        [SerializeField] private Transform cameraTarget;
         
+        [Range(0.1f, 10f)] 
+        [Tooltip("Thời gian tween camera di chuyển đến vị trí cổng")] 
+        [SerializeField] private float cameraMoveDuration = 1f;
+            
+        [Range(0.1f,  10f)]
+        [Tooltip("Thời gian giữ camera ở vị trí cổng trước khi mở cổng")]
+        [SerializeField] private float cameraHoldDuration = 2f;
+        
+        [Header("Gate")]
+        [Tooltip("Vị trí cổng")]
+        [SerializeField] private Transform gate;    // Cánh cổng sẽ nhìn vào
+
         private Vector3 _playerCamPosition;
         private Quaternion _playerCamRotation;
 
         public void StartStep(Action onComplete)
         {
-            if (EventCamera.Instance == null)
+            if (Camera.main == null)
             {
-                Debug.LogError("[PuzzleStep1] Không tìm thấy EventCamera!");
+                Debug.LogError("[PuzzleStep1] Không tìm thấy Camera.main!");
                 onComplete?.Invoke();
                 return;
             }
-            
-            if (GetPosPlayerCamera(onComplete, out var playerCam)) return;
-            SyncCameraWithPlayer(out var eventCam);
-            PlayCameraSequence(onComplete);
+            var playerCam = GetPlayerCam(out var characterCamera);
+            var sequence = MoveCameraToDoor(playerCam);
+            ReturnToPlayer(onComplete, sequence, playerCam, characterCamera);
         }
 
-        // Lưu vị trí và rotation hiện tại của camera player
-        private bool GetPosPlayerCamera(Action onComplete, out Camera playerCam)
+        private void ReturnToPlayer(Action onComplete, Sequence sequence, Camera playerCam, CharacterCamera characterCamera)
         {
-            playerCam = Camera.main;
-            if (playerCam == null)
+            // Tween camera về lại vị trí/góc quay ban đầu
+            sequence.Append(playerCam.transform.DOMove(_playerCamPosition, cameraMoveDuration));
+            sequence.Join(playerCam.transform.DORotateQuaternion(_playerCamRotation, cameraMoveDuration));
+            sequence.OnComplete(() =>
             {
-                Debug.LogError("[PuzzleStep1] Không tìm thấy Camera player!");
-                onComplete?.Invoke();
-                return true;
-            }
-            _playerCamPosition = playerCam.transform.position;
-            _playerCamRotation = playerCam.transform.rotation;
-            return false;
-        }
-        
-        private void SyncCameraWithPlayer(out EventCamera eventCam)
-        {
-            eventCam = EventCamera.Instance;
-            eventCam.transform.position = _playerCamPosition;
-            eventCam.transform.rotation = _playerCamRotation;
-        }
-        
-        private void PlayCameraSequence(Action onComplete)
-        {
-            var eventCam = EventCamera.Instance;
-            eventCam.SwitchToEventCamera();
-            SyncCameraWithPlayer(out eventCam);
-            var seq = DOTween.Sequence();
-            seq.AppendCallback(() => {
-                eventCam.MoveTo(cameraTarget, cameraMoveDuration);
-                if (gate != null)
-                    eventCam.LookAt(gate, cameraMoveDuration);
-                else
-                    eventCam.LookAt(cameraTarget, cameraMoveDuration);
-            });
-            seq.AppendInterval(cameraMoveDuration);
-            seq.AppendInterval(cameraHoldDuration);
-            seq.AppendCallback(() => eventCam.MoveTo(_playerCamPosition, _playerCamRotation, cameraMoveDuration));
-            seq.AppendInterval(cameraMoveDuration);
-            seq.OnComplete(() => {
-                eventCam.SwitchToPlayerCamera();
+                if (characterCamera != null)
+                    characterCamera.enabled = true;
                 Debug.Log("[PuzzleStep1] Camera event xong → báo progression hoàn thành bước này");
                 onComplete?.Invoke();
             });
+        }
+
+        private Sequence MoveCameraToDoor(Camera playerCam)
+        {
+            // Tween camera tới vị trí/góc quay của cameraTarget
+            var sequence = DOTween.Sequence();
+            sequence.Append(playerCam.transform.DOMove(cameraTarget.position, cameraMoveDuration));
+            sequence.Join(playerCam.transform.DORotateQuaternion(cameraTarget.rotation, cameraMoveDuration));
+            sequence.AppendInterval(cameraHoldDuration);
+            return sequence;
+        }
+
+        private Camera GetPlayerCam(out CharacterCamera characterCamera)
+        {
+            var playerCam = Camera.main;
+            characterCamera = playerCam.GetComponent<CharacterCamera>();
+            if (characterCamera != null)
+                characterCamera.enabled = false;
+
+            _playerCamPosition = playerCam.transform.position;
+            _playerCamRotation = playerCam.transform.rotation;
+            return playerCam;
         }
     }
 }
