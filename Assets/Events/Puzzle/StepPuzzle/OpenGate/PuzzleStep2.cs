@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Events.Puzzle.StepPuzzle.OpenGate
 {
-    public class PuzzleStep2 : MonoBehaviour, IPuzzleStep
+    public class PuzzleStep2 : PuzzleStepCameraBase, IPuzzleStep
     {
         [Header("Camera")]
         [Tooltip("Vị trí vật thể camera sẽ nhìn vào")]
@@ -34,65 +34,21 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
         [Tooltip("Âm thanh mở cổng, kéo AudioSource chứa file âm thanh này vào đây")]
         [SerializeField] private AudioSource gateAudio;
 
-        private Vector3 _playerCamPosition;
-        private Quaternion _playerCamRotation;
-
         public void StartStep(Action onComplete)
         {
-            if (Camera.main == null)
-            {
-                Debug.LogError("[PuzzleStep2] Không tìm thấy Camera.main!");
-                onComplete?.Invoke();
-                return;
-            }
+            if (!CheckCameraAvailable(onComplete)) return;
             
             var playerCam = GetPlayerCam(out var characterCamera);
-            var seq = MoveCameraToDoor(playerCam);
-            // Chờ mở cổng xong (tổng thời gian giữ camera = gateTweenDuration + gateOpenDuration)
-            seq.AppendInterval(gateTweenDuration + gateOpenDuration);
-            ReturnCameraToPlayer(onComplete, seq, playerCam, characterCamera);
-        }
-
-        private void ReturnCameraToPlayer(Action onComplete, Sequence seq, Camera playerCam, CharacterCamera characterCamera)
-        {
-            // Tween camera về lại vị trí/góc quay ban đầu
-            seq.Append(playerCam.transform.DOMove(_playerCamPosition, cameraMoveDuration));
-            seq.Join(playerCam.transform.DORotateQuaternion(_playerCamRotation, cameraMoveDuration));
-            seq.OnComplete(() =>
-            {
-                if (characterCamera != null)
-                    characterCamera.enabled = true;
-                Debug.Log("[PuzzleStep2] Camera event xong → báo progression hoàn thành bước này");
-                onComplete?.Invoke();
-            });
-        }
-
-        private Sequence MoveCameraToDoor(Camera playerCam)
-        {
-            var seq = DOTween.Sequence();
-            seq.Append(playerCam.transform.DOMove(cameraTarget.position, cameraMoveDuration));
-            var lookRotation = Quaternion.LookRotation(gate.position - cameraTarget.position);
-            seq.Join(playerCam.transform.DORotateQuaternion(lookRotation, cameraMoveDuration));
-            // Sau khi camera tới vị trí cổng, bắt đầu mở cổng
+            var seq = MoveCameraToTarget(playerCam, cameraTarget, gate, cameraMoveDuration);
             seq.AppendCallback(() => {
                 Debug.Log("[PuzzleStep2] Camera đã tới vị trí cổng → bắt đầu mở cửa");
                 OpenGate();
             });
-            return seq;
+            seq.AppendInterval(gateTweenDuration + gateOpenDuration);
+            ReturnCameraToPlayer(seq, playerCam, cameraMoveDuration, onComplete, characterCamera);
         }
 
-        private Camera GetPlayerCam(out CharacterCamera characterCamera)
-        {
-            var playerCam = Camera.main;
-            characterCamera = playerCam.GetComponent<CharacterCamera>();
-            if (characterCamera != null)
-                characterCamera.enabled = false;
-
-            _playerCamPosition = playerCam.transform.position;
-            _playerCamRotation = playerCam.transform.rotation;
-            return playerCam;
-        }
-
+        // Mở cổng 
         private void OpenGate()
         {
             if (gate == null)
@@ -101,9 +57,11 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
                 return;
             }
 
+            // Nếu có âm thanh mở cổng, phát nó
             if (gateAudio != null)
                 gateAudio.Play();
 
+            // Tween cổng mở
             Vector3 targetPos = gate.position + openOffset;
             gate.DOMove(targetPos, gateTweenDuration)
                 .SetEase(Ease.OutQuad)
