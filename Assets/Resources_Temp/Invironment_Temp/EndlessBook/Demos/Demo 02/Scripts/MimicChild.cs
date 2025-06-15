@@ -3,10 +3,10 @@
     using UnityEngine;
 
     /// <summary>
-    /// Makes an object act like a child of another object.
-    /// This is useful because we can have objects follow the book's
-    /// transforms and not disappear when the animated book is
-    /// set inactive, switching to a static standin
+    /// Khiến một đối tượng hành động như một đứa trẻ của đối tượng khác.
+    /// Điều này hữu ích vì chúng ta có thể có các đối tượng theo dõi các
+    /// biến đổi của sách và không biến mất khi sách hoạt hình được
+    /// đặt thành không hoạt động, chuyển sang một trạng thái tĩnh
     /// </summary>
     public class MimicChild : MonoBehaviour
     {

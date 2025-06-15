@@ -1,7 +1,5 @@
 ﻿namespace echo17.EndlessBook.Demo02
 {
-    using System.Collections;
-    using System.Collections.Generic;
     using UnityEngine;
 
     /// <summary>
