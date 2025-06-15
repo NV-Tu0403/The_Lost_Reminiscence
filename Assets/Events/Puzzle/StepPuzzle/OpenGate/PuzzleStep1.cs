@@ -57,8 +57,9 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
         {
             // Tween camera tới vị trí/góc quay của cameraTarget
             var sequence = DOTween.Sequence();
+            var lookRotation = Quaternion.LookRotation(gate.position - cameraTarget.position);
             sequence.Append(playerCam.transform.DOMove(cameraTarget.position, cameraMoveDuration));
-            sequence.Join(playerCam.transform.DORotateQuaternion(cameraTarget.rotation, cameraMoveDuration));
+            sequence.Join(playerCam.transform.DORotateQuaternion(lookRotation, cameraMoveDuration));
             sequence.AppendInterval(cameraHoldDuration);
             return sequence;
         }

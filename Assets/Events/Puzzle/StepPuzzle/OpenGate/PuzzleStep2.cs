@@ -70,9 +70,9 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
         private Sequence MoveCameraToDoor(Camera playerCam)
         {
             var seq = DOTween.Sequence();
-            // Di chuyển camera đến vị trí cổng + xoay nhìn cổng
             seq.Append(playerCam.transform.DOMove(cameraTarget.position, cameraMoveDuration));
-            seq.Join(playerCam.transform.DORotateQuaternion(cameraTarget.rotation, cameraMoveDuration));
+            var lookRotation = Quaternion.LookRotation(gate.position - cameraTarget.position);
+            seq.Join(playerCam.transform.DORotateQuaternion(lookRotation, cameraMoveDuration));
             // Sau khi camera tới vị trí cổng, bắt đầu mở cổng
             seq.AppendCallback(() => {
                 Debug.Log("[PuzzleStep2] Camera đã tới vị trí cổng → bắt đầu mở cửa");
