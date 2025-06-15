@@ -10,41 +10,19 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
 {
     public class PuzzleStep3 : MonoBehaviour, IPuzzleStep
     {
-        [Header("Camera Follow")]
-        [Tooltip("Camera của Fa.")]
-        public GameObject faFollowCamera;
-        [Tooltip("Camera của người chơi.")]
-        public GameObject playerFollowCamera;
-        
         private Action _onComplete;
         
         public void StartStep(Action onComplete)
         {
             _onComplete = onComplete;
-            SwitchToFa();
+            FaUseSkill();
             _onComplete?.Invoke();
         }
 
-        private void SwitchToFa()
+        private void FaUseSkill()
         {
-            // Bật camera follow của Fa, tắt camera follow của Player
-            if (faFollowCamera != null) faFollowCamera.SetActive(true);
-            if (playerFollowCamera != null) playerFollowCamera.SetActive(false);
-            
-            // Chuyển điều khiển input sang Fa
-            var fa = GameObject.FindGameObjectWithTag("Fa");
-            var player = GameObject.FindGameObjectWithTag("Player");
-            if (fa != null && player != null)
-            {
-                var faController = fa.GetComponent<TestController>();
-                var playerController = player.GetComponent<TestController>();
-                if (faController != null) faController.isActive = true;
-                if (playerController != null) playerController.isActive = false;
-            }
-            else
-            {
-                Debug.LogWarning("[PuzzleStep3] Không tìm thấy Fa hoặc Player để chuyển điều khiển!");
-            }
+            //TODO: Implement logic for Fa to use skill to interact with the bridge
+            Debug.Log("[PuzzleStep3] Fa đang sử dụng kỹ năng để tương tác với cầu.");
         }
     }
 }
