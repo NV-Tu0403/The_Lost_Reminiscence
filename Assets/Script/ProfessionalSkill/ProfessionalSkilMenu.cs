@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
+using Script.Procession;
 using UnityEngine;
 
 
@@ -88,7 +89,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
         }
 
         // Load scene và chờ callback khi load xong
-        SceneController.Instance.LoadAdditiveScene("white_Space", PlayerCheckPoint.Instance, () =>
+        SceneController.Instance.LoadAdditiveScene("Phong_scene", PlayerCheckPoint.Instance, () =>
         {
             //Đảm bảo Player đã tồn tại sau khi load scene
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -97,6 +98,9 @@ public class ProfessionalSkilMenu : MonoBehaviour
                 Debug.LogError("[OnNewGame] Player not found after loading scene.");
                 return;
             }
+            
+            // Gọi Procession để load dữ lieu tu GameProcession
+            ProgressionManager.Instance.InitProgression();
 
             //án playerTransform
             PlayerCheckPoint.Instance.SetPlayerTransform(player.transform);
@@ -104,6 +108,8 @@ public class ProfessionalSkilMenu : MonoBehaviour
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
             SaveGameManager.Instance.SaveToFolder(newSaveFolder);
         });
+        
+        
 
         return newSaveFolder;
     }
@@ -119,7 +125,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
         string sceneToLoad = PlayerCheckPoint.Instance.CurrentMap;
         if (string.IsNullOrEmpty(sceneToLoad) || sceneToLoad == "Unknown" || sceneToLoad == "Menu")
         {
-            sceneToLoad = "white_Space";
+            sceneToLoad = "Phong_scene"; // Default scene if none is set
         }
 
         SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>

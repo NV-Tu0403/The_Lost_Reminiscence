@@ -71,16 +71,16 @@ public class UIPageView : PageView
         }
 #endif
 
-#if ENABLE_INPUT_SYSTEM
-        if (_bookInputActions.TouchPad.Press.WasPressedThisFrame())
-        {
+//#if ENABLE_INPUT_SYSTEM
+//        if (_bookInputActions.TouchPad.Press.WasPressedThisFrame())
+//        {
 
-        }
-        else if (_bookInputActions.TouchPad.Press.WasReleasedThisFrame())
-        {
+//        }
+//        else if (_bookInputActions.TouchPad.Press.WasReleasedThisFrame())
+//        {
 
-        }
-#endif
+//        }
+//#endif
 
         if (Time.time - lastCheckTime > checkInterval)
         {
@@ -247,7 +247,7 @@ public class UIPageView : PageView
             Debug.Log($"[UIPageView] Clicked on {item.uIActionType}");
         }
 
-        EnsureBookOpenMiddle(); // bắt lỗi test
+        //EnsureBookOpenMiddle(); // bắt lỗi test
 
         switch (item.uIActionType)
         {
@@ -271,15 +271,14 @@ public class UIPageView : PageView
         }
     }
 
-
-    private void EnsureBookOpenMiddle()
-    {
-        EndlessBook book = FindFirstObjectByType<EndlessBook>();
-        if (book != null && book.CurrentState != EndlessBook.StateEnum.OpenMiddle)
-        {
-            book.SetState(EndlessBook.StateEnum.OpenMiddle); // Trực tiếp gọi vào book
-        }
-    }
+    //private void EnsureBookOpenMiddle()
+    //{
+    //    EndlessBook book = FindFirstObjectByType<EndlessBook>();
+    //    if (book != null && book.CurrentState != EndlessBook.StateEnum.OpenMiddle)
+    //    {
+    //        book.SetState(EndlessBook.StateEnum.OpenMiddle); // Trực tiếp gọi vào book
+    //    }
+    //}
 
     /// <summary>
     /// Highlight mục menu khi hover chuột.

@@ -5,33 +5,33 @@ using UnityEngine;
 
 namespace Events.Puzzle.StepPuzzle.OpenGate
 {
-    public class PuzzleStep1 : MonoBehaviour, IPuzzleStep
+    public class PuzzleStep1 : PuzzleStepCameraBase, IPuzzleStep
     {
         [Header("Camera")]
-        [SerializeField] private Transform cameraTarget;       // Vị trí camera khi nhìn vào cổng
-        [SerializeField] private Transform cameraDefault;      // Vị trí ban đầu của camera
-        [SerializeField] private float cameraMoveDuration = 1f;
-        [SerializeField] private float cameraHoldDuration = 2f;  
+        [Tooltip("Vị trí vật thể camera sẽ nhìn vào")]
+        [SerializeField] private Transform cameraTarget;
         
+        [Range(0.1f, 10f)] 
+        [Tooltip("Thời gian tween camera di chuyển đến vị trí cổng")] 
+        [SerializeField] private float cameraMoveDuration = 1f;
+            
+        [Range(0.1f,  10f)]
+        [Tooltip("Thời gian giữ camera ở vị trí cổng")]
+        [SerializeField] private float cameraHoldDuration = 2f;
+        
+        [Header("Gate")]
+        [Tooltip("Vị trí cổng")]
+        [SerializeField] private Transform gate;    // Cánh cổng sẽ nhìn vào
+        
+
         public void StartStep(Action onComplete)
         {
-            // Lấy camera chính
-            var mainCamera = Camera.main;
-            if (mainCamera == null)
-            {
-                Debug.LogError("[PuzzleStep1] Không tìm thấy Camera chính!");
-                onComplete?.Invoke();
-                return;
-            }
-            // Sử dụng DOTween để di chuyển camera 
-            var seq = DOTween.Sequence();
-            seq.Append(mainCamera.transform.DOMove(cameraTarget.position, cameraMoveDuration));
-            seq.AppendInterval(cameraHoldDuration);
-            seq.Append(mainCamera.transform.DOMove(cameraDefault.position, cameraMoveDuration));
-            seq.OnComplete(() => {
-                Debug.Log("[PuzzleStep1] Camera xong → báo progression hoàn thành bước này");
-                onComplete?.Invoke();
-            });
+            if (!CheckCameraAvailable(onComplete)) return;
+            
+            var playerCam = GetPlayerCam(out var characterCamera);
+            var sequence = MoveCameraToTarget(playerCam, cameraTarget, gate, cameraMoveDuration);
+            sequence.AppendInterval(cameraHoldDuration);
+            ReturnCameraToPlayer(sequence, playerCam, cameraMoveDuration, onComplete, characterCamera);
         }
     }
 }
