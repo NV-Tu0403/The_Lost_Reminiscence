@@ -414,14 +414,14 @@
         }
 
         /// <summary>
-        /// The method to use to calculate the time to turn
-        /// TotalTurnTime = The total time it takes to get to the page
-        /// TimePerPage = The time it takes to turn a single page
+        /// dùng cho phương thức tính thời gian lật trang.
+        /// TotalTurnTime = Tổng thời gian để đến trang (cùng lúc nhiều trang)
+        /// TimePerPage =  thời gian lật từng trang
         /// </summary>
         public enum PageTurnTimeTypeEnum
         {
-            TotalTurnTime,
-            TimePerPage
+            TotalTurnTime,  
+            TimePerPage    
         }
 
         public enum DeltaTimeEnum

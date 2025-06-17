@@ -4,9 +4,10 @@
 /// </summary>
 public enum UIActionType
 {
+    TurnToPage,
     NewGame,
-    ContinueGame,
-    QuitGame,
+    Continue,
+    Quit,
     SelectSaveItem,
     DuplicateSaveItem,
     DeleteSaveItem

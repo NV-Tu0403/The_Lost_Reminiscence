@@ -6,7 +6,7 @@
     /// <summary>
     /// class này đại diện cho một touch pad để tương tác với sách.
     /// </summary>
-    public class TouchPad : MonoBehaviour
+    public class TouchPad_02 : MonoBehaviour
     {
 #if ENABLE_INPUT_SYSTEM
         /// <summary>
@@ -173,7 +173,7 @@
             {
                 // dragging
                 DetectDrag(UnityEngine.InputSystem.Mouse.current.position.ReadValue());
-            }        
+            }
 #endif
         }
 

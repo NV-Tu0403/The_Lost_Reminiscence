@@ -10,7 +10,7 @@
         /// <summary>
         /// The camera to render the texture
         /// </summary>
-        protected Camera pageViewCamera;
+        public Camera pageViewCamera;
 
         /// <summary>
         /// Ray casting mask and distance values in case there
@@ -19,7 +19,7 @@
         public LayerMask raycastLayerMask;
         public float maxRayCastDistance = 1000f;
 
-        void Awake()
+        protected void Awake()
         {
             // cache the page camera
             pageViewCamera = GetComponentInChildren<Camera>();

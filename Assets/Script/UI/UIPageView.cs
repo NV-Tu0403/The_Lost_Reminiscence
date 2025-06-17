@@ -7,94 +7,100 @@ using echo17.EndlessBook.Demo02;
 using UnityEngine.UIElements;
 using TMPro;
 using Duckle;
+using static echo17.EndlessBook.EndlessBook;
+
+
+/// <summary>
+/// Đại diện cho một mục menu với thông tin về hành động, đối tượng collider và renderer.
+/// </summary>
+[Serializable]
+public struct UIItem
+{
+    public UIActionType uIActionType;
+    public GameObject targetColliderObject;
+    public Renderer targetRenderer; // Hỗ trợ Renderer hoặc TMP_Text
+    public Color normalColor;
+    public Color hoverColor;
+    public int targetPage; // Dùng cho TurnToPage
+    public float turnTime;
+
+}
 
 /// <summary>
 /// Trang main menu tương tác: chứa New Game, Continue, Quit.
 /// Xử lý hover màu và click hành động.
 /// </summary>
+/// 
 public class UIPageView : PageView
 {
-    /// <summary>
-    /// Đại diện cho một mục menu với thông tin về hành động, đối tượng collider và renderer.
-    /// </summary>
-    [Serializable]
-    public struct UIItem
-    {
-        public UIActionType uIActionType;
-        public GameObject targetColliderObject;
-        public Renderer targetRenderer;
-        public Color normalColor;
-        public Color hoverColor;
-    }
+    //[SerializeField] private Camera overrideCamera;
+    [SerializeField] private float checkInterval = 0.1f;
+    [SerializeField] private bool debugMode = false;
 
-    /// <summary>
-    /// Danh sách các mục menu với thông tin về hành động, đối tượng collider và renderer.
-    /// </summary>
-    public UIItem[] menuItems;
+    [SerializeField] private UIItem[] menuItems;
 
-    /// <summary>
-    /// Camera để thực hiện raycast và tương tác với menu.
-    /// </summary>
-    public Camera overrideCamera;               // Cho phép gán camera thủ công nếu cần
-
-    private UIItem? currentHovered = null;
-
-    private float checkInterval = 0.1f;
+    private EndlessBook book;
+    private UIItem? currentHovered;
     private float lastCheckTime;
 
-    void Update()
+    protected new void Awake()
+    {
+        base.Awake();
+        book = FindFirstObjectByType<EndlessBook>();
+        // Có thể gán giá trị mặc định cho raycastLayerMask hoặc maxRayCastDistance nếu cần
+    }
+
+    private void Update()
+    {
+        if (debugMode && gameObject.activeInHierarchy)
+        {
+            DebugRayCast();
+        }
+    }
+    #region debug
+    private void DebugRayCast()
     {
         Vector2 screenPoint = Input.mousePosition;
-        Camera cam = overrideCamera != null ? overrideCamera : Camera.main;
+        Camera cam = pageViewCamera != null ? pageViewCamera : Camera.main;
         Vector2 viewportPoint = cam.ScreenToViewportPoint(screenPoint);
         RayCast(viewportPoint, null);
     }
+    #endregion
 
-    /// <summary>
-    /// Xử lý va chạm raycast với các mục menu.
-    /// </summary>
-    /// <param name="hit"></param>
-    /// <param name="action"></param>
-    /// <returns></returns>
-    protected override bool HandleHit(RaycastHit hit, BookActionDelegate action)
+    public override void Activate()
     {
-        foreach (var item in menuItems)
+        gameObject.SetActive(true);
+        currentHovered = null;
+        lastCheckTime = 0f;
+        if (debugMode)
         {
-            if (item.targetRenderer != null && hit.collider.gameObject == item.targetRenderer.gameObject)
-            {
-                Highlight(item);
-                return true;
-            }
+            Debug.Log($"[UIPageView] Activated on {gameObject.name}");
         }
-        return false;
     }
 
+    public override void Deactivate()
+    {
+        ClearHighlight();
+        gameObject.SetActive(false);
+        if (debugMode)
+        {
+            Debug.Log($"[UIPageView] Deactivated on {gameObject.name}");
+        }
+    }
+
+    
     public override void TouchDown()
     {
-        // Clear highlight
+        // Optional: Handle touch down if needed (e.g., start animation)
         ClearHighlight();
     }
 
-    public override void Drag(Vector2 delta, bool release)
-    {
-        if (release)
-        {
-            ClearHighlight();
-        }
-    }
-
-    /// <summary>
-    /// Thực hiện raycast từ camera để tìm mục menu tương ứng.
-    /// </summary>
-    /// <param name="normalizedHitPoint"></param>
-    /// <param name="action"></param>
-    /// <returns></returns>
     public override bool RayCast(Vector2 normalizedHitPoint, BookActionDelegate action)
     {
         if (Time.time - lastCheckTime < checkInterval) return false; // Chỉ kiểm tra mỗi 0.1 giây để tránh quá tải
         lastCheckTime = Time.time;
 
-        Camera cam = overrideCamera != null ? overrideCamera : Camera.main;
+        Camera cam = pageViewCamera != null ? pageViewCamera : Camera.main;
         Ray ray = cam.ViewportPointToRay(new Vector3(normalizedHitPoint.x, normalizedHitPoint.y, 0));
 
         Vector3 rayStart = cam.transform.position; // Vị trí bắt đầu raycast là camera
@@ -104,15 +110,19 @@ public class UIPageView : PageView
 
         if (Physics.Raycast(rayStart, rayDirection, out var hit, maxRayCastDistance, raycastLayerMask))
         {
-            Debug.Log("[MainMenu] Ray hit: " + hit.collider.name);
-
+            if (debugMode)
+            {
+                Debug.Log("[MainMenu] Ray hit: " + hit.collider.name);
+            }
             foreach (var item in menuItems)
             {
                 if (item.targetColliderObject != null && hit.collider.gameObject == item.targetColliderObject)
                 {
                     Highlight(item);
-                    return false;
-                }   
+
+                    // gọi HandleHit để xử lý hành động click
+                    return HandleHit(hit, action);
+                }
             }
         }
         else
@@ -125,6 +135,80 @@ public class UIPageView : PageView
     }
 
     /// <summary>
+    /// xác nhận hit từ raycast và xử lý hành động tương ứng với mục tiêu.
+    /// </summary>
+    /// <param name="hit"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
+    protected override bool HandleHit(RaycastHit hit, BookActionDelegate action)
+    {
+        foreach (var item in menuItems)
+        {
+            if (item.targetColliderObject != null && hit.collider.gameObject == item.targetColliderObject)
+            {
+                //Highlight(item);
+                if (Input.GetMouseButtonDown(0))
+                {
+                    if (book != null)
+                    {
+                        HandleClick(item, action);
+                    }
+                }
+                return true;
+            }
+        }
+
+        ClearHighlight();
+        return false;
+    }
+
+    /// <summary>
+    /// cấu hình hành động khi người dùng click vào một mục tiêu.
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="action"></param>
+    private void HandleClick(UIItem item, BookActionDelegate action)
+    {
+        if (debugMode)
+        {
+            Debug.Log($"[UIPageView] Clicked on {item.uIActionType}");
+        }
+
+        EnsureBookOpenMiddle(); // bắt lỗi test
+
+        switch (item.uIActionType)
+        {
+            case UIActionType.NewGame:
+                action?.Invoke(BookActionTypeEnum.ChangeState, 2); // OpenMiddle
+                break;
+            case UIActionType.Continue:
+                book.TurnToPage(item.targetPage, PageTurnTimeTypeEnum.TotalTurnTime, item.turnTime); // gọi trực tiếp (test)
+                action?.Invoke(BookActionTypeEnum.TurnPage, item.targetPage); 
+                break;
+            case UIActionType.Quit:
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit();
+#endif
+                break;
+            case UIActionType.TurnToPage:
+                action?.Invoke(BookActionTypeEnum.TurnPage, item.targetPage); // Tương tự PageView_02
+                break;
+        }
+    }
+
+
+    private void EnsureBookOpenMiddle()
+    {
+        EndlessBook book = FindFirstObjectByType<EndlessBook>();
+        if (book != null && book.CurrentState != EndlessBook.StateEnum.OpenMiddle)
+        {
+            book.SetState(EndlessBook.StateEnum.OpenMiddle); // Trực tiếp gọi vào book
+        }
+    }
+
+    /// <summary>
     /// Highlight mục menu khi hover chuột.
     /// </summary>
     /// <param name="item"></param>
@@ -133,7 +217,7 @@ public class UIPageView : PageView
 
         if (currentHovered.HasValue && currentHovered.Value.targetRenderer == item.targetRenderer)
         {
-            Debug.Log("[MainMenu] Already highlighting: " + item.targetRenderer.name);
+            //Debug.Log("[MainMenu] Already highlighting: " + item.targetRenderer.name);
             return; // Đã highlight mục này rồi, không cần làm gì thêm
         }
 
@@ -142,7 +226,7 @@ public class UIPageView : PageView
         if (item.targetRenderer != null && item.targetRenderer.material.HasProperty("_Color"))
         {
             item.targetRenderer.material.color = item.hoverColor;
-            Debug.Log("[MainMenu] Highlighting: " + item.targetRenderer.name + " with color: " + item.hoverColor);
+            //Debug.Log("[MainMenu] Highlighting: " + item.targetRenderer.name + " with color: " + item.hoverColor);
         }
         else
         {
@@ -150,7 +234,7 @@ public class UIPageView : PageView
             if (tmp != null)
             {
                 tmp.color = item.hoverColor;
-                Debug.Log("[MainMenu] Highlighting TMP_Text: " + tmp.name + " with color: " + item.hoverColor);
+                //Debug.Log("[MainMenu] Highlighting TMP_Text: " + tmp.name + " with color: " + item.hoverColor);
             }
             else
             {
@@ -158,7 +242,7 @@ public class UIPageView : PageView
                 if (fallback != null && fallback.material.HasProperty("_Color"))
                 {
                     fallback.material.color = item.hoverColor;
-                    Debug.Log("[MainMenu] Highlighting fallback Renderer: " + fallback.name + " with color: " + item.hoverColor);
+                    //Debug.Log("[MainMenu] Highlighting fallback Renderer: " + fallback.name + " with color: " + item.hoverColor);
                 }
             }
         }
@@ -199,4 +283,5 @@ public class UIPageView : PageView
             currentHovered = null;
         }
     }
+
 }

@@ -1,22 +1,21 @@
 ﻿namespace echo17.EndlessBook.Demo02
 {
-    using System.Collections;
-    using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
     using echo17.EndlessBook;
 
     /// <summary>
-    /// The type of action to occur from a page view
+    /// enum để xác định loại hành động của sách
     /// </summary>
     public enum BookActionTypeEnum
     {
-        ChangeState,
-        TurnPage
+        ChangeState,    // Thay đổi trạng thái sách
+        TurnPage        // Lật trang sách
     }
 
     /// <summary>
-    /// Delegate that handles the action taken by a page view
+    /// Delegate này được sử dụng để xử lý các hành động trên sách.
+    /// vd: Thay đổi trạng thái sách hoặc lật trang sách.
     /// </summary>
     /// <param name="actionType">The type of action to perform</param>
     /// <param name="actionValue">The value of the action (state or page number)</param>
@@ -41,7 +40,7 @@
         protected bool audioOn = false;
 
         /// <summary>
-        /// Whether pages are being flipped
+        /// khi các trang sách được lật
         /// </summary>
         protected bool flipping = false;
 
@@ -51,12 +50,12 @@
         public EndlessBook book;
 
         /// <summary>
-        /// How fast the state change animations should be
+        /// thời gian để mở hoặc đóng sách
         /// </summary>
         public float openCloseTime = 0.3f;
 
         /// <summary>
-        /// What the time calculation should be for turning a group of pages (like table of contents jump)
+        /// là thời gian để lật trang sách
         /// </summary>
         public EndlessBook.PageTurnTimeTypeEnum groupPageTurnType;
 
@@ -112,7 +111,6 @@
 
         void Start()
         {
-            // turn off all the mini-scenes since no pages are visible
             TurnOffAllPageViews();
 
             // set up touch pad handlers
@@ -633,7 +631,7 @@
         /// <summary>
         /// Set the OpenMiddle state
         /// </summary>
-        protected virtual void OpenMiddle()
+        public virtual void OpenMiddle()
         {
             // toggle the left and right page views
             TogglePageView(book.CurrentLeftPageNumber, true);
