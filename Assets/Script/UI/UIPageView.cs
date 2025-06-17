@@ -33,6 +33,13 @@ public struct UIItem
 /// 
 public class UIPageView : PageView
 {
+#if ENABLE_INPUT_SYSTEM
+    /// <summary>
+    /// New Input System actions mapping
+    /// </summary>
+    protected BookInputActions _bookInputActions;
+#endif
+
     //[SerializeField] private Camera overrideCamera;
     [SerializeField] private float checkInterval = 0.1f;
     [SerializeField] private bool debugMode = false;
@@ -40,6 +47,7 @@ public class UIPageView : PageView
     [SerializeField] private UIItem[] menuItems;
 
     private EndlessBook book;
+    private BookActionDelegate _bookActionDelegate; // delegate để xử lý hành động từ EndlessBook
     private UIItem? currentHovered;
     private float lastCheckTime;
 
@@ -47,14 +55,37 @@ public class UIPageView : PageView
     {
         base.Awake();
         book = FindFirstObjectByType<EndlessBook>();
-        // Có thể gán giá trị mặc định cho raycastLayerMask hoặc maxRayCastDistance nếu cần
+        // giá trị mặc định cho raycastLayerMask hoặc maxRayCastDistance nếu cần
     }
 
     private void Update()
     {
-        if (debugMode && gameObject.activeInHierarchy)
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetMouseButtonDown(0))
         {
-            DebugRayCast();
+            TryClick(Input.mousePosition, _bookActionDelegate); // delegate nên cache sẵn
+        }
+        if (Input.GetMouseButtonUp(0))
+        {
+
+        }
+#endif
+
+#if ENABLE_INPUT_SYSTEM
+        if (_bookInputActions.TouchPad.Press.WasPressedThisFrame())
+        {
+
+        }
+        else if (_bookInputActions.TouchPad.Press.WasReleasedThisFrame())
+        {
+
+        }
+#endif
+
+        if (Time.time - lastCheckTime > checkInterval)
+        {
+            lastCheckTime = Time.time;
+            TryHover(Input.mousePosition);
         }
     }
     #region debug
@@ -87,7 +118,6 @@ public class UIPageView : PageView
             Debug.Log($"[UIPageView] Deactivated on {gameObject.name}");
         }
     }
-
     
     public override void TouchDown()
     {
@@ -95,43 +125,86 @@ public class UIPageView : PageView
         ClearHighlight();
     }
 
-    public override bool RayCast(Vector2 normalizedHitPoint, BookActionDelegate action)
+    //public override bool RayCast(Vector2 normalizedHitPoint, BookActionDelegate action)
+    //{
+    //    if (Time.time - lastCheckTime < checkInterval) return false; // Chỉ kiểm tra mỗi 0.1 giây để tránh quá tải
+    //    lastCheckTime = Time.time;
+
+    //    Camera cam = pageViewCamera != null ? pageViewCamera : Camera.main;
+    //    Ray ray = cam.ViewportPointToRay(new Vector3(normalizedHitPoint.x, normalizedHitPoint.y, 0));
+
+    //    Vector3 rayStart = cam.transform.position; // Vị trí bắt đầu raycast là camera
+    //    Vector3 rayDirection = (ray.origin + ray.direction * maxRayCastDistance) - rayStart;
+
+    //    Debug.DrawLine(rayStart, rayStart + rayDirection, Color.red, 0.1f, true);
+
+    //    if (Physics.Raycast(rayStart, rayDirection, out var hit, maxRayCastDistance, raycastLayerMask))
+    //    {
+    //        if (debugMode)
+    //        {
+    //            Debug.Log("[MainMenu] Ray hit: " + hit.collider.name);
+    //        }
+    //        foreach (var item in menuItems)
+    //        {
+    //            if (item.targetColliderObject != null && hit.collider.gameObject == item.targetColliderObject)
+    //            {
+    //                Highlight(item);
+
+    //                // gọi HandleHit để xử lý hành động click
+    //                return HandleHit(hit, action);
+    //            }
+    //        }
+    //    }
+    //    else
+    //    {
+    //        Debug.Log("[MainMenu] Ray hit nothing");
+    //        ClearHighlight();
+    //    }
+
+    //    return false; // Không click action trong auto raycast
+    //}
+
+    private bool RaycastAt(Vector2 screenPoint, out RaycastHit hit, out UIItem item)
     {
-        if (Time.time - lastCheckTime < checkInterval) return false; // Chỉ kiểm tra mỗi 0.1 giây để tránh quá tải
-        lastCheckTime = Time.time;
+        hit = default;
+        item = default;
 
         Camera cam = pageViewCamera != null ? pageViewCamera : Camera.main;
-        Ray ray = cam.ViewportPointToRay(new Vector3(normalizedHitPoint.x, normalizedHitPoint.y, 0));
+        Ray ray = cam.ScreenPointToRay(screenPoint);
 
-        Vector3 rayStart = cam.transform.position; // Vị trí bắt đầu raycast là camera
-        Vector3 rayDirection = (ray.origin + ray.direction * maxRayCastDistance) - rayStart;
-
-        Debug.DrawLine(rayStart, rayStart + rayDirection, Color.red, 0.1f, true);
-
-        if (Physics.Raycast(rayStart, rayDirection, out var hit, maxRayCastDistance, raycastLayerMask))
+        if (Physics.Raycast(ray, out hit, maxRayCastDistance, raycastLayerMask))
         {
-            if (debugMode)
+            foreach (var i in menuItems)
             {
-                Debug.Log("[MainMenu] Ray hit: " + hit.collider.name);
-            }
-            foreach (var item in menuItems)
-            {
-                if (item.targetColliderObject != null && hit.collider.gameObject == item.targetColliderObject)
+                if (i.targetColliderObject == hit.collider.gameObject)
                 {
-                    Highlight(item);
-
-                    // gọi HandleHit để xử lý hành động click
-                    return HandleHit(hit, action);
+                    item = i;
+                    return true;
                 }
             }
         }
+
+        return false;
+    }
+
+    private void TryHover(Vector2 screenPoint)
+    {
+        if (RaycastAt(screenPoint, out var hit, out var item))
+        {
+            Highlight(item);
+        }
         else
         {
-            Debug.Log("[MainMenu] Ray hit nothing");
             ClearHighlight();
         }
+    }
 
-        return false; // Không click action trong auto raycast
+    public void TryClick(Vector2 screenPoint, BookActionDelegate action)
+    {
+        if (RaycastAt(screenPoint, out var hit, out var item))
+        {
+            HandleClick(item, action);
+        }
     }
 
     /// <summary>
