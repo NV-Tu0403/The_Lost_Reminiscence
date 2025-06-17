@@ -45,5 +45,14 @@ namespace Events
             inputDirection.y = verticalVelocity;
             controller.Move(inputDirection * Time.deltaTime);
         }
+
+        public void TeleportTo(Vector3 pos)
+        {
+            if (controller == null) controller = GetComponent<CharacterController>();
+            controller.enabled = false;
+            transform.position = pos;
+            controller.enabled = true;
+            verticalVelocity = 0f;
+        }
     }
 }
