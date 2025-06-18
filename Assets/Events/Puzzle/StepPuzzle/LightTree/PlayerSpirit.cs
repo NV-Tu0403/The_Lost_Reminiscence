@@ -41,6 +41,7 @@ namespace Events.Puzzle.StepPuzzle.LightTree
         
         public void ReduceSpirit(int amount)
         {
+            Debug.Log($"[PlayerSpirit] ReduceSpirit called, amount = {amount}, currentSpirits = {currentSpirits}");
             // Không giảm nếu amount <= 0
             if (amount <= 0) return; 
             // Giảm số lượng Spirit hiện tại
@@ -50,7 +51,11 @@ namespace Events.Puzzle.StepPuzzle.LightTree
             // Cập nhật UI
             if (uiSpirit != null) uiSpirit.SetSpirit(currentSpirits, maxSpirits);
             // Phát event khi máu về 0
-            if (currentSpirits == 0)  OnSpiritDepleted?.Invoke();
+            if (currentSpirits == 0)
+            {
+                Debug.Log("[PlayerSpirit] Spirit depleted, invoking OnSpiritDepleted event");
+                OnSpiritDepleted?.Invoke();
+            }
         }
         
         public void ResetSpirit()

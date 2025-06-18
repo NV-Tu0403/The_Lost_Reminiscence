@@ -18,7 +18,7 @@ namespace Events.TriggerZone
         {
             if (puzzleStep6 != null)
             {
-                // Đánh dấu player đang ở zone 2, không gọi Notify ở đây nữa
+                // Đánh dấu player đang ở zone 2
                 puzzleStep6.SetPlayerCurrentZone(zoneIndex);
             }
             DisableZone();

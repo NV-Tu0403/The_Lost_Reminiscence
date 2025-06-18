@@ -37,6 +37,11 @@ namespace Script.Procession
             
             InitializePaths();
             LoadProgression(); // Load progression từ SO hoặc JSON
+            
+            // Lộc thêm vào để test puzzle 6 7
+            // TODO: Xoá sau khi test xong
+            BuildEventSequence(); 
+            AutoTriggerFirstEvent();
         }
 
         //Hàm public để UI gọi khi NewGame hoặc ContinueGame

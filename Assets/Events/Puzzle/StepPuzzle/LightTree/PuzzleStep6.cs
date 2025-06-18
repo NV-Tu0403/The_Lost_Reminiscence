@@ -35,6 +35,7 @@ namespace Events.Puzzle.StepPuzzle.LightTree
 
         public void StartStep(Action onComplete)
         {
+            Debug.Log("[PuzzleStep6] StartStep called");
             _onComplete = onComplete;
             // Lưu vị trí ban đầu của id và sup
             if (ids != null && ids.Length > 0 && (idStartPositions == null || idStartPositions.Length != ids.Length))
@@ -49,7 +50,8 @@ namespace Events.Puzzle.StepPuzzle.LightTree
                 for (int i = 0; i < sups.Length; i++)
                     supStartPositions[i] = sups[i].transform.position;
             }
-            // Không cần lưu playerStartPosition nữa
+
+            Debug.Log("[PuzzleStep6] player die  => reset");
             if (playerSpirit != null)
                 playerSpirit.OnSpiritDepleted += HandlePlayerDead;
         }
@@ -58,7 +60,7 @@ namespace Events.Puzzle.StepPuzzle.LightTree
         {
             // Reset player về respawnPoint
             if (player != null && respawnPoint != null)
-                player.transform.position = respawnPoint.position;
+                player.TeleportTo(respawnPoint.position);
             // Reset Id và Sup
             ResetIdAndSup();
             // Hồi máu cho player

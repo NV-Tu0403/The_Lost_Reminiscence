@@ -20,6 +20,7 @@ namespace Events.TriggerZone
             {
                 // Đánh dấu player đang ở zone 1
                 puzzleStep6.SetPlayerCurrentZone(zoneIndex);
+                Debug.Log("[IdTriggerZone] Player entered zone 1");
                 // Gọi ghost chase player ngay khi vào zone
                 var testController = other.GetComponent<TestController>();
                 if (testController != null)
