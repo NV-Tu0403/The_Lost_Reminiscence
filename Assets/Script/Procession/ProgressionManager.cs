@@ -40,8 +40,8 @@ namespace Script.Procession
             
             // Lộc thêm vào để test puzzle 6 7
             // TODO: Xoá sau khi test xong
-            BuildEventSequence(); 
-            AutoTriggerFirstEvent();
+            //BuildEventSequence(); 
+            //AutoTriggerFirstEvent();
         }
 
         //Hàm public để UI gọi khi NewGame hoặc ContinueGame
