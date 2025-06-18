@@ -7,7 +7,9 @@ public enum UIActionType
     TurnToPage,
     NewGame,
     Continue,
-    Quit,
+    SavePanel,
+    QuitGame,
+
     SelectSaveItem,
     DuplicateSaveItem,
     DeleteSaveItem

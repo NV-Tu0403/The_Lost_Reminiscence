@@ -87,14 +87,22 @@ public class UIPageView : PageView
             lastCheckTime = Time.time;
             TryHover(Input.mousePosition);
         }
+
+        if (debugMode) // Vẽ raycast để debug
+        {
+            DebugRayCast();
+        }
     }
     #region debug
     private void DebugRayCast()
     {
-        Vector2 screenPoint = Input.mousePosition;
         Camera cam = pageViewCamera != null ? pageViewCamera : Camera.main;
-        Vector2 viewportPoint = cam.ScreenToViewportPoint(screenPoint);
-        RayCast(viewportPoint, null);
+        // Chuyển vị trí chuột từ không gian màn hình sang không gian thế giới tại mặt phẳng z=0
+        Vector3 mouseWorldPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane));
+        // Tạo ray với điểm gốc tại chuột và hướng -Z
+        Ray ray = new Ray(mouseWorldPos, Vector3.forward);
+        // Vẽ ray từ điểm gốc đến điểm cuối (khoảng cách maxRayCastDistance)
+        Debug.DrawLine(ray.origin, ray.direction * maxRayCastDistance, Color.green, 0.1f);
     }
     #endregion
 
@@ -252,23 +260,41 @@ public class UIPageView : PageView
         switch (item.uIActionType)
         {
             case UIActionType.NewGame:
-                action?.Invoke(BookActionTypeEnum.ChangeState, 2); // OpenMiddle
+                togglePage(item);
+                //action?.Invoke(BookActionTypeEnum.ChangeState, 2); // OpenMiddle
                 break;
+
             case UIActionType.Continue:
-                book.TurnToPage(item.targetPage, PageTurnTimeTypeEnum.TotalTurnTime, item.turnTime); // gọi trực tiếp (test)
-                action?.Invoke(BookActionTypeEnum.TurnPage, item.targetPage); 
+                togglePage(item);
+                //action?.Invoke(BookActionTypeEnum.TurnPage, item.targetPage); 
                 break;
-            case UIActionType.Quit:
+
+            case UIActionType.SavePanel:
+                togglePage(item);
+                break;
+
+            case UIActionType.QuitGame:
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
 #else
                 Application.Quit();
 #endif
                 break;
-            case UIActionType.TurnToPage:
-                action?.Invoke(BookActionTypeEnum.TurnPage, item.targetPage); // Tương tự PageView_02
+
+            case UIActionType.TurnToPage: // điều hướng đến trang cụ thể (test mục lục số)
+                action?.Invoke(BookActionTypeEnum.TurnPage, item.targetPage);
                 break;
         }
+    }
+
+    /// <summary>
+    /// truy cập trực tiếp vào trang sách EndlessBook để chuyển đến trang cụ thể. (test)
+    /// </summary>
+    /// <param name="item"></param>
+    private void togglePage(UIItem item)
+    {
+        book.TurnToPage(item.targetPage, PageTurnTimeTypeEnum.TotalTurnTime, item.turnTime);
+
     }
 
     //private void EnsureBookOpenMiddle()

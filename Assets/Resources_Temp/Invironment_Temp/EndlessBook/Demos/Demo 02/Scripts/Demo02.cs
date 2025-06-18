@@ -111,7 +111,6 @@
 
         void Start()
         {
-            TurnOffAllPageViews();
 
             // set up touch pad handlers
             touchPad.touchDownDetected = TouchPadTouchDownDetected;
