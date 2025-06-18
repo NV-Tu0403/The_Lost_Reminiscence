@@ -1,0 +1,36 @@
+using Events.Puzzle.StepPuzzle.LightTree;
+using UnityEngine;
+
+namespace Events.TriggerZone
+{
+    public class IdTriggerZone : TriggerZone
+    {
+        [SerializeField] private PuzzleStep6 puzzleStep6;
+        private int zoneIndex = 1;
+
+        protected override bool IsValidTrigger(Collider other)
+        {
+            // Chỉ trigger với Player (TestController)
+            return other.CompareTag("Player");
+        }
+
+        protected override void OnTriggered(Collider other)
+        {
+            if (puzzleStep6 != null)
+            {
+                // Đánh dấu player đang ở zone 1
+                puzzleStep6.SetPlayerCurrentZone(zoneIndex);
+                // Gọi ghost chase player ngay khi vào zone
+                var testController = other.GetComponent<TestController>();
+                if (testController != null)
+                {
+                    foreach (var id in puzzleStep6.GetIds())
+                    {
+                        id.SetChaseTarget(testController);
+                    }
+                }
+            }
+            DisableZone();
+        }
+    }
+}

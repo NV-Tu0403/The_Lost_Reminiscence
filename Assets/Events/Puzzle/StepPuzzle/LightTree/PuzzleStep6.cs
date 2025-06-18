@@ -28,6 +28,11 @@ namespace Events.Puzzle.StepPuzzle.LightTree
         
         private Action _onComplete;
 
+        // --- Thêm biến để kiểm tra đã chết ở từng zone ---
+        private bool diedInZone1 = false;
+        private bool diedInZone2 = false;
+        private int playerCurrentZone = 0;
+
         public void StartStep(Action onComplete)
         {
             _onComplete = onComplete;
@@ -62,6 +67,8 @@ namespace Events.Puzzle.StepPuzzle.LightTree
             // reset UI, dialogue
             if (uiSupDialogue != null)
                 uiSupDialogue.Close();
+
+            NotifyPlayerDiedInZone(playerCurrentZone);
         }
 
         // Hàm reset Id và sup về vị trí ban đầu và trạng thái mặc định
@@ -83,6 +90,45 @@ namespace Events.Puzzle.StepPuzzle.LightTree
                     sups[i].ResetState();
                 }
             }
+        }
+
+        // Gọi từ TriggerZone khi người chơi chết ở zone tương ứng
+        public void NotifyPlayerDiedInZone(int zoneIndex)
+        {
+            if (zoneIndex == 1)
+                diedInZone1 = true;
+            else if (zoneIndex == 2)
+                diedInZone2 = true;
+            
+            CheckBothZonesDied();
+        }
+
+        // Kiểm tra nếu đã chết ở cả 2 zone thì gọi event tiếp theo
+        private void CheckBothZonesDied()
+        {
+            if (diedInZone1 && diedInZone2)
+            {
+                if (_onComplete != null)
+                    _onComplete.Invoke();
+            }
+        }
+
+        // public bool HasDiedInZone(int zoneIndex)
+        // {
+        //     if (zoneIndex == 1) return diedInZone1;
+        //     if (zoneIndex == 2) return diedInZone2;
+        //     return false;
+        // }
+
+        // Trả về danh sách các IdController (ghost) để các TriggerZone sử dụng
+        public IdController[] GetIds()
+        {
+            return ids;
+        }
+
+        public void SetPlayerCurrentZone(int zoneIndex)
+        {
+            playerCurrentZone = zoneIndex;
         }
 
         // Hàm này sẽ được gọi khi bước này hoàn thành
