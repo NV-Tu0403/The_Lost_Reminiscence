@@ -1,6 +1,7 @@
+using System;
 using UnityEngine;
 
-namespace Events.Puzzle.Test.PuzzleDemo
+namespace Events.Puzzle.StepPuzzle.LightTree
 {
     public class FaController : MonoBehaviour
     {
@@ -9,50 +10,52 @@ namespace Events.Puzzle.Test.PuzzleDemo
         public float shieldRadius = 3f;
         public float shieldDuration = 5f;
         public float attractSpeed = 8f;
-        private bool shieldActive = false;
-        private float shieldTimer = 0f;
+        private bool _shieldActive = false;
+        private float _shieldTimer = 0f;
 
         [Header("Guide Signal Settings")]
         public bool canGuide = false;
         public float guideDuration = 2f;
-        private bool guiding = false;
-        private float guideTimer = 0f;
+        private bool _guiding = false;
+        private float _guideTimer = 0f;
+        
+        public event Action OnSkillUsed;
 
         private void Update()
         {
             // Kích hoạt lá chắn
-            if (Input.GetKeyDown(KeyCode.Q) && !shieldActive)
+            if (Input.GetKeyDown(KeyCode.Q) && !_shieldActive)
             {
                 ActivateShield();
             }
             // Kích hoạt tín hiệu dẫn lối
-            if (Input.GetKeyDown(KeyCode.F) && shieldActive && !guiding && canGuide)
+            if (Input.GetKeyDown(KeyCode.F) && _shieldActive && !_guiding && canGuide)
             {
                 ActivateGuide();
             }
             // Đếm thời gian lá chắn
-            if (shieldActive)
+            if (_shieldActive)
             {
-                shieldTimer -= Time.deltaTime;
-                if (shieldTimer <= 0f)
+                _shieldTimer -= Time.deltaTime;
+                if (_shieldTimer <= 0f)
                 {
                     DeactivateShield();
                 }
             }
             // Đếm thời gian dẫn lối
-            if (guiding)
+            if (_guiding)
             {
-                guideTimer -= Time.deltaTime;
-                if (guideTimer <= 0f)
+                _guideTimer -= Time.deltaTime;
+                if (_guideTimer <= 0f)
                 {
-                    guiding = false;
+                    _guiding = false;
                 }
             }
         }
 
         private void LateUpdate()
         {
-            if (shieldActive && shieldObject != null)
+            if (_shieldActive && shieldObject != null)
             {
                 shieldObject.transform.position = transform.position;
             }
@@ -60,29 +63,31 @@ namespace Events.Puzzle.Test.PuzzleDemo
 
         public void ActivateShield()
         {
-            shieldActive = true;
-            shieldTimer = shieldDuration;
+            _shieldActive = true;
+            _shieldTimer = shieldDuration;
             if (shieldObject != null) shieldObject.SetActive(true);
             Debug.Log("Shield activated");
         }
 
         public void DeactivateShield()
         {
-            shieldActive = false;
+            _shieldActive = false;
             if (shieldObject != null) shieldObject.SetActive(false);
             Debug.Log("Shield deactivated");
         }
 
         public void ActivateGuide()
         {
-            guiding = true;
-            guideTimer = guideDuration;
+            _guiding = true;
+            _guideTimer = guideDuration;
             Debug.Log("Guide activated");
+            OnSkillUsed?.Invoke(); // Phát event khi dùng kỹ năng
         }
 
-        public bool IsShieldActive() => shieldActive;
-        public bool IsGuiding() => guiding;
+        public bool IsShieldActive() => _shieldActive;
+        public bool IsGuiding() => _guiding;
         public Vector3 GetShieldPosition() => shieldObject != null ? shieldObject.transform.position : transform.position;
+        
         public float GetShieldRadius() => shieldRadius;
     }
 }

@@ -1,26 +1,31 @@
+using Events.Puzzle.StepPuzzle.LightTree;
 using UnityEngine;
+
+// Đã DEPRECATED: Không dùng Puzzle3 để quản lý gameplay nữa.
+// Toàn bộ logic gameplay (ghost, NPC, reset, máu, v.v.) nên chuyển sang các component riêng biệt hoặc step mới.
+// Script này chỉ giữ lại để tham khảo hoặc migrate dần sang hệ thống event-driven mới.
 
 namespace Events.Puzzle.Test.PuzzleDemo
 {
     public class Puzzle3 : MonoBehaviour
     {
         public static Puzzle3 Instance { get; private set; }
-        
-        
+
+
         [SerializeField] private int maxSpirits = 5;
         public int currentSpirits;
-        
+
         private bool _idCleared;
-        
+
         [SerializeField] private TestController player;
         [SerializeField] private Transform respawnPoint;
-        
-        public Id[] ghosts;
+
+        public IdController[] ghosts;
         private Vector3[] ghostStartPositions;
-        
-        public NPCSup[] npcs;
+
+        public SupController[] npcs;
         private Vector3[] npcStartPositions;
-        
+
         private void Awake()
         {
             Instance = this;
@@ -50,7 +55,7 @@ namespace Events.Puzzle.Test.PuzzleDemo
             UISpirit ui = FindObjectOfType<UISpirit>();
             if (ui != null) ui.SetSpirit(currentSpirits, maxSpirits);
         }
-        
+
         public void ReduceSpirit(int amount)
         {
             currentSpirits -= amount;
@@ -62,20 +67,20 @@ namespace Events.Puzzle.Test.PuzzleDemo
         public void ResetPuzzle()
         {
             Debug.Log("Reset puzzle");
-            
+
             // Đặt lại máu
             currentSpirits = maxSpirits;
             UISpirit ui = FindObjectOfType<UISpirit>();
             if (ui != null) ui.SetSpirit(currentSpirits, maxSpirits);
-            
+
             // Đóng DialogueSupUI nếu đang mở
-            DialogueSupUI dialogueUI = FindObjectOfType<DialogueSupUI>();
-            if (dialogueUI != null) dialogueUI.Close();
-            
+            UISupDialogue uiSupDialogueUI = FindObjectOfType<UISupDialogue>();
+            if (uiSupDialogueUI != null) uiSupDialogueUI.Close();
+
             // Dịch chuyển player về vị trí respawn
             if (player != null && respawnPoint != null)
                 player.TeleportTo(respawnPoint.position);
-            
+
             // Đặt lại vị trí ghost và dừng chase
             if (ghosts != null && ghostStartPositions != null)
             {
@@ -85,7 +90,7 @@ namespace Events.Puzzle.Test.PuzzleDemo
                     ghosts[i].ResetChase();
                 }
             }
-            
+
             // Đặt lại vị trí và trạng thái NPC
             if (npcs != null && npcStartPositions != null)
             {

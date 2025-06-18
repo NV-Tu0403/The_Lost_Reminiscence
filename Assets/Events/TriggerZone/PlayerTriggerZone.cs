@@ -24,7 +24,7 @@ namespace Events.TriggerZone
             // Unlock → Trigger → Disable zone
             ProgressionManager.Instance.UnlockProcess(eventId);
             EventExecutor.Instance.TriggerEvent(eventId);
-            //DisableZone();
+            DisableZone();
         }
     }
 }

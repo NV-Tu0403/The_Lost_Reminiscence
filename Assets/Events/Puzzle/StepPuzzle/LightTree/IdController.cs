@@ -1,57 +1,67 @@
 using UnityEngine;
 
-namespace Events.Puzzle.Test.PuzzleDemo
+namespace Events.Puzzle.StepPuzzle.LightTree
 {
-    public class Id : MonoBehaviour
+    public class IdController : MonoBehaviour
     {
         private TestController _testController;
-        private FaController faController;
+        
+        [SerializeField] private FaController faController;
+        [SerializeField] private PlayerSpirit playerSpirit;
         [SerializeField] private float speed = 5f;
         [SerializeField] private float timeBetweenHits = 1f; // thời gian giữa các lần trừ máu
-        private float hitCooldown = 0f;
-        private bool attractedToShield = false;
-        private bool guiding = false;
-        private Vector3 shieldTarget;
+        
+        private float _hitCooldown = 0f;
+        private bool _attractedToShield = false;
+        private bool _guiding = false;
+        private Vector3 _shieldTarget;
 
+
+        private void Update()
+        {
+            UpdateShieldState();
+            MoveId();
+            UpdateHitCooldown();
+        }
+        
+        // Thiết lập đối tượng TestController để Id có thể theo dõi
         public void SetChaseTarget(TestController testController)
         {
             _testController = testController;
         }
 
+        // Reset trạng thái Id, gọi khi Id bị phá hủy hoặc reset
         public void ResetChase()
         {
             _testController = null;
-            hitCooldown = 0f;
+            _hitCooldown = 0f;
         }
+        
 
-        // Di chuyen duoi Player
-        private void Start()
-        {
-            faController = FindObjectOfType<FaController>();
-        }
-
-        private void Update()
+        // Cập nhật trạng thái lá chắn, kiểm tra xem có đang dẫn lối hay không
+        private void UpdateShieldState()
         {
             if (faController != null && faController.IsShieldActive())
             {
-                attractedToShield = true;
-                shieldTarget = faController.GetShieldPosition();
+                _attractedToShield = true;
+                _shieldTarget = faController.GetShieldPosition();
                 // Nếu đang dẫn lối thì lao nhanh vào tâm lá chắn
-                if (faController.IsGuiding())
-                {
-                    guiding = true;
-                }
+                _guiding = faController.IsGuiding();
             }
             else
             {
-                attractedToShield = false;
-                guiding = false;
+                _attractedToShield = false;
+                _guiding = false;
             }
+        }
 
-            if (attractedToShield)
+        // Di chuyển Id về phía người chơi hoặc tâm lá chắn nếu đang dẫn lối
+        private void MoveId()
+        {
+            if (_attractedToShield)
             {
-                float moveSpeed = guiding ? faController.attractSpeed * 2f : faController.attractSpeed;
-                Vector3 direction = (shieldTarget - transform.position).normalized;
+                float moveSpeed = _guiding ? faController.attractSpeed * 2f : faController.attractSpeed;
+                Vector3 direction = (_shieldTarget - transform.position).normalized;
                 transform.position += direction * moveSpeed * Time.deltaTime;
             }
             else if (_testController != null)
@@ -59,11 +69,17 @@ namespace Events.Puzzle.Test.PuzzleDemo
                 Vector3 direction = (_testController.transform.position - transform.position).normalized;
                 transform.position += direction * speed * Time.deltaTime;
             }
-            // Giảm cooldown mỗi frame
-            if (hitCooldown > 0f)
-                hitCooldown -= Time.deltaTime;
         }
 
+        // Cập nhật cooldown giữa các lần trừ máu
+        private void UpdateHitCooldown()
+        {
+            // Giảm cooldown mỗi frame
+            if (_hitCooldown > 0f)
+                _hitCooldown -= Time.deltaTime;
+        }
+
+        // Xử lý va chạm với người chơi hoặc lá chắn
         private void OnTriggerStay(Collider other)
         {
             // Phá hủy nếu guiding đang bật và đang ở trong shieldObject
@@ -74,17 +90,20 @@ namespace Events.Puzzle.Test.PuzzleDemo
                 return;
             }
 
+            // Kiểm tra nếu va chạm với nguời chơi thi trừ máu
             if (_testController != null && other.gameObject == _testController.gameObject)
             {
-                if (hitCooldown <= 0f)
+                if (_hitCooldown <= 0f)
                 {
                     Debug.Log("ID triggered by player (OnTriggerStay)");
-                    Puzzle3.Instance.ReduceSpirit(1);
-                    hitCooldown = timeBetweenHits;
+                    if (playerSpirit != null)
+                        playerSpirit.ReduceSpirit(1);
+                    _hitCooldown = timeBetweenHits;
                 }
             }
         }
 
+        // Xử lý va chạm với lá chắn
         private void OnTriggerEnter(Collider other)
         {
             // Chỉ phá hủy khi guiding đang bật và va vào shieldObject
