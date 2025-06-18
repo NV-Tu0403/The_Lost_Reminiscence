@@ -99,18 +99,11 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
                 yield return new WaitForSeconds(puzzleConfig.fallDelayBetweenPieces);
             }
             yield return new WaitForSeconds(1f);
-            // Kiểm tra player đã qua cầu thành công hay chưa
-            var player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null && player.transform.position.y < transform.position.y - 1f)
-            {
-                ResetPlayer();
-                StartCoroutine(ResetPuzzleAfterFail());
-            }
-            else
-            {
-                // Qua cầu thành công, báo hoàn thành event
-                _onComplete?.Invoke();
-            }
+            
+            
+            //TODO: Hiện tại chưa có logic xử lý người chơi qua cầu, cần thêm logic để kiểm tra người chơi có qua cầu hay không.
+            
+            _onComplete?.Invoke();
         }
 
         public void ResetPlayer()

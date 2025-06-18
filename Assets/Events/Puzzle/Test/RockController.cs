@@ -19,19 +19,16 @@ namespace Events.Puzzle.Test
                 Debug.LogWarning("Rigidbody component is missing on the RockController GameObject.");
             }
         }
-
-        private void Update()
+        
+        public void TestDrop()
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (rb != null)
             {
-                if (rb != null)
-                {
-                    rb.useGravity = true;
-                }
-                else
-                {
-                    Debug.LogWarning("Rigidbody component is missing on the RockController GameObject.");
-                }
+                rb.useGravity = true;
+            }
+            else
+            {
+                Debug.LogWarning("Rigidbody component is missing on the RockController GameObject.");
             }
         }
     }

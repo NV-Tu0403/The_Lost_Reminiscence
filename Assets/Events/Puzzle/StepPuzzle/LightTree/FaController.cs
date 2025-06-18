@@ -23,16 +23,6 @@ namespace Events.Puzzle.StepPuzzle.LightTree
 
         private void Update()
         {
-            // Kích hoạt lá chắn
-            if (Input.GetKeyDown(KeyCode.Q) && !_shieldActive)
-            {
-                ActivateShield();
-            }
-            // Kích hoạt tín hiệu dẫn lối
-            if (Input.GetKeyDown(KeyCode.F) && _shieldActive && !_guiding && canGuide)
-            {
-                ActivateGuide();
-            }
             // Đếm thời gian lá chắn
             if (_shieldActive)
             {
@@ -82,6 +72,24 @@ namespace Events.Puzzle.StepPuzzle.LightTree
             _guideTimer = guideDuration;
             Debug.Log("Guide activated");
             OnSkillUsed?.Invoke(); // Phát event khi dùng kỹ năng
+        }
+        
+        
+        // Test methods to simulate skill usage
+        public void TestActivateShield()
+        {
+            if (!_shieldActive)
+            {
+                ActivateShield();
+            }
+        }
+        
+        public void TestActivateGuide()
+        {
+            if (_shieldActive && !_guiding && canGuide)
+            {
+                ActivateGuide();
+            }
         }
 
         public bool IsShieldActive() => _shieldActive;
