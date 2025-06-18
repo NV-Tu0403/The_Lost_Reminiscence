@@ -1,5 +1,4 @@
 using System;
-using Events.Puzzle.Test.PuzzleDemo;
 using UnityEngine;
 
 namespace Events.Puzzle.StepPuzzle.LightTree

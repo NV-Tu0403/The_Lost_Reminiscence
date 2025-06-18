@@ -1,4 +1,4 @@
-using Events.Puzzle.Test.PuzzleDemo;
+using DuckLe;
 using UnityEngine;
 
 namespace Events.Puzzle.StepPuzzle.LightTree
@@ -11,6 +11,7 @@ namespace Events.Puzzle.StepPuzzle.LightTree
         public int correctIndex; // chỉ số đáp án đúng
         [SerializeField] private UISupDialogue uiSupDialogue;
         [SerializeField] private FaController faController;
+        [SerializeField] private PlayerSpirit playerSpirit;
        
         
         private bool attractedToShield = false;
@@ -64,6 +65,10 @@ namespace Events.Puzzle.StepPuzzle.LightTree
         public void OnAnswered(bool isCorrect)
         {
             hasAnswered = isCorrect;
+            if (!isCorrect && playerSpirit != null)
+            {
+                playerSpirit.ReduceSpirit(2);
+            }
         }
 
         // Hàm này sẽ được gọi khi NPC được reset, ví dụ khi người chơi chết hoặc bước này được reset
@@ -83,7 +88,8 @@ namespace Events.Puzzle.StepPuzzle.LightTree
                 return;
             }
 
-            if (!hasAnswered && other.GetComponent<TestController>() != null && Input.GetKeyDown(KeyCode.E))
+            // Đổi từ TestController sang PlayerController
+            if (!hasAnswered && other.GetComponent<PlayerController>() != null)
             {
                 ShowQuestion();
             }

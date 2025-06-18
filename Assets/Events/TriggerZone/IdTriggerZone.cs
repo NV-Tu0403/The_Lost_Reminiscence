@@ -1,3 +1,4 @@
+using DuckLe;
 using Events.Puzzle.StepPuzzle.LightTree;
 using UnityEngine;
 
@@ -22,16 +23,16 @@ namespace Events.TriggerZone
                 puzzleStep6.SetPlayerCurrentZone(zoneIndex);
                 Debug.Log("[IdTriggerZone] Player entered zone 1");
                 // Gọi ghost chase player ngay khi vào zone
-                var testController = other.GetComponent<TestController>();
-                if (testController != null)
+                var player = other.GetComponent<PlayerController>();
+                if (player != null)
                 {
                     foreach (var id in puzzleStep6.GetIds())
                     {
-                        id.SetChaseTarget(testController);
+                        id.SetChaseTarget(player);
                     }
                 }
             }
-            DisableZone();
+            //DisableZone();
         }
     }
 }

@@ -60,6 +60,7 @@ namespace Events.Puzzle.StepPuzzle.LightTree
             }
             else
             {
+                _current.OnAnswered(false);
                 answerButtons[idx].interactable = false;
                 var colors = answerButtons[idx].colors;
                 colors.normalColor = Color.gray;

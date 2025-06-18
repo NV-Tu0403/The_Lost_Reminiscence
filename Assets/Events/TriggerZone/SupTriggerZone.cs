@@ -16,6 +16,7 @@ namespace Events.TriggerZone
 
         protected override void OnTriggered(Collider other)
         {
+            Debug.Log($"[SupTriggerZone] Player entered zone {zoneIndex}");
             if (puzzleStep6 != null)
             {
                 // Đánh dấu player đang ở zone 2

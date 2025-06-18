@@ -89,7 +89,9 @@ public class ProfessionalSkilMenu : MonoBehaviour
         }
 
         // Load scene và chờ callback khi load xong
-        SceneController.Instance.LoadAdditiveScene("Phong_scene", PlayerCheckPoint.Instance, () =>
+        // TODO: Loc test scene TestPuzzle3, se thay doi lai Phong_scene sau
+        SceneController.Instance.LoadAdditiveScene("TestPuzzle3", PlayerCheckPoint.Instance, () =>
+        //SceneController.Instance.LoadAdditiveScene("Phong_scene", PlayerCheckPoint.Instance, () =>
         {
             //Đảm bảo Player đã tồn tại sau khi load scene
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -125,7 +127,10 @@ public class ProfessionalSkilMenu : MonoBehaviour
         string sceneToLoad = PlayerCheckPoint.Instance.CurrentMap;
         if (string.IsNullOrEmpty(sceneToLoad) || sceneToLoad == "Unknown" || sceneToLoad == "Menu")
         {
-            sceneToLoad = "Phong_scene"; // Default scene if none is set
+            // TODO: Loc test scene TestPuzzle3, se thay doi lai Phong_scene sau
+            
+            sceneToLoad = "TestPuzzle3"; // Default scene if none is set
+            //sceneToLoad = "Phong_scene"; // Default scene if none is set
         }
 
         SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>

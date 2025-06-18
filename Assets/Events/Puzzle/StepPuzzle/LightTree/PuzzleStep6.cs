@@ -1,6 +1,5 @@
 using System;
 using Events.Puzzle.Scripts;
-using Events.Puzzle.Test.PuzzleDemo;
 using UnityEngine;
 
 namespace Events.Puzzle.StepPuzzle.LightTree
@@ -20,7 +19,6 @@ namespace Events.Puzzle.StepPuzzle.LightTree
         
         [Header("Player & Máu")]
         [SerializeField] private PlayerSpirit playerSpirit;
-        [SerializeField] private TestController player;
         [SerializeField] private Transform respawnPoint;
         
         [Header("UI Dialogue Test")]
@@ -59,8 +57,9 @@ namespace Events.Puzzle.StepPuzzle.LightTree
         private void HandlePlayerDead()
         {
             // Reset player về respawnPoint
-            if (player != null && respawnPoint != null)
-                player.TeleportTo(respawnPoint.position);
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null && respawnPoint != null)
+                playerObj.transform.position = respawnPoint.position;
             // Reset Id và Sup
             ResetIdAndSup();
             // Hồi máu cho player

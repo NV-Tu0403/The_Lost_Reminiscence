@@ -1,10 +1,11 @@
+using DuckLe;
 using UnityEngine;
 
 namespace Events.Puzzle.StepPuzzle.LightTree
 {
     public class IdController : MonoBehaviour
     {
-        private TestController _testController;
+        private PlayerController _playerController;
         
         [SerializeField] private FaController faController;
         [SerializeField] private PlayerSpirit playerSpirit;
@@ -25,15 +26,15 @@ namespace Events.Puzzle.StepPuzzle.LightTree
         }
         
         // Thiết lập đối tượng TestController để Id có thể theo dõi
-        public void SetChaseTarget(TestController testController)
+        public void SetChaseTarget(PlayerController player)
         {
-            _testController = testController;
+            _playerController = player;
         }
 
         // Reset trạng thái Id, gọi khi Id bị phá hủy hoặc reset
         public void ResetChase()
         {
-            _testController = null;
+            _playerController = null;
             _hitCooldown = 0f;
         }
         
@@ -64,9 +65,9 @@ namespace Events.Puzzle.StepPuzzle.LightTree
                 Vector3 direction = (_shieldTarget - transform.position).normalized;
                 transform.position += direction * moveSpeed * Time.deltaTime;
             }
-            else if (_testController != null)
+            else if (_playerController != null)
             {
-                Vector3 direction = (_testController.transform.position - transform.position).normalized;
+                Vector3 direction = (_playerController.transform.position - transform.position).normalized;
                 transform.position += direction * speed * Time.deltaTime;
             }
         }
@@ -91,7 +92,7 @@ namespace Events.Puzzle.StepPuzzle.LightTree
             }
 
             // Kiểm tra nếu va chạm với nguời chơi thi trừ máu
-            if (_testController != null && other.gameObject == _testController.gameObject)
+            if (_playerController != null && other.gameObject == _playerController.gameObject)
             {
                 if (_hitCooldown <= 0f)
                 {

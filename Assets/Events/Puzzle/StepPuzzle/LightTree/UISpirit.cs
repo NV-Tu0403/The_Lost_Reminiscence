@@ -1,9 +1,9 @@
-using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
 using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
-namespace Events.Puzzle.Test.PuzzleDemo
+namespace Events.Puzzle.StepPuzzle.LightTree
 {
     /// <summary>
     /// Script này quản lí UI thanh Spirit của người chơi.
