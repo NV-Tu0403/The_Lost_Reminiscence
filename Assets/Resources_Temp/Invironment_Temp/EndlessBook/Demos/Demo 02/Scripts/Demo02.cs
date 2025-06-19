@@ -37,6 +37,7 @@
             touchPad.tableOfContentsDetected = TableOfContentsDetected;
             touchPad.dragDetected = TouchPadDragDetected;
 
+            // khởi tạo các UIPageView
             foreach (var uiPageView in uiPageViews)
             {
                 if (uiPageView != null)
@@ -256,32 +257,54 @@
             // Xử lý drag từ TouchPad
         }
 
+        /// <summary>
+        /// Xử lý sự kiện TouchDown trên UIPageView.
+        /// gọi đến các tác vụ nhiệp vụ như new game, lưu game, v.v.
+        /// </summary>
+        /// <param name="screenPoint"></param>
+        /// <param name="item"></param>
         protected virtual void UIPageViewTouchDownDetected(Vector2 screenPoint, UIItem item)
         {
             if (debugMode)
             {
                 Debug.Log($"[Demo02] UIPageView TouchDown on {item.uIActionType}");
             }
+
+            //switch (item.uIActionType)
+            //{
+            //    case UIActionType.TurnToPage:
+            //        // hiện Không cần xử lý gì ở đây, chỉ cần chờ TouchUp
+            //        break;
+            //    case UIActionType.Tutorialgame:
+            //        // hiện chưa có chức năng này, làm sau
+            //        break;
+            //    case UIActionType.NewGame:
+            //        ProfessionalSkilMenu.Instance.OnNewGame();
+            //        break;
+            //    case UIActionType.Continue:
+            //        //ProfessionalSkilMenu.Instance.OnContinueGame(SelectedSaveFolder); // chưa xong, cần xử lí thêm để truyền SelectedSaveFolder vào hợp lệ
+            //        break;
+            //    case UIActionType.SelectSaveItem:
+            //        // Hiện chưa có chức năng này, làm sau
+            //        break;
+            //    case UIActionType.DeleteSaveItem:
+            //        // Hiện chưa có chức năng này, làm sau
+            //        break;
+            //    case UIActionType.QuitGame:
+            //        // Không cần xử lý gì ở đây, chỉ cần chờ TouchUp
+            //        break;
+            //}
         }
 
         protected virtual void UIPageViewTouchUpDetected(Vector2 screenPoint, UIItem item, bool dragging)
         {
             if (debugMode)
             {
-                Debug.Log($"[Demo02] UIPageView TouchUp on {item.uIActionType}");
+                Debug.LogWarning($"[Demo02] UIPageView TouchUp on {item.uIActionType}");
             }
 
             switch (item.uIActionType)
             {
-                case UIActionType.NewGame:
-                case UIActionType.Continue:
-                case UIActionType.SavePanel:
-                case UIActionType.Tutorialgame:
-                case UIActionType.BackToMenu:
-
-                case UIActionType.SelectSaveItem:
-                case UIActionType.DeleteSaveItem:
-
                 case UIActionType.TurnToPage:
                     TurnToPage(item.targetPage);
                     break;
@@ -293,12 +316,32 @@
                     Application.Quit();
 #endif
                     break;
+                case UIActionType.Tutorialgame:
+                    break;
+                case UIActionType.NewGame:
+                    ProfessionalSkilMenu.Instance.OnNewGame();
+                    break;
+                case UIActionType.Continue:
+                    //ProfessionalSkilMenu.Instance.OnContinueGame(SelectedSaveFolder); // chưa xong, cần xử lí thêm để truyền SelectedSaveFolder vào hợp lệ
+                    break;
+                case UIActionType.SavePanel:
+                    // 
+                    break;
+                case UIActionType.BackToMenu:
+                    //
+                    break;
+                case UIActionType.SelectSaveItem:
+                    // Hiện chưa có chức năng này, làm sau
+                    break;
+                case UIActionType.DeleteSaveItem:
+                    // Hiện chưa có chức năng này, làm sau
+                    break;
             }
         }
 
         protected virtual void UIPageViewHoverDetected(Vector2 screenPoint)
         {
-            // Không cần xử lý hover ở đây vì UIPageView tự xử lý highlight
+            // chưa có logic, dùng sau nhé :)
         }
 
         protected virtual UIPageView GetUIPageView(int pageNumber)
@@ -358,6 +401,6 @@
                             onPageTurnEnd: OnPageTurnEnd);
         }
 
-        public bool debugMode = false; // Thêm để debug
+        public bool debugMode = false;
     }
 }

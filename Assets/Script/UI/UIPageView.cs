@@ -136,7 +136,10 @@ public class UIPageView : MonoBehaviour
                 if (i.targetColliderObject == hit.collider.gameObject)
                 {
                     item = i;
-                    Debug.Log($"[UIPageView] Ray hit: {hit.collider.name} with item {i.uIActionType}"); 
+                    if (debugMode)
+                    {
+                        Debug.Log($"[UIPageView] Ray hit: {hit.collider.name} with item {i.uIActionType}");
+                    }
                     return true;
                 }
             }
