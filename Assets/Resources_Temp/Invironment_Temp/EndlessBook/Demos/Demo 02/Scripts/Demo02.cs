@@ -272,23 +272,23 @@
 
             //switch (item.uIActionType)
             //{
-            //    case UIActionType.TurnToPage:
-            //        // hiện Không cần xử lý gì ở đây, chỉ cần chờ TouchUp
-            //        break;
-            //    case UIActionType.Tutorialgame:
-            //        // hiện chưa có chức năng này, làm sau
-            //        break;
             //    case UIActionType.NewGame:
             //        ProfessionalSkilMenu.Instance.OnNewGame();
             //        break;
             //    case UIActionType.Continue:
             //        //ProfessionalSkilMenu.Instance.OnContinueGame(SelectedSaveFolder); // chưa xong, cần xử lí thêm để truyền SelectedSaveFolder vào hợp lệ
             //        break;
+            //    case UIActionType.Tutorialgame:
+            //        // hiện chưa có chức năng này, làm sau
+            //        break;
             //    case UIActionType.SelectSaveItem:
             //        // Hiện chưa có chức năng này, làm sau
             //        break;
             //    case UIActionType.DeleteSaveItem:
             //        // Hiện chưa có chức năng này, làm sau
+            //        break;
+            //    case UIActionType.TurnToPage:
+            //        // Không cần xử lý gì ở đây, chỉ cần chờ TouchUp
             //        break;
             //    case UIActionType.QuitGame:
             //        // Không cần xử lý gì ở đây, chỉ cần chờ TouchUp
@@ -305,6 +305,15 @@
 
             switch (item.uIActionType)
             {
+                case UIActionType.NewGame:
+                case UIActionType.Continue:
+                case UIActionType.SavePanel:
+                case UIActionType.Tutorialgame:
+                case UIActionType.BackToMenu:
+
+                case UIActionType.SelectSaveItem:
+                case UIActionType.DeleteSaveItem:
+
                 case UIActionType.TurnToPage:
                     TurnToPage(item.targetPage);
                     break;
@@ -316,32 +325,12 @@
                     Application.Quit();
 #endif
                     break;
-                case UIActionType.Tutorialgame:
-                    break;
-                case UIActionType.NewGame:
-                    ProfessionalSkilMenu.Instance.OnNewGame();
-                    break;
-                case UIActionType.Continue:
-                    //ProfessionalSkilMenu.Instance.OnContinueGame(SelectedSaveFolder); // chưa xong, cần xử lí thêm để truyền SelectedSaveFolder vào hợp lệ
-                    break;
-                case UIActionType.SavePanel:
-                    // 
-                    break;
-                case UIActionType.BackToMenu:
-                    //
-                    break;
-                case UIActionType.SelectSaveItem:
-                    // Hiện chưa có chức năng này, làm sau
-                    break;
-                case UIActionType.DeleteSaveItem:
-                    // Hiện chưa có chức năng này, làm sau
-                    break;
             }
         }
 
         protected virtual void UIPageViewHoverDetected(Vector2 screenPoint)
         {
-            // chưa có logic, dùng sau nhé :)
+            // Không cần xử lý hover ở đây vì UIPageView tự xử lý highlight
         }
 
         protected virtual UIPageView GetUIPageView(int pageNumber)
@@ -401,6 +390,6 @@
                             onPageTurnEnd: OnPageTurnEnd);
         }
 
-        public bool debugMode = false;
+        public bool debugMode = false; // Thêm để debug
     }
 }

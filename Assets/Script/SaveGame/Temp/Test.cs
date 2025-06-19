@@ -290,8 +290,6 @@ public class Test : MonoBehaviour
         UpdateCurrentSaveText();
     }
 
-
-
     private void OnDeleteSave(string folderPath)
     {
         if (saveGameManager.DeleteSaveFolder(folderPath))
@@ -480,7 +478,7 @@ public class Test : MonoBehaviour
         }
     }
 
-    private void OnLogoutClicked()
+    private void OnLogoutClicked()  // cần tách ra
     {
         LoadingUI.SetActive(true);
         try
@@ -520,7 +518,7 @@ public class Test : MonoBehaviour
         createPasswordInputField.text = "";
     }
 
-    private void OnCreateButtonClicked()
+    private void OnCreateButtonClicked() // cần tách ra
     {
         string userName = createUserNameInputField.text;
         string password = createPasswordInputField.text;
@@ -550,7 +548,7 @@ public class Test : MonoBehaviour
         errorText.text = "";
     }
 
-    private void OnCloudRegisterButtonClicked()
+    private void OnCloudRegisterButtonClicked() // cần tách ra
     {
         loginPanel.SetActive(false);
         cloudRegisterPanel.SetActive(true);
@@ -560,7 +558,7 @@ public class Test : MonoBehaviour
         cloudEmailInputField.text = "";
     }
 
-    private void OnCloudSubmitButtonClicked()
+    private void OnCloudSubmitButtonClicked() // cần tách ra
     {
         string userName = cloudUserNameInputField.text;
         string password = cloudPasswordInputField.text;
@@ -609,7 +607,7 @@ public class Test : MonoBehaviour
         Debug.Log("Cloud registration cancelled");
     }
 
-    private void OnOtpSubmitButtonClicked()
+    private void OnOtpSubmitButtonClicked() // cần tách ra
     {
         string otp = otpInputField.text;
         string userName = cloudUserNameInputField.text;
