@@ -1,16 +1,16 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
-namespace Events.Puzzle.Test.PuzzleDemo
+namespace Events.Puzzle.StepPuzzle.LightTree
 {
-    public class DialogueSupUI : MonoBehaviour
+    public class UISupDialogue : MonoBehaviour
     {
         [Header("UI Elements")]
         public GameObject panel;
         public TextMeshProUGUI questionText;
         public Button[] answerButtons; 
-        private NPCSup currentNpc;
+        private SupController _current;
 
         private void Awake()
         {
@@ -18,9 +18,9 @@ namespace Events.Puzzle.Test.PuzzleDemo
                 panel.SetActive(false);
         }
 
-        public void Show(NPCSup npc)
+        public void Show(SupController npc)
         {
-            currentNpc = npc;
+            _current = npc;
             panel.SetActive(true);
             questionText.text = npc.question;
             for (int i = 0; i < answerButtons.Length; i++)
@@ -37,36 +37,41 @@ namespace Events.Puzzle.Test.PuzzleDemo
             }
         }
 
-        public void OnAnswer(int idx)
+        public void Hide()
         {
-            if (currentNpc == null) return;
-            bool isCorrect = idx == currentNpc.correctIndex;
+            panel.SetActive(false);
+        }
+
+        private void OnAnswer(int idx)
+        {
+            if (_current == null) return;
+            bool isCorrect = idx == _current.correctIndex;
             if (isCorrect)
             {
-                currentNpc.OnAnswered(true);
-                Close();
+                _current.OnAnswered(true);
+                for (int i = 0; i < answerButtons.Length; i++)
+                {
+                    answerButtons[i].interactable = false;
+                    var colors = answerButtons[i].colors;
+                    colors.normalColor = (i == _current.correctIndex) ? Color.green : Color.white;
+                    answerButtons[i].colors = colors;
+                }
+                Invoke(nameof(Hide), 1f);
             }
             else
             {
-                // Làm mờ button, không cho bấm lại
+                _current.OnAnswered(false);
                 answerButtons[idx].interactable = false;
                 var colors = answerButtons[idx].colors;
                 colors.normalColor = Color.gray;
                 answerButtons[idx].colors = colors;
-                // Trừ máu
-                Puzzle3.Instance.ReduceSpirit(2);
-                // Nếu hết máu thì tự động đóng UI
-                if (Puzzle3.Instance.currentSpirits <= 0)
-                {
-                    Close();
-                }
             }
         }
 
         public void Close()
         {
             panel.SetActive(false);
-            currentNpc = null;
+            _current = null;
         }
     }
 }

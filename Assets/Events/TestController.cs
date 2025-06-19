@@ -48,6 +48,7 @@ namespace Events
 
         public void TeleportTo(Vector3 pos)
         {
+            Debug.Log($"[TestController] TeleportTo called, pos = {pos}");
             if (controller == null) controller = GetComponent<CharacterController>();
             controller.enabled = false;
             transform.position = pos;

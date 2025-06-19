@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Events.Puzzle.StepPuzzle;
 using Events.Puzzle.StepPuzzle.InteractBridge;
+using Events.Puzzle.StepPuzzle.LightTree;
 using Events.Puzzle.StepPuzzle.OpenGate;
 using UnityEngine;
 
@@ -45,6 +46,14 @@ namespace Events.Puzzle.Scripts
             // Test: Đăng ký bước câu đố 5
             var step5 = GetComponentInChildren<PuzzleStep5>();
             RegisterStep("Puzzle_5", step5);
+            
+            // Test: Đăng ký bước câu đố 6
+            var step6 = GetComponentInChildren<PuzzleStep6>();
+            RegisterStep("Puzzle_6", step6);
+            
+            // Test: Đăng ký bước câu đố 7
+            var step7 = GetComponentInChildren<PuzzleStep7>();
+            RegisterStep("Puzzle_7", step7);
         }
 
         public void RegisterStep(string stepId, IPuzzleStep step)
