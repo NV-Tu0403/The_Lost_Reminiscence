@@ -5,12 +5,15 @@
 public enum UIActionType
 {
     TurnToPage,
+    Tutorialgame,
     NewGame,
     Continue,
     SavePanel,
     QuitGame,
 
+    BackToMenu,
+
     SelectSaveItem,
-    DuplicateSaveItem,
-    DeleteSaveItem
+    DeleteSaveItem,
+    DuplicateSaveItem
 }
