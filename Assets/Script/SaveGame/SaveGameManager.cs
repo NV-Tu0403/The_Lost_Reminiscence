@@ -44,6 +44,10 @@ public class SaveGameManager : MonoBehaviour
         jsonFileHandler = new JsonFileHandler();
     }
 
+    /// <summary>
+    /// Gọi hàm này và truyền vào Class x để đăng ký một đối tượng có thể lưu trữ dữ liệu.
+    /// </summary>
+    /// <param name="saveable"></param>
     public void RegisterSaveable(ISaveable saveable)
     {
         if (saveable == null || string.IsNullOrEmpty(saveable.FileName)) return;

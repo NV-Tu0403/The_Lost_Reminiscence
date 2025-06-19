@@ -245,12 +245,14 @@
         protected int AnimationSpeedHash = Animator.StringToHash("AnimationSpeed");
 
         /// <summary>
-        /// Animation controller of the book
+        /// Animator điều khiển animation chuyển trạng thái.
         /// </summary>
         [SerializeField]
         protected Animator bookController = null;
 
-
+        /// <summary>
+        /// Mesh có thể uốn cong khi lật trang.
+        /// </summary>
         protected SkinnedMeshRenderer skinnedMeshRenderer = null;
 
         /// <summary>
@@ -279,7 +281,7 @@
         protected StandinQualityEnum[] standinQualities;
 
         /// <summary>
-        /// Group of static meshes used when the book is not animating
+        /// Các mesh tĩnh dùng khi không animation để tối ưu performance.
         /// </summary>
         [SerializeField]
         public GameObject[] standins;
@@ -298,13 +300,13 @@
         public List<MaterialMapping> materialMappings;
 
         /// <summary>
-        /// List of materials that are assigned to each page
+        /// Danh sách dữ liệu (material) của từng trang.
         /// </summary>
         [SerializeField]
         protected List<PageData> pageData = new List<PageData>();
 
         /// <summary>
-        /// List of the turning page gameobjects
+        /// Danh sách Page (MonoBehaviour) để xử lý hiệu ứng lật.
         /// </summary>
         [SerializeField]
         protected List<Page> pages = null;
@@ -412,14 +414,14 @@
         }
 
         /// <summary>
-        /// The method to use to calculate the time to turn
-        /// TotalTurnTime = The total time it takes to get to the page
-        /// TimePerPage = The time it takes to turn a single page
+        /// dùng cho phương thức tính thời gian lật trang.
+        /// TotalTurnTime = Tổng thời gian để đến trang (cùng lúc nhiều trang)
+        /// TimePerPage =  thời gian lật từng trang
         /// </summary>
         public enum PageTurnTimeTypeEnum
         {
-            TotalTurnTime,
-            TimePerPage
+            TotalTurnTime,  
+            TimePerPage    
         }
 
         public enum DeltaTimeEnum

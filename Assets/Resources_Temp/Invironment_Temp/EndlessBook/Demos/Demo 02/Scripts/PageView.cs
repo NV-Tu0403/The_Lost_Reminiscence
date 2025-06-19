@@ -1,7 +1,5 @@
 ﻿namespace echo17.EndlessBook.Demo02
 {
-    using System.Collections;
-    using System.Collections.Generic;
     using UnityEngine;
 
     /// <summary>
@@ -12,7 +10,7 @@
         /// <summary>
         /// The camera to render the texture
         /// </summary>
-        protected Camera pageViewCamera;
+        public Camera pageViewCamera;
 
         /// <summary>
         /// Ray casting mask and distance values in case there
@@ -21,7 +19,7 @@
         public LayerMask raycastLayerMask;
         public float maxRayCastDistance = 1000f;
 
-        void Awake()
+        protected void Awake()
         {
             // cache the page camera
             pageViewCamera = GetComponentInChildren<Camera>();
