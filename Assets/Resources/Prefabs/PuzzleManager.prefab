@@ -589,7 +589,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcbe990f33784fb2be175d2eb191cbb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_6
+  eventId: PuzzleStep6
   puzzleStep6: {fileID: 8894956471389828779}
 --- !u!1 &805452225480258964
 GameObject:
@@ -712,7 +712,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18457c34de1c4751a0506b97e91d37a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_7
+  eventId: PuzzleStep7
 --- !u!1 &816520523746193337
 GameObject:
   m_ObjectHideFlags: 0
@@ -1338,7 +1338,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cb5bb58ea9e4f2e8ebe55aae58ec0ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_6
+  eventId: PuzzleStep6
   puzzleStep6: {fileID: 8894956471389828779}
 --- !u!1 &1433544734377009091
 GameObject:
@@ -2005,6 +2005,7 @@ GameObject:
   - component: {fileID: 3258769352703102733}
   - component: {fileID: 8894956471389828779}
   - component: {fileID: 8806081069567065494}
+  - component: {fileID: 4373598352218551512}
   m_Layer: 0
   m_Name: Puzzle_LightTree
   m_TagString: Untagged
@@ -2030,6 +2031,7 @@ Transform:
   - {fileID: 1791542959469165557}
   - {fileID: 3668259398273506436}
   - {fileID: 2641886803799936696}
+  - {fileID: 2836646403909809255}
   m_Father: {fileID: 6027699345390995675}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8894956471389828779
@@ -2074,6 +2076,135 @@ MonoBehaviour:
   - {fileID: 8423374316417520716}
   - {fileID: 8047920337499917644}
   faController: {fileID: 1755449165981682238}
+--- !u!114 &4373598352218551512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2546256842112235860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e5e6d79907d4814a3b200364b760175, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTarget: {fileID: 2836646403909809255}
+  cameraMoveDuration: 1
+  cameraHoldDuration: 2
+  tree: {fileID: 0}
+  treeGlowEffect: {fileID: 0}
+  treeRenderer: {fileID: 0}
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  glowIntensity: 2
+  glowDuration: 5
+--- !u!1 &2625591906413203751
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2836646403909809255}
+  - component: {fileID: 5878820766161750058}
+  - component: {fileID: 2306147749452644483}
+  - component: {fileID: 2520283063494461434}
+  m_Layer: 0
+  m_Name: CameraPos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2836646403909809255
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2625591906413203751}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 112.35, y: 6.17, z: -40.46}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3258769352703102733}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &5878820766161750058
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2625591906413203751}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &2306147749452644483
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2625591906413203751}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &2520283063494461434
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2625591906413203751}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2643354660570004020
 GameObject:
   m_ObjectHideFlags: 0
@@ -3353,7 +3484,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ea2f2fd476b4598b158abb0976f83df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_4
+  eventId: PuzzleStep4
 --- !u!1 &5017294706089862686
 GameObject:
   m_ObjectHideFlags: 0
@@ -4200,7 +4331,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18457c34de1c4751a0506b97e91d37a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_2
+  eventId: PuzzleStep2
 --- !u!1 &5676884451285409727
 GameObject:
   m_ObjectHideFlags: 0
@@ -5166,7 +5297,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d4abbdfd9044b33af9cb5f7a3c284f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_1
+  eventId: PuzzleStep1
 --- !u!1 &6860227546943499739
 GameObject:
   m_ObjectHideFlags: 0
@@ -6014,7 +6145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b74347eca2c432bbcf9036a75c83c7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_5
+  eventId: PuzzleStep5
 --- !u!1 &7955645255058753526
 GameObject:
   m_ObjectHideFlags: 0
@@ -6136,7 +6267,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18457c34de1c4751a0506b97e91d37a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_6
+  eventId: PuzzleStep6
 --- !u!1 &8168602524367655176
 GameObject:
   m_ObjectHideFlags: 0
@@ -6565,7 +6696,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 431a62fa96f154045843d400e215fbdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_5
+  eventId: PuzzleStep5
   puzzleStep5: {fileID: 6392601965814556923}
 --- !u!1 &8775527599350777002
 GameObject:
@@ -6688,7 +6819,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18457c34de1c4751a0506b97e91d37a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventId: Puzzle_3
+  eventId: PuzzleStep3
 --- !u!1 &8795958638484640935
 GameObject:
   m_ObjectHideFlags: 0

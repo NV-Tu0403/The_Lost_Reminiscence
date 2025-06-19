@@ -79,16 +79,22 @@ namespace Events.Puzzle.StepPuzzle.LightTree
             {
                 for (int i = 0; i < ids.Length; i++)
                 {
-                    ids[i].transform.position = idStartPositions[i];
-                    ids[i].ResetChase();
+                    if (ids[i] != null)
+                    {
+                        ids[i].transform.position = idStartPositions[i];
+                        ids[i].ResetChase();
+                    }
                 }
             }
             if (sups != null && supStartPositions != null)
             {
                 for (int i = 0; i < sups.Length; i++)
                 {
-                    sups[i].transform.position = supStartPositions[i];
-                    sups[i].ResetState();
+                    if (sups[i] != null)
+                    {
+                        sups[i].transform.position = supStartPositions[i];
+                        sups[i].ResetState();
+                    }
                 }
             }
         }
@@ -113,13 +119,7 @@ namespace Events.Puzzle.StepPuzzle.LightTree
                     _onComplete.Invoke();
             }
         }
-
-        // public bool HasDiedInZone(int zoneIndex)
-        // {
-        //     if (zoneIndex == 1) return diedInZone1;
-        //     if (zoneIndex == 2) return diedInZone2;
-        //     return false;
-        // }
+        
 
         // Trả về danh sách các IdController (ghost) để các TriggerZone sử dụng
         public IdController[] GetIds()
