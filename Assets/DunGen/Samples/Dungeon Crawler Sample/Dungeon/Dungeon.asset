@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e228b45736a8cf4ea000616e628a4dd, type: 3}
+  m_Name: Dungeon
+  m_EditorClassIdentifier: 
+  globalPropGroupID_obsolete: 
+  globalPropRanges_obsolete: []
+  Length:
+    Min: 10
+    Max: 15
+  BranchMode: 0
+  BranchCount:
+    Min: 1
+    Max: 5
+  GlobalProps:
+  - ID: 0
+    Count:
+      Min: 3
+      Max: 5
+  - ID: 1
+    Count:
+      Min: 2
+      Max: 5
+  KeyManager: {fileID: 11400000, guid: 78034a39e750da44bad88a0e335c01ea, type: 2}
+  DoorwayConnectionChance: 0
+  RestrictConnectionToSameSection: 0
+  TileInjectionRules:
+  - TileSet: {fileID: 11400000, guid: 4d196040a19a06d479a1663c1f1ab3ed, type: 2}
+    NormalizedPathDepth:
+      Min: 0
+      Max: 0.5
+    NormalizedBranchDepth:
+      Min: 1
+      Max: 1
+    CanAppearOnMainPath: 0
+    CanAppearOnBranchPath: 1
+    IsRequired: 1
+    IsLocked: 0
+    LockID: 0
+  TileTagConnectionMode: 0
+  TileConnectionTags: []
+  BranchTagPruneMode: 1
+  BranchPruneTags: []
+  Nodes:
+  - Graph: {fileID: 11400000}
+    TileSets:
+    - {fileID: 11400000, guid: 1d818ae43fdf4b1408181d3d9e1f6c36, type: 2}
+    NodeType: 1
+    Position: 0
+    Label: Start
+    Keys: []
+    Locks: []
+    LockPlacement: 0
+  - Graph: {fileID: 11400000}
+    TileSets:
+    - {fileID: 11400000, guid: 31b4f26b659193448ac4484eaaa81302, type: 2}
+    NodeType: 2
+    Position: 1
+    Label: Goal
+    Keys: []
+    Locks: []
+    LockPlacement: 0
+  - Graph: {fileID: 11400000}
+    TileSets:
+    - {fileID: 11400000, guid: b79666a7892d3964cb66c428ba89cf46, type: 2}
+    NodeType: 0
+    Position: 0.48402557
+    Label: Transition
+    Keys: []
+    Locks:
+    - ID: 0
+      Range:
+        Min: 0
+        Max: 1
+    LockPlacement: 2
+  Lines:
+  - Graph: {fileID: 11400000}
+    DungeonArchetypes:
+    - {fileID: 11400000, guid: 7d7a732a36de3504ba3c7a6a7f544c2a, type: 2}
+    Position: 0
+    Length: 0.48722044
+    Keys:
+    - ID: 0
+      Range:
+        Min: 0
+        Max: 1
+    Locks: []
+  - Graph: {fileID: 11400000}
+    DungeonArchetypes:
+    - {fileID: 11400000, guid: 2cd22f833aef42d468970303ec0ec478, type: 2}
+    Position: 0.48722044
+    Length: 0.5127796
+    Keys: []
+    Locks: []
+  currentFileVersion: 1
