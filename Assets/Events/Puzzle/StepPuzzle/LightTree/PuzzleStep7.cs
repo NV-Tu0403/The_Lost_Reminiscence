@@ -11,26 +11,26 @@ namespace Events.Puzzle.StepPuzzle.LightTree
         
         public void StartStep(Action onComplete)
         {
-            Debug.Log("[PuzzleStep7] StartStep called");
             _onComplete = onComplete;
             _remainingEnemies = 0;
-
-            var allIds = FindObjectsOfType<IdController>();
-            var allSups = FindObjectsOfType<SupController>();
-
+            
             // Đăng ký DestroyNotifier cho IdController
-            foreach (var id in allIds)
-            {
-                if (id != null && id.gameObject != null)
-                {
-                    _remainingEnemies++;
-                    var notifier = id.gameObject.GetComponent<DestroyNotifier>() 
-                                   ?? id.gameObject.AddComponent<DestroyNotifier>();
-                    notifier.onDestroyed += OnEnemyDestroyed;
-                }
-            }
+            CheckDestroyIds();
 
             // Đăng ký DestroyNotifier cho SupController
+            CheckDestroySups();
+
+            // Kiểm tra trong trường hợp không còn enemy nào từ đầu
+            if (_remainingEnemies == 0)
+            {
+                Debug.Log("[PuzzleStep7] No enemies to track. Step complete.");
+                _onComplete?.Invoke();
+            }
+        }
+
+        private void CheckDestroySups()
+        {
+            var allSups = FindObjectsOfType<SupController>();
             foreach (var sup in allSups)
             {
                 if (sup != null && sup.gameObject != null)
@@ -41,14 +41,21 @@ namespace Events.Puzzle.StepPuzzle.LightTree
                     notifier.onDestroyed += OnEnemyDestroyed;
                 }
             }
+        }
 
-            Debug.Log($"[PuzzleStep7] Total enemies to track: {_remainingEnemies}");
-
-            // Kiểm tra trong trường hợp không còn enemy nào từ đầu
-            if (_remainingEnemies == 0)
+        private void CheckDestroyIds()
+        {
+            var allIds = FindObjectsOfType<IdController>();
+           
+            foreach (var id in allIds)
             {
-                Debug.Log("[PuzzleStep7] No enemies to track. Step complete.");
-                _onComplete?.Invoke();
+                if (id != null && id.gameObject != null)
+                {
+                    _remainingEnemies++;
+                    var notifier = id.gameObject.GetComponent<DestroyNotifier>() 
+                                   ?? id.gameObject.AddComponent<DestroyNotifier>();
+                    notifier.onDestroyed += OnEnemyDestroyed;
+                }
             }
         }
 
