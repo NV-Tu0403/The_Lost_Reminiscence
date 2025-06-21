@@ -17,13 +17,13 @@ MonoBehaviour:
   active: 1
   Properties:
     LiveUpdate:
-      Value: 0
+      Value: 1
       HasValue: 1
     LiveUpdatePort:
       Value: 0
       HasValue: 0
     Overlay:
-      Value: 0
+      Value: 1
       HasValue: 1
     OverlayPosition:
       Value: 0
@@ -114,8 +114,8 @@ MonoBehaviour:
       Value: 
       HasValue: 0
     SpeakerMode:
-      Value: 3
-      HasValue: 1
+      Value: 0
+      HasValue: 0
     VirtualChannelCount:
       Value: 0
       HasValue: 0
@@ -534,13 +534,13 @@ MonoBehaviour:
   m_Name: FMODStudioSettings
   m_EditorClassIdentifier: 
   switchSettingsMigration: 1
-  HasSourceProject: 0
-  HasPlatforms: 0
-  sourceProjectPath: ../../../FMOD_DATN/fmod_datn/fmod_datn.fspro
-  sourceBankPath: Assets/Musicals/FMOD Banks/Desktop
+  HasSourceProject: 1
+  HasPlatforms: 1
+  sourceProjectPath: Assets/Musicals/FMOD_DATN/FMOD_DATN.fspro
+  sourceBankPath: Assets/Musicals/FMOD_DATN/Build
   sourceBankPathUnformatted: 
-  BankRefreshCooldown: -2
-  ShowBankRefreshWindow: 1
+  BankRefreshCooldown: 5
+  ShowBankRefreshWindow: 0
   AutomaticEventLoading: 1
   BankLoadType: 0
   AutomaticSampleLoading: 0
@@ -560,8 +560,7 @@ MonoBehaviour:
   Plugins: []
   MasterBanks:
   - Master
-  Banks:
-  - Ambient
+  Banks: []
   BanksToLoad: []
   LiveUpdatePort: 9264
   EnableMemoryTracking: 0
