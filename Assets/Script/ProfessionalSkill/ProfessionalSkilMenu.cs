@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Script.Procession;
 using UnityEngine;
-using Events.TriggerZone;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;

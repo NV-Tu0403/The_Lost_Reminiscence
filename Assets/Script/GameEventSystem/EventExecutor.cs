@@ -2,8 +2,9 @@
 using Duckle;
 using Events.Cutscene.Scripts;
 using Events.Dialogue.Scripts;
-using Events.Puzzle.Scripts;
+using Script.Cutscene;
 using Script.GameEventSystem.EventAction;
+using Script.Puzzle;
 using UnityEngine;
 
 namespace Script.GameEventSystem
