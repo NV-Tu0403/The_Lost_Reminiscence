@@ -26,7 +26,7 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
         [Tooltip("Khoảng cách mở cổng (cổng sẽ dịch chuyển từ vị trí này đến vị trí này)")]
         [SerializeField] private Vector3 openOffset = new Vector3(0, -10, 0);
         
-        [Range(0.1f, 10f)]
+        [Range(0.1f, 100f)]
         [Tooltip("Thời gian tween mở cửa cổng")]
         [SerializeField] private float gateTweenDuration = 1f;
         
