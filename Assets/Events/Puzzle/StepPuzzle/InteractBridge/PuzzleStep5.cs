@@ -35,9 +35,12 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
         
         
         private bool puzzleStarted = false;
+        public bool puzzleCompleted = false;
         private Vector3[] originalPositions;
         private Action _onComplete;
 
+        
+        // Phương thức này sẽ được gọi khi bắt đầu bước puzzle, nó sẽ khởi tạo dữ liệu từ ScriptableObject.
         public void StartStep(Action onComplete)
         {
             _puzzleConfig = puzzleConfig.ToRunTimeData();
@@ -50,6 +53,7 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             }
         }
 
+        // Phương thức này sẽ được gọi khi bắt đầu bước puzzle, nó sẽ thiết lập vị trí ban đầu của các khối cầu.
         private void Start()
         {
             originalPositions = new Vector3[bridgePieces.Count];
@@ -61,6 +65,7 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             countdownCanvas.enabled = false;
         }
 
+        // Phương thức này sẽ nâng các khối cầu lên theo thứ tự, sau đó bắt đầu đếm ngược.
         private IEnumerator RaiseBridgeSequence()
         {
             for (int i = 0; i < bridgePieces.Count; i++)
@@ -73,6 +78,7 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             yield return StartCoroutine(CollapseBridgeSequence());
         }
 
+        // Phương thức này sẽ bắt đầu đếm ngược thời gian, hiển thị trên UI.
         private IEnumerator StartCountdown()
         {
             countdownCanvas.enabled = true;
@@ -87,6 +93,7 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             countdownCanvas.enabled = false;
         }
 
+        // Phương thức này sẽ được gọi khi cầu sập, nó sẽ làm cho các khối cầu rơi xuống.
         private IEnumerator CollapseBridgeSequence()
         {
             for (int i = 0; i < bridgePieces.Count; i++)
@@ -100,18 +107,17 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             }
             yield return new WaitForSeconds(1f);
             
-            
-            //TODO: Hiện tại chưa có logic xử lý người chơi qua cầu, cần thêm logic để kiểm tra người chơi có qua cầu hay không.
-            
-            _onComplete?.Invoke();
+            // Khi người chơi qua cầu thành công
+            if (puzzleCompleted == true) _onComplete.Invoke();
         }
 
+        // Gọi phương thức này để reset vị trí người chơi về điểm reset đã định.
         public void ResetPlayer()
         {
             var player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
-                var controller = player.GetComponent<UnityEngine.CharacterController>();
+                var controller = player.GetComponent<CharacterController>();
                 if (controller != null)
                 {
                     controller.enabled = false;
@@ -125,6 +131,7 @@ namespace Events.Puzzle.StepPuzzle.InteractBridge
             }
         }
 
+        // Gọi phương thức này khi cầu sập và người chơi không qua được.
         public IEnumerator ResetPuzzleAfterFail()
         {
             yield return new WaitForSeconds(1f);

@@ -113,5 +113,10 @@ namespace Events.Puzzle.StepPuzzle.LightTree
                 Destroy(gameObject);
             }
         }
+
+        private void OnDestroy()
+        {
+            Debug.Log($"[IdController] {gameObject.name} OnDestroy called");
+        }
     }
 }

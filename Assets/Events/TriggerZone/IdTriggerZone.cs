@@ -1,5 +1,7 @@
 using DuckLe;
 using Events.Puzzle.StepPuzzle.LightTree;
+using Script.GameEventSystem;
+using Script.Procession;
 using UnityEngine;
 
 namespace Events.TriggerZone

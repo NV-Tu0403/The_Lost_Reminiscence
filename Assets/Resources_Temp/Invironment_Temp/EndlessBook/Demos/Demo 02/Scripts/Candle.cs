@@ -5,7 +5,7 @@
     using UnityEngine;
 
     /// <summary>
-    /// Simple candle script to adjust intensity of a light randomly between two values
+    /// điều khiên hiệu ứng ánh sáng của nến.
     /// </summary>
     public class Candle : MonoBehaviour
     {

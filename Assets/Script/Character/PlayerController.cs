@@ -440,7 +440,7 @@ namespace DuckLe
         }
 
         /// <summary>
-        /// trả về đối tượng mà người chơi đang nhìn vào.
+        /// chiếu tia từ camera để kiểm tra đối tượng người chơi đang nhìn vào.
         /// </summary>
         public void CheckItemByLooking()
         {

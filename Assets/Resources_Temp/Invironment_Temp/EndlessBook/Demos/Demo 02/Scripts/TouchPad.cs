@@ -1,14 +1,10 @@
 ﻿namespace echo17.EndlessBook.Demo02
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
     using UnityEngine;
 
     /// <summary>
-    /// Simple touch pad colliders that handle input on the book pages.
-    /// This is a crude component that should probably be replaced with something
-    /// more sophisticated for your projects, but is sufficient for this demo.
+    /// class này đại diện cho một touch pad để tương tác với sách.
     /// </summary>
     public class TouchPad : MonoBehaviour
     {
@@ -20,34 +16,34 @@
 #endif
 
         /// <summary>
-        /// Touchpad collider names
+        /// tên của các collider trang và mục lục.
         /// </summary>
         protected const string PageLeftColliderName = "Page Left";
         protected const string PageRightColliderName = "Page Right";
         protected const string TableOfContentsColliderName = "TableOfContents Button";
 
         /// <summary>
-        /// The minimum amount the mouse needs to move to be considered a drag event
+        /// giá trị ngưỡng kéo để phát hiện kéo trang.
         /// </summary>
         protected const float DragThreshold = 0.007f;
 
         /// <summary>
-        /// The size of each page collider
+        /// kích thước của các trang.
         /// </summary>
         protected Rect[] pageRects;
 
         /// <summary>
-        /// Whether we have touched down on the pad
+        /// đại diện cho việc chạm xuống trang.
         /// </summary>
         protected bool touchDown;
 
         /// <summary>
-        /// The position if we have touched down
+        /// Vị trí chạm xuống trang.
         /// </summary>
         protected Vector2 touchDownPosition;
 
         /// <summary>
-        /// The last drag position used to calculate the increment between frames
+        /// Vị trí kéo trang cuối cùng.
         /// </summary>
         protected Vector2 lastDragPosition;
 
@@ -57,7 +53,7 @@
         protected bool dragging;
 
         /// <summary>
-        /// One of two pages
+        /// enum đại diện cho các trang trong sách.
         /// </summary>
         public enum PageEnum
         {
@@ -65,28 +61,26 @@
             Right
         }
 
-        /// <summary>
-        /// The demo camera
-        /// </summary>
         public Camera mainCamera;
 
         /// <summary>
-        /// The colliders for each page
+        /// là mảng các collider của các trang.
         /// </summary>
         public Collider[] pageColliders;
 
         /// <summary>
-        /// The upper left "button" used to go back to the table of contents
+        /// Collider của mục lục.
         /// </summary>
         public Collider tableOfContentsCollider;
 
         /// <summary>
-        /// The mask of the touchpad colliders
+        /// Layer mask để xác định các collider của trang và mục lục.
         /// </summary>
         public LayerMask pageTouchPadLayerMask;
 
         /// <summary>
-        /// Handler for when a touch down is detected
+        /// Biến này cho phép bạn gán một hàm xử lý sự kiện khi người dùng chạm xuống một trang sách. 
+        /// Khi sự kiện xảy ra, hàm được gán sẽ nhận thông tin về trang bị chạm và vị trí chạm.
         /// </summary>
         public Action<PageEnum, Vector2> touchDownDetected;
 
@@ -101,7 +95,7 @@
         public Action<PageEnum, Vector2, Vector2, Vector2> dragDetected;
 
         /// <summary>
-        /// Handler for when the table of contents "button" is clicked
+        /// xử lý sự kiện khi người dùng chạm vào mục lục.
         /// </summary>
         public Action tableOfContentsDetected;
 
@@ -130,11 +124,12 @@
             Debug.Log("TouchPad: Using old Input System");
 #endif
 
-            // set up collider rects
+            // cài đặt các giá trị mặc định
 
             pageRects = new Rect[2];
             for (var i = 0; i < 2; i++)
             {
+                // lấy kích thước của các trang từ collider (quan trọng)
                 pageRects[i] = new Rect(pageColliders[i].bounds.min.x, pageColliders[i].bounds.min.z, pageColliders[i].bounds.size.x, pageColliders[i].bounds.size.z);
             }
         }
@@ -183,9 +178,8 @@
         }
 
         /// <summary>
-        /// Turn a page collider on or off.
-        /// Useful if we are in a state of the book that cannot handle one of the colliders,
-        /// like ClosedFront cannot handle a left page interaction.
+        /// bật hoặc tắt một trang collider.
+        /// dùng khi cần bật hoặc tắt một trang cụ thể (kể cả collier),
         /// </summary>
         /// <param name="page">The page collider to toggle</param>
         /// <param name="on">Whether to toggle on</param>
@@ -196,21 +190,21 @@
         }
 
         /// <summary>
-        /// Turn the table of contents collider on or off.
-        /// Useful for when we are turning pages: we should turn it off,
-        /// turning it back on when the turn has completed.
+        /// bật hoặc tắt mục lục.
+        /// dùng khi đang lật trang và không muốn người dùng chạm vào mục lục,
+        /// bật lại khi đã lật xong trang hoặc khi người dùng chạm vào mục lục.
         /// </summary>
         /// <param name="on">Whether to toggle on</param>
         public virtual void ToggleTableOfContents(bool on)
         {
-            // activate or deactive the collider
+            // bật hoặc tắt mục lục collider
             tableOfContentsCollider.gameObject.SetActive(on);
         }
 
         /// <summary>
-        /// Determine if a touch down occurred
+        /// trả về thông tin chạm khi người dùng chạm vào trang hoặc mục lục.
         /// </summary>
-        /// <param name="position">Position of mouse</param>
+        /// <param name="position"></param>
         protected virtual void DetectTouchDown(Vector2 position)
         {
             Vector2 hitPosition;
@@ -218,27 +212,27 @@
             PageEnum page;
             bool tableOfContents;
 
-            // get the hit point if we can
+            // lấy điểm chạm từ vị trí chuột
             if (GetHitPoint(position, out hitPosition, out hitPositionNormalized, out page, out tableOfContents))
             {
-                // touched down and stopped dragging
+                // nếu là mục lục, không cần xử lý trang
                 touchDown = true;
                 dragging = false;
 
                 if (tableOfContents)
                 {
-                    // table of contents "button" clicked
+                    // mục lục hit
                     tableOfContentsDetected();
                 }
                 else
                 {
-                    // page hit
+                    // trang hit
                     touchDownPosition = hitPosition;
                     lastDragPosition = hitPosition;
 
                     if (touchDownDetected != null)
                     {
-                        // handle page touched
+                        // gọi handler cho touch down
                         touchDownDetected(page, hitPositionNormalized);
                     }
                 }
@@ -246,12 +240,12 @@
         }
 
         /// <summary>
-        /// Determine if a drag occurred
+        /// trả về thông tin chạm khi người dùng kéo tay
         /// </summary>
-        /// <param name="position">Position of mouse</param>
+        /// <param name="position"></param>
         protected virtual void DetectDrag(Vector2 position)
         {
-            // exit if we don't have a handler for this
+            // thoát nếu không có handler cho drag
             if (dragDetected == null) return;
 
             Vector2 hitPosition;
@@ -259,16 +253,16 @@
             PageEnum page;
             bool tableOfContents;
 
-            // get the hit point if we can
+            // lấy điểm chạm từ vị trí chuột
             if (GetHitPoint(position, out hitPosition, out hitPositionNormalized, out page, out tableOfContents))
             {
-                // get the offset from the last drag position
+                // nếu là mục lục, không cần xử lý trang
                 var offset = hitPosition - lastDragPosition;
 
-                // if the offset is more than the drag minimum
+                // nếu là mục lục, không cần xử lý trang
                 if (offset.magnitude >= DragThreshold)
                 {
-                    // dragging is true, fire the handler and update the last position
+                    // đã kéo trang
 
                     dragging = true;
                     dragDetected(page, touchDownPosition, hitPosition, offset);
@@ -278,12 +272,13 @@
         }
 
         /// <summary>
-        /// Determine if a touch up event occurred
+        /// trả về thông tin chạm khi người dùng nhả tay
+        /// dùng để phát hiện khi người dùng chạm vào trang hoặc mục lục.
         /// </summary>
-        /// <param name="position">Mouse position</param>
+        /// <param name="position"></param>
         protected virtual void DetectTouchUp(Vector2 position)
         {
-            // exit if there is no handler
+            // thoát nếu không có handler cho touch up
             if (touchUpDetected == null) return;
 
             Vector2 hitPosition;
@@ -291,25 +286,26 @@
             PageEnum page;
             bool tableOfContents;
 
-            // get the hit point if we can
+            // lấy điểm chạm từ vị trí chuột
             if (GetHitPoint(position, out hitPosition, out hitPositionNormalized, out page, out tableOfContents))
             {
-                // no longer touching.
+                // nếu là mục lục, không cần xử lý trang
                 touchDown = false;
 
-                // call the handler
+                // nếu là mục lục, gọi handler cho mục lục
                 touchUpDetected(page, hitPositionNormalized, dragging);
             }
         }
 
         /// <summary>
-        /// Gets the hit point of the page collider
+        /// heppel để lấy vị trí chạm từ vị trí chuột.
+        ///  trả về vị trí chạm, vị trí chạm đã chuẩn hóa, trang và trạng thái của mục lục.
         /// </summary>
-        /// <param name="mousePosition">The position of the mouse</param>
-        /// <param name="hitPosition">The absolute hit point on the page collider</param>
-        /// <param name="hitPositionNormalized">The hit point normalized between 0 and 1 on both axis of the page collider</param>
-        /// <param name="page">Which page was hit</param>
-        /// <param name="tableOfContents">Whether the table of contents "button" was hit</param>
+        /// <param name="mousePosition"></param>
+        /// <param name="hitPosition"></param>
+        /// <param name="hitPositionNormalized"></param>
+        /// <param name="page"></param>
+        /// <param name="tableOfContents"></param>
         /// <returns></returns>
         protected virtual bool GetHitPoint(Vector3 mousePosition, out Vector2 hitPosition, out Vector2 hitPositionNormalized, out PageEnum page, out bool tableOfContents)
         {
@@ -318,33 +314,31 @@
             page = PageEnum.Left;
             tableOfContents = false;
 
-            // get a ray from the screen to the page colliders
+            // tạo ray từ vị trí chuột
             Ray ray = mainCamera.ScreenPointToRay(mousePosition);
             RaycastHit hit;
 
-            // cast the ray against the collider mask
+            // kiểm tra xem ray có va chạm với các collider của trang không
             if (Physics.Raycast(ray, out hit, 1000, pageTouchPadLayerMask))
             {
-                // hit
-
-                // determine which page was hit
+                // xác định trang dựa trên tên collider
                 page = hit.collider.gameObject.name == PageLeftColliderName ? PageEnum.Left : PageEnum.Right;
 
-                // determine if the table of contents "button" was hit
+                // kiểm tra xem va chạm có phải là mục lục không
                 tableOfContents = hit.collider.gameObject.name == TableOfContentsColliderName;
 
-                // get the page index to use for the page rects
+                // nếu là mục lục, không cần tính toán hitPosition và hitPositionNormalized
                 var pageIndex = (int)page;
 
-                // set the hit position using the x and z axis
+                // lấy vị trí va chạm
                 hitPosition = new Vector2(hit.point.x, hit.point.z);
 
-                // normalize the hit position against the page rects
+                // tính toán vị trí đã chuẩn hóa dựa trên kích thước của trang
                 hitPositionNormalized = new Vector2((hit.point.x - pageRects[pageIndex].xMin) / pageRects[pageIndex].width,
                                                         (hit.point.z - pageRects[pageIndex].yMin) / pageRects[pageIndex].height
                                                         );
 
-                return true;
+                return true; // đã chạm vào một trang hoặc mục lục
             }
 
             return false;
