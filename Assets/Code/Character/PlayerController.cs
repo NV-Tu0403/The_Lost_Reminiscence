@@ -105,7 +105,6 @@ namespace DuckLe
             {
                 Debug.LogError("Another instance of PlayerController already exists. Destroying this instance.");
                 Destroy(gameObject);
-                return;
             }
 
             _data = new CCData_M3(transform.position, transform.rotation, config.walkSpeed, config.rotationSpeed, config.jumpImpulse);

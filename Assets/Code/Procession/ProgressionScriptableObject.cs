@@ -18,7 +18,7 @@ public class ProgressionDataSO : ScriptableObject
         {
             MainProcesses = MainProcesses.ConvertAll(so => so.ToMainProcess())
         };
-        Debug.Log($"[ProgressionDataSO] Converted {progression.MainProcesses.Count} MainProcesses");
+        // Debug.Log($"[ProgressionDataSO] Converted {progression.MainProcesses.Count} MainProcesses");
         return progression;
     }
 }
@@ -96,7 +96,7 @@ public class SubProcessSO
             Rewards    = Rewards.ConvertAll(so => so.ToReward()),
             Status     = Status
         };
-        Debug.Log($"[SubProcessSO] Converted SubProcess '{Id}': {subProcess.Conditions.Count} Conditions, {subProcess.Rewards.Count} Rewards");
+        // Debug.Log($"[SubProcessSO] Converted SubProcess '{Id}': {subProcess.Conditions.Count} Conditions, {subProcess.Rewards.Count} Rewards");
         return subProcess;
     }
 }

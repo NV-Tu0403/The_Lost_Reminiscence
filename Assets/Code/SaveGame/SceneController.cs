@@ -20,6 +20,10 @@ public class SceneController : MonoBehaviour
         {
             Instance = this;
         }
+        else
+        {
+            Debug.LogWarning("UnhandledExceptionEventArgs");
+        }
     }
 
     public void LoadAdditiveScene(string sceneName, PlayerCheckPoint playerCheckPoint, Action onComplete)

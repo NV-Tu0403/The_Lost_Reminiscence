@@ -188,7 +188,7 @@ public class FolderManager
                 result.Add((folder, image));
             }
 
-            Debug.Log($"Found {result.Count} save folders for user: {userName}");
+            // Debug.Log($"Found {result.Count} save folders for user: {userName}");
             return result;
         }
     }
