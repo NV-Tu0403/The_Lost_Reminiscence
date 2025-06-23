@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using Code.Dialogue;
 using Duckle;
 using Events.Cutscene.Scripts;
-using Events.Dialogue.Scripts;
 using Script.Cutscene;
 using Script.GameEventSystem.EventAction;
 using Script.Puzzle;

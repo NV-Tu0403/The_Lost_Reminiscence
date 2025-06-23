@@ -1,26 +1,41 @@
 using System;
-using Functions.Dialogue.Scripts;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace Events.Dialogue.Scripts
+namespace Code.Dialogue
 {
     public class DialogueManager : MonoBehaviour
     {
         public static DialogueManager Instance { get; private set; }
 
-        [SerializeField] private DialoguePanel dialoguePanel;
+        [SerializeField] private FullDialoguePanel fullDialoguePanel;
+        [SerializeField] private BubbleDialoguePanel bubbleDialoguePanel;
         
+        /// <summary>
+        /// Quản lý hiển thị hội thoại:
+        /// - Singleton quản lý toàn bộ hệ thống dialogue.
+        /// - Chứa tham chiếu tới FullDialoguePanel và BubbleDialoguePanel.
+        /// - Ẩn panel khi khởi tạo.
+        /// </summary>
         private void Awake()
         {
             if (Instance != null) Destroy(gameObject);
             else Instance = this;
             
-            if (dialoguePanel != null) dialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("Hệ thống chưa gán:" + dialoguePanel );
+            if (fullDialoguePanel != null) fullDialoguePanel.gameObject.SetActive(false);
+            else Debug.Log("Hệ thống chưa gán:" + fullDialoguePanel );
+            
+            if (bubbleDialoguePanel != null) bubbleDialoguePanel.gameObject.SetActive(false);
+            else Debug.Log("Hệ thống chưa gán:" + bubbleDialoguePanel );
         }
 
+        /// <summary>
+        /// Bắt đầu hội thoại:
+        /// - Nhận dialogueId và callback khi kết thúc.
+        /// - Load DialogueNodeSO từ Addressables.
+        /// - Khi load xong, gọi CheckDisplayDialogue để chọn panel phù hợp.
+        /// </summary>
         public void StartDialogue(string dialogueId, Action onFinish)
         {
             if (dialogueId == null) return;
@@ -29,13 +44,30 @@ namespace Events.Dialogue.Scripts
             {
                 if (handle.Status == AsyncOperationStatus.Succeeded)
                 {
-                    var dialogue = handle.Result;
-                    dialoguePanel.ShowDialogue(dialogue, onFinish);
+                    CheckDisplayDialogue(dialogueId, onFinish, handle);
                 }
                 else
                     Debug.Log($"Hệ thống không truy xuất được dialogue với ID: {dialogueId}");
             };
         }
+
+        private void CheckDisplayDialogue(string dialogueId, Action onFinish, AsyncOperationHandle<DialogueNodeSO> handle)
+        {
+            var dialogue = handle.Result;
+            switch (dialogue.displayMode)
+            {
+                case DialogueDisplayMode.FullPanel:
+                    fullDialoguePanel.ShowDialogue(dialogue, onFinish);
+                    Debug.Log("[DialogueManager] Hiển thị FullDialoguePanel: " + dialogueId);
+                    break;
+                case DialogueDisplayMode.Bubble:
+                    bubbleDialoguePanel.ShowDialogue(dialogue, onFinish);
+                    Debug.Log("[DialogueManager] Hiển thị BubbleDialoguePanel: " + dialogueId);
+                    break;
+                default:
+                    Debug.LogWarning($"DialogueNodeSO {dialogueId} không có displayMode hợp lệ!");
+                    break;
+            }
+        }
     }
 }
-

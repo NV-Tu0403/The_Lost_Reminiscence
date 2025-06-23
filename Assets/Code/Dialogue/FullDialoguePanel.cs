@@ -4,23 +4,20 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Functions.Dialogue.Scripts
+namespace Code.Dialogue
 {
     /// <summary>
     /// DialoguePanel chỉ chuyên trách phần UI:
-    /// - Hiển thị avatar, tên, text.
+    /// - Hiển thị tên, text.
     /// - Hiệu ứng gõ chữ Typewriter.
     /// - Hiển thị nút Next / các lựa chọn (prefab).
     /// - Skip toàn bộ hội thoại.
     /// Khi có tương tác (Next / Choice / Skip), panel sẽ gọi các callback nội bộ để logic xử lý (ví dụ ShowNode hoặc EndDialogue).
     /// </summary>
-    public class DialoguePanel : MonoBehaviour
+    public class FullDialoguePanel : MonoBehaviour
     {
         [Header("=== UI References ===")]
-        public Image leftAvatar;
-        public Image rightAvatar;
-        public TextMeshProUGUI leftName;
-        public TextMeshProUGUI rightName;
+        public TextMeshProUGUI nameSpeaker;
         public TextMeshProUGUI dialogueText;
 
         [Header("=== Buttons & Prefabs ===")]
@@ -53,8 +50,8 @@ namespace Functions.Dialogue.Scripts
             gameObject.SetActive(true);
             onDialogueEnd = onEnd;
 
-            // Ẩn nút Skip ban đầu, sẽ hiện khi bắt đầu typewriter
-            skipButton.gameObject.SetActive(false);
+            // Luôn luôn hiện nút Skip
+            skipButton.gameObject.SetActive(true);
             skipButton.onClick.RemoveAllListeners();
             skipButton.onClick.AddListener(OnSkipPressed);
 
@@ -63,76 +60,39 @@ namespace Functions.Dialogue.Scripts
         }
 
         /// <summary>
-        /// Hiển thị một node cụ thể.
-        /// Tách riêng phần logic lấy text từ LocalizedString và phần UI show (ShowSpeaker, StartTypewriter, ShowOptions/Next).
+        /// Hiển thị một node cụ thể:
+        /// - Nếu node null thì kết thúc.
+        /// - Hiển thị tên nhân vật.
+        /// - Xóa lựa chọn cũ, ẩn Next, dừng typewriter cũ.
+        /// - Bắt đầu hiệu ứng typewriter cho node mới.
         /// </summary>
         private void ShowNode(DialogueNodeSO node)
         {
+            if (node == null)
+            {
+                EndDialogue();
+                return;
+            }
             currentNode = node;
-
-            // Hiển thị avatar và tên (UI)
             ShowSpeaker(node);
-
-            // Xóa mọi lựa chọn cũ
             ClearChoices();
-
-            // Ẩn các nút Next trước khi text gõ xong
             nextButton.gameObject.SetActive(false);
-
-            // Nếu đang còn coroutine gõ chữ cũ, dừng luôn
             if (typingCoroutine != null)
                 StopCoroutine(typingCoroutine);
-
-            // Bắt đầu typewriter
             typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
         }
 
         /// <summary>
         /// Coroutine gõ chữ: 
         /// - Lấy text thực sự từ LocalizedString (đợi cho LocalizedString trả về).
-        /// - Gõ từng ký tự với delay 0.2s.
+        /// - Gõ từng ký tự với delay 0.5s.
         /// - Sau khi gõ xong, show Next hoặc các lựa chọn.
         /// </summary>
         private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
         {
-            // Lấy text gốc từ LocalizedString
-            string fullText = "";
-            bool receivedText = false;
-
-            node.dialogueText.StringChanged += (localizedText) =>
-            {
-                fullText = localizedText;
-                receivedText = true;
-            };
-            node.dialogueText.RefreshString();
-
-            // Chờ LocalizedString load xong
-            while (!receivedText)
-                yield return null;
-
-            // Đặt text ban đầu trống, bật isTyping và show Skip button
-            dialogueText.text = "";
             isTyping = true;
-            skipButton.gameObject.SetActive(true);
-
-            // Thực hiện gõ ký tự
-            for (int i = 0; i < fullText.Length; i++)
-            {
-                if (!isTyping)
-                    break;
-
-                dialogueText.text = fullText.Substring(0, i + 1);
-                yield return new WaitForSeconds(TYPEWRITER_DELAY);
-            }
-
-            // Nếu bị skip giữa chừng, ngay lập tức show đủ fullText
-            dialogueText.text = fullText;
+            yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TYPEWRITER_DELAY);
             isTyping = false;
-
-            // Khi gõ xong, ẩn nút Skip
-            skipButton.gameObject.SetActive(false);
-
-            // Hiển thị Next hoặc Choices
             if (node.choices != null && node.choices.Length > 0)
                 ShowChoices(node);
             else
@@ -144,24 +104,7 @@ namespace Functions.Dialogue.Scripts
         /// </summary>
         private void ShowSpeaker(DialogueNodeSO node)
         {
-            if (node.isLeftSpeaker)
-            {
-                leftAvatar.gameObject.SetActive(true);
-                leftAvatar.sprite = node.speakerAvatar;
-                leftName.text = node.speakerName.ToString();
-
-                rightAvatar.gameObject.SetActive(false);
-                rightName.text = "";
-            }
-            else
-            {
-                rightAvatar.gameObject.SetActive(true);
-                rightAvatar.sprite = node.speakerAvatar;
-                rightName.text = node.speakerName.ToString();
-
-                leftAvatar.gameObject.SetActive(false);
-                leftName.text = "";
-            }
+            nameSpeaker.text = node.speakerName.ToString();
         }
 
         /// <summary>
