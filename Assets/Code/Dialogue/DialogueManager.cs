@@ -18,7 +18,7 @@ namespace Events.Dialogue.Scripts
             else Instance = this;
             
             if (dialoguePanel != null) dialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("Hệ thống chưa gán:" + dialoguePanel );
+            else Debug.Log("[DialogueManager] Hệ thống chưa gán dialoguePanel: " + dialoguePanel );
         }
 
         public void StartDialogue(string dialogueId, Action onFinish)

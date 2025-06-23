@@ -181,7 +181,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         {
             CurrentMap = scene.name;
             _isDirty = true;
-            Debug.Log($"[PlayerCheckPoint] Set CurrentMap to: {CurrentMap}");
+            // Debug.Log($"[PlayerCheckPoint] Set CurrentMap to: {CurrentMap}");
         }
     }
 }
