@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,35 +27,54 @@ namespace Code.Dialogue
         public Transform choicesPanel;
         public Button choiceButtonPrefab;
 
+        [Header("=== Audio ===")] 
+        [SerializeField] private AudioSource sfxSource;
+        [SerializeField] private AudioClip appearSfx;
+
+
         // Callback để thông báo về bên ngoài khi kết thúc toàn bộ dialogue
-        private Action onDialogueEnd;
+        private Action _onDialogueEnd;
 
         // Tham chiếu node đang hiển thị
-        private DialogueNodeSO currentNode;
+        private DialogueNodeSO _currentNode;
 
         // Coroutine gõ chữ
-        private Coroutine typingCoroutine;
-        private bool isTyping = false;
+        private Coroutine _typingCoroutine;
+        private bool _isTyping = false;
+        
+        // Coroutine nhấp nháy
+        private Tween _blinkNextTween;
+        private Tween _blinkSkipTween;
 
         // Thời gian delay giữa các ký tự (0.05s) => Lưu ý GIỮA CÁC KÝ TỰ, không phải giữa các từ.
-        private const float TYPEWRITER_DELAY = 0.05f;
+        private const float TypewriterDelay = 0.05f;
         
         
         /// <summary>
         /// Được gọi từ DialogueManager:
         /// - node gốc
-        /// - callback khi kết thúc (truyền tiếp sang Manager hoặc EventExecutor)
+        /// - callback khi kết thúc 
         /// </summary>
         public void ShowDialogue(DialogueNodeSO rootNode, Action onEnd)
         {
             gameObject.SetActive(true);
-            onDialogueEnd = onEnd;
+            _onDialogueEnd = onEnd;
 
+            // Phát âm thanh mở hội thoại
+            if (sfxSource != null && appearSfx != null)
+            {
+                sfxSource.PlayOneShot(appearSfx);
+            }
+            
             // Luôn luôn hiện nút Skip
             skipButton.gameObject.SetActive(true);
             skipButton.onClick.RemoveAllListeners();
             skipButton.onClick.AddListener(OnSkipPressed);
 
+            // Bắt đầu blink cho Skip
+            StopBlinking(ref _blinkSkipTween);
+            StartBlinking(skipButton, ref _blinkSkipTween);
+            
             // Bắt đầu hiển thị node đầu tiên
             ShowNode(rootNode);
         }
@@ -68,18 +88,22 @@ namespace Code.Dialogue
         /// </summary>
         private void ShowNode(DialogueNodeSO node)
         {
+            StopBlinking(ref _blinkNextTween);
+            
             if (node == null)
             {
                 EndDialogue();
                 return;
             }
-            currentNode = node;
+            _currentNode = node;
+            Debug.Log("Hiển thị node: " + _currentNode);
+            
             ShowSpeaker(node);
             ClearChoices();
             nextButton.gameObject.SetActive(false);
-            if (typingCoroutine != null)
-                StopCoroutine(typingCoroutine);
-            typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
+            if (_typingCoroutine != null)
+                StopCoroutine(_typingCoroutine);
+            _typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
         }
 
         /// <summary>
@@ -90,13 +114,23 @@ namespace Code.Dialogue
         /// </summary>
         private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
         {
-            isTyping = true;
-            yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TYPEWRITER_DELAY);
-            isTyping = false;
+            _isTyping = true;
+            Debug.Log("Bắt đầu gõ chữ: " + _isTyping);
+            yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
+            
+            _isTyping = false;
+            Debug.Log("Kết thúc gõ chữ: " + _isTyping);
+            
             if (node.choices != null && node.choices.Length > 0)
                 ShowChoices(node);
             else
+            {
                 ShowNextButton(node);
+    
+                // Bắt đầu blink cho Next
+                StopBlinking(ref _blinkNextTween);
+                StartBlinking(nextButton, ref _blinkNextTween);
+            }
         }
 
         /// <summary>
@@ -197,10 +231,10 @@ namespace Code.Dialogue
         private void OnSkipPressed()
         {
             // Nếu đang gõ chữ, dừng và show full text (tránh crash)
-            if (typingCoroutine != null)
-                StopCoroutine(typingCoroutine);
+            if (_typingCoroutine != null)
+                StopCoroutine(_typingCoroutine);
 
-            isTyping = false;
+            _isTyping = false;
             EndDialogue();
         }
 
@@ -211,12 +245,39 @@ namespace Code.Dialogue
         /// </summary>
         private void EndDialogue()
         {
+            StopBlinking(ref _blinkNextTween);
+            
             ClearChoices();
             nextButton.onClick.RemoveAllListeners();
             skipButton.onClick.RemoveAllListeners();
 
             gameObject.SetActive(false);
-            onDialogueEnd?.Invoke();
+            _onDialogueEnd?.Invoke();
+        }
+        
+        
+        /// <summary>
+        /// Hiệu ứng nhấp nháy nút
+        /// </summary>
+        private void StartBlinking(Button button, ref Tween tweenHolder)
+        {
+            var image = button.GetComponent<Image>();
+            if (image == null) return;
+
+            tweenHolder?.Kill();
+
+            tweenHolder = image.DOFade(0.3f, 0.5f)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetEase(Ease.InOutSine);
+        }
+
+        private void StopBlinking(ref Tween tween)
+        {
+            if (tween != null)
+            {
+                tween.Kill();
+                tween = null;
+            }
         }
     }
 }
