@@ -1,5 +1,5 @@
+using Code.GameEventSystem;
 using Script.GameEventSystem;
-using Script.GameEventSystem.EventAction;
 using Script.Procession;
 using UnityEngine;
 

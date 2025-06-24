@@ -1,6 +1,6 @@
+using Code.GameEventSystem;
 using Events.Cutscene.Scripts;
 using Script.GameEventSystem;
-using Script.GameEventSystem.EventAction;
 using UnityEngine;
 
 namespace Script.Cutscene

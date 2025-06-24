@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Code.Dialogue;
+using Code.GameEventSystem;
 using Duckle;
 using Events.Cutscene.Scripts;
 using Script.Cutscene;
-using Script.GameEventSystem.EventAction;
 using Script.Puzzle;
 using UnityEngine;
 

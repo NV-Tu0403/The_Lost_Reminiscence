@@ -134,7 +134,7 @@ namespace Code.Dialogue
         }
 
         /// <summary>
-        /// Hiển thị avatar, tên trái/phải dựa vào node.isLeftSpeaker
+        /// Hiển thị tên nhân vật nói
         /// </summary>
         private void ShowSpeaker(DialogueNodeSO node)
         {
