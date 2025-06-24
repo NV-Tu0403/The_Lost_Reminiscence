@@ -117,11 +117,11 @@
         void Awake()
         {
 #if ENABLE_INPUT_SYSTEM
-            Debug.Log("TouchPad: Using new Input System");
+            // Debug.Log("TouchPad: Using new Input System");
 #endif
 
 #if ENABLE_LEGACY_INPUT_MANAGER
-            Debug.Log("TouchPad: Using old Input System");
+           // Debug.Log("TouchPad: Using old Input System");
 #endif
 
             // cài đặt các giá trị mặc định

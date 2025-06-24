@@ -1,23 +1,41 @@
 ﻿using UnityEngine;
 using System;
+using Unity.AppUI.UI;
 
 public class Core : MonoBehaviour
 {
     public static Core Instance { get; private set; }
     public static bool IsInitialized => Instance != null;   // Kiểm tra xem Core đã được khởi tạo hay chưa
     public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
-    //public event Action OnModeChanged;                      // Sự kiện khi chế độ thay đổi
+                                                            
+    //public event Action OnModeChanged;                    // Sự kiện khi chế độ thay đổi
 
-    private void Start()
+    public GameObject _menuCamera;                         // Biến để lưu trữ MenuCamera
+
+    private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
-            //Debug.Log("Core initialized.");
+
+            DontDestroyOnLoad(gameObject);
+            // Debug.Log("Core instance created successfully.");
+            return;
         }
-        else
+        //else
+        //{
+        //    //Destroy(gameObject);
+        //    Debug.LogWarning("Core instance already exists. Destroying duplicate.");
+        //}
+    }
+
+
+    private void Start()
+    {
+        if (_menuCamera == null)
         {
-            Debug.LogWarning("Core instance already exists!");
+            _menuCamera = Resources.Load<GameObject>("Prefab Loaded/MenuCamera");
+            Debug.Log("MenuCamera loaded successfully.");
         }
     }
 

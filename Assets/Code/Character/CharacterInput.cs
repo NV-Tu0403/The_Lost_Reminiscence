@@ -6,7 +6,7 @@ namespace DuckLe
     public class CharacterInput : Core
     {
         private PlayerController _pc;
-        [SerializeField] public CharacterCamera _characterCamera;
+        public CharacterCamera _characterCamera;
 
         private float _lastSpacePressTime;
         private int _spacePressCount;
@@ -19,13 +19,13 @@ namespace DuckLe
                 Debug.LogError("PlayerController không tìm thấy trong Start!");
             }
 
-            GameObject cameraPrefab = Resources.Load<GameObject>("Prefabs/CharacterCamera");
+
+            GameObject cameraPrefab = Resources.Load<GameObject>("Prefab Loaded/CharacterCamera");
             if (cameraPrefab == null)
             {
-                Debug.LogError("Prefabs/CharacterCamera không tìm thấy!");
+                Debug.LogError("Prefab Loaded/CharacterCamera không tìm thấy!");
                 return;
             }
-
             GameObject cameraInstance = Instantiate(cameraPrefab, Vector3.zero, Quaternion.identity);
             _characterCamera = cameraInstance.GetComponent<CharacterCamera>();
             if (_characterCamera == null)
@@ -33,7 +33,6 @@ namespace DuckLe
                 Debug.LogError("CharacterCamera component không tìm thấy trên prefab!");
                 return;
             }
-
             _characterCamera.SetTarget(transform);
         }
 
