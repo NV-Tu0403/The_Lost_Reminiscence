@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
@@ -8,14 +9,25 @@ namespace Code.Dialogue
     public class BubbleDialoguePanel : MonoBehaviour
     {
         [Header("=== UI References ===")]
-        public TextMeshProUGUI dialogueText;
+        [SerializeField] private TextMeshProUGUI dialogueText;
+        [SerializeField] private float timeToHide = 2f;
 
-        private Action onDialogueEnd;
-        private DialogueNodeSO currentNode;
-        private Coroutine typingCoroutine;
+        [Header("=== Audio ===")] 
+        [SerializeField] private AudioClip appearSfx;
+        [SerializeField] private AudioSource sfxSource;
+        
+        private Action _onDialogueEnd;
+        private DialogueNodeSO _currentNode;
+        private Coroutine _typingCoroutine;
+        private CanvasGroup _canvasGroup;
         private bool isTyping = false;
-        private const float TYPEWRITER_DELAY = 0.05f;
-
+        private const float TypewriterDelay = 0.05f;
+        
+        private void Awake()
+        {
+            _canvasGroup = GetComponent<CanvasGroup>();
+        }
+        
         /// <summary>
         /// Hiển thị bubble dialogue đơn giản:
         /// - Bật panel, gán callback kết thúc.
@@ -25,9 +37,10 @@ namespace Code.Dialogue
         public void ShowDialogue(DialogueNodeSO node, Action onEnd)
         {
             gameObject.SetActive(true);
-            onDialogueEnd = onEnd;
-            currentNode = node;
+            _onDialogueEnd = onEnd;
+            _currentNode = node;
 
+            ShowAnimation();
             ShowNode(node);
         }
 
@@ -43,10 +56,10 @@ namespace Code.Dialogue
                 EndDialogue();
                 return;
             }
-            currentNode = node;
-            if (typingCoroutine != null)
-                StopCoroutine(typingCoroutine);
-            typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
+            _currentNode = node;
+            if (_typingCoroutine != null)
+                StopCoroutine(_typingCoroutine);
+            _typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
         }
 
         /// <summary>
@@ -57,16 +70,78 @@ namespace Code.Dialogue
         private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
         {
             isTyping = true;
-            yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TYPEWRITER_DELAY);
+            yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
             isTyping = false;
-            yield return new WaitForSeconds(2f); // Hiện 2s sau khi gõ xong
+            yield return new WaitForSeconds(timeToHide);
             EndDialogue();
         }
 
         private void EndDialogue()
         {
-            gameObject.SetActive(false);
-            onDialogueEnd?.Invoke();
+            HideAnimation();
         }
+
+        
+        /// <summary>
+        /// Hiệu ứng hiển thị và ẩn bubble dialogue:
+        /// - Hiển thị với hiệu ứng fade-in và scale.
+        /// - Ẩn với hiệu ứng fade-out và scale.
+        /// - Gọi callback khi ẩn xong.
+        /// </summary>
+
+        private void ShowAnimation()
+        {
+            if (_canvasGroup == null) return;
+
+            RectTransform rectTransform = transform as RectTransform;
+            if (rectTransform == null) return;
+
+            // Khởi tạo trạng thái
+            _canvasGroup.alpha = 0f;
+            transform.localScale = Vector3.one * 0.8f; // scale nhỏ ban đầu
+
+            // Vị trí ban đầu: thấp hơn 30px
+            Vector2 originalPos = rectTransform.anchoredPosition;
+            Vector2 startPos = originalPos - new Vector2(0f, 30f);
+            rectTransform.anchoredPosition = startPos;
+
+            // Tween hiệu ứng
+            _canvasGroup.DOFade(1f, 0.3f).SetEase(Ease.OutSine);
+            transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack);
+            rectTransform.DOAnchorPos(originalPos, 0.3f).SetEase(Ease.OutCubic);
+
+            // Âm thanh (nếu có)
+            if (appearSfx != null && sfxSource != null)
+                sfxSource.PlayOneShot(appearSfx);
+        }
+
+        
+        private void HideAnimation()
+        {
+            if (_canvasGroup == null) return;
+
+            // Lưu vị trí hiện tại để tween anchorPos
+            RectTransform rectTransform = transform as RectTransform;
+            if (rectTransform == null) return;
+
+            Vector2 startPos = rectTransform.anchoredPosition;
+            Vector2 endPos = startPos + new Vector2(0f, 30f); // bay lên 30px
+
+            // Di chuyển vị trí UI (bay lên)
+            rectTransform.DOAnchorPos(endPos, 0.25f).SetEase(Ease.OutSine);
+
+            // Fade out
+            _canvasGroup.DOFade(0f, 0.25f).SetEase(Ease.InSine);
+
+            // Scale down + gọi callback
+            transform.DOScale(Vector3.zero, 0.25f).SetEase(Ease.InBack)
+                .OnComplete(() =>
+                {
+                    gameObject.SetActive(false);
+                    _onDialogueEnd?.Invoke();
+                    rectTransform.anchoredPosition = startPos; // reset vị trí để dùng lại
+                });
+        }
+
     }
 }
