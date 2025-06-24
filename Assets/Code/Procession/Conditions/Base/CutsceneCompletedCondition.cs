@@ -1,3 +1,4 @@
+using Code.Procession;
 using Events.Cutscene.Scripts;
 
 namespace Script.Procession.Conditions
