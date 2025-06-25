@@ -46,7 +46,9 @@ public class ProfessionalSkilMenu : MonoBehaviour
         SaveGameManager.Instance.RegisterSaveable(PlayerCheckPoint.Instance);
     }
 
-
+    /// <summary>
+    /// Kiểm tra xem có người dùng nào đã đăng nhập và có tài khoản lưu trữ không. Nếu không, hiển thị giao diện đăng nhập.
+    /// </summary>
     private void CheckUserAccounts()
     {
         string userAccountsPath = Path.Combine(Application.persistentDataPath, "User_DataGame", "UserAccounts.json");
@@ -63,6 +65,9 @@ public class ProfessionalSkilMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Thử tự động đăng nhập người dùng nếu có thông tin đăng nhập hợp lệ.
+    /// </summary>
     private void TryAutoLogin()
     {
         if (UserAccountManager.Instance.TryAutoLogin(out string errorMessage))

@@ -3,6 +3,9 @@ using UnityEngine.UI;
 
 namespace Michsky.UI.Dark
 {
+    /// <summary>
+    /// ButtonAnimationFix là một lớp sửa lỗi cho các nút trong giao diện người dùng, giúp khắc phục vấn đề khi nút bị kẹt trong trạng thái hoạt hình "highlighted" sau khi được nhấn.
+    /// </summary>
     public class ButtonAnimationFix : MonoBehaviour
     {
         private Button fixButton;
