@@ -2,6 +2,9 @@
 
 namespace Michsky.UI.Dark
 {
+    /// <summary>
+    /// ModalWindowManager quản lý các cửa sổ modal trong giao diện người dùng, cho phép hiển thị và ẩn cửa sổ với hiệu ứng hoạt hình.
+    /// </summary>
     public class ModalWindowManager : MonoBehaviour
     {
         [Header("BRUSH ANIMATION")]
@@ -15,6 +18,9 @@ namespace Michsky.UI.Dark
             mWindowAnimator = gameObject.GetComponent<Animator>();
         }
 
+        /// <summary>
+        /// Hiển thị cửa sổ modal với hiệu ứng hoạt hình vào, đồng thời có thể áp dụng hiệu ứng làm mờ nền nếu được bật.
+        /// </summary>
         public void ModalWindowIn()
         {
             mWindowAnimator.Play("Modal Window In");
@@ -25,6 +31,9 @@ namespace Michsky.UI.Dark
             }
         }
 
+        /// <summary>
+        /// Ẩn cửa sổ modal với hiệu ứng hoạt hình ra, đồng thời có thể áp dụng hiệu ứng làm mờ nền nếu được bật.
+        /// </summary>
         public void ModalWindowOut()
         {
             mWindowAnimator.Play("Modal Window Out");

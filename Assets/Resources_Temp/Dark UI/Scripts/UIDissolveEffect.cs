@@ -10,6 +10,9 @@ using UnityEditor;
 
 namespace Michsky.UI.Dark
 {
+    /// <summary>
+    /// UIDissolveEffect là một lớp hiệu ứng hòa tan cho các thành phần UI, cho phép điều chỉnh vị trí, độ rộng, độ mềm mại và màu sắc của hiệu ứng hòa tan.
+    /// </summary>
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
     public class UIDissolveEffect : BaseMeshEffect
