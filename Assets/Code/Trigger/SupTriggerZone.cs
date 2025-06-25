@@ -1,3 +1,5 @@
+using Code.Puzzle.LightTree;
+using Code.Trigger;
 using Script.Puzzle.LightTree;
 using UnityEngine;
 

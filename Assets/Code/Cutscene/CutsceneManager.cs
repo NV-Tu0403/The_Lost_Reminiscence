@@ -1,15 +1,13 @@
 using System;
+using Events.Cutscene.Scripts;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
-namespace Events.Cutscene.Scripts
+namespace Code.Cutscene
 {
     public class CutsceneManager : MonoBehaviour
     {
-        // Xử lí các cutscene trong game
-        public static CutsceneManager Instance { get; private set; }
-
         [Header("UI Elements")] 
         public GameObject cutscenePanel;
         public RawImage cutsceneImage;
@@ -21,11 +19,25 @@ namespace Events.Cutscene.Scripts
         
         private void Awake()
         {
-            if (Instance != null) Destroy(gameObject);
-            else Instance = this;
-            
             cutscenePanel.SetActive(false);
             skipButton.onClick.AddListener(SkipCutscene);
+        }
+
+        private void OnEnable()
+        {
+            Code.GameEventSystem.EventBus.Subscribe("StartCutscene", OnStartCutsceneEvent);
+        }
+        private void OnDisable()
+        {
+            Code.GameEventSystem.EventBus.Unsubscribe("StartCutscene", OnStartCutsceneEvent);
+        }
+        private void OnStartCutsceneEvent(object data)
+        {
+            Debug.Log($"[CutsceneManager] OnStartCutsceneEvent received | Data: {data}");
+            var eventData = data as Code.GameEventSystem.BaseEventData;
+            if (eventData == null) return;
+            Debug.Log($"[CutsceneManager] Starting cutscene with eventId: {eventData.eventId}");
+            StartCutscene(eventData.eventId, eventData.onFinish);
         }
         
         public void StartCutscene(string cutsceneId, Action onFinished)

@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Script.Puzzle.LightTree
+namespace Code.Puzzle.LightTree
 {
     /// <summary>
     /// Script này quản lí UI thanh Spirit của người chơi.
@@ -24,12 +24,20 @@ namespace Script.Puzzle.LightTree
         private Coroutine _smoothCoroutine;
 
         /// Cập nhật thanh Spirit và hiển thị số lượng Spirit hiện tại
-        public void SetSpirit(int current, int max)
+        public void SetSpirit(int current, int max, bool instantUpdate = false)
         {
             if (spiritSlider != null)
             {
                 if (_smoothCoroutine != null) StopCoroutine(_smoothCoroutine);
-                _smoothCoroutine = StartCoroutine(SmoothSpirit(current, max));
+                float value = (float)current / max;
+                if (instantUpdate)
+                {
+                    spiritSlider.value = value;
+                }
+                else
+                {
+                    _smoothCoroutine = StartCoroutine(SmoothSpirit(current, max));
+                }
             }
             if (spiritText != null)
             {
@@ -51,5 +59,8 @@ namespace Script.Puzzle.LightTree
             }
             spiritSlider.value = end;
         }
+
+        public void Show() => gameObject.SetActive(true);
+        public void Hide() => gameObject.SetActive(false);
     }
 }

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Localization;
 
-namespace Functions.Dialogue.Scripts
+namespace Code.Dialogue
 {
     public enum SpeakerName
     {
@@ -11,6 +11,13 @@ namespace Functions.Dialogue.Scripts
         Fa
         // Thêm các tên nhân vật khác nếu cần
     }
+
+    public enum DialogueDisplayMode
+    {
+        None,
+        FullPanel,
+        Bubble
+    }
     
     
     [CreateAssetMenu(fileName = "Dialogue_" ,menuName = "Events/Dialogue", order = 2)]
@@ -18,9 +25,10 @@ namespace Functions.Dialogue.Scripts
     {
         [Header("Speaker")] 
         public SpeakerName speakerName;
-        public Sprite speakerAvatar;
-        public bool isLeftSpeaker = true;
 
+        [Header("Display Mode")]
+        public DialogueDisplayMode displayMode; // Kiểu hiển thị của dialogue
+        
         [Header("Localization Key")]
         public LocalizedString dialogueText; // Key cho localization, sẽ lấy text từ hệ thống localization
 

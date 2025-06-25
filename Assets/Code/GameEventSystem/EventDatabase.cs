@@ -3,7 +3,7 @@ using System.Linq;
 using Duckle;
 using UnityEngine;
 
-namespace Script.GameEventSystem
+namespace Code.GameEventSystem
 {
     [CreateAssetMenu(fileName = "EventDatabase", menuName = "Events/EventDatabase")]
     public class EventDatabase : ScriptableObject
@@ -27,5 +27,6 @@ namespace Script.GameEventSystem
         public string eventId;
         public EventType_Dl type;
         [TextArea] public string description;
+        [System.NonSerialized] public System.Action onFinish;
     }
 }

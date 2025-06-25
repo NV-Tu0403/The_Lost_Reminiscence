@@ -1,6 +1,6 @@
 using System;
 
-namespace Script.Puzzle
+namespace Code.Puzzle
 {
     public interface IPuzzleStep
     {

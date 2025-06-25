@@ -1,3 +1,4 @@
+using Code.Puzzle.LightTree;
 using DuckLe;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace Script.Puzzle.LightTree
     {
         private PlayerController _playerController;
         
-        [SerializeField] private Script.Puzzle.LightTree.FaController faController;
+        [SerializeField] private Code.Puzzle.LightTree.FaController faController;
         [SerializeField] private PlayerSpirit playerSpirit;
         [SerializeField] private float speed = 5f;
         [SerializeField] private float timeBetweenHits = 1f; // thời gian giữa các lần trừ máu
