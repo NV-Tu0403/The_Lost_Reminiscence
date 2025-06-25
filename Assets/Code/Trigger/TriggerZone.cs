@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Script.Trigger
+namespace Code.Trigger
 {
     public abstract class TriggerZone : MonoBehaviour
     {
@@ -8,12 +8,17 @@ namespace Script.Trigger
         protected virtual void DisableZone() => gameObject.SetActive(false);
         protected abstract bool IsValidTrigger(Collider other);
 
-        private void OnTriggerEnter(Collider other)
+        protected virtual void OnTriggerEnter(Collider other)
         {
             if (!IsValidTrigger(other)) return;
             OnTriggered(other);
         }
-        
+
+        protected virtual void OnTriggerExit(Collider other)
+        {
+            
+        }
+
         protected abstract void OnTriggered(Collider other);
     }
 }

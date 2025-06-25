@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
+using Code.Cutscene;
+using Code.Dialogue;
+using Code.Puzzle;
 using Duckle;
-using Events.Cutscene.Scripts;
-using Events.Dialogue.Scripts;
-using Script.Cutscene;
-using Script.GameEventSystem.EventAction;
-using Script.Puzzle;
 using UnityEngine;
 
-namespace Script.GameEventSystem
+namespace Code.GameEventSystem
 {
     public class EventExecutor : MonoBehaviour
     {

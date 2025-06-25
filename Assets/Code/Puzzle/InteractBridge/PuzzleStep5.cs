@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Code.Puzzle;
 using DG.Tweening;
 using Script.Puzzle.Config.Base;
 using Script.Puzzle.Config.SO;

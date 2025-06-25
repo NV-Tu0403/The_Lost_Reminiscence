@@ -1,7 +1,8 @@
 using System;
+using Script.Puzzle.LightTree;
 using UnityEngine;
 
-namespace Script.Puzzle.LightTree
+namespace Code.Puzzle.LightTree
 {
     public class PuzzleStep7 : MonoBehaviour, IPuzzleStep
     {
