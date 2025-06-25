@@ -1,3 +1,4 @@
+using Code.Trigger;
 using Script.Trigger;
 using UnityEngine;
 

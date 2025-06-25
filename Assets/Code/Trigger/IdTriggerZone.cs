@@ -1,8 +1,8 @@
+using Code.Puzzle.LightTree;
 using DuckLe;
-using Script.Puzzle.LightTree;
 using UnityEngine;
 
-namespace Script.Trigger
+namespace Code.Trigger
 {
     public class IdTriggerZone : TriggerZone
     {

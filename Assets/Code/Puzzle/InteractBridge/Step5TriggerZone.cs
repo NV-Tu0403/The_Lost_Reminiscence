@@ -1,4 +1,6 @@
-using Script.GameEventSystem;
+using Code.GameEventSystem;
+using Code.Procession;
+using Code.Trigger;
 using Script.Procession;
 using Script.Trigger;
 using UnityEngine;

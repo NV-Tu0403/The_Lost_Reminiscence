@@ -1,30 +1,56 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Script.GameEventSystem;
+using Code.GameEventSystem;
 using Script.Procession.Reward.Base;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
-namespace Script.Procession
+namespace Code.Procession
 {
     public class ProgressionManager : MonoBehaviour
     {
         public static ProgressionManager Instance { get; private set; }
 
-        private GameProgression progression; // Dữ liệu tiến trình hiện tại
-        private string configJsonPath = "JSON/progressionData"; // Đường dẫn tương đối cho Resources
-        private string configJsonFullPath; // Đường dẫn tuyệt đối cho ghi file
-
-        [SerializeField] private ProgressionDataSO progressionDataSO; // ScriptableObject tổng hợp
-        [SerializeField] private LootDatabase lootDatabase; // Database loot
+        [SerializeField] private ProgressionDataSO progressionDataSO;   // ScriptableObject tổng hợp
+        [SerializeField] private LootDatabase lootDatabase;             // Database loot
         [SerializeField] private UserAccountManager userAccountManager; // Quản lý tài khoản người dùng
+        
+        // Dữ liệu tiến trình game
+        private GameProgression _progression;
+        
+        
+        #region public methods for save/load
 
-        // Danh sách tuần tự eventId (lấy từ progression.MainProcesses → SubProcesses theo Order)
-        private List<string> _eventSequence;
-        private int _currentEventIndex = 0;
+        // Lộc đã xóa hàm save/load để test
+        // Nếu cần, Việt có thể gọi 2 hàm ví dụ dưới vào SaveManager của Việt.
+        // public class SaveGameManager
+        // {
+        //     public void SaveProgress()
+        //     {
+        //         var progress = ProgressionManager.Instance.GetProgression();
+        //         var json = JsonUtility.ToJson(progress);
+        //         File.WriteAllText("save.json", json);
+        //     }
+        //
+        //     public void LoadProgress()
+        //     {
+        //         var json = File.ReadAllText("save.json");
+        //         var loaded = JsonUtility.FromJson<GameProgression>(json);
+        //         ProgressionManager.Instance.SetProgression(loaded);
+        //     }
+        // }
+        
+        // Hàm public để trả về dữ liệu tiến trình hiện tại 
+        public GameProgression GetProgression() => _progression; 
+        
+        //Hàm public để UI gọi khi NewGame hoặc ContinueGame
+        public void InitProgression()
+        {
+            var sequence = BuildEventSequence();
+            EventManager.Instance.Init(sequence);
+        }
 
-
+        #endregion
+        
         void Awake()
         {
             if (Instance != null)
@@ -34,274 +60,67 @@ namespace Script.Procession
             }
 
             Instance = this;
-            
-            InitializePaths();
             LoadProgression(); // Load progression từ SO hoặc JSON
         }
 
-        //Hàm public để UI gọi khi NewGame hoặc ContinueGame
-        public void InitProgression()
+        private void LoadProgression()
         {
-            BuildEventSequence();
-            AutoTriggerFirstEvent();
+            if (progressionDataSO != null)
+            {
+                _progression = progressionDataSO.ToGameProgression();
+                Debug.Log("[ProgressionManager] Loaded from SO");
+                return;
+            }
+
+            Debug.LogError("ProgressionDataSO is null!");
         }
-
-        #region === CÁC HÀM SAVE/LOAD ===
-        public void LoadProgression()
-         {
-             // ----- Bỏ qua save JSON, chỉ dùng SO trực tiếp ----- Lộc thêm vào để debug, xóa sau nhé, tại vì cái này dính tới phần save
-             if (progressionDataSO != null)
-             {
-                 progression = progressionDataSO.ToGameProgression();
-                 Debug.Log("Loaded progression trực tiếp từ ProgressionDataSO (bypass save).");
-                 return;
-             }
-
-             Debug.LogError("ProgressionDataSO bị null, không thể load progression!");
-
-
-             // if (saveGameManager == null)
-             // {
-             //     Debug.LogError("SaveGameManager is not assigned!");
-             //     return;
-             // }
-
-             string userName = userAccountManager.CurrentUserBaseName;
-             if (string.IsNullOrEmpty(userName))
-             {
-                 Debug.LogWarning("CurrentUserNamePlaying is not set!");
-                 return;
-             }
-
-             // string saveFolder = saveGameManager.GetLatestSaveFolder(userName);
-             // if (saveFolder != null)
-             // {
-             //     // //string json = saveGameManager.LoadJsonFile(saveFolder, "playerProgression.json");
-             //     // if (!string.IsNullOrEmpty(json))
-             //     // {
-             //     //     progression = JsonSerializationHelper.DeserializeGameProgression(json);
-             //     //     Debug.Log($"Loaded player progression from: {saveFolder}/playerProgression.json");
-             //     //     return;
-             //     // }
-             // }
-
-             TextAsset jsonText = Resources.Load<TextAsset>("JSON/progressionData");
-             if (jsonText != null)
-             {
-                 progression = JsonSerializationHelper.DeserializeGameProgression(jsonText.text);
-                 Debug.Log("Loaded progression from JSON: JSON/progressionData");
-                 //string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
-                 //saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", jsonText.text);
-                 //Debug.Log($"Created new player progression file in: {newSaveFolder}");
-                 return;
-             }
-
-             if (progressionDataSO != null)
-             {
-                 progression = progressionDataSO.ToGameProgression();
-                 Debug.Log("Loaded progression from ProgressionDataSO");
-                 //string newSaveFolder = saveGameManager.CreateNewSaveFolder(userName);
-                 string json = JsonSerializationHelper.SerializeGameProgression(progression);
-                 //saveGameManager.SaveJsonFile(newSaveFolder, "playerProgression.json", json);
-                 //Debug.Log($"Created new player progression file in: {newSaveFolder}");
-                 return;
-             }
-
-             Debug.LogError("No progression data found!");
-         }
         
-        /// <summary>
-        /// Khởi tạo các đường dẫn file.
-        /// </summary>
-        private void InitializePaths()
-        {
-            string resourcesDevJsonDir = Path.Combine(Application.dataPath, "Resources_DEV", "JSON");
-
-#if UNITY_EDITOR
-            if (!Directory.Exists(resourcesDevJsonDir))
-            {
-                Directory.CreateDirectory(resourcesDevJsonDir);
-                Debug.Log($"Đã tạo thư mục: {resourcesDevJsonDir}");
-            }
-#endif
-
-            configJsonFullPath = Path.Combine(resourcesDevJsonDir, "progressionData.json");
-        }
-
-        /// <summary>
-        /// Xuất dữ liệu từ ScriptableObject sang file JSON. Chỉ hoạt động trong Edit Mode.
-        /// </summary>
-        public void ExportToJson()
-        {
-#if UNITY_EDITOR
-            if (Application.isPlaying)
-            {
-                Debug.LogError("ExportToJson is only allowed in Edit Mode to protect progressionData.json!");
-                return;
-            }
-
-            if (progressionDataSO == null)
-            {
-                Debug.LogError("ProgressionDataSO is not assigned!");
-                return;
-            }
-
-            progression = progressionDataSO.ToGameProgression();
-            if (progression == null || progression.MainProcesses == null)
-            {
-                Debug.LogError("Failed to convert ProgressionDataSO to GameProgression!");
-                return;
-            }
-
-            if (progression.MainProcesses.Count == 0)
-            {
-                Debug.LogWarning("ProgressionDataSO contains no MainProcesses. Exported JSON sẽ rỗng.");
-            }
-            else
-            {
-                Debug.Log($"Exporting {progression.MainProcesses.Count} MainProcesses...");
-                foreach (var main in progression.MainProcesses)
-                {
-                    Debug.Log(
-                        $"MainProcess: {main.Id}, SubProcesses: {main.SubProcesses?.Count ?? 0}, Rewards: {main.Rewards?.Count ?? 0}");
-                    foreach (var sub in main.SubProcesses)
-                    {
-                        Debug.Log(
-                            $"  SubProcess: {sub.Id}, Conditions: {sub.Conditions?.Count ?? 0}, Rewards: {sub.Rewards?.Count ?? 0}");
-                    }
-                }
-            }
-
-            if (string.IsNullOrEmpty(configJsonFullPath))
-            {
-                InitializePaths();
-            }
-
-            if (string.IsNullOrEmpty(configJsonFullPath))
-            {
-                Debug.LogError("configJsonFullPath is null or empty!");
-                return;
-            }
-
-            try
-            {
-                string directory = Path.GetDirectoryName(configJsonFullPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                    Debug.Log($"Created directory: {directory}");
-                }
-
-                string json = JsonSerializationHelper.SerializeGameProgression(progression);
-                Debug.Log($"JSON content to write: {json}");
-                File.WriteAllText(configJsonFullPath, json);
-                Debug.Log($"Exported ProgressionDataSO to {configJsonFullPath}");
-
-                string relativePath = "Assets/Resources_DEV/JSON/progressionData.json";
-                UnityEditor.AssetDatabase.ImportAsset(relativePath);
-                Debug.Log($"Refreshed asset: {relativePath}");
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"Failed to export JSON: {e.Message}");
-            }
-#else
-            Debug.LogError("ExportToJson is only available in Unity Editor!");
-#endif
-        }
-
-       #endregion
-
-
-        #region === XỬ LÍ LOGIC PROGRESSION ===
-
+        
         /// <summary>
         /// Xây dựng danh sách tuần tự eventId từ MainProcesses và SubProcesses theo Order.
         /// </summary>
-        private void BuildEventSequence()
+        private List<string> BuildEventSequence()
         {
-            _eventSequence = new List<string>();
-            if (progression?.MainProcesses == null)
+            var sequence = new List<string>();
+            if (_progression?.MainProcesses == null)
             {
-                Debug.LogError("[ProgressionManager] progression hoặc MainProcesses là null khi BuildEventSequence!");
-                return;
+                Debug.LogError("[ProgressionManager] BuildEventSequence: progression null!");
+                return sequence;
             }
 
-            foreach (var main in progression.MainProcesses.OrderBy(mp => mp.Order))
+            foreach (var main in _progression.MainProcesses.OrderBy(mp => mp.Order))
             {
                 if (main.SubProcesses == null) continue;
                 foreach (var sub in main.SubProcesses.OrderBy(sp => sp.Order))
-                    _eventSequence.Add(sub.Id);
+                    sequence.Add(sub.Id);
             }
 
-            Debug.Log($"[ProgressionManager] Event sequence built. Count = {_eventSequence.Count}");
+            Debug.Log($"[ProgressionManager] Built event sequence: {sequence.Count} events");
+            return sequence;
         }
-
-        /// <summary>
-        /// Cấp phần thưởng cho một danh sách Reward.
-        /// </summary>
-        private void GrantRewards(List<Reward.Base.Reward> rewards)
-        {
-            if (rewards == null) return;
-            foreach (var reward in rewards)
-                GrantReward(reward);
-        }
-
-        /// <summary>
-        /// Cấp phần thưởng cho một Reward đơn lẻ.
-        /// </summary>
-        private void GrantReward(Reward.Base.Reward reward)
-        {
-            if (reward == null) return;
-            if (reward is ItemReward itemReward && itemReward.ItemType == "Loot")
-            {
-                var loot = lootDatabase.GetLootConfig(itemReward.ItemName);
-                Debug.Log(loot != null
-                    ? $"[ProgressionManager] Granted {itemReward.Amount} x {loot.Name} (Power:{loot.Power})"
-                    : $"[ProgressionManager] Loot {itemReward.ItemName} not found!");
-            }
-
-            reward.Grant();
-        }
-
+        
         /// <summary>
         /// Được gọi khi EventManager báo eventId vừa hoàn thành.
         /// Đánh dấu tiến trình, cấp thưởng, cập nhật index và lưu tiến trình.
         /// </summary>
         public void HandleEventFinished(string eventId)
         {
-            Debug.Log($"[ProgressionManager] HandleEventFinished: {eventId}");
-            // Kiểm tra progression và MainProcesses có null không
-            if (progression?.MainProcesses == null)
-            {
-                Debug.LogError("[ProgressionManager] progression hoặc MainProcesses " +
-                               "là null khi HandleEventFinished!");
-                return;
-            }
+            Debug.Log($"[ProgressionManager] Event Finished: {eventId}");
 
-            // Kiểm tra eventId có trong danh sách không
-            if (TryCompleteSubProcess(eventId))
+            if (TryCompleteSubProcess(eventId) || TryCompleteMainProcess(eventId))
             {
-                UpdateEventIndex(eventId);
-                TryTriggerNextEvent(); // Tự động trigger event tiếp theo nếu đủ điều kiện
-                return;
+                Debug.Log($"[ProgressionManager] Progress updated for event '{eventId}'");
             }
-
-            // Nếu không phải SubProcess, kiểm tra MainProcess
-            if (TryCompleteMainProcess(eventId))
+            else
             {
-                UpdateEventIndex(eventId);
-                TryTriggerNextEvent();
-                return;
+                Debug.LogWarning($"[ProgressionManager] Event '{eventId}' not found in any process");
             }
-
-            Debug.LogWarning($"[ProgressionManager] Không tìm thấy bất kỳ Main/Sub Process nào có ID = '{eventId}'");
         }
 
         // Đánh dấu hoàn thành SubProcess nếu tìm thấy, trả về true nếu thành công
         private bool TryCompleteSubProcess(string eventId)
         {
-            foreach (var main in progression.MainProcesses)
+            foreach (var main in _progression.MainProcesses)
             {
                 var sub = main.SubProcesses?.Find(s => s.Id == eventId);
                 if (sub != null && sub.Status != MainProcess.ProcessStatus.Completed)
@@ -319,14 +138,13 @@ namespace Script.Procession
                     return true;
                 }
             }
-
             return false;
         }
 
         // Đánh dấu hoàn thành MainProcess nếu tìm thấy, trả về true nếu thành công
         private bool TryCompleteMainProcess(string eventId)
         {
-            var mainMatch = progression.MainProcesses.Find(m => m.Id == eventId);
+            var mainMatch = _progression.MainProcesses.Find(m => m.Id == eventId);
             if (mainMatch != null && mainMatch.Status != MainProcess.ProcessStatus.Completed)
             {
                 mainMatch.Status = MainProcess.ProcessStatus.Completed;
@@ -334,63 +152,7 @@ namespace Script.Procession
                 GrantRewards(mainMatch.Rewards);
                 return true;
             }
-
             return false;
-        }
-
-        // Cập nhật _currentEventIndex nếu eventId khớp thứ tự
-        private void UpdateEventIndex(string eventId)
-        {
-            if (_eventSequence != null && _currentEventIndex < _eventSequence.Count &&
-                _eventSequence[_currentEventIndex] == eventId)
-            {
-                _currentEventIndex++;
-            }
-            else if (_eventSequence != null)
-            {
-                int idx = _eventSequence.IndexOf(eventId);
-                if (idx >= 0 && idx == _currentEventIndex) _currentEventIndex++;
-                else
-                    Debug.LogWarning(
-                        $"[ProgressionManager] eventId '{eventId}' không khớp sequence tại index {_currentEventIndex} (expected: {_eventSequence.ElementAtOrDefault(_currentEventIndex)})");
-            }
-        }
-
-        /// <summary>
-        /// Trả về eventId kế tiếp dựa trên thứ tự trong _eventSequence.
-        /// </summary>
-        public string GetNextEventId()
-        {
-            if (_eventSequence == null)
-            {
-                Debug.LogWarning("[ProgressionManager] _eventSequence is null when GetNextEventId()");
-                return null;
-            }
-
-            return (_currentEventIndex >= 0 && _currentEventIndex < _eventSequence.Count)
-                ? _eventSequence[_currentEventIndex]
-                : null;
-        }
-
-        /// <summary>
-        /// Tự động trigger event đầu tiên nếu đang Locked.
-        /// </summary>
-        private void AutoTriggerFirstEvent()
-        {
-            if (_eventSequence == null || _eventSequence.Count == 0 || _currentEventIndex >= _eventSequence.Count) 
-                return;
-            
-            string firstEventId = _eventSequence[_currentEventIndex];
-            foreach (var main in progression.MainProcesses)
-            {
-                var sub = main.SubProcesses?.Find(s => s.Id == firstEventId);
-                if (sub != null && sub.Status == MainProcess.ProcessStatus.Locked)
-                {
-                    Debug.Log($"[ProgressionManager] Auto trigger first event: {firstEventId}");
-                    EventExecutor.Instance.TriggerEvent(firstEventId);
-                    return;
-                }
-            }
         }
 
         /// <summary>
@@ -398,9 +160,9 @@ namespace Script.Procession
         /// </summary>
         public object GetProcessData(string id)
         {
-            var mainProcess = progression.MainProcesses.Find(p => p.Id == id);
+            var mainProcess = _progression.MainProcesses.Find(p => p.Id == id);
             if (mainProcess != null) return mainProcess;
-            foreach (var main in progression.MainProcesses)
+            foreach (var main in _progression.MainProcesses)
             {
                 var subProcess = main.SubProcesses?.Find(s => s.Id == id);
                 if (subProcess != null) return subProcess;
@@ -415,7 +177,7 @@ namespace Script.Procession
         /// </summary>
         public bool UnlockProcess(string id)
         {
-            var mainProcess = progression.MainProcesses.Find(p => p.Id == id);
+            var mainProcess = _progression.MainProcesses.Find(p => p.Id == id);
             if (mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.Locked)
             {
                 mainProcess.Status = MainProcess.ProcessStatus.InProgress;
@@ -423,7 +185,7 @@ namespace Script.Procession
                 return true;
             }
 
-            foreach (var main in progression.MainProcesses)
+            foreach (var main in _progression.MainProcesses)
             {
                 var subProcess = main.SubProcesses?.Find(s => s.Id == id);
                 if (subProcess != null && subProcess.Status == MainProcess.ProcessStatus.Locked)
@@ -443,29 +205,79 @@ namespace Script.Procession
         /// </summary>
         public bool CanTrigger(string id)
         {
-            foreach (var main in progression.MainProcesses)
+            foreach (var main in _progression.MainProcesses)
             {
                 var sub = main.SubProcesses?.Find(s => s.Id == id);
-                if (sub != null)
+                if (sub != null && sub.Status == MainProcess.ProcessStatus.Locked)
                 {
-                    if (sub.Status != MainProcess.ProcessStatus.Locked) return false;
-                    if (sub.Conditions != null && sub.Conditions.Count > 0)
-                        return sub.Conditions.All(c => c.IsSatisfied(true));
-                    return true;
+                    return sub.Conditions == null || sub.Conditions.All(c => c.IsSatisfied(true));
                 }
             }
 
-            var top = progression.MainProcesses.Find(m => m.Id == id);
-            if (top != null && top.Status == MainProcess.ProcessStatus.Locked) return true;
-            return false;
+            var top = _progression.MainProcesses.Find(m => m.Id == id);
+            return top != null && top.Status == MainProcess.ProcessStatus.Locked;
+        }
+        
+        // Kiểm tra event (SubProcess hoặc MainProcess) đã hoàn thành chưa
+        public bool IsEventCompleted(string eventId)
+        {
+            foreach (var main in _progression.MainProcesses)
+            {
+                var sub = main.SubProcesses?.Find(s => s.Id == eventId);
+                if (sub != null) return sub.Status == MainProcess.ProcessStatus.Completed;
+            }
+
+            var mainProcess = _progression.MainProcesses.Find(m => m.Id == eventId);
+            return mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.Completed;
+        }
+        
+        public bool IsWaitingForEvent(string eventId)
+        {
+            foreach (var main in _progression.MainProcesses)
+            {
+                var sub = main.SubProcesses?.Find(s => s.Id == eventId);
+                if (sub != null) return sub.Status == MainProcess.ProcessStatus.InProgress;
+            }
+
+            var mainProcess = _progression.MainProcesses.Find(m => m.Id == eventId);
+            return mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.InProgress;
+        }
+        
+        #region === Xử lí sau ===
+        
+        /// <summary>
+        /// Cấp phần thưởng cho một danh sách Reward.
+        /// </summary>
+        private void GrantRewards(List<Reward> rewards)
+        {
+            if (rewards == null) return;
+            foreach (var reward in rewards)
+                GrantReward(reward);
         }
 
         /// <summary>
+        /// Cấp phần thưởng cho một Reward đơn lẻ.
+        /// </summary>
+        private void GrantReward(Reward reward)
+        {
+            if (reward == null) return;
+            if (reward is ItemReward itemReward && itemReward.ItemType == "Loot")
+            {
+                var loot = lootDatabase.GetLootConfig(itemReward.ItemName);
+                Debug.Log(loot != null
+                    ? $"[ProgressionManager] Granted {itemReward.Amount} x {loot.Name} (Power:{loot.Power})"
+                    : $"[ProgressionManager] Loot {itemReward.ItemName} not found!");
+            }
+
+            reward.Grant();
+        }
+        
+               /// <summary>
         /// Kiểm tra điều kiện hoàn thành tiến trình con và cấp phần thưởng nếu hoàn thành.
         /// </summary>
         public bool CheckProcessCompletion(string id, object data)
         {
-            foreach (var main in progression.MainProcesses)
+            foreach (var main in _progression.MainProcesses)
             {
                 var subProcess = main.SubProcesses?.Find(s => s.Id == id);
                 if (subProcess != null && subProcess.Status != MainProcess.ProcessStatus.Completed)
@@ -487,24 +299,24 @@ namespace Script.Procession
                     }
                 }
             }
-
+        
             return false;
         }
 
-        /// <summary>
-        /// Update trạng thái SubProcess hoặc MainProcess bằng enum string
-        /// </summary>
+        // /// <summary>
+        // /// Update trạng thái SubProcess hoặc MainProcess bằng enum string
+        // /// </summary>
         private bool UpdateProcessStatus(string id, MainProcess.ProcessStatus newStatus)
         {
-            var mainProcess = progression.MainProcesses.Find(p => p.Id == id);
+            var mainProcess = _progression.MainProcesses.Find(p => p.Id == id);
             if (mainProcess != null)
             {
                 mainProcess.Status = newStatus;
                 Debug.Log($"[ProgressionManager] Updated MainProcess {id} → {newStatus}");
                 return true;
             }
-
-            foreach (var main in progression.MainProcesses)
+        
+            foreach (var main in _progression.MainProcesses)
             {
                 var subProcess = main.SubProcesses?.Find(s => s.Id == id);
                 if (subProcess != null)
@@ -514,77 +326,10 @@ namespace Script.Procession
                     return true;
                 }
             }
-
+        
             return false;
         }
-
-        // Kiểm tra event (SubProcess hoặc MainProcess) đã hoàn thành chưa
-        public bool IsEventCompleted(string eventId)
-        {
-            if (progression?.MainProcesses == null) return false;
-            // Kiểm tra SubProcess
-            foreach (var main in progression.MainProcesses)
-            {
-                var sub = main.SubProcesses?.Find(s => s.Id == eventId);
-                if (sub != null)
-                    return sub.Status == MainProcess.ProcessStatus.Completed;
-            }
-
-            // Kiểm tra MainProcess
-            var mainProcess = progression.MainProcesses.Find(m => m.Id == eventId);
-            if (mainProcess != null)
-                return mainProcess.Status == MainProcess.ProcessStatus.Completed;
-            return false;
-        }
-
+        
         #endregion
-
-        // Hàm tự động trigger event tiếp theo nếu đủ điều kiện
-        private void TryTriggerNextEvent()
-        {
-            string nextEventId = GetNextEventId();
-            if (string.IsNullOrEmpty(nextEventId)) return;
-            Debug.Log($"[ProgressionManager] Trying next event ID '{nextEventId}'");
-
-            // Lấy dữ liệu tiến trình tiếp theo
-            var processData = GetProcessData(nextEventId);
-            var sub = processData as SubProcess;
-            if (sub != null)
-            {
-                // Thêm kiểm tra TriggerType
-                if (sub.Trigger != MainProcess.TriggerType.Automatic)
-                {
-                    Debug.Log($"[ProgressionManager] Next event '{nextEventId}' không phải Auto, dừng auto trigger.");
-                    return;
-                }
-
-                bool canTrigger = sub.Conditions == null
-                                  || sub.Conditions.Count == 0
-                                  || sub.Conditions.All(c => c.IsSatisfied(null));
-                if (canTrigger)
-                {
-                    Debug.Log($"[ProgressionManager] Auto trigger next event: {nextEventId}");
-                    EventExecutor.Instance.TriggerEvent(nextEventId);
-                }
-            }
-        }
-
-        public bool IsWaitingForEvent(string eventId)
-        {
-            if (progression?.MainProcesses == null) return false;
-            // Kiểm tra SubProcess
-            foreach (var main in progression.MainProcesses)
-            {
-                var sub = main.SubProcesses?.Find(s => s.Id == eventId);
-                if (sub != null)
-                    return sub.Status == MainProcess.ProcessStatus.InProgress;
-            }
-
-            // Kiểm tra MainProcess
-            var mainProcess = progression.MainProcesses.Find(m => m.Id == eventId);
-            if (mainProcess != null)
-                return mainProcess.Status == MainProcess.ProcessStatus.InProgress;
-            return false;
-        }
     }
 }
