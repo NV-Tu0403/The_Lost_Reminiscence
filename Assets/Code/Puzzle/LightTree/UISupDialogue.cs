@@ -1,8 +1,9 @@
+using Script.Puzzle.LightTree;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Script.Puzzle.LightTree
+namespace Code.Puzzle.LightTree
 {
     public class UISupDialogue : MonoBehaviour
     {

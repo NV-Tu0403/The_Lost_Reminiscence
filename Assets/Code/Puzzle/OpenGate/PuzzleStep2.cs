@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Code.Puzzle;
 using DG.Tweening;
 using Script.Puzzle;
 using UnityEngine;

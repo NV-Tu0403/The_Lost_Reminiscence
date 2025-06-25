@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Code.GameEventSystem;
-using Script.GameEventSystem;
 using Script.Procession.Reward.Base;
 using UnityEngine;
 
@@ -245,20 +244,6 @@ namespace Code.Procession
             var mainProcess = _progression.MainProcesses.Find(m => m.Id == eventId);
             return mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.InProgress;
         }
-        
-        private void OnEventFinishedByEventBus(object eventData)
-        {
-            string eventId = (eventData as BaseEventData)?.eventId ?? eventData?.ToString();
-            if (string.IsNullOrEmpty(eventId))
-            {
-                Debug.LogWarning("[ProgressionManager] EventBus triggered but eventId is null!");
-                return;
-            }
-
-            Debug.Log($"[ProgressionManager] Received EventBus publish: {eventId}");
-            HandleEventFinished(eventId);
-        }
-        
         
         #region === Xử lí sau ===
         

@@ -1,4 +1,5 @@
 using System;
+using Code.GameEventSystem;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -7,8 +8,6 @@ namespace Code.Dialogue
 {
     public class DialogueManager : MonoBehaviour
     {
-        public static DialogueManager Instance { get; private set; }
-
         [SerializeField] private FullDialoguePanel fullDialoguePanel;
         [SerializeField] private BubbleDialoguePanel bubbleDialoguePanel;
         
@@ -20,9 +19,6 @@ namespace Code.Dialogue
         /// </summary>
         private void Awake()
         {
-            if (Instance != null) Destroy(gameObject);
-            else Instance = this;
-            
             if (fullDialoguePanel != null) fullDialoguePanel.gameObject.SetActive(false);
             else Debug.Log("Hệ thống chưa gán:" + fullDialoguePanel );
             
@@ -39,7 +35,6 @@ namespace Code.Dialogue
         public void StartDialogue(string dialogueId, Action onFinish)
         {
             if (dialogueId == null) return;
-            
             Addressables.LoadAssetAsync<DialogueNodeSO>(dialogueId).Completed += handle =>
             {
                 if (handle.Status == AsyncOperationStatus.Succeeded)
@@ -68,6 +63,23 @@ namespace Code.Dialogue
                     Debug.LogWarning($"DialogueNodeSO {dialogueId} không có displayMode hợp lệ!");
                     break;
             }
+        }
+
+        private void OnEnable()
+        {
+            EventBus.Subscribe("StartDialogue", OnStartDialogueEvent);
+        }
+        private void OnDisable()
+        {
+            EventBus.Unsubscribe("StartDialogue", OnStartDialogueEvent);
+        }
+        private void OnStartDialogueEvent(object data)
+        {
+            Debug.Log($"[DialogueManager] OnStartDialogueEvent received | Data: {data}");
+            var eventData = data as BaseEventData;
+            if (eventData == null) return;
+            Debug.Log($"[DialogueManager] Starting dialogue with eventId: {eventData.eventId}");
+            StartDialogue(eventData.eventId, eventData.onFinish);
         }
     }
 }

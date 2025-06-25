@@ -1,5 +1,5 @@
+using System;
 using Code.GameEventSystem;
-using Script.GameEventSystem;
 using Script.Procession;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -14,11 +14,14 @@ namespace Code.Dialogue
         {
             Debug.Log($"[DialogueAction] Starting dialogue for event: {data.eventId}");
 
-            DialogueManager.Instance.StartDialogue(data.eventId, () =>
-            {
-                Debug.Log($"[DialogueAction] Finished dialogue for event: {data.eventId}");
+            // Đặt callback khi hội thoại kết thúc
+            Action finishCallback = () => {
                 EventBus.Publish(data.eventId, data);
-            });
+            };
+            data.onFinish = finishCallback;
+
+            // Gửi sự kiện bắt đầu hội thoại
+            EventBus.Publish("StartDialogue", data);
         }
     }
 }

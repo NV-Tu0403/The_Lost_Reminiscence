@@ -1,5 +1,3 @@
-using Script.GameEventSystem;
-
 namespace Code.GameEventSystem
 {
     public interface IEventAction

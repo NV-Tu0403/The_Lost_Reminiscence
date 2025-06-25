@@ -1,6 +1,6 @@
+using System;
 using Code.GameEventSystem;
 using Events.Cutscene.Scripts;
-using Script.GameEventSystem;
 using UnityEngine;
 
 namespace Code.Cutscene
@@ -9,12 +9,16 @@ namespace Code.Cutscene
     {
         public void Execute(BaseEventData data)
         {
-            Debug.Log($"[CutsceneAction] Starting cutscene for event: {data.eventId}");
-            CutsceneManager.Instance.StartCutscene(data.eventId, () =>
-            {
-                Debug.Log($"[CutsceneAction] Finished cutscene for event: {data.eventId}");
+            Debug.Log($"[CutsceneAction] Requesting cutscene for event: {data.eventId}");
+
+            // Đặt callback khi cutscene kết thúc
+            Action finishCallback = () => {
                 EventBus.Publish(data.eventId, data);
-            });
+            };
+            data.onFinish = finishCallback;
+
+            // Gửi sự kiện bắt đầu cutscene
+            EventBus.Publish("StartCutscene", data);
         }
     }
 }

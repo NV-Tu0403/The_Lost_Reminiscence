@@ -1,3 +1,4 @@
+using Code.Puzzle.LightTree;
 using DuckLe;
 using UnityEngine;
 
@@ -10,7 +11,7 @@ namespace Script.Puzzle.LightTree
         public string[] answers; 
         public int correctIndex; // chỉ số đáp án đúng
         [SerializeField] private UISupDialogue uiSupDialogue;
-        [SerializeField] private Script.Puzzle.LightTree.FaController faController;
+        [SerializeField] private Code.Puzzle.LightTree.FaController faController;
         [SerializeField] private PlayerSpirit playerSpirit;
        
         
@@ -67,7 +68,7 @@ namespace Script.Puzzle.LightTree
             hasAnswered = isCorrect;
             if (!isCorrect && playerSpirit != null)
             {
-                playerSpirit.ReduceSpirit(2);
+                playerSpirit.ReduceSpirit(5);
             }
         }
 
