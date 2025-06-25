@@ -16,7 +16,8 @@ namespace Code.Dialogue
     {
         None,
         FullPanel,
-        Bubble
+        BubblePanel,
+        StoryPanel
     }
     
     

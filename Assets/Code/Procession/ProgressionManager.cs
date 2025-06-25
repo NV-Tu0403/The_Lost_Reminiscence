@@ -16,8 +16,6 @@ namespace Code.Procession
         
         // Dữ liệu tiến trình game
         private GameProgression _progression;
-
-        
         
         
         #region public methods for save/load
