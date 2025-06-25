@@ -10,6 +10,7 @@ namespace Code.Dialogue
     {
         [SerializeField] private FullDialoguePanel fullDialoguePanel;
         [SerializeField] private BubbleDialoguePanel bubbleDialoguePanel;
+        [SerializeField] private StoryDialoguePanel storyDialoguePanel; 
         
         /// <summary>
         /// Quản lý hiển thị hội thoại:
@@ -20,10 +21,13 @@ namespace Code.Dialogue
         private void Awake()
         {
             if (fullDialoguePanel != null) fullDialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("Hệ thống chưa gán:" + fullDialoguePanel );
+            else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + fullDialoguePanel );
             
             if (bubbleDialoguePanel != null) bubbleDialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("Hệ thống chưa gán:" + bubbleDialoguePanel );
+            else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + bubbleDialoguePanel );
+            
+            if (storyDialoguePanel != null) storyDialoguePanel.gameObject.SetActive(false);
+            else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + storyDialoguePanel );
         }
 
         /// <summary>
@@ -46,6 +50,12 @@ namespace Code.Dialogue
             };
         }
 
+        /// <summary>
+        /// Kiểm tra chế độ hiển thị của dialogue:
+        /// - Dựa vào displayMode của DialogueNodeSO để quyết định sử dụng panel nào.
+        /// - Hiển thị FullDialoguePanel, BubbleDialoguePanel hoặc StoryDialoguePanel tương ứng
+        /// - Nếu không có displayMode hợp lệ, ghi log cảnh báo.
+        /// </summary>
         private void CheckDisplayDialogue(string dialogueId, Action onFinish, AsyncOperationHandle<DialogueNodeSO> handle)
         {
             var dialogue = handle.Result;
@@ -55,9 +65,13 @@ namespace Code.Dialogue
                     fullDialoguePanel.ShowDialogue(dialogue, onFinish);
                     Debug.Log("[DialogueManager] Hiển thị FullDialoguePanel: " + dialogueId);
                     break;
-                case DialogueDisplayMode.Bubble:
+                case DialogueDisplayMode.BubblePanel:
                     bubbleDialoguePanel.ShowDialogue(dialogue, onFinish);
                     Debug.Log("[DialogueManager] Hiển thị BubbleDialoguePanel: " + dialogueId);
+                    break;
+                case DialogueDisplayMode.StoryPanel:
+                    storyDialoguePanel.ShowDialogue(dialogue, onFinish);
+                    Debug.Log("[DialogueManager] Hiển thị StoryDialoguePanel: " + dialogueId);
                     break;
                 default:
                     Debug.LogWarning($"DialogueNodeSO {dialogueId} không có displayMode hợp lệ!");
@@ -65,14 +79,31 @@ namespace Code.Dialogue
             }
         }
 
+        /// <summary>
+        /// Bắt đầu hội thoại từ sự kiện "StartDialogue":
+        /// - Lắng nghe sự kiện từ EventBus.
+        /// - Khi sự kiện xảy ra, gọi StartDialogue với eventId và callback.
+        /// </summary>
         private void OnEnable()
         {
             EventBus.Subscribe("StartDialogue", OnStartDialogueEvent);
         }
+        
+        /// <summary>
+        /// Hủy đăng ký sự kiện khi không cần thiết:
+        /// - Đảm bảo không còn lắng nghe sự kiện "StartDialogue" khi DialogueManager bị vô hiệu hóa.
+        /// </summary>
         private void OnDisable()
         {
             EventBus.Unsubscribe("StartDialogue", OnStartDialogueEvent);
         }
+        
+        /// <summary>
+        /// Xử lý sự kiện bắt đầu hội thoại:
+        /// - Nhận dữ liệu từ sự kiện, kiểm tra kiểu dữ liệu.
+        /// - Nếu dữ liệu là BaseEventData, lấy eventId và callback.
+        /// - Gọi StartDialogue với eventId và callback.
+        /// </summary>
         private void OnStartDialogueEvent(object data)
         {
             Debug.Log($"[DialogueManager] OnStartDialogueEvent received | Data: {data}");
