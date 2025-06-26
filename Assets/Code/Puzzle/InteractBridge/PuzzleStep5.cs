@@ -91,7 +91,7 @@ namespace Code.Puzzle.InteractBridge
             countdownText.text = "";
             countdownCanvas.enabled = false;
             
-            if (puzzleCompleted == true) countdownCanvas.enabled = false; 
+            //if (puzzleCompleted == true) countdownCanvas.enabled = false; 
         }
 
         // Phương thức này sẽ được gọi khi cầu sập, nó sẽ làm cho các khối cầu rơi xuống.
