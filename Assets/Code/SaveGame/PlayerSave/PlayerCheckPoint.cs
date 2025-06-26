@@ -28,6 +28,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             if (playerTransform == null)
             {
                 Debug.LogError("[PlayerCheckPoint] Player Transform not found!");
+                return;
             }
         }
     }

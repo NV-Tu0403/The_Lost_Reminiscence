@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Michsky.UI.Dark
 {
+    /// <summary>
+    /// PanelTabManager quản lý các tab trong giao diện người dùng, cho phép chuyển đổi giữa các panel và nút với hiệu ứng hoạt hình.
+    /// </summary>
     public class PanelTabManager : MonoBehaviour
     {
         [Header("PANEL LIST")]
