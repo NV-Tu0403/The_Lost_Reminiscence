@@ -204,6 +204,8 @@ public class ProfessionalSkilMenu : MonoBehaviour
 
     public string OnNewGame()
     {
+        Core.Instance._menuCamera.SetActive(false);
+
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
             Debug.LogError($"currentUserBaseName == {UserAccountManager.Instance.currentUserBaseName}");
