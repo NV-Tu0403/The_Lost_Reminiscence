@@ -1,8 +1,9 @@
 using System;
 using DG.Tweening;
+using Script.Puzzle;
 using UnityEngine;
 
-namespace Script.Puzzle.LightTree
+namespace Code.Puzzle.LightTree
 {
     public class PuzzleStep8 : PuzzleStepCameraBase, IPuzzleStep
     {

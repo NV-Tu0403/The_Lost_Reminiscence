@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Script.Puzzle.LightTree
+namespace Code.Puzzle.LightTree
 {
     /// <summary>
     /// Script này quản lí UI thanh năng lượng (Máu/Spirit) của người chơi.
@@ -32,10 +32,8 @@ namespace Script.Puzzle.LightTree
         // Cập nhật UI Spirit ban đầu
         private void Start()
         {
-            if (uiSpirit != null)
-            {
-                uiSpirit.SetSpirit(currentSpirits, maxSpirits);
-            }
+            if (uiSpirit != null) uiSpirit.SetSpirit(currentSpirits, maxSpirits, true); // Cập nhật ngay khi start
+            uiSpirit.Hide();
         }
         
         public void ReduceSpirit(int amount)
@@ -48,7 +46,7 @@ namespace Script.Puzzle.LightTree
             // Đảm bảo không âm
             if (currentSpirits < 0) currentSpirits = 0; 
             // Cập nhật UI
-            if (uiSpirit != null) uiSpirit.SetSpirit(currentSpirits, maxSpirits);
+            if (uiSpirit != null) uiSpirit.SetSpirit(currentSpirits, maxSpirits); // Vẫn dùng smooth khi giảm
             // Phát event khi máu về 0
             if (currentSpirits == 0)
             {
@@ -61,8 +59,8 @@ namespace Script.Puzzle.LightTree
         {
             // Đặt lại số lượng Spirit về tối đa
             currentSpirits = maxSpirits; 
-            // Cập nhật UI
-            if (uiSpirit != null) uiSpirit.SetSpirit(currentSpirits, maxSpirits);
+            // Cập nhật UI NGAY LẬP TỨC
+            if (uiSpirit != null) uiSpirit.SetSpirit(currentSpirits, maxSpirits, true);
         }
     }
 }

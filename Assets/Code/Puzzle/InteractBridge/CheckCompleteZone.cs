@@ -1,7 +1,8 @@
-using Script.Trigger;
+using Code.Trigger;
+using Script.Puzzle.InteractBridge;
 using UnityEngine;
 
-namespace Script.Puzzle.InteractBridge
+namespace Code.Puzzle.InteractBridge
 {
     public class CheckCompleteZone : TriggerZone
     {
@@ -25,6 +26,7 @@ namespace Script.Puzzle.InteractBridge
                 Debug.Log("Puzzle chưa hoàn thành.");
             }
             // Vô hiệu hóa zone sau khi trigger
+            
             DisableZone();
         }
     }

@@ -1,3 +1,5 @@
+using Code.Procession;
+
 namespace Script.Procession.Conditions
 {
     public class EventCompletedCondition : Condition

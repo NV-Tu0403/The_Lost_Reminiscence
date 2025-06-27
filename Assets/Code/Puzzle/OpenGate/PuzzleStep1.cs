@@ -1,4 +1,5 @@
 using System;
+using Code.Puzzle;
 using DG.Tweening;
 using Script.Puzzle;
 using UnityEngine;

@@ -1,8 +1,8 @@
-using Script.GameEventSystem;
-using Script.Procession;
+using Code.GameEventSystem;
+using Code.Procession;
 using UnityEngine;
 
-namespace Script.Trigger
+namespace Code.Trigger
 {
     public class RockTriggerZone : TriggerZone
     {

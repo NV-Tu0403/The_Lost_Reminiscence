@@ -1,29 +1,24 @@
+using System;
+using Code.GameEventSystem;
 using Events.Cutscene.Scripts;
-using Script.GameEventSystem;
-using Script.GameEventSystem.EventAction;
 using UnityEngine;
 
-namespace Script.Cutscene
+namespace Code.Cutscene
 {
     public class CutsceneAction : IEventAction
     {
-        private string _eventIdCurrent;
-        
-        // Phương thức này sẽ được gọi khi bắt đầu một cutscene.
         public void Execute(BaseEventData data)
         {
-            Debug.Log($"[CutsceneAction] Starting cutscene for event: {data.eventId}");
-            
-            _eventIdCurrent = data.eventId;
-            CutsceneManager.Instance.StartCutscene(data.eventId, () => Finished(data.eventId));
-        }
+            Debug.Log($"[CutsceneAction] Requesting cutscene for event: {data.eventId}");
 
-        // Phương thức này sẽ được gọi khi cutscene kết thúc.
-        public void Finished(string eventId = null)
-        {
-            Debug.Log($"[CutsceneAction] Finished event: {eventId}");  
-            
-            EventManager.Instance.OnEventFinished(eventId);
+            // Đặt callback khi cutscene kết thúc
+            Action finishCallback = () => {
+                EventBus.Publish(data.eventId, data);
+            };
+            data.onFinish = finishCallback;
+
+            // Gửi sự kiện bắt đầu cutscene
+            EventBus.Publish("StartCutscene", data);
         }
     }
 }

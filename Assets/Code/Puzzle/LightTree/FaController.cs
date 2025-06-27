@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Script.Puzzle.LightTree
+namespace Code.Puzzle.LightTree
 {
     public class FaController : MonoBehaviour
     {

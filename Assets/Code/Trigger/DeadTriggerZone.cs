@@ -1,3 +1,5 @@
+using Code.Puzzle.InteractBridge;
+using Code.Trigger;
 using Script.Puzzle.InteractBridge;
 using UnityEngine;
 
