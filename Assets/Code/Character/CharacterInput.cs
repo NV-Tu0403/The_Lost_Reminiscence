@@ -19,25 +19,21 @@ namespace DuckLe
                 Debug.LogError("PlayerController không tìm thấy trong Start!");
             }
 
+            InitializeCharacterCamera();
 
-            GameObject cameraPrefab = Resources.Load<GameObject>("Prefab Loaded/CharacterCamera");
-            if (cameraPrefab == null)
+            if (Core.Instance._menuCamera.activeSelf)
             {
-                Debug.LogError("Prefab Loaded/CharacterCamera không tìm thấy!");
-                return;
-            }
-            GameObject cameraInstance = Instantiate(cameraPrefab, Vector3.zero, Quaternion.identity);
-            _characterCamera = cameraInstance.GetComponent<CharacterCamera>();
-            if (_characterCamera == null)
-            {
-                Debug.LogError("CharacterCamera component không tìm thấy trên prefab!");
-                return;
-            }
-            _characterCamera.SetTarget(transform);
+                _characterCamera.gameObject.SetActive(false);
+            }   
         }
 
         void Update()
         {
+            if (!Core.Instance._menuCamera.activeSelf)
+            {
+                _characterCamera.gameObject.SetActive(true);
+            }
+
             if (_pc == null)
             {
                 Debug.LogError("PlayerController is not assigned in CharacterInput.");
@@ -50,6 +46,28 @@ namespace DuckLe
             MoveType moveType = GetSpecialActionsInput();
 
             _pc.PerformMoveInput(moveType, dir);
+        }
+
+        private void InitializeCharacterCamera()
+        {
+            if (_characterCamera == null)
+            {
+                GameObject cameraPrefab = Resources.Load<GameObject>("Prefab Loaded/CharacterCamera");
+                if (cameraPrefab == null)
+                {
+                    Debug.LogError("Prefab Loaded/CharacterCamera không tìm thấy!");
+                    return;
+                }
+
+                GameObject cameraInstance = Instantiate(cameraPrefab, Vector3.zero, Quaternion.identity);
+                _characterCamera = cameraInstance.GetComponent<CharacterCamera>();
+                if (_characterCamera == null)
+                {
+                    Debug.LogError("CharacterCamera component không tìm thấy trên prefab!");
+                    return;
+                }
+                _characterCamera.SetTarget(transform);
+            }
         }
 
         private Vector3 GetMoveInput()

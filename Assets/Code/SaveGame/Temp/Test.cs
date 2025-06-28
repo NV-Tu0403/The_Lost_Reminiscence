@@ -1,15 +1,11 @@
-﻿using DuckLe;
-using Loc_Backend.Scripts;
+﻿using Loc_Backend.Scripts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Test : MonoBehaviour

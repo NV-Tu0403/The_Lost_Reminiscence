@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Michsky.UI.Dark
 {
+    /// <summary>
+    /// BlurManager là một lớp quản lý hiệu ứng làm mờ trong giao diện người dùng, cho phép điều chỉnh mức độ làm mờ và tốc độ hoạt hình.
+    /// </summary>
     public class BlurManager : MonoBehaviour
     {
         [Header("RESOURCES")]

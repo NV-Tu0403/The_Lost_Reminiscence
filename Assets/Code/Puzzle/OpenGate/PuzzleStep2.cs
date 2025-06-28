@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Code.Puzzle;
 using DG.Tweening;
 using Script.Puzzle;
 using UnityEngine;
 
-namespace Events.Puzzle.StepPuzzle.OpenGate
+namespace Code.Puzzle.OpenGate
 {
     public class PuzzleStep2 : PuzzleStepCameraBase, IPuzzleStep
     {

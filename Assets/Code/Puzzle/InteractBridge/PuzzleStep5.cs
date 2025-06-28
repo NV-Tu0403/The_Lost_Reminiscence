@@ -1,14 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Code.Puzzle;
 using DG.Tweening;
 using Script.Puzzle.Config.Base;
 using Script.Puzzle.Config.SO;
 using TMPro;
 using UnityEngine;
 
-namespace Script.Puzzle.InteractBridge
+namespace Code.Puzzle.InteractBridge
 {
     // Step 5: Dựng cầu, đếm ngược, player qua cầu
     public class PuzzleStep5 : MonoBehaviour, IPuzzleStep
@@ -91,6 +90,8 @@ namespace Script.Puzzle.InteractBridge
             }
             countdownText.text = "";
             countdownCanvas.enabled = false;
+            
+            //if (puzzleCompleted == true) countdownCanvas.enabled = false; 
         }
 
         // Phương thức này sẽ được gọi khi cầu sập, nó sẽ làm cho các khối cầu rơi xuống.

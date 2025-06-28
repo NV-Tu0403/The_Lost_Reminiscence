@@ -4,16 +4,19 @@ using UnityEngine;
 
 namespace Michsky.UI.Dark
 {
+    /// <summary>
+    /// lớp MainPanelManager quản lý các panel trong giao diện người dùng, cho phép chuyển đổi giữa các panel với hiệu ứng hoạt hình và hỗ trợ làm mờ nền.
+    /// </summary>
     public class MainPanelManager : MonoBehaviour
     {
         [Header("PANEL LIST")]
-        public List<GameObject> panels = new List<GameObject>();
+        public List<GameObject> panels = new List<GameObject>(); // Danh sách các panel để quản lý
 
         [Header("RESOURCES")]
         public BlurManager homeBlurManager;
 
         [Header("SETTINGS")]
-        public int currentPanelIndex = 0;
+        public int currentPanelIndex = 0; // Chỉ mục của panel hiện tại, bắt đầu từ 0
         public bool enableBrushAnimation = true;
         public bool enableHomeBlur = true;
          
@@ -22,8 +25,8 @@ namespace Michsky.UI.Dark
         private Animator currentPanelAnimator;
         private Animator nextPanelAnimator;
 
-        string panelFadeIn = "Panel In";
-        string panelFadeOut = "Panel Out";
+        string panelFadeIn = "Panel In";        // Tên hoạt hình cho hiệu ứng panel vào
+        string panelFadeOut = "Panel Out";      // Tên hoạt hình cho hiệu ứng panel ra
 
         PanelBrushManager currentBrush;
         PanelBrushManager nextBrush;
@@ -38,6 +41,9 @@ namespace Michsky.UI.Dark
                 homeBlurManager.BlurInAnim();
         }
 
+        /// <summary>
+        /// Mở tab đầu tiên trong danh sách panel
+        /// </summary>
         public void OpenFirstTab()
         {
             currentPanel = panels[currentPanelIndex];
@@ -48,6 +54,10 @@ namespace Michsky.UI.Dark
                 homeBlurManager.BlurInAnim();
         }
 
+        /// <summary>
+        /// Chuyển đổi giữa các panel, cập nhật chỉ mục panel hiện tại
+        /// </summary>
+        /// <param name="newPanel"></param>
         public void PanelAnim(int newPanel)
         {
             if (newPanel != currentPanelIndex)
@@ -79,6 +89,9 @@ namespace Michsky.UI.Dark
             }
         }
 
+        /// <summary>
+        /// Chuyển đến trang tiếp theo trong danh sách panel
+        /// </summary>
         public void NextPage()
         {
             if (currentPanelIndex <= panels.Count - 2)
@@ -110,6 +123,9 @@ namespace Michsky.UI.Dark
             }
         }
 
+        /// <summary>
+        /// Quay lại trang trước trong danh sách panel
+        /// </summary>
         public void PrevPage()
         {
             if (currentPanelIndex >= 1)
