@@ -443,15 +443,23 @@ namespace DuckLe
         /// </summary>
         public void CheckItemByLooking()
         {
-            if (Time.time - lastCheckTime < checkInterval) return;
-            lastCheckTime = Time.time;
-            //Ray ray = new Ray(transform.position + Vector3.up * 1.5f, Camera.main.ScreenPointToRay(Input.mousePosition).direction);\
-            Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            Debug.DrawRay(ray.origin, ray.direction * 15f, Color.red, 0.1f, true);
-            if (Physics.Raycast(ray, out RaycastHit hit, 15f))
+            try
             {
-                CurrentSourcesLookAt = hit.collider.gameObject;
+                if (Time.time - lastCheckTime < checkInterval) return;
+                lastCheckTime = Time.time;
+                //Ray ray = new Ray(transform.position + Vector3.up * 1.5f, Camera.main.ScreenPointToRay(Input.mousePosition).direction);\
+                Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+                Debug.DrawRay(ray.origin, ray.direction * 15f, Color.red, 0.1f, true);
+                if (Physics.Raycast(ray, out RaycastHit hit, 15f))
+                {
+                    CurrentSourcesLookAt = hit.collider.gameObject;
+                }
             }
+            catch (System.Exception)
+            {
+                Debug.Log("oke");
+            }
+
         }
 
         ///// <summary>
