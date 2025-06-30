@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Code.Checkpoint;
 using Code.Cutscene;
 using Code.Dialogue;
 using Code.Puzzle;
@@ -32,7 +33,8 @@ namespace Code.GameEventSystem
             {
                 { EventType_Dl.Dialogue, new DialogueAction() },
                 { EventType_Dl.Cutscene, new CutsceneAction() },
-                { EventType_Dl.Puzzle, new PuzzleAction() } // Thêm handler cho Puzzle
+                { EventType_Dl.Puzzle, new PuzzleAction() },
+                { EventType_Dl.Checkpoint, new CheckpointAction() }
             };
         }
 
@@ -60,6 +62,11 @@ namespace Code.GameEventSystem
             // 2. Lấy handler dựa trên data.type (vd: Dialogue, Cutscene,…)
             if (handlers.TryGetValue(data.type, out IEventAction action))
             {
+                // Gán callback cho Checkpoint để phát eventId khi hoàn thành
+                if (data.type == EventType_Dl.Checkpoint)
+                {
+                    data.onFinish = () => EventBus.Publish(eventId, data);
+                }
                 action.Execute(data);
             }
             else

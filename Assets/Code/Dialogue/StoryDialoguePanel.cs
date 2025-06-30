@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Code.GameEventSystem;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -28,6 +29,7 @@ namespace Code.Dialogue
         /// </summary>
         public void ShowDialogue(DialogueNodeSO rootNode, Action onEnd)
         {
+            EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             gameObject.SetActive(true);
             _onDialogueEnd = onEnd;
 

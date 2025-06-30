@@ -12,7 +12,7 @@ namespace Code.Trigger
 
         protected override void OnTriggered(Collider other)
         {
-            EventBus.Publish(eventId, eventId);
+            EventBus.Publish("Respawn", eventId);
         }
     }
 }

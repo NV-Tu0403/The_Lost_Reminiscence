@@ -1,4 +1,5 @@
 using Code.GameEventSystem;
+using Code.Procession;
 using UnityEngine;
 
 namespace Code.Trigger
@@ -11,8 +12,15 @@ namespace Code.Trigger
         }
 
         protected override void OnTriggered(Collider other)
-        {
-            EventBus.Publish(eventId, eventId);
+        { 
+            if (!ProgressionManager.Instance.CanTrigger(eventId) &&
+                !ProgressionManager.Instance.IsWaitingForEvent(eventId))
+            {
+                Debug.Log($"[PlayerTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
+                return;
+            }
+            // Chỉ gọi TriggerEvent, không gọi UnlockProcess ở đây
+            EventExecutor.Instance.TriggerEvent(eventId); 
         }
     }
 }
