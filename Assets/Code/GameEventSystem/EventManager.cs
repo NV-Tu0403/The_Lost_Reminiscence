@@ -15,6 +15,9 @@ namespace Code.GameEventSystem
         private List<string> _eventSequence = new List<string>();
         private int _currentEventIndex = 0;
 
+        /// <summary>
+        /// Đảm bảo chỉ có một instance EventManager tồn tại (singleton pattern).
+        /// </summary>
         private void Awake()
         {
             if (Instance != null)
@@ -26,6 +29,10 @@ namespace Code.GameEventSystem
             Instance = this;
         }
 
+        /// <summary>
+        /// Khởi tạo chuỗi sự kiện và đăng ký lắng nghe các sự kiện.
+        /// </summary>
+        /// <param name="eventSequence">Danh sách các eventId sẽ được xử lý theo thứ tự.</param>
         public void Init(List<string> eventSequence)
         {
             _eventSequence = eventSequence;
@@ -35,6 +42,9 @@ namespace Code.GameEventSystem
             AutoTriggerFirstEvent();
         }
 
+        /// <summary>
+        /// Đăng ký các listener cho từng eventId trong chuỗi sự kiện lên EventBus.
+        /// </summary>
         private void RegisterEventBusListeners()
         {
             foreach (var eventId in _eventSequence)
@@ -43,6 +53,10 @@ namespace Code.GameEventSystem
             Debug.Log($"[EventManager] Subscribed to {_eventSequence.Count} events via EventBus.");
         }
 
+        /// <summary>
+        /// Được gọi khi một sự kiện kết thúc, cập nhật tiến trình và thử kích hoạt sự kiện tiếp theo.
+        /// </summary>
+        /// <param name="eventData">Dữ liệu sự kiện vừa hoàn thành.</param>
         private void OnEventFinished(object eventData)
         {
             string eventId = (eventData as BaseEventData)?.eventId ?? eventData?.ToString();
@@ -60,6 +74,10 @@ namespace Code.GameEventSystem
             TryTriggerNextEvent();
         }
 
+        /// <summary>
+        /// Cập nhật chỉ số sự kiện hiện tại dựa trên eventId vừa hoàn thành.
+        /// </summary>
+        /// <param name="eventId">ID của sự kiện vừa hoàn thành.</param>
         private void UpdateEventIndex(string eventId)
         {
             if (_eventSequence[_currentEventIndex] == eventId)
@@ -73,6 +91,9 @@ namespace Code.GameEventSystem
             }
         }
 
+        /// <summary>
+        /// Tự động kích hoạt sự kiện đầu tiên nếu có thể.
+        /// </summary>
         private void AutoTriggerFirstEvent()
         {
             if (_eventSequence.Count == 0) return;
@@ -85,6 +106,9 @@ namespace Code.GameEventSystem
             }
         }
 
+        /// <summary>
+        /// Thử kích hoạt sự kiện tiếp theo nếu điều kiện cho phép và sự kiện đó là tự động.
+        /// </summary>
         private void TryTriggerNextEvent()
         {
             if (_currentEventIndex >= _eventSequence.Count) return;
@@ -104,6 +128,9 @@ namespace Code.GameEventSystem
             }
         }
 
+        /// <summary>
+        /// Hủy đăng ký tất cả các listener khi đối tượng bị hủy.
+        /// </summary>
         private void OnDestroy()
         {
             foreach (var eventId in _eventSequence)
@@ -113,4 +140,3 @@ namespace Code.GameEventSystem
         }
     }
 }
-

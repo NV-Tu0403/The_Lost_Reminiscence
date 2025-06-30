@@ -84,6 +84,7 @@ namespace Code.Dialogue
         /// - Lắng nghe sự kiện từ EventBus.
         /// - Khi sự kiện xảy ra, gọi StartDialogue với eventId và callback.
         /// </summary>
+        
         private void OnEnable()
         {
             EventBus.Subscribe("StartDialogue", OnStartDialogueEvent);
