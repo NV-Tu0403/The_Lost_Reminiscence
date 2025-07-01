@@ -8,7 +8,7 @@ public class AudioManager : MonoBehaviour
     /// Singleton duy nhất quản lý âm thanh trong game.
     /// </summary>
     [Tooltip("Singleton duy nhất quản lý âm thanh trong game.")]
-    public static AudioManager Instance;
+    public static AudioManager Instance { get; private set; }
 
     private EventInstance ambienceInstance;
     private string currentAmbiencePath = "";
@@ -37,8 +37,9 @@ public class AudioManager : MonoBehaviour
         if (currentAmbiencePath == eventPath) return;
         StopAmbience(); // Dừng ambience cũ nếu có
         ambienceInstance = RuntimeManager.CreateInstance(eventPath);
-        ambienceInstance.start();
-        ambienceInstance.release(); // Cho phép tự cleanup sau khi stop
+        var result = ambienceInstance.start();
+        if (result != FMOD.RESULT.OK)
+            Debug.LogError($"FMOD start error: {result}");
         currentAmbiencePath = eventPath;
     }
 
@@ -47,7 +48,9 @@ public class AudioManager : MonoBehaviour
     {
         if (ambienceInstance.isValid())
         {
-            ambienceInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+            var result = ambienceInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+            if (result != FMOD.RESULT.OK)
+                Debug.LogError($"FMOD stop error: {result}");
             ambienceInstance.release();
         }
         currentAmbiencePath = "";
