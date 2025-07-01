@@ -15,10 +15,8 @@ namespace Code.Character
         {
             if (_playerController == null)
                 _playerController = GetComponentInParent<PlayerController>();
-
             if (_playerAnimator == null)
                 _playerAnimator = GetComponentInParent<PlayerAnimator>();
-            
             if (_playerInput == null)
                 _playerInput = GetComponentInParent<CharacterInput>();
             
@@ -40,26 +38,20 @@ namespace Code.Character
         {
             if (_playerController != null)
                 _playerController.enabled = false;
-            
             if (_playerAnimator != null)
                 _playerAnimator.enabled = false;
-            
             if (_playerInput != null)
                 _playerInput.enabled = false;
-            Debug.Log("[InputLockManager] Input & Controller locked due to event: " + data);
         }
 
         private void OnUnlockInput(object data)
         {
             if (_playerController != null)
                 _playerController.enabled = true;
-            
             if (_playerAnimator != null)
                 _playerAnimator.enabled = true;
-            
             if (_playerInput != null)
                 _playerInput.enabled = true;
-            Debug.Log("[InputLockManager] Input & Controller unlocked due to event: " + data);
         }
     }
 }
