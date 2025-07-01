@@ -59,18 +59,20 @@ namespace Code.Dialogue
         private void CheckDisplayDialogue(string dialogueId, Action onFinish, AsyncOperationHandle<DialogueNodeSO> handle)
         {
             var dialogue = handle.Result;
+            var onDialogueEnd = CallEvent(onFinish);
+            // Kiểm tra displayMode và hiển thị panel tương ứng
             switch (dialogue.displayMode)
             {
                 case DialogueDisplayMode.FullPanel:
-                    fullDialoguePanel.ShowDialogue(dialogue, onFinish);
+                    fullDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
                     Debug.Log("[DialogueManager] Hiển thị FullDialoguePanel: " + dialogueId);
                     break;
                 case DialogueDisplayMode.BubblePanel:
-                    bubbleDialoguePanel.ShowDialogue(dialogue, onFinish);
+                    bubbleDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
                     Debug.Log("[DialogueManager] Hiển thị BubbleDialoguePanel: " + dialogueId);
                     break;
                 case DialogueDisplayMode.StoryPanel:
-                    storyDialoguePanel.ShowDialogue(dialogue, onFinish);
+                    storyDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
                     Debug.Log("[DialogueManager] Hiển thị StoryDialoguePanel: " + dialogueId);
                     break;
                 default:
@@ -80,10 +82,29 @@ namespace Code.Dialogue
         }
 
         /// <summary>
+        /// Tạo callback cho sự kiện bắt đầu hội thoại:
+        /// - Phát sự kiện "StartDialogue" để thông báo bắt đầu hội thoại.
+        /// - Tạo callback để phát sự kiện "EndDialogue" khi hội thoại kết thúc.
+        /// </summary>
+        private static Action CallEvent(Action onFinish)
+        {
+            // Phát event bắt đầu hội thoại
+            EventBus.Publish("StartDialogue");
+            // Tạo callback kết thúc hội thoại
+            Action onDialogueEnd = () =>
+            {
+                EventBus.Publish("EndDialogue");
+                onFinish?.Invoke();
+            };
+            return onDialogueEnd;
+        }
+
+        /// <summary>
         /// Bắt đầu hội thoại từ sự kiện "StartDialogue":
         /// - Lắng nghe sự kiện từ EventBus.
         /// - Khi sự kiện xảy ra, gọi StartDialogue với eventId và callback.
         /// </summary>
+        
         private void OnEnable()
         {
             EventBus.Subscribe("StartDialogue", OnStartDialogueEvent);

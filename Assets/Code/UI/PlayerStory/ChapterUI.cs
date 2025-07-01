@@ -51,8 +51,6 @@ public class ChapterUI : MonoBehaviour
 
     private void OnNewGameClick()
     {
-        Core.Instance._menuCamera.SetActive(false);
-
         ProfessionalSkilMenu.Instance.OnNewGame();
     }
 

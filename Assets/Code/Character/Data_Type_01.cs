@@ -54,8 +54,8 @@ namespace Duckle
         ChangeMap,
         Dialogue,
         Trap,
-        Puzzle, 
+        Puzzle,
+        Checkpoint,
         Custom // cho phép mở rộng sau này
     }
-
 }

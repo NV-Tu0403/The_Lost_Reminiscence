@@ -1,4 +1,5 @@
 using System;
+using Code.GameEventSystem;
 using Events.Cutscene.Scripts;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,16 +26,16 @@ namespace Code.Cutscene
 
         private void OnEnable()
         {
-            Code.GameEventSystem.EventBus.Subscribe("StartCutscene", OnStartCutsceneEvent);
+            EventBus.Subscribe("StartCutscene", OnStartCutsceneEvent);
         }
+        
         private void OnDisable()
         {
-            Code.GameEventSystem.EventBus.Unsubscribe("StartCutscene", OnStartCutsceneEvent);
+            EventBus.Unsubscribe("StartCutscene", OnStartCutsceneEvent);
         }
+        
         private void OnStartCutsceneEvent(object data)
-        {
-            Debug.Log($"[CutsceneManager] OnStartCutsceneEvent received | Data: {data}");
-            var eventData = data as Code.GameEventSystem.BaseEventData;
+        { var eventData = data as BaseEventData;
             if (eventData == null) return;
             Debug.Log($"[CutsceneManager] Starting cutscene with eventId: {eventData.eventId}");
             StartCutscene(eventData.eventId, eventData.onFinish);
@@ -113,13 +114,11 @@ namespace Code.Cutscene
 
         private void OnVideoEnd(VideoPlayer vp)
         {
-            Debug.Log("[CutsceneManager] Cutscene ended.");
             EndCutscene();
         }
         
         private void SkipCutscene()
         {
-            Debug.Log("[CutsceneManager] Cutscene skipped.");
             EndCutscene();
         }
         
@@ -135,8 +134,9 @@ namespace Code.Cutscene
             // Gọi callback để báo cutscene đã xong
             _onFinished?.Invoke();
             _onFinished = null;
-            
-            Debug.Log("[CutsceneManager] Cutscene ended and cleaned up.");
+
+            // Phát sự kiện để các hệ thống khác biết cutscene đã kết thúc
+            EventBus.Publish("EndCutscene");
         }
     }
 }

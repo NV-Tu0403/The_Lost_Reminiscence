@@ -24,7 +24,7 @@ namespace DuckLe
             if (Core.Instance._menuCamera.activeSelf)
             {
                 _characterCamera.gameObject.SetActive(false);
-            }   
+            }
         }
 
         void Update()
@@ -50,26 +50,27 @@ namespace DuckLe
 
         private void InitializeCharacterCamera()
         {
+            GameObject cameraPrefab = Resources.Load<GameObject>("Prefab Loaded/CharacterCamera");
+            if (cameraPrefab == null)
+            {
+                Debug.LogError("Prefab Loaded/CharacterCamera không tìm thấy!");
+                return;
+            }
+
+            GameObject cameraInstance = Instantiate(cameraPrefab, Vector3.zero, Quaternion.identity);
+            _characterCamera = cameraInstance.GetComponent<CharacterCamera>();
             if (_characterCamera == null)
             {
-                GameObject cameraPrefab = Resources.Load<GameObject>("Prefab Loaded/CharacterCamera");
-                if (cameraPrefab == null)
-                {
-                    Debug.LogError("Prefab Loaded/CharacterCamera không tìm thấy!");
-                    return;
-                }
-
-                GameObject cameraInstance = Instantiate(cameraPrefab, Vector3.zero, Quaternion.identity);
-                _characterCamera = cameraInstance.GetComponent<CharacterCamera>();
-                if (_characterCamera == null)
-                {
-                    Debug.LogError("CharacterCamera component không tìm thấy trên prefab!");
-                    return;
-                }
-                _characterCamera.SetTarget(transform);
+                Debug.LogError("CharacterCamera component không tìm thấy trên prefab!");
+                return;
             }
+            _characterCamera.SetTarget(transform);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         private Vector3 GetMoveInput()
         {
             float h = Input.GetAxisRaw("Horizontal");
