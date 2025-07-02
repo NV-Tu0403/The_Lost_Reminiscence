@@ -14,7 +14,6 @@ public class ChapterUI : MonoBehaviour
     {
         SetupButtonListeners();
     }
-
     private void SetupButtonListeners()
     {
         foreach (GameObject button in buttons)
@@ -42,7 +41,6 @@ public class ChapterUI : MonoBehaviour
             case "Continue Game":
                 OnContinueGameClick();
                 break;
-
 
             default:
                 break;

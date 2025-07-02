@@ -267,7 +267,7 @@
         {
             if (debugMode)
             {
-                Debug.Log($"[Demo02] UIPageView TouchDown on {item.uIActionType}");
+               // Debug.Log($"[Demo02] UIPageView TouchDown on {item.uIActionType}");
             }
 
             //switch (item.uIActionType)
@@ -312,6 +312,7 @@
                 case UIActionType.BackToMenu:
 
                 case UIActionType.SelectSaveItem:
+
                 case UIActionType.DeleteSaveItem:
 
                 case UIActionType.TurnToPage:

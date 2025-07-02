@@ -67,10 +67,6 @@ namespace DuckLe
             _characterCamera.SetTarget(transform);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
         private Vector3 GetMoveInput()
         {
             float h = Input.GetAxisRaw("Horizontal");
