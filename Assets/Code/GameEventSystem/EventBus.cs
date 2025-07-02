@@ -15,7 +15,6 @@ namespace Code.GameEventSystem
         /// </summary>
         public static void Subscribe(string eventKey, Action<object> callback)
         {
-            Debug.Log($"[EventBus] Subscribe: {eventKey} => {callback.Method.DeclaringType}.{callback.Method.Name}");
             if (!eventTable.ContainsKey(eventKey))
                 eventTable[eventKey] = delegate { };
 
@@ -28,7 +27,6 @@ namespace Code.GameEventSystem
         /// </summary>
         public static void Unsubscribe(string eventKey, Action<object> callback)
         {
-            Debug.Log($"[EventBus] Unsubscribe: {eventKey} => {callback.Method.DeclaringType}.{callback.Method.Name}");
             if (eventTable.ContainsKey(eventKey))
                 eventTable[eventKey] -= callback;
         }
@@ -40,7 +38,6 @@ namespace Code.GameEventSystem
         /// </summary>
         public static void Publish(string eventKey, object data = null)
         {
-            Debug.Log($"[EventBus] Publish: {eventKey} | Data: {data}");
             if (eventTable.ContainsKey(eventKey))
             {
                 eventTable[eventKey]?.Invoke(data);

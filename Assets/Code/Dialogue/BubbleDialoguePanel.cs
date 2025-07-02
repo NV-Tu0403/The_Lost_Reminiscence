@@ -3,6 +3,7 @@ using System.Collections;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using Code.GameEventSystem;
 
 namespace Code.Dialogue
 {
@@ -36,6 +37,7 @@ namespace Code.Dialogue
         /// </summary>
         public void ShowDialogue(DialogueNodeSO node, Action onEnd)
         {
+            EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             gameObject.SetActive(true);
             _onDialogueEnd = onEnd;
             _currentNode = node;
