@@ -55,7 +55,7 @@ public class JsonFileHandler
                     string json = File.ReadAllText(file);
                     string fileName = Path.GetFileName(file);
                     result.Add((fileName, json));
-                    Debug.Log($"Loaded JSON from: {file}");
+                    //Debug.Log($"Loaded JSON from: {file}");
                 }
                 catch (Exception ex)
                 {

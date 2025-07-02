@@ -182,7 +182,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
 
         //PlayerCheckPoint.Instance.SetPlayerTransform(p);
         PlayerCheckPoint.Instance.ApplyLoadedPosition();
-        Debug.Log("[WaitUntil] Player position applied.");
+        //Debug.Log("[WaitUntil] Player position applied.");
     }
 
     private IEnumerator LoadImageAsync(string imagePath, RawImage saveImage)
@@ -205,7 +205,6 @@ public class ProfessionalSkilMenu : MonoBehaviour
 
     public string OnNewGame()
     {
-        Core.Instance._menuCamera.SetActive(false);
 
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
