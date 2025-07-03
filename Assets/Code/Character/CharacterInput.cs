@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DuckLe
 {
-    public class CharacterInput : Core
+    public class CharacterInput : MonoBehaviour
     {
         private PlayerController _pc;
         public CharacterCamera _characterCamera;
