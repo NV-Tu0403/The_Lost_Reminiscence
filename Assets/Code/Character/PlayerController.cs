@@ -673,3 +673,7 @@ namespace DuckLe
 // Dữ liệu phân tán: Một số dữ liệu (như thông số camera, lực ném) được lưu trong PlayerController, trong khi các tham chiếu như _characterCamera lại nằm trong CharacterInput. Điều này gây khó khăn khi cần truy cập hoặc sửa đổi dữ liệu.
 
 // Phụ thuộc cứng vào cấu trúc scene: Các tham chiếu như Resources.Load (trong CharacterInput và ThrowAction) hoặc ListBody yêu cầu cấu trúc scene cụ thể, làm giảm tính di động của code.
+<<<<<<< HEAD
+=======
+
+>>>>>>> Viet_22
