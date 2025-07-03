@@ -36,25 +36,46 @@ public class UIPage05 : MonoBehaviour
     /// </summary>
     private void RefreshSaveSlots()
     {
-        // Xóa các Save Item cũ
-        ClearSaveSlots();
-
-        // Lấy danh sách SaveFolder từ SaveGameManager thông qua ProfessionalSkilMenu
-        SaveListContext context = ProfessionalSkilMenu.Instance.RefreshSaveList();
-        List<SaveFolder> saves = context.Saves;
-
-        for (int i = 0; i < saves.Count && i < slotSaves.Length; i++)
+        try
         {
-            SaveFolder save = saves[i];
-            GameObject slot = slotSaves[i].slotSave;
+            // Xóa các Save Item cũ
+            ClearSaveSlots();
 
-            // Tạo instance của Save Item prefab
-            GameObject saveItem = Instantiate(saveItemPrefab, slot.transform);
-            instantiatedSaveItems.Add(saveItem);
+            // Lấy danh sách SaveFolder từ SaveGameManager thông qua ProfessionalSkilMenu
+            SaveListContext context = ProfessionalSkilMenu.Instance.RefreshSaveList();
+            List<SaveFolder> saves = context.Saves;
 
-            // Cấu hình Save Item
-            ConfigureSaveItem(saveItem, save);
+            if (saves.Count <= 0)
+            {
+                StartCoroutine(RetryRefreshSaveSlotsAfterDelay());
+            }
+            else
+            {
+                for (int i = 0; i < saves.Count && i < slotSaves.Length; i++)
+                {
+                    SaveFolder save = saves[i];
+                    GameObject slot = slotSaves[i].slotSave;
+
+                    // Tạo instance của Save Item prefab
+                    GameObject saveItem = Instantiate(saveItemPrefab, slot.transform);
+                    instantiatedSaveItems.Add(saveItem);
+
+                    // Cấu hình Save Item
+                    ConfigureSaveItem(saveItem, save);
+                }
+            }
         }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    private IEnumerator RetryRefreshSaveSlotsAfterDelay()
+    {
+        yield return new WaitForSeconds(1f);
+        RefreshSaveSlots();
     }
 
     /// <summary>

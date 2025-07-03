@@ -115,6 +115,25 @@ public class ProfessionalSkilMenu : MonoBehaviour
     /// <returns></returns>
     public SaveListContext RefreshSaveList()
     {
+        // Kiểm tra null trước khi sử dụng
+        if (UserAccountManager.Instance == null)
+        {
+            Debug.LogError("UserAccountManager.Instance is null!");
+            return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
+        }
+        if (SaveGameManager.Instance == null)
+        {
+            Debug.LogError("SaveGameManager.Instance is null!");
+            return new SaveListContext { UserName = UserAccountManager.Instance.currentUserBaseName, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
+        }
+        if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
+        {
+            Debug.LogError("currentUserBaseName is null or empty!");
+            // Wait 1 second and try again
+            StartCoroutine(RetryRefreshSaveListAfterDelay());
+            //return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
+        }
+
         var saves = SaveGameManager.Instance.GetAllSaveFolders(UserAccountManager.Instance.currentUserBaseName);
         bool isContinueEnabled = saves.Any();
         return new SaveListContext
@@ -123,6 +142,12 @@ public class ProfessionalSkilMenu : MonoBehaviour
             Saves = saves.Select(s => new SaveFolder { FolderPath = s.FolderPath, ImagePath = s.ImagePath }).ToList(),
             IsContinueEnabled = isContinueEnabled
         };
+    }
+
+    private IEnumerator RetryRefreshSaveListAfterDelay()
+    {
+        yield return new WaitForSeconds(1f);
+        RefreshSaveList();
     }
 
     /// <summary>
