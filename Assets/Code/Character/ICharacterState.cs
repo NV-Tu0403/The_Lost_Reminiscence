@@ -273,7 +273,7 @@ namespace Duckle
                 _primaryState.OnExit(_controller);
                 _primaryState = state;
                 _primaryState.OnEnter(_controller);
-                //Debug.Log($"Primary state changed to: {state.Name}");
+                Debug.Log($"Primary state changed to: {state.Name}");
             }
             return true;
         }
@@ -288,7 +288,7 @@ namespace Duckle
 
             _secondaryStates.Add(state);
             state.OnEnter(_controller);
-            //Debug.Log($"Added secondary state: {state.Name}");
+            Debug.Log($"Added secondary state: {state.Name}");
         }
 
         /// <summary>
@@ -365,3 +365,4 @@ namespace Duckle
 // Thêm hệ thống sự kiện (event) để thông báo khi trạng thái thay đổi, giúp các thành phần khác (như UI, animation) phản ứng mà không cần truy cập trực tiếp _stateMachine.
 
 //Một số trạng thái (như MeleeAttackingState) sử dụng tham số mặc định (duration = 0) khi kiểm tra HasState, có thể gây nhầm lẫn.
+

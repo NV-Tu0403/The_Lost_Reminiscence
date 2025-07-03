@@ -205,7 +205,7 @@ namespace Duckle
 
         private void PerformOnline(Vector3 direction)
         {
-            PerformOffline(direction); // TODO: Thêm RPC
+            PerformOffline(direction); //Thêm RPC
         }
 
         public override void update()
