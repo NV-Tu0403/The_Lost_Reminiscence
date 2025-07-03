@@ -40,10 +40,11 @@ namespace DuckLe
                 return;
             }
             Vector3 dir = GetMoveInput();
-            GetAttackInput();
+            MoveType moveType = GetSpecialActionsInput();
+
+            //GetAttackInput();
             GetUseResourceInput();
             InteractInput();
-            MoveType moveType = GetSpecialActionsInput();
 
             _pc.PerformMoveInput(moveType, dir);
         }
@@ -67,10 +68,6 @@ namespace DuckLe
             _characterCamera.SetTarget(transform);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
         private Vector3 GetMoveInput()
         {
             float h = Input.GetAxisRaw("Horizontal");
