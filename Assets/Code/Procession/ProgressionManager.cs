@@ -71,10 +71,8 @@ namespace Code.Procession
                 Debug.Log("[ProgressionManager] Loaded from SO");
                 return;
             }
-
             Debug.LogError("ProgressionDataSO is null!");
         }
-        
         
         /// <summary>
         /// Xây dựng danh sách tuần tự eventId từ MainProcesses và SubProcesses theo Order.
