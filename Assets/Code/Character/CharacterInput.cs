@@ -40,10 +40,11 @@ namespace DuckLe
                 return;
             }
             Vector3 dir = GetMoveInput();
-            GetAttackInput();
+            MoveType moveType = GetSpecialActionsInput();
+
+            //GetAttackInput();
             GetUseResourceInput();
             InteractInput();
-            MoveType moveType = GetSpecialActionsInput();
 
             _pc.PerformMoveInput(moveType, dir);
         }

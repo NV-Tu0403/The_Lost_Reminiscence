@@ -100,7 +100,7 @@ public class Test : MonoBehaviour
     {
         MainUI.SetActive(true);
         GamePlayUI.SetActive(false);
-        LoadingUI.SetActive(false);
+        //LoadingUI.SetActive(false);
         loginPanel.SetActive(false);
         createAccountPanel.SetActive(false);
         cloudRegisterPanel.SetActive(false);
@@ -358,13 +358,26 @@ public class Test : MonoBehaviour
         currentSaveText.text = string.IsNullOrEmpty(lastSelectedSaveFolder) ? "Current Save: None" : $"Current Save: {Path.GetFileName(lastSelectedSaveFolder)}";
     }
 
+    public async void Loading(bool state)
+    {
+        if (state)
+        {
+            LoadingUI.SetActive(true);
+        }
+        else
+        {
+            await Task.Delay(3000); // Giả lập thời gian tải
+            LoadingUI.SetActive(false);
+        }
+    }
 
     #region bt
 
     private void OnNewGameClicked()
     {
-        LoadingUI.SetActive(true);
+        Loading(true);
 
+        Core.Instance._menuCamera.SetActive(false);
         lastSelectedSaveFolder = ProfessionalSkilMenu.Instance.OnNewGame();
 
         UpdateCurrentSaveText();
@@ -372,7 +385,7 @@ public class Test : MonoBehaviour
 
         MainUI.SetActive(false);
         GamePlayUI.SetActive(true);
-        LoadingUI.SetActive(false);
+        Loading(false);
         //try
         //{
         //    lastSelectedSaveFolder = ProfessionalSkilMenu.Instance.OnNewGame();
@@ -403,9 +416,10 @@ public class Test : MonoBehaviour
             return;
         }
 
-        LoadingUI.SetActive(true);
+        Loading(true);
         try
         {
+            Core.Instance._menuCamera.SetActive(false);
             ProfessionalSkilMenu.Instance.OnContinueGame(lastSelectedSaveFolder);
             GamePlayUI.SetActive(true);
             MainUI.SetActive(false);
@@ -418,7 +432,7 @@ public class Test : MonoBehaviour
         }
         finally
         {
-            LoadingUI.SetActive(false);
+            Loading(false);
         }
     }
 
@@ -430,9 +444,10 @@ public class Test : MonoBehaviour
 
     private void OnQuitSessionClicked()
     {
-        LoadingUI.SetActive(true);
         try
         {
+            Loading(true);
+            Core.Instance._menuCamera.SetActive(true);
             ProfessionalSkilMenu.Instance.OnQuitSession(lastSelectedSaveFolder);
             lastSelectedSaveFolder = null;
             ContinueGame_Bt.interactable = false;
@@ -448,13 +463,13 @@ public class Test : MonoBehaviour
         }
         finally
         {
-            LoadingUI.SetActive(false);
+            Loading(false);
         }
     }
 
     private void OnSaveSessionClicked()
     {
-        LoadingUI.SetActive(true);
+        //Loading(true);
         try
         {
             ProfessionalSkilMenu.Instance.OnSaveSession();
@@ -470,13 +485,13 @@ public class Test : MonoBehaviour
         }
         finally
         {
-            LoadingUI.SetActive(false);
+            //Loading(false);
         }
     }
 
     private void OnLogoutClicked()  // cần tách ra
     {
-        LoadingUI.SetActive(true);
+        Loading(true);
         try
         {
             userAccountManager.Logout();
@@ -501,7 +516,7 @@ public class Test : MonoBehaviour
         }
         finally
         {
-            LoadingUI.SetActive(false);
+            Loading(false);
         }
     }
 
@@ -644,7 +659,7 @@ public class Test : MonoBehaviour
             return;
         }
 
-        LoadingUI.SetActive(true);
+        Loading(true);
         try
         {
             // Lưu trạng thái trước khi thoát
@@ -660,7 +675,7 @@ public class Test : MonoBehaviour
         }
         finally
         {
-            LoadingUI.SetActive(false);
+            Loading(false);
         }
     }
 
