@@ -158,4 +158,3 @@ namespace Michsky.UI.Dark
         }
     }
 }
-

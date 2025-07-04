@@ -18,6 +18,8 @@ namespace Michsky.UI.Dark
 
         public void Fix()
         {
+            // We need to disable and enable the object, otherwise it'll stuck on highlighted anim.
+            // This 'bug' is there since Unity 5, yet no fix available from Unity
             fixButton.gameObject.SetActive(false);
             fixButton.gameObject.SetActive(true);
         }
