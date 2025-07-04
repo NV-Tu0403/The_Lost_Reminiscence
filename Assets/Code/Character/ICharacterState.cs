@@ -99,11 +99,11 @@ namespace Duckle
     /// <summary>
     /// Trạng thái rơi (Falling).
     /// </summary>
-    public class FallingState : CharacterState
-    {
-        public override bool IsAction => false;
-        public override string Name => "Falling";
-    }
+    // public class FallingState : CharacterState
+    // {
+    //     public override bool IsAction => false;
+    //     public override string Name => "Falling";
+    // }
 
     /// <summary>
     /// Trạng thái di chuyển (Moving).
@@ -176,7 +176,7 @@ namespace Duckle
         public override bool CanTransitionTo(ICharacterState nextState)
         {
             // Không thể chuyển sang trạng thái hành động khác khi đang tấn công
-            return !nextState.IsAction || nextState is FallingState;
+            return !nextState.IsAction; //|| nextState is FallingState;
         }
     }
 
@@ -202,7 +202,7 @@ namespace Duckle
         public override bool CanTransitionTo(ICharacterState nextState)
         {
             // Không thể chuyển sang trạng thái hành động khác khi đang ném
-            return !nextState.IsAction || nextState is FallingState;
+            return !nextState.IsAction; //|| nextState is FallingState;
         }
     }
 
@@ -230,7 +230,7 @@ namespace Duckle
         public override bool CanTransitionTo(ICharacterState nextState)
         {
             // Không thể chuyển sang trạng thái hành động khác khi đang tương tác
-            return !nextState.IsAction || nextState is FallingState;
+            return !nextState.IsAction;// || nextState is FallingState;
         }
     }
     #endregion
