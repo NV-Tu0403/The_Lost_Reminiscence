@@ -46,13 +46,16 @@ namespace Code.Puzzle
             _onFinish = null;
         }
 
+        
+        /// <summary>
+        /// Dev Mode: Skip hiệu ứng và hoàn thành câu đố ngay lập tức.
+        /// </summary>
         public void ForceCompletePuzzle(string puzzleId)
         {
             if (_steps == null) GetSteps();
             if (_steps != null && _steps.TryGetValue(puzzleId, out var step))
             {
-                // Gọi hàm chuẩn hóa cho mọi loại puzzle step
-                step.ForceComplete(true); // instant = true: skip hiệu ứng/VFX/audio/camera
+                step.ForceComplete(); 
                 FinishPuzzle();
             }
         }

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Code.Cutscene;
+using Code.Dialogue;
 using Code.GameEventSystem;
 using Code.Puzzle;
 using Script.Procession.Reward.Base;
@@ -70,7 +72,7 @@ namespace Code.Procession
             if (progressionDataSo != null)
             {
                 progression = progressionDataSo.ToGameProgression();
-                Debug.Log("[ProgressionManager] Loaded from SO");
+                //Debug.Log("[ProgressionManager] Loaded from SO");
                 return;
             }
             Debug.LogError("ProgressionDataSO is null!");
@@ -95,7 +97,7 @@ namespace Code.Procession
                     sequence.Add(sub.Id);
             }
 
-            Debug.Log($"[ProgressionManager] Built event sequence: {sequence.Count} events");
+            // Debug.Log($"[ProgressionManager] Built event sequence: {sequence.Count} events");
             return sequence;
         }
         
@@ -105,11 +107,11 @@ namespace Code.Procession
         /// </summary>
         public void HandleEventFinished(string eventId)
         {
-            Debug.Log($"[ProgressionManager] Event Finished: {eventId}");
+            //Debug.Log($"[ProgressionManager] Event Finished: {eventId}");
 
             if (TryCompleteSubProcess(eventId) || TryCompleteMainProcess(eventId))
             {
-                Debug.Log($"[ProgressionManager] Progress updated for event '{eventId}'");
+                //Debug.Log($"[ProgressionManager] Progress updated for event '{eventId}'");
             }
             else
             {
@@ -126,12 +128,12 @@ namespace Code.Procession
                 if (sub != null && sub.Status != MainProcess.ProcessStatus.Completed)
                 {
                     sub.Status = MainProcess.ProcessStatus.Completed;
-                    Debug.Log($"[ProgressionManager] SubProcess '{eventId}' marked Completed.");
+                    //Debug.Log($"[ProgressionManager] SubProcess '{eventId}' marked Completed.");
                     GrantRewards(sub.Rewards);
                     if (main.SubProcesses.All(s2 => s2.Status == MainProcess.ProcessStatus.Completed))
                     {
                         main.Status = MainProcess.ProcessStatus.Completed;
-                        Debug.Log($"[ProgressionManager] MainProcess '{main.Id}' marked Completed.");
+                        //Debug.Log($"[ProgressionManager] MainProcess '{main.Id}' marked Completed.");
                         GrantRewards(main.Rewards);
                     }
 
@@ -148,7 +150,7 @@ namespace Code.Procession
             if (mainMatch != null && mainMatch.Status != MainProcess.ProcessStatus.Completed)
             {
                 mainMatch.Status = MainProcess.ProcessStatus.Completed;
-                Debug.Log($"[ProgressionManager] MainProcess '{eventId}' marked Completed (direct).");
+                //Debug.Log($"[ProgressionManager] MainProcess '{eventId}' marked Completed (direct).");
                 GrantRewards(mainMatch.Rewards);
                 return true;
             }
@@ -168,7 +170,7 @@ namespace Code.Procession
                 if (subProcess != null) return subProcess;
             }
 
-            Debug.LogWarning($"Process with ID '{id}' not found!");
+            //Debug.LogWarning($"Process with ID '{id}' not found!");
             return null;
         }
 
@@ -181,7 +183,7 @@ namespace Code.Procession
             if (mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.Locked)
             {
                 mainProcess.Status = MainProcess.ProcessStatus.InProgress;
-                Debug.Log($"[ProgressionManager] Unlocked MainProcess '{id}'");
+                //Debug.Log($"[ProgressionManager] Unlocked MainProcess '{id}'");
                 return true;
             }
 
@@ -191,12 +193,12 @@ namespace Code.Procession
                 if (subProcess != null && subProcess.Status == MainProcess.ProcessStatus.Locked)
                 {
                     subProcess.Status = MainProcess.ProcessStatus.InProgress;
-                    Debug.Log($"[ProgressionManager] Unlocked SubProcess '{id}'");
+                    //Debug.Log($"[ProgressionManager] Unlocked SubProcess '{id}'");
                     return true;
                 }
             }
 
-            Debug.LogWarning($"[ProgressionManager] Cannot unlock process '{id}': Not found or not locked!");
+            //Debug.LogWarning($"[ProgressionManager] Cannot unlock process '{id}': Not found or not locked!");
             return false;
         }
 
@@ -264,9 +266,9 @@ namespace Code.Procession
             if (reward is ItemReward itemReward && itemReward.ItemType == "Loot")
             {
                 var loot = lootDatabase.GetLootConfig(itemReward.ItemName);
-                Debug.Log(loot != null
-                    ? $"[ProgressionManager] Granted {itemReward.Amount} x {loot.Name} (Power:{loot.Power})"
-                    : $"[ProgressionManager] Loot {itemReward.ItemName} not found!");
+                //Debug.Log(loot != null
+                //    ? $"[ProgressionManager] Granted {itemReward.Amount} x {loot.Name} (Power:{loot.Power})"
+                //    : $"[ProgressionManager] Loot {itemReward.ItemName} not found!");
             }
 
             reward.Grant();
@@ -288,12 +290,12 @@ namespace Code.Procession
                     {
                         subProcess.Status = MainProcess.ProcessStatus.Completed;
                         GrantRewards(subProcess.Rewards);
-                        Debug.Log($"[ProgressionManager] SubProcess '{id}' completed by conditions.");
+                        //Debug.Log($"[ProgressionManager] SubProcess '{id}' completed by conditions.");
                         if (main.SubProcesses.All(s2 => s2.Status == MainProcess.ProcessStatus.Completed))
                         {
                             main.Status = MainProcess.ProcessStatus.Completed;
                             GrantRewards(main.Rewards);
-                            Debug.Log($"[ProgressionManager] MainProcess '{main.Id}' completed by sub-conditions.");
+                            //Debug.Log($"[ProgressionManager] MainProcess '{main.Id}' completed by sub-conditions.");
                         }
                         return true;
                     }
@@ -312,7 +314,7 @@ namespace Code.Procession
             if (mainProcess != null)
             {
                 mainProcess.Status = newStatus;
-                Debug.Log($"[ProgressionManager] Updated MainProcess {id} → {newStatus}");
+                //Debug.Log($"[ProgressionManager] Updated MainProcess {id} → {newStatus}");
                 return true;
             }
         
@@ -322,7 +324,7 @@ namespace Code.Procession
                 if (subProcess != null)
                 {
                     subProcess.Status = newStatus;
-                    Debug.Log($"[ProgressionManager] Updated SubProcess {id} → {newStatus}");
+                    //Debug.Log($"[ProgressionManager] Updated SubProcess {id} → {newStatus}");
                     return true;
                 }
             }
@@ -331,25 +333,41 @@ namespace Code.Procession
         }
         
         #endregion
+        
+
+        // Cờ cho biết đang skip dev mode
+        public bool IsDevSkipMode { get; private set; } = false;
 
         /// <summary>
-        /// DEV MODE: Hoàn thành tất cả event puzzle (skip puzzle).
+        /// DEV MODE: Skip/complete nhiều event liên tiếp (puzzle, dialogue, cutscene, ...)
         /// </summary>
-        public void ForceCompleteAllPuzzleEvents()
+        public void ForceCompleteEvents(IEnumerable<string> eventIds)
         {
-            var puzzleEventIds = EventExecutor.Instance.GetAllPuzzleEventIds();
-            foreach (var eventId in puzzleEventIds)
+            IsDevSkipMode = true;
+            foreach (var eventId in eventIds)
             {
-                if (!IsEventCompleted(eventId))
-                {
-                    // Đánh dấu progression
-                    HandleEventFinished(eventId);
-                    // Gọi EventManager để phát event (đảm bảo VFX, cổng, đèn, ...)
-                    EventManager.Instance.ForceCompleteEvent(eventId);
-                    // Nếu là puzzle cổng, gọi force mở cổng và đèn
-                    PuzzleManager.Instance.ForceCompletePuzzle(eventId);
-                }
+                ForceCompleteEvent(eventId);
             }
+            IsDevSkipMode = false;
+        }
+
+        /// <summary>
+        /// DEV MODE: Skip/complete bất kỳ event nào (puzzle, dialogue, cutscene, ...)
+        /// </summary>
+        public void ForceCompleteEvent(string eventId)
+        {
+            if (IsEventCompleted(eventId)) return;
+            HandleEventFinished(eventId);
+            EventManager.Instance.ForceCompleteEvent(eventId);
+
+            PuzzleManager puzzleMgr = FindObjectOfType<PuzzleManager>();
+            if (puzzleMgr != null) puzzleMgr.ForceCompletePuzzle(eventId);
+
+            DialogueManager dialogueMgr = FindObjectOfType<DialogueManager>();
+            if (dialogueMgr != null) dialogueMgr.ForceCompleteDialogue(eventId);
+
+            CutsceneManager cutsceneMgr = FindObjectOfType<CutsceneManager>();
+            if (cutsceneMgr != null) cutsceneMgr.ForceCompleteCutscene(eventId);
         }
     }
 }

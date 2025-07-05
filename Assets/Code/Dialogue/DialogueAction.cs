@@ -12,7 +12,7 @@ namespace Code.Dialogue
     {
         public void Execute(BaseEventData data)
         {
-            Debug.Log($"[DialogueAction] Starting dialogue for event: {data.eventId}");
+            //Debug.Log($"[DialogueAction] Starting dialogue for event: {data.eventId}");
 
             // Đặt callback khi hội thoại kết thúc
             Action finishCallback = () => {

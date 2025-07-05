@@ -9,7 +9,7 @@ namespace Code.Cutscene
     {
         public void Execute(BaseEventData data)
         {
-            Debug.Log($"[CutsceneAction] Requesting cutscene for event: {data.eventId}");
+            //Debug.Log($"[CutsceneAction] Requesting cutscene for event: {data.eventId}");
 
             // Đặt callback khi cutscene kết thúc
             Action finishCallback = () => {

@@ -28,11 +28,6 @@ namespace Code.Puzzle.LightTree
             }
         }
 
-        public void ForceComplete(bool instant = true)
-        {
-            throw new NotImplementedException();
-        }
-
         private void CheckDestroySups()
         {
             var allSups = FindObjectsOfType<SupController>();
@@ -73,6 +68,11 @@ namespace Code.Puzzle.LightTree
                 Debug.Log("[PuzzleStep7] All enemies destroyed. Step complete.");
                 _onComplete?.Invoke();
             }
+        }
+        
+        public void ForceComplete()
+        {
+            
         }
     }
     

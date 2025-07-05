@@ -19,11 +19,6 @@ namespace Code.GameEventSystem
         {
             return events.Select(e => e.eventId).ToArray();
         }
-
-        public List<string> GetAllPuzzleEventIds()
-        {
-            return events.Where(e => e.type == EventType_Dl.Puzzle).Select(e => e.eventId).ToList();
-        }
     }
     
     [System.Serializable]

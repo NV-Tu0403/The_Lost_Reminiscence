@@ -138,5 +138,18 @@ namespace Code.Cutscene
             // Phát sự kiện để các hệ thống khác biết cutscene đã kết thúc
             EventBus.Publish("EndCutscene");
         }
+
+        /// <summary>
+        /// DEV MODE: Skip/complete cutscene instantly by eventId.
+        /// </summary>
+        public void ForceCompleteCutscene(string eventId)
+        {
+            if (cutscenePanel.activeSelf)
+            {
+                EndCutscene();
+                //phát event kết thúc
+                EventBus.Publish(eventId, null);
+            }
+        }
     }
 }
