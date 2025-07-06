@@ -23,14 +23,12 @@ namespace Code.Dialogue
         private Tween _blinkNextTween;
         private Tween _blinkSkipTween;
         private const float TypewriterDelay = 0.05f;
-        private bool isForceSkipping = false;
 
         /// <summary>
         /// Show dialogue from root node, set end callback.
         /// </summary>
         public void ShowDialogue(DialogueNodeSO rootNode, Action onEnd)
         {
-            if (isForceSkipping) return;
             EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             gameObject.SetActive(true);
             _onDialogueEnd = onEnd;
@@ -50,7 +48,6 @@ namespace Code.Dialogue
         /// </summary>
         private void ShowNode(DialogueNodeSO node)
         {
-            if (isForceSkipping) return;
             StopBlinking(ref _blinkNextTween);
 
             if (node == null)
@@ -71,10 +68,10 @@ namespace Code.Dialogue
         private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
         {
             _isTyping = true;
-            //Debug.Log("Typing dialogue: " + _isTyping);
+            Debug.Log("Typing dialogue: " + _isTyping);
             yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
             _isTyping = false;
-            //Debug.Log("Finished typing: " + _isTyping);
+            Debug.Log("Finished typing: " + _isTyping);
             ShowNextButton(node);
 
             StopBlinking(ref _blinkNextTween);
@@ -118,9 +115,7 @@ namespace Code.Dialogue
             nextButton.onClick.RemoveAllListeners();
             skipButton.onClick.RemoveAllListeners();
             gameObject.SetActive(false);
-            // Chỉ gọi callback nếu không phải đang skip dev mode
-            if (!Code.Procession.ProgressionManager.Instance.IsDevSkipMode)
-                _onDialogueEnd?.Invoke();
+            _onDialogueEnd?.Invoke();
         }
 
         /// <summary>
@@ -145,19 +140,6 @@ namespace Code.Dialogue
                 tween.Kill();
                 tween = null;
             }
-        }
-
-        /// <summary>
-        /// DEV MODE: Skip story dialogue ngay lập tức.
-        /// </summary>
-        public void ForceComplete()
-        {
-            isForceSkipping = true;
-            if (_typingCoroutine != null)
-                StopCoroutine(_typingCoroutine);
-            _isTyping = false;
-            EndDialogue();
-            isForceSkipping = false;
         }
     }
 }

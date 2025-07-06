@@ -23,7 +23,6 @@ namespace Code.Dialogue
         private CanvasGroup _canvasGroup;
         private bool isTyping = false;
         private const float TypewriterDelay = 0.05f;
-        private bool isForceSkipping = false;
         
         private void Awake()
         {
@@ -38,7 +37,6 @@ namespace Code.Dialogue
         /// </summary>
         public void ShowDialogue(DialogueNodeSO node, Action onEnd)
         {
-            if (isForceSkipping) return;
             EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             gameObject.SetActive(true);
             _onDialogueEnd = onEnd;
@@ -55,7 +53,6 @@ namespace Code.Dialogue
         /// </summary>
         private void ShowNode(DialogueNodeSO node)
         {
-            if (isForceSkipping) return;
             if (node == null)
             {
                 EndDialogue();
@@ -125,36 +122,28 @@ namespace Code.Dialogue
         {
             if (_canvasGroup == null) return;
 
+            // Lưu vị trí hiện tại để tween anchorPos
             RectTransform rectTransform = transform as RectTransform;
             if (rectTransform == null) return;
 
             Vector2 startPos = rectTransform.anchoredPosition;
-            Vector2 endPos = startPos + new Vector2(0f, 30f);
+            Vector2 endPos = startPos + new Vector2(0f, 30f); // bay lên 30px
 
+            // Di chuyển vị trí UI (bay lên)
             rectTransform.DOAnchorPos(endPos, 0.25f).SetEase(Ease.OutSine);
+
+            // Fade out
             _canvasGroup.DOFade(0f, 0.25f).SetEase(Ease.InSine);
+
+            // Scale down + gọi callback
             transform.DOScale(Vector3.zero, 0.25f).SetEase(Ease.InBack)
                 .OnComplete(() =>
                 {
                     gameObject.SetActive(false);
-                    // Chỉ gọi callback nếu không phải đang skip dev mode
-                    if (!Code.Procession.ProgressionManager.Instance.IsDevSkipMode)
-                        _onDialogueEnd?.Invoke();
-                    rectTransform.anchoredPosition = startPos;
+                    _onDialogueEnd?.Invoke();
+                    rectTransform.anchoredPosition = startPos; // reset vị trí để dùng lại
                 });
         }
 
-        /// <summary>
-        /// DEV MODE: Skip bubble dialogue ngay lập tức.
-        /// </summary>
-        public void ForceComplete()
-        {
-            isForceSkipping = true;
-            if (_typingCoroutine != null)
-                StopCoroutine(_typingCoroutine);
-            isTyping = false;
-            EndDialogue();
-            isForceSkipping = false;
-        }
     }
 }

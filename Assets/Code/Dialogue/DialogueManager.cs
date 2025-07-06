@@ -65,18 +65,18 @@ namespace Code.Dialogue
             {
                 case DialogueDisplayMode.FullPanel:
                     fullDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
-                    //Debug.Log("[DialogueManager] Hiển thị FullDialoguePanel: " + dialogueId);
+                    Debug.Log("[DialogueManager] Hiển thị FullDialoguePanel: " + dialogueId);
                     break;
                 case DialogueDisplayMode.BubblePanel:
                     bubbleDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
-                    //Debug.Log("[DialogueManager] Hiển thị BubbleDialoguePanel: " + dialogueId);
+                    Debug.Log("[DialogueManager] Hiển thị BubbleDialoguePanel: " + dialogueId);
                     break;
                 case DialogueDisplayMode.StoryPanel:
                     storyDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
-                    //Debug.Log("[DialogueManager] Hiển thị StoryDialoguePanel: " + dialogueId);
+                    Debug.Log("[DialogueManager] Hiển thị StoryDialoguePanel: " + dialogueId);
                     break;
                 default:
-                    //Debug.LogWarning($"DialogueNodeSO {dialogueId} không có displayMode hợp lệ!");
+                    Debug.LogWarning($"DialogueNodeSO {dialogueId} không có displayMode hợp lệ!");
                     break;
             }
         }
@@ -127,27 +127,11 @@ namespace Code.Dialogue
         /// </summary>
         private void OnStartDialogueEvent(object data)
         {
-            //Debug.Log($"[DialogueManager] OnStartDialogueEvent received | Data: {data}");
+            Debug.Log($"[DialogueManager] OnStartDialogueEvent received | Data: {data}");
             var eventData = data as BaseEventData;
             if (eventData == null) return;
-            //Debug.Log($"[DialogueManager] Starting dialogue with eventId: {eventData.eventId}");
+            Debug.Log($"[DialogueManager] Starting dialogue with eventId: {eventData.eventId}");
             StartDialogue(eventData.eventId, eventData.onFinish);
-        }
-
-        /// <summary>
-        /// DEV MODE: Skip/complete dialogue instantly by eventId.
-        /// </summary>
-        public void ForceCompleteDialogue(string eventId)
-        {
-            // Nếu dialogue đang chạy, tắt panel và gọi callback nếu có
-            if (fullDialoguePanel != null && fullDialoguePanel.gameObject.activeSelf)
-                fullDialoguePanel.ForceComplete();
-            if (bubbleDialoguePanel != null && bubbleDialoguePanel.gameObject.activeSelf)
-                bubbleDialoguePanel.ForceComplete();
-            if (storyDialoguePanel != null && storyDialoguePanel.gameObject.activeSelf)
-                storyDialoguePanel.ForceComplete();
-            //  phát event kết thúc
-            EventBus.Publish(eventId, null);
         }
     }
 }

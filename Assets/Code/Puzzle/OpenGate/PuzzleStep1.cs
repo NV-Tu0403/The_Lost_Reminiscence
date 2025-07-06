@@ -33,9 +33,11 @@ namespace Code.Puzzle.OpenGate
             ReturnCameraToPlayer(sequence, playerCam, cameraMoveDuration, onComplete, characterCamera);
         }
 
-        public void ForceComplete()
+        public void ForceComplete(bool instant = true)
         {
-            Debug.Log("[PuzzleStep1] ForceComplete");
+            // Nếu có logic trạng thái hoàn thành cho step này, set ở đây.
+            // Ví dụ: Đặt camera/gate về trạng thái đã hoàn thành, không chạy tween.
+            // Nếu không cần gì, để trống.
         }
     }
 }

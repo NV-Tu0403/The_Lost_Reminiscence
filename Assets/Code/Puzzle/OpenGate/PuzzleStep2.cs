@@ -44,7 +44,7 @@ namespace Code.Puzzle.OpenGate
         public void StartStep(Action onComplete)
         {
             extraNote.SetActive(true);
-
+            
             if (!CheckCameraAvailable(onComplete)) return;
 
             var playerCam = GetPlayerCam(out var characterCamera);
@@ -72,8 +72,8 @@ namespace Code.Puzzle.OpenGate
             });
 
             // Delay đúng thời gian glow + open + hold
-            float totalWait = gateTweenDuration + gateOpenDuration +
-                              (noteGlowController != null ?
+            float totalWait = gateTweenDuration + gateOpenDuration + 
+                              (noteGlowController != null ? 
                                   noteGlowController.delayBetweenNotes * noteGlowController.noteRenderers.Length : 0);
 
             seq.AppendInterval(totalWait);
@@ -88,8 +88,8 @@ namespace Code.Puzzle.OpenGate
                 //Debug.LogError("[PuzzleStep2] Không tìm thấy gate!");
                 return;
             }
-
-            // Phát hiệu ứng VFX
+            
+            // Phát hiệu ứng VFX 
             if (gateParticles != null && gateParticles.Count > 0)
             {
                 foreach (var particle in gateParticles)
@@ -113,27 +113,36 @@ namespace Code.Puzzle.OpenGate
         }
 
         // --- DEV MODE SUPPORT ---
-        private void ForceOpenGateAndGlow()
+        public void ForceOpenGateAndGlow(bool instant = false)
         {
             // Bật note
             if (extraNote != null) extraNote.SetActive(true);
             // Sáng tất cả đèn
             if (noteGlowController != null) noteGlowController.ForceGlowAll();
             // Mở cổng ngay lập tức
-            if (gate != null)  gate.position += openOffset;
-
-            Action onComplete = () =>
+            if (gate != null)
             {
-                Debug.Log("[PuzzleStep2] Cổng đã mở và nốt nhạc đã sáng (dev mode)");
-            };
-
-            onComplete?.Invoke();
+                gate.position += openOffset;
+            }
+            if (!instant)
+            {
+                // Phát hiệu ứng VFX
+                if (gateParticles != null)
+                {
+                    foreach (var particle in gateParticles)
+                    {
+                        if (particle != null) particle.Play();
+                    }
+                }
+                // Phát âm thanh
+                if (gateAudio != null) gateAudio.Play();
+                if (noteAudio != null) noteAudio.Play();
+            }
         }
 
-        public void ForceComplete()
+        public void ForceComplete(bool instant = true)
         {
-            Debug.Log("[PuzzleStep2] ForceComplete");
-            ForceOpenGateAndGlow();
+            ForceOpenGateAndGlow(instant);
         }
     }
 }

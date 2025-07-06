@@ -58,7 +58,7 @@ public class MainProcessSO
             Rewards     = Rewards.ConvertAll(so => so.ToReward()),
             Status      = Status
         };
-        // Debug.Log($"[MainProcessSO] Converted MainProcess '{Id}': {mainProcess.SubProcesses.Count} SubProcesses, {mainProcess.Rewards.Count} Rewards");
+        Debug.Log($"[MainProcessSO] Converted MainProcess '{Id}': {mainProcess.SubProcesses.Count} SubProcesses, {mainProcess.Rewards.Count} Rewards");
         return mainProcess;
     }
 }

@@ -50,9 +50,6 @@ namespace Code.Dialogue
         // Thời gian delay giữa các ký tự (0.05s) => Lưu ý GIỮA CÁC KÝ TỰ, không phải giữa các từ.
         private const float TypewriterDelay = 0.05f;
         
-        // Thêm biến này
-        private bool isForceSkipping = false;
-        
         
         /// <summary>
         /// Được gọi từ DialogueManager:
@@ -61,7 +58,6 @@ namespace Code.Dialogue
         /// </summary>
         public void ShowDialogue(DialogueNodeSO rootNode, Action onEnd)
         {
-            if (isForceSkipping) return; // Nếu đang skip thì không show gì cả
             EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             gameObject.SetActive(true);
             _onDialogueEnd = onEnd;
@@ -94,7 +90,6 @@ namespace Code.Dialogue
         /// </summary>
         private void ShowNode(DialogueNodeSO node)
         {
-            if (isForceSkipping) return; // Nếu đang skip thì không show gì cả
             StopBlinking(ref _blinkNextTween);
             
             if (node == null)
@@ -122,11 +117,11 @@ namespace Code.Dialogue
         private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
         {
             _isTyping = true;
-            //Debug.Log("Bắt đầu gõ chữ: " + _isTyping);
+            Debug.Log("Bắt đầu gõ chữ: " + _isTyping);
             yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
             
             _isTyping = false;
-            //Debug.Log("Kết thúc gõ chữ: " + _isTyping);
+            Debug.Log("Kết thúc gõ chữ: " + _isTyping);
             
             if (node.choices != null && node.choices.Length > 0)
                 ShowChoices(node);
@@ -253,14 +248,13 @@ namespace Code.Dialogue
         private void EndDialogue()
         {
             StopBlinking(ref _blinkNextTween);
+            
             ClearChoices();
             nextButton.onClick.RemoveAllListeners();
             skipButton.onClick.RemoveAllListeners();
 
             gameObject.SetActive(false);
-            // Chỉ gọi callback nếu không phải đang skip dev mode
-            if (!Code.Procession.ProgressionManager.Instance.IsDevSkipMode)
-                _onDialogueEnd?.Invoke();
+            _onDialogueEnd?.Invoke();
         }
         
         
@@ -286,19 +280,6 @@ namespace Code.Dialogue
                 tween.Kill();
                 tween = null;
             }
-        }
-        
-        /// <summary>
-        /// DEV MODE: Skip toàn bộ hội thoại ngay lập tức.
-        /// </summary>
-        public void ForceComplete()
-        {
-            isForceSkipping = true;
-            if (_typingCoroutine != null)
-                StopCoroutine(_typingCoroutine);
-            _isTyping = false;
-            EndDialogue();
-            isForceSkipping = false;
         }
     }
 }

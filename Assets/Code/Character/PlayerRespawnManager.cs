@@ -23,7 +23,7 @@ namespace Code.Character
 
             EventBus.Subscribe("Respawn", OnRespawnEvent);
             EventBus.Subscribe("Checkpoint", OnCheckpointEvent);
-            //Debug.Log("[PlayerRespawnManager] Subscribed to Respawn and Checkpoint events.");
+            Debug.Log("[PlayerRespawnManager] Subscribed to Respawn and Checkpoint events.");
         }
 
         private void OnDestroy()
