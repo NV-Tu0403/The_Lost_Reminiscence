@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Code.Character;
 using Code.GameEventSystem;
 using Code.Puzzle;
+using Code.Trigger;
 using Script.Procession.Reward.Base;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -333,23 +335,102 @@ namespace Code.Procession
         #endregion
 
         /// <summary>
-        /// DEV MODE: Hoàn thành tất cả event puzzle (skip puzzle).
+        /// DEV MODE: Skip toàn bộ event (subprocess) của một main process (ví dụ: Puzzle1).
+        /// Đánh dấu complete cho tất cả event, chỉ gọi force complete puzzle nếu là puzzle.
+        /// Sau khi skip, teleport player đến checkpoint của main tiếp theo (nếu có).
         /// </summary>
-        public void ForceCompleteAllPuzzleEvents()
+        public void ForceCompleteAllEventsInMain(string mainProcessId)
         {
-            var puzzleEventIds = EventExecutor.Instance.GetAllPuzzleEventIds();
-            foreach (var eventId in puzzleEventIds)
+            var main = progression.MainProcesses.Find(mp => mp.Id == mainProcessId);
+            if (main == null)
             {
-                if (!IsEventCompleted(eventId))
+                Debug.LogWarning($"[ProgressionManager] MainProcess '{mainProcessId}' not found!");
+                return;
+            }
+
+            // Đánh dấu complete cho tất cả subprocess
+            if (main.SubProcesses != null)
+            {
+                foreach (var sub in main.SubProcesses)
                 {
-                    // Đánh dấu progression
-                    HandleEventFinished(eventId);
-                    // Gọi EventManager để phát event (đảm bảo VFX, cổng, đèn, ...)
-                    EventManager.Instance.ForceCompleteEvent(eventId);
-                    // Nếu là puzzle cổng, gọi force mở cổng và đèn
-                    PuzzleManager.Instance.ForceCompletePuzzle(eventId);
+                    if (!IsEventCompleted(sub.Id))
+                    {
+                        HandleEventFinished(sub.Id);
+                        // Nếu là puzzle thì gọi luôn force complete puzzle (để xử lý hiệu ứng/vật thể)
+                        if (sub.Type == MainProcess.ProcessType.Puzzle)
+                        {
+                            PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
+                        }
+                    }
                 }
             }
+
+            // Đánh dấu main process là completed nếu chưa
+            if (main.Status != MainProcess.ProcessStatus.Completed)
+            {
+                HandleEventFinished(main.Id);
+            }
+
+            // Teleport player đến checkpoint của main tiếp theo
+            Debug.Log("[ProgressionManager] Bắt đầu tìm checkpoint của main tiếp theo để teleport...");
+            TeleportPlayerToNextMainCheckpoint(main);
+        }
+
+        /// <summary>
+        /// Tìm main process tiếp theo và teleport player đến checkpoint đầu tiên của nó (nếu có).
+        /// </summary>
+        private void TeleportPlayerToNextMainCheckpoint(MainProcess currentMain)
+        {
+            if (progression?.MainProcesses == null || currentMain == null)
+            {
+                Debug.LogWarning("[ProgressionManager] progression hoặc currentMain bị null.");
+                return;
+            }
+
+            // Tìm main tiếp theo theo Order
+            var nextMain = progression.MainProcesses
+                .Where(mp => mp.Order > currentMain.Order)
+                .OrderBy(mp => mp.Order)
+                .FirstOrDefault();
+
+            if (nextMain == null)
+            {
+                Debug.Log("[ProgressionManager] Không còn main process nào để teleport.");
+                return;
+            }
+            Debug.Log($"[ProgressionManager] Main tiếp theo: {nextMain.Id}");
+
+            // Tìm sub process type Checkpoint đầu tiên trong main tiếp theo
+            var checkpointSub = nextMain.SubProcesses?
+                .Where(s => s.Type == MainProcess.ProcessType.Checkpoint)
+                .OrderBy(s => s.Order)
+                .FirstOrDefault();
+
+            if (checkpointSub == null)
+            {
+                Debug.Log("[ProgressionManager] Main tiếp theo không có checkpoint để teleport.");
+                return;
+            }
+            Debug.Log($"[ProgressionManager] Sub checkpoint tiếp theo: {checkpointSub.Id}");
+
+            // Tìm CheckpointZone trong scene theo eventId
+            var checkpointZones = FindObjectsOfType<CheckpointZone>();
+            Debug.Log($"[ProgressionManager] Số lượng CheckpointZone trong scene: {checkpointZones.Length}");
+            foreach (var zone in checkpointZones)
+            {
+                Debug.Log($"[ProgressionManager] Kiểm tra CheckpointZone eventId: {zone.eventId}");
+                if (zone.eventId == checkpointSub.Id)
+                {
+                    var pos = zone.transform.position;
+                    var rot = zone.transform.rotation;
+                    Debug.Log($"[ProgressionManager] Đã tìm thấy CheckpointZone phù hợp, chuẩn bị teleport player tới {pos}");
+                    PlayerRespawnManager.Instance.TeleportToCheckpoint(pos, rot);
+                    Debug.Log($"[ProgressionManager] Teleported player to checkpoint '{checkpointSub.Id}' at {pos}");
+                    return;
+                }
+            }
+
+            Debug.LogWarning($"[ProgressionManager] Không tìm thấy CheckpointZone với eventId '{checkpointSub.Id}' trong scene.");
         }
     }
 }

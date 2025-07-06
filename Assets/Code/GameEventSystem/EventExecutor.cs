@@ -74,15 +74,5 @@ namespace Code.GameEventSystem
                 Debug.LogWarning($"[EventExecutor] Không có handler cho EventType = {data.type}");
             }
         }
-
-        public List<string> GetAllPuzzleEventIds()
-        {
-            return database.GetAllPuzzleEventIds();
-        }
-
-        public EventDatabase GetEventDatabase()
-        {
-            return database;
-        }
     }
 }
