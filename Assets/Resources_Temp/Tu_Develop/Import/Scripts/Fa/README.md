@@ -193,3 +193,45 @@ Assets/Resources_Temp/Tu_Develop/Import/Scripts/Fa/
 - Giảm NavMesh sample radius
 - Tắt debug gizmos
 - Tối ưu NavMesh Agent settings 
+
+## 🦋 Giải pháp cho Fa là vật thể bay
+
+### 1. **Không phụ thuộc hoàn toàn vào NavMesh**
+- Khi Fa gặp vùng không có NavMesh, thay vì "nhảy", Fa sẽ **bay thẳng qua** vùng đó bằng cách di chuyển trực tiếp (dùng transform hoặc lerp).
+- Chỉ sử dụng NavMesh để di chuyển trong các vùng có NavMesh (nếu cần tránh vật cản, v.v).
+
+### 2. **Logic chuyển đổi giữa NavMesh và bay tự do**
+- **Nếu có NavMesh:** Sử dụng NavMeshAgent như bình thường.
+- **Nếu không có NavMesh:** Tự động chuyển sang chế độ bay tự do (move trực tiếp đến target).
+
+### 3. **Pseudo-code minh họa**
+```csharp
+if (NavMeshAgent.isOnNavMesh && NavMesh.SamplePosition(target, out hit, 1f, NavMesh.AllAreas))
+{
+    // Di chuyển bằng NavMesh
+    NavMeshAgent.SetDestination(target);
+}
+else
+{
+    // Bay tự do (không NavMesh)
+    NavMeshAgent.enabled = false;
+    transform.position = Vector3.MoveTowards(transform.position, target, flySpeed * Time.deltaTime);
+    // Khi đến vùng có NavMesh, bật lại NavMeshAgent nếu muốn
+}
+```
+
+### 4. **Gợi ý triển khai**
+- Trong script di chuyển của Fa, luôn kiểm tra NavMesh availability.
+- Nếu không có NavMesh, chuyển sang **fly mode** (di chuyển tự do, không va chạm mặt đất).
+- Có thể thêm hiệu ứng bay (particle, animation) để tăng cảm giác "bay".
+
+---
+
+## **Tóm lại:**
+- **Fa là vật thể bay** → Không cần "nhảy" qua vùng không có NavMesh.
+- **Có thể bay tự do** qua mọi vùng, chỉ cần kiểm soát va chạm với tường hoặc vật cản nếu cần.
+- **Chuyển đổi linh hoạt** giữa NavMesh và bay tự do giúp Fa di chuyển mượt mà, không bị kẹt.
+
+---
+
+Bạn muốn tôi hướng dẫn chi tiết cách code logic "bay tự do khi không có NavMesh" cho Fa không? Hay bạn muốn tối ưu lại hệ thống movement 
