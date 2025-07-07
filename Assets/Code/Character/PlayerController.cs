@@ -4,8 +4,8 @@ using Duckle;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Unity.Burst.Intrinsics;
-using Unity.Collections;
+//using Unity.Burst.Intrinsics;
+//using Unity.Collections;
 using UnityEngine;
 
 namespace DuckLe
@@ -99,7 +99,7 @@ namespace DuckLe
             if (Instance == null)
             {
                 Instance = this;
-                DontDestroyOnLoad(gameObject);
+                //DontDestroyOnLoad(gameObject);
             }
             else
             {
