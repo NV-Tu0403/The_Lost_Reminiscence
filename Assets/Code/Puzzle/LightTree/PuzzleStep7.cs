@@ -28,6 +28,11 @@ namespace Code.Puzzle.LightTree
             }
         }
 
+        public void ForceComplete(bool instant = true)
+        {
+            throw new NotImplementedException();
+        }
+
         private void CheckDestroySups()
         {
             var allSups = FindObjectsOfType<SupController>();

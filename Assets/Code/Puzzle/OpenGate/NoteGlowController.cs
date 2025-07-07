@@ -45,5 +45,16 @@ namespace Code.Puzzle.OpenGate
 
             OnGlowComplete?.Invoke();
         }
+
+        public void ForceGlowAll()
+        {
+            StopAllCoroutines();
+            for (int i = 0; i < _noteMats.Length; i++)
+            {
+                _noteMats[i].EnableKeyword("_EMISSION");
+                _noteMats[i].SetColor("_EmissionColor", glowColor * glowIntensity);
+            }
+            OnGlowComplete?.Invoke();
+        }
     }
 }

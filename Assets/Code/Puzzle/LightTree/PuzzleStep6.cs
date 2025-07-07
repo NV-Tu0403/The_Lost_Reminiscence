@@ -55,6 +55,7 @@ namespace Code.Puzzle.LightTree
                 playerSpirit.OnSpiritDepleted += HandlePlayerDead;
         }
 
+      
         private void HandlePlayerDead()
         {
             // Reset player về respawnPoint
@@ -139,5 +140,12 @@ namespace Code.Puzzle.LightTree
             if (playerSpirit != null)
                 playerSpirit.OnSpiritDepleted -= HandlePlayerDead;
         }
+        
+        // DevMode: Bỏ qua hiệu ứng và hoàn thành ngay lập tức
+        public void ForceComplete(bool instant = true)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

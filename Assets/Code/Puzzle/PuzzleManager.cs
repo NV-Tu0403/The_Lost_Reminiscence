@@ -41,9 +41,20 @@ namespace Code.Puzzle
         
         private void FinishPuzzle()
         {
-            Debug.Log("[PuzzleManager] Câu đố đã hoàn thành.");
+            //Debug.Log("[PuzzleManager] Câu đố đã hoàn thành.");
             _onFinish?.Invoke();
             _onFinish = null;
+        }
+
+        public void ForceCompletePuzzle(string puzzleId)
+        {
+            if (_steps == null) GetSteps();
+            if (_steps != null && _steps.TryGetValue(puzzleId, out var step))
+            {
+                // Gọi hàm chuẩn hóa cho mọi loại puzzle step
+                step.ForceComplete(true); // instant = true: skip hiệu ứng/VFX/audio/camera
+                FinishPuzzle();
+            }
         }
     }
 }

@@ -54,6 +54,11 @@ namespace Code.Puzzle.LightTree
             ReturnCameraToPlayer(sequence, playerCam, cameraMoveDuration, onComplete, characterCamera);
         }
 
+        public void ForceComplete(bool instant = true)
+        {
+            throw new NotImplementedException();
+        }
+
         private void DemoLightingTree()
         {
             // Demo: Tween Emission cho cây nếu có renderer

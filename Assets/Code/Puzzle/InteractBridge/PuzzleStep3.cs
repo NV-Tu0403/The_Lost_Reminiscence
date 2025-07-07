@@ -1,8 +1,7 @@
 using System;
-using Code.Puzzle;
 using UnityEngine;
 
-namespace Script.Puzzle.InteractBridge
+namespace Code.Puzzle.InteractBridge
 {
     public class PuzzleStep3 : MonoBehaviour, IPuzzleStep
     {
@@ -13,6 +12,11 @@ namespace Script.Puzzle.InteractBridge
             _onComplete = onComplete;
             FaUseSkill();
             _onComplete?.Invoke();
+        }
+
+        public void ForceComplete(bool instant = true)
+        {
+            throw new NotImplementedException();
         }
 
         private void FaUseSkill()
