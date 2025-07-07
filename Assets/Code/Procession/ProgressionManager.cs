@@ -14,14 +14,16 @@ namespace Code.Procession
     {
         public static ProgressionManager Instance { get; private set; }
 
-        [FormerlySerializedAs("progressionDataSO")] [SerializeField] private ProgressionDataSO progressionDataSo;   // ScriptableObject tổng hợp
-        [SerializeField] private LootDatabase lootDatabase;             // Database loot
+        [FormerlySerializedAs("progressionDataSO")] [SerializeField]
+        private ProgressionDataSO progressionDataSo; // ScriptableObject tổng hợp
+
+        [SerializeField] private LootDatabase lootDatabase; // Database loot
         [SerializeField] private UserAccountManager userAccountManager; // Quản lý tài khoản người dùng
-        
+
         // Dữ liệu tiến trình game
         private GameProgression progression;
-        
-        
+
+
         #region public methods for save/load
 
         // Lộc đã xóa hàm save/load để test
@@ -42,19 +44,20 @@ namespace Code.Procession
         //         ProgressionManager.Instance.SetProgression(loaded);
         //     }
         // }
-        
+
         // Hàm public để trả về dữ liệu tiến trình hiện tại 
-        public GameProgression GetProgression() => progression; 
-        
+        public GameProgression GetProgression() => progression;
+
         //Hàm public để UI gọi khi NewGame hoặc ContinueGame
         public void InitProgression()
         {
             var sequence = BuildEventSequence();
             EventManager.Instance.Init(sequence);
+            SyncPuzzleStatesWithProgression(); // Đồng bộ trạng thái puzzle/gate với progression
         }
 
         #endregion
-        
+
         void Awake()
         {
             if (Instance != null)
@@ -75,9 +78,10 @@ namespace Code.Procession
                 Debug.Log("[ProgressionManager] Loaded from SO");
                 return;
             }
+
             Debug.LogError("ProgressionDataSO is null!");
         }
-        
+
         /// <summary>
         /// Xây dựng danh sách tuần tự eventId từ MainProcesses và SubProcesses theo Order.
         /// </summary>
@@ -100,7 +104,7 @@ namespace Code.Procession
             Debug.Log($"[ProgressionManager] Built event sequence: {sequence.Count} events");
             return sequence;
         }
-        
+
         /// <summary>
         /// Được gọi khi EventManager báo eventId vừa hoàn thành.
         /// Đánh dấu tiến trình, cấp thưởng, cập nhật index và lưu tiến trình.
@@ -140,6 +144,7 @@ namespace Code.Procession
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -154,6 +159,7 @@ namespace Code.Procession
                 GrantRewards(mainMatch.Rewards);
                 return true;
             }
+
             return false;
         }
 
@@ -219,7 +225,7 @@ namespace Code.Procession
             var top = progression.MainProcesses.Find(m => m.Id == id);
             return top != null && top.Status == MainProcess.ProcessStatus.Locked;
         }
-        
+
         // Kiểm tra event (SubProcess hoặc MainProcess) đã hoàn thành chưa
         public bool IsEventCompleted(string eventId)
         {
@@ -232,7 +238,7 @@ namespace Code.Procession
             var mainProcess = progression.MainProcesses.Find(m => m.Id == eventId);
             return mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.Completed;
         }
-        
+
         public bool IsWaitingForEvent(string eventId)
         {
             foreach (var main in progression.MainProcesses)
@@ -244,9 +250,9 @@ namespace Code.Procession
             var mainProcess = progression.MainProcesses.Find(m => m.Id == eventId);
             return mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.InProgress;
         }
-        
+
         #region === Xử lí sau ===
-        
+
         /// <summary>
         /// Cấp phần thưởng cho một danh sách Reward.
         /// </summary>
@@ -273,8 +279,8 @@ namespace Code.Procession
 
             reward.Grant();
         }
-        
-               /// <summary>
+
+        /// <summary>
         /// Kiểm tra điều kiện hoàn thành tiến trình con và cấp phần thưởng nếu hoàn thành.
         /// </summary>
         public bool CheckProcessCompletion(string id, object data)
@@ -297,11 +303,12 @@ namespace Code.Procession
                             GrantRewards(main.Rewards);
                             Debug.Log($"[ProgressionManager] MainProcess '{main.Id}' completed by sub-conditions.");
                         }
+
                         return true;
                     }
                 }
             }
-        
+
             return false;
         }
 
@@ -317,7 +324,7 @@ namespace Code.Procession
                 Debug.Log($"[ProgressionManager] Updated MainProcess {id} → {newStatus}");
                 return true;
             }
-        
+
             foreach (var main in progression.MainProcesses)
             {
                 var subProcess = main.SubProcesses?.Find(s => s.Id == id);
@@ -328,18 +335,23 @@ namespace Code.Procession
                     return true;
                 }
             }
-        
+
             return false;
         }
-        
+
         #endregion
 
+
+        #region Dev Mode Methods
+
         /// <summary>
-        /// DEV MODE: Skip toàn bộ event (subprocess) của một main process (ví dụ: Puzzle1).
-        /// Đánh dấu complete cho tất cả event, chỉ gọi force complete puzzle nếu là puzzle.
-        /// Sau khi skip, teleport player đến checkpoint của main tiếp theo (nếu có).
+        /// DEV MODE: Nhảy tới một main process bất kỳ.
+        /// - Tất cả main trước đó sẽ Completed.
+        /// - Main được chọn sẽ InProgress.
+        /// - Tất cả main sau sẽ Locked.
+        /// - Teleport tới checkpoint đầu tiên của main này (nếu có).
         /// </summary>
-        public void ForceCompleteAllEventsInMain(string mainProcessId)
+        public void JumpToMainProcess(string mainProcessId)
         {
             var main = progression.MainProcesses.Find(mp => mp.Id == mainProcessId);
             if (main == null)
@@ -348,89 +360,109 @@ namespace Code.Procession
                 return;
             }
 
-            // Đánh dấu complete cho tất cả subprocess
-            if (main.SubProcesses != null)
+            foreach (var m in progression.MainProcesses)
             {
-                foreach (var sub in main.SubProcesses)
+                if (m.Order < main.Order)
                 {
-                    if (!IsEventCompleted(sub.Id))
+                    // Complete main và subprocess trước đó
+                    if (m.Status != MainProcess.ProcessStatus.Completed)
+                        m.Status = MainProcess.ProcessStatus.Completed;
+                    if (m.SubProcesses != null)
                     {
-                        HandleEventFinished(sub.Id);
-                        // Nếu là puzzle thì gọi luôn force complete puzzle (để xử lý hiệu ứng/vật thể)
-                        if (sub.Type == MainProcess.ProcessType.Puzzle)
+                        foreach (var sub in m.SubProcesses)
                         {
-                            PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
+                            sub.Status = MainProcess.ProcessStatus.Completed;
+                            // Nếu là puzzle, force complete để đảm bảo trạng thái vật thể
+                            if (sub.Type == MainProcess.ProcessType.Puzzle)
+                            { 
+                                PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
+                            }
                         }
+                    }
+                }
+                else if (m.Order == main.Order)
+                {
+                    // Đặt main được chọn là InProgress
+                    m.Status = MainProcess.ProcessStatus.InProgress;
+                    if (m.SubProcesses != null)
+                    {
+                        foreach (var sub in m.SubProcesses)
+                        {
+                            // Nếu đã complete thì chuyển về InProgress, còn Locked thì mở khóa
+                            if (sub.Status == MainProcess.ProcessStatus.Completed || sub.Status == MainProcess.ProcessStatus.Locked)
+                                sub.Status = MainProcess.ProcessStatus.InProgress;
+                            // Nếu là puzzle, force complete để đảm bảo trạng thái vật thể
+                            if (sub.Type == MainProcess.ProcessType.Puzzle)
+                            {
+                                PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
+                            }
+                        }
+                    }
+                }
+                else // m.Order > main.Order
+                {
+                    // Lock main và subprocess sau
+                    m.Status = MainProcess.ProcessStatus.Locked;
+                    if (m.SubProcesses != null)
+                    {
+                        foreach (var sub in m.SubProcesses)
+                            sub.Status = MainProcess.ProcessStatus.Locked;
                     }
                 }
             }
 
-            // Đánh dấu main process là completed nếu chưa
-            if (main.Status != MainProcess.ProcessStatus.Completed)
-            {
-                HandleEventFinished(main.Id);
-            }
-
-            // Teleport player đến checkpoint của main tiếp theo
-            Debug.Log("[ProgressionManager] Bắt đầu tìm checkpoint của main tiếp theo để teleport...");
-            TeleportPlayerToNextMainCheckpoint(main);
+            // Teleport player về checkpoint đầu tiên của main này (nếu có)
+            TeleportPlayerToFirstCheckpointOfMain(main);
         }
 
-        /// <summary>
-        /// Tìm main process tiếp theo và teleport player đến checkpoint đầu tiên của nó (nếu có).
-        /// </summary>
-        private void TeleportPlayerToNextMainCheckpoint(MainProcess currentMain)
+        private void TeleportPlayerToFirstCheckpointOfMain(MainProcess main)
         {
-            if (progression?.MainProcesses == null || currentMain == null)
-            {
-                Debug.LogWarning("[ProgressionManager] progression hoặc currentMain bị null.");
-                return;
-            }
-
-            // Tìm main tiếp theo theo Order
-            var nextMain = progression.MainProcesses
-                .Where(mp => mp.Order > currentMain.Order)
-                .OrderBy(mp => mp.Order)
-                .FirstOrDefault();
-
-            if (nextMain == null)
-            {
-                Debug.Log("[ProgressionManager] Không còn main process nào để teleport.");
-                return;
-            }
-            Debug.Log($"[ProgressionManager] Main tiếp theo: {nextMain.Id}");
-
-            // Tìm sub process type Checkpoint đầu tiên trong main tiếp theo
-            var checkpointSub = nextMain.SubProcesses?
+            var checkpointSub = main.SubProcesses?
                 .Where(s => s.Type == MainProcess.ProcessType.Checkpoint)
                 .OrderBy(s => s.Order)
                 .FirstOrDefault();
 
-            if (checkpointSub == null)
+            if (checkpointSub != null)
             {
-                Debug.Log("[ProgressionManager] Main tiếp theo không có checkpoint để teleport.");
-                return;
-            }
-            Debug.Log($"[ProgressionManager] Sub checkpoint tiếp theo: {checkpointSub.Id}");
-
-            // Tìm CheckpointZone trong scene theo eventId
-            var checkpointZones = FindObjectsOfType<CheckpointZone>();
-            Debug.Log($"[ProgressionManager] Số lượng CheckpointZone trong scene: {checkpointZones.Length}");
-            foreach (var zone in checkpointZones)
-            {
-                Debug.Log($"[ProgressionManager] Kiểm tra CheckpointZone eventId: {zone.eventId}");
-                if (zone.eventId == checkpointSub.Id)
+                var checkpointZones = FindObjectsOfType<CheckpointZone>();
+                foreach (var zone in checkpointZones)
                 {
-                    var pos = zone.transform.position;
-                    var rot = zone.transform.rotation;
-                    Debug.Log($"[ProgressionManager] Đã tìm thấy CheckpointZone phù hợp, chuẩn bị teleport player tới {pos}");
-                    PlayerRespawnManager.Instance.TeleportToCheckpoint(pos, rot);
-                    Debug.Log($"[ProgressionManager] Teleported player to checkpoint '{checkpointSub.Id}' at {pos}");
-                    return;
+                    if (zone.eventId == checkpointSub.Id)
+                    {
+                        var pos = zone.transform.position;
+                        var rot = zone.transform.rotation;
+                        Debug.Log($"[ProgressionManager] Teleport player về checkpoint '{checkpointSub.Id}' tại {pos}");
+                        PlayerRespawnManager.Instance.TeleportToCheckpoint(pos, rot);
+                        return;
+                    }
+                }
+                Debug.LogWarning($"[ProgressionManager] Không tìm thấy CheckpointZone với eventId '{checkpointSub.Id}' trong scene.");
+            }
+            else
+            {
+                Debug.LogWarning($"[ProgressionManager] MainProcess '{main.Id}' không có checkpoint để teleport.");
+            }
+        }
+
+        /// <summary>
+        /// Đồng bộ trạng thái các puzzle/gate với progression (dùng khi load scene hoặc load progression).
+        /// </summary>
+        public void SyncPuzzleStatesWithProgression()
+        {
+            if (progression?.MainProcesses == null) return;
+            foreach (var main in progression.MainProcesses)
+            {
+                if (main.SubProcesses == null) continue;
+                foreach (var sub in main.SubProcesses)
+                {
+                    if (sub.Type == MainProcess.ProcessType.Puzzle && sub.Status == MainProcess.ProcessStatus.Completed)
+                    {
+                        PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
+                    }
                 }
             }
-
-            Debug.LogWarning($"[ProgressionManager] Không tìm thấy CheckpointZone với eventId '{checkpointSub.Id}' trong scene.");
         }
+
+        #endregion
     }
 }
