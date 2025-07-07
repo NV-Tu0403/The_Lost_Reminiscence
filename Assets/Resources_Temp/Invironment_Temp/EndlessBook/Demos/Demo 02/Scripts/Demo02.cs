@@ -320,7 +320,7 @@
         {
             switch (item.uIActionType)
             {
-                case UIActionType.BackToMenu:
+                case UIActionType.Back:
                     TurnToPage(item.targetPage);
                     break;
                 case UIActionType.Continue:
