@@ -37,11 +37,11 @@ public class CharacterCamera : Core
             Debug.LogError("Camera component không tìm thấy trên PersonCamera_M3!");
         }
 
-        if (Core.IsInitialized && Core.Instance.IsOffline)
+        if (Core.Instance.IsOffline)
         {
             InitializeOffline();
         }
-        else if (Core.IsInitialized && !Core.Instance.IsOffline)
+        else if (!Core.Instance.IsOffline)
         {
             InitializeOnline();
         }
