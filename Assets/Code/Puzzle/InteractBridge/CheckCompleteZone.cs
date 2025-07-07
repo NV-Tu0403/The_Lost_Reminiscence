@@ -1,5 +1,4 @@
 using Code.Trigger;
-using Script.Puzzle.InteractBridge;
 using UnityEngine;
 
 namespace Code.Puzzle.InteractBridge

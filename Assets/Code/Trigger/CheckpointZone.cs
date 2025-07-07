@@ -19,7 +19,6 @@ namespace Code.Trigger
                 Debug.Log($"[PlayerTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
                 return;
             }
-            // Chỉ gọi TriggerEvent, không gọi UnlockProcess ở đây
             EventExecutor.Instance.TriggerEvent(eventId); 
         }
     }

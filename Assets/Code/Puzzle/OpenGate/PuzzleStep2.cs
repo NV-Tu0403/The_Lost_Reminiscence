@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using DG.Tweening;
-using Script.Puzzle;
 using UnityEngine;
 
 namespace Code.Puzzle.OpenGate
@@ -111,6 +110,39 @@ namespace Code.Puzzle.OpenGate
             gate.DOMove(targetPos, gateTweenDuration)
                 .SetEase(Ease.OutQuad)
                 .OnComplete(() => Debug.Log("[PuzzleStep2] Cổng đã mở xong"));
+        }
+
+        // --- DEV MODE SUPPORT ---
+        public void ForceOpenGateAndGlow(bool instant = false)
+        {
+            // Bật note
+            if (extraNote != null) extraNote.SetActive(true);
+            // Sáng tất cả đèn
+            if (noteGlowController != null) noteGlowController.ForceGlowAll();
+            // Mở cổng ngay lập tức
+            if (gate != null)
+            {
+                gate.position += openOffset;
+            }
+            if (!instant)
+            {
+                // Phát hiệu ứng VFX
+                if (gateParticles != null)
+                {
+                    foreach (var particle in gateParticles)
+                    {
+                        if (particle != null) particle.Play();
+                    }
+                }
+                // Phát âm thanh
+                if (gateAudio != null) gateAudio.Play();
+                if (noteAudio != null) noteAudio.Play();
+            }
+        }
+
+        public void ForceComplete(bool instant = true)
+        {
+            ForceOpenGateAndGlow(instant);
         }
     }
 }

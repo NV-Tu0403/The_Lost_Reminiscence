@@ -2,7 +2,7 @@ using System;
 using DG.Tweening;
 using UnityEngine;
 
-namespace Script.Puzzle
+namespace Code.Puzzle
 {
     public abstract class PuzzleStepCameraBase : MonoBehaviour
     {

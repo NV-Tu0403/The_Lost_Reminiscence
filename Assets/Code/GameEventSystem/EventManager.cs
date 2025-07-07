@@ -50,7 +50,7 @@ namespace Code.GameEventSystem
             foreach (var eventId in _eventSequence)
                 EventBus.Subscribe(eventId, OnEventFinished);
 
-            Debug.Log($"[EventManager] Subscribed to {_eventSequence.Count} events via EventBus.");
+            //Debug.Log($"[EventManager] Subscribed to {_eventSequence.Count} events via EventBus.");
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Code.GameEventSystem
                 return;
             }
 
-            Debug.Log($"[EventManager] Event '{eventId}' finished. Updating progression...");
+            //Debug.Log($"[EventManager] Event '{eventId}' finished. Updating progression...");
 
             ProgressionManager.Instance.HandleEventFinished(eventId);
             UpdateEventIndex(eventId);
@@ -101,7 +101,7 @@ namespace Code.GameEventSystem
             string firstEventId = _eventSequence[0];
             if (ProgressionManager.Instance.CanTrigger(firstEventId))
             {
-                Debug.Log($"[EventManager] Auto trigger first event: {firstEventId}");
+                //Debug.Log($"[EventManager] Auto trigger first event: {firstEventId}");
                 EventExecutor.Instance.TriggerEvent(firstEventId);
             }
         }
@@ -119,7 +119,7 @@ namespace Code.GameEventSystem
             var processData = ProgressionManager.Instance.GetProcessData(nextEventId) as SubProcess;
             if (processData != null && processData.Trigger == MainProcess.TriggerType.Automatic)
             {
-                Debug.Log($"[EventManager] Auto triggering next event: {nextEventId}");
+                //Debug.Log($"[EventManager] Auto triggering next event: {nextEventId}");
                 EventExecutor.Instance.TriggerEvent(nextEventId);
             }
             else
@@ -135,8 +135,21 @@ namespace Code.GameEventSystem
         {
             foreach (var eventId in _eventSequence)
                 EventBus.Unsubscribe(eventId, OnEventFinished);
+            //Debug.Log("[EventManager] Unsubscribed from all events.");
+        }
 
-            Debug.Log("[EventManager] Unsubscribed from all events.");
+        /// <summary>
+        /// Cho phép hoàn thành cưỡng bức một event (dùng cho DevMode).
+        /// </summary>
+        public void ForceCompleteEvent(string eventId)
+        {
+            // Đánh dấu progression đã hoàn thành
+            ProgressionManager.Instance.HandleEventFinished(eventId);
+            // Phát event lên EventBus để các hệ thống khác (VFX, puzzle, ...) nhận được
+            var data = EventExecutor.Instance.GetEventDataById(eventId);
+            EventBus.Publish(eventId, data);
+            UpdateEventIndex(eventId);
+            TryTriggerNextEvent();
         }
     }
 }

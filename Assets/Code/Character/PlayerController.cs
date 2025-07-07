@@ -184,14 +184,14 @@ namespace DuckLe
             }
 
             // Kiểm tra trạng thái rơi
-            if (_rigidbody != null && _rigidbody.linearVelocity.y < -0.1f && (_data.collisionFlags & 1) == 0)
-            {
-                _stateMachine.AddSecondaryState(new FallingState());
-            }
-            else
-            {
-                _stateMachine.RemoveSecondaryState(new FallingState());
-            }
+            // if (_rigidbody != null && _rigidbody.linearVelocity.y < -0.1f && (_data.collisionFlags & 1) == 0)
+            // {
+            //     _stateMachine.AddSecondaryState(new FallingState());
+            // }
+            // else
+            // {
+            //     _stateMachine.RemoveSecondaryState(new FallingState());
+            // }
 
 #if UNITY_EDITOR
             //Debug.Log($"Trạng thái: {string.Join(", ", _stateMachine.GetAllStateNames())}");
