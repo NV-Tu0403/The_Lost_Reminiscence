@@ -11,25 +11,9 @@ public enum UIActionType
     SavePanel,
     QuitGame,
 
-    Back,
-    OpenMenu,
+    BackToMenu,
 
     SelectSaveItem,
     DeleteSaveItem,
-    DuplicateSaveItem,
-
-    QuitSesion,
-    SaveSesion,
-}
-
-public enum KeyCoreInputType
-{
-    Escape,
-    Backspace,
-    Enter,
-
-    UpArrow,
-    DownArrow,
-    LeftArrow,
-    RightArrow,
+    DuplicateSaveItem
 }

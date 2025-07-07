@@ -1,88 +1,45 @@
 ﻿using UnityEngine;
+using System;
+using Unity.AppUI.UI;
 
-public class Core : CoreEventListenerBase
+public class Core : MonoBehaviour
 {
     public static Core Instance { get; private set; }
-    public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động                                               
+    public static bool IsInitialized => Instance != null;   // Kiểm tra xem Core đã được khởi tạo hay chưa
+    public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
+                                                            
+    //public event Action OnModeChanged;                    // Sự kiện khi chế độ thay đổi
 
-    public GameObject menuCamera;
-    public GameObject MainMenu;
+    public GameObject _menuCamera;                         // Biến để lưu trữ MenuCamera
 
-
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
         if (Instance == null)
         {
             Instance = this;
+
             DontDestroyOnLoad(gameObject);
+            // Debug.Log("Core instance created successfully.");
+            return;
         }
         //else
         //{
-        //    Destroy(gameObject);
+        //    //Destroy(gameObject);
+        //    Debug.LogWarning("Core instance already exists. Destroying duplicate.");
         //}
-
-        InitializeMenuCamera();
     }
 
-    public override void RegisterEvent(CoreEvent e)
+
+    private void Start()
     {
-        e.TurnOnMenu += TurnOnMenu;
-        e.TurnOffMenu += TurnOffMenu;
-
-        e.OnQuitGame += QuitGame;
-    }
-
-    public override void UnregisterEvent(CoreEvent e)
-    {
-        e.TurnOnMenu -= TurnOnMenu;
-        e.TurnOffMenu -= TurnOffMenu;
-
-        e.OnQuitGame -= QuitGame;
-    }
-
-    /// <summary>
-    /// đảm bảo rằng MenuCamera đã được khởi tạo và kích hoạt.
-    /// </summary>
-    private void InitializeMenuCamera()
-    {
-        if (menuCamera == null)
+        if (_menuCamera == null)
         {
-            menuCamera = GameObject.Find("MenuCamera");
-            if (menuCamera == null)
-            {
-                menuCamera = Resources.Load<GameObject>("Prefab Loaded/MenuCamera");
-                //Debug.Log("MenuCamera loaded from Resources.");
-            }
-            if (!menuCamera.activeSelf)
-            {
-                menuCamera.SetActive(true);
-                //Debug.Log("MenuCamera initialized and activated successfully.");
-            }
+            _menuCamera = Resources.Load<GameObject>("Prefab Loaded/MenuCamera");
+            Debug.Log("MenuCamera loaded successfully.");
         }
     }
 
-    private void TurnOnMenu()
-    {
-        menuCamera.SetActive(true);
-        MainMenu.SetActive(true);
-    }
-
-    private void TurnOffMenu()
-    {
-        menuCamera.SetActive(false);
-        MainMenu.SetActive(false);
-    }
-
-    private void QuitGame()
-    {
-        Debug.Log("Quitting game...");
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-                    Application.Quit();
-#endif
-    }
+    public virtual void update() { }
 }
 
 /// <summary>
@@ -113,17 +70,3 @@ public class Timer
         return 0f; // Nếu không đếm thì trả về 0
     }
 }
-
-
-// ----------------------------------------------------LUỒNG DỮ LIỆU:--------------------------------------------------
-
-// - 
-
-// ----------------------------------------------------TỐI ƯU:--------------------------------------------------
-
-// - Attribute + Reflection	Tự động hóa 100%, ít lỗi	(Dùng Reflection, cần setup kỹ)
-// -
-
-// ----------------------------------------------------NOTE:--------------------------------------------------
-
-// -
