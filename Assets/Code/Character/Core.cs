@@ -41,6 +41,7 @@ public class Core : CoreEventListenerBase
         //e.OnSavePanel += () => _stateMachine.HandleAction(UIActionType.SavePanel);
         //e.OnUserPanel += () => _stateMachine.HandleAction(UIActionType.UserPanel);
 
+        e.OnNewSession += NewSession;
         e.OnContinueSession += ContinueSession;
 
         e.OnChangeState += UpdateCurrentCoreState;
@@ -53,6 +54,9 @@ public class Core : CoreEventListenerBase
 
     public override void UnregisterEvent(CoreEvent e)
     {
+        e.OnNewSession -= NewSession;
+        e.OnContinueSession -= ContinueSession;
+
         e.OnChangeState -= UpdateCurrentCoreState;
 
         e.TurnOnMenu -= TurnOnMenu;
@@ -87,6 +91,11 @@ public class Core : CoreEventListenerBase
     {
         CurrentCoreState = stateType.ToString();
         Debug.Log($"[Core] CurrentCoreState updated to: {CurrentCoreState}");
+    }
+
+    private void NewSession()
+    {
+        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
     }
 
     private void ContinueSession()
