@@ -58,94 +58,44 @@ public class StateMachine
 /// 
 /// logic cụ thể của từng State được triển khai trong HandleAction.
 /// </summary>
-public abstract class StateBase : CoreEventListenerBase , IState
+public abstract class StateBase : IState
 {
     protected readonly StateMachine _stateMachine;
+    protected CoreEvent _coreEvent; // vì iem không muống kế thừa CoreEvent nên iem lưu Reference CoreEvent để dùng
 
-    protected StateBase(StateMachine stateMachine)
+    public CoreStateType StateType { get; protected set; } // state enum
+
+    protected StateBase(StateMachine stateMachine, CoreEvent coreEvent, CoreStateType stateType)
     {
         _stateMachine = stateMachine;
+        _coreEvent = coreEvent;
+        StateType = stateType;
     }
 
     public virtual void OnEnter()
     {
-        Debug.Log($"[UIState] Entered: {GetType().Name}");
+        Debug.Log($"[UIState] Entered: {StateType}");
+        _coreEvent.TriggerChangeState(StateType);
     }
 
     public virtual void OnExit()
     {
-        Debug.Log($"[UIState] Exited: {GetType().Name}");
+        Debug.Log($"[UIState] Exited: {StateType}");
+        _coreEvent.TriggerChangeState(StateType);
     }
 
     // Bắt buộc lớp con triển khai
     public abstract void HandleAction(UIActionType action);
 }
 
-// ----------------------------------------------Các trạng thái cụ thể (cần tách ra)------------------------------------------------------
 
-/// <summary>
-/// Trạng thái khi đang ở trong menu chính.
-/// </summary>
-public class InMainMenuState : StateBase
-{
-    public InMainMenuState(StateMachine stateMachine) : base(stateMachine)
-    {
-    }
 
-    public override void HandleAction(UIActionType action)
-    {
-        switch (action)
-        {
-            case UIActionType.Back:
-            case UIActionType.QuitSesion:
-                _coreEvent.triggerBack();
-                _stateMachine.SetState(new InSessionState(_stateMachine));
-                break;
 
-            case UIActionType.QuitGame:
-                _coreEvent.triggerQuitGame();
-                break;
-        }
-    }
 
-    public override void RegisterEvent(CoreEvent e)
-    {
-        throw new NotImplementedException();
-    }
 
-    public override void UnregisterEvent(CoreEvent e)
-    {
-        throw new NotImplementedException();
-    }
-}
 
-/// <summary>
-/// trạng thái khi đang trong phiên chơi.
-/// </summary>
-public class InSessionState : StateBase
-{
-    public InSessionState(StateMachine stateMachine) : base(stateMachine)
-    {
-    }
 
-    public override void HandleAction(UIActionType action)
-    {
-        if (action == UIActionType.OpenMenu)
-        {
-            _coreEvent.triggerTurnOnMenu();
-            _stateMachine.SetState(new InMainMenuState(_stateMachine));
-        }
-    }
 
-    public override void RegisterEvent(CoreEvent e)
-    {
-        throw new NotImplementedException();
-    }
 
-    public override void UnregisterEvent(CoreEvent e)
-    {
-        throw new NotImplementedException();
-    }
-}
 
 

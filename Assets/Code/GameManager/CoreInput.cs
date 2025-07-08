@@ -15,7 +15,7 @@ public class CoreInput : CoreEventListenerBase
     {
         base.Awake();
         _stateMachine = new StateMachine();
-        _stateMachine.SetState(new InMainMenuState(_stateMachine)); // Khởi tạo trạng thái ban đầu
+        _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
     }
 
     private void Update()
@@ -35,6 +35,18 @@ public class CoreInput : CoreEventListenerBase
 
     private void Mapping()
     {
+        if (Input.GetMouseButtonDown(0)) // Chuột trái
+        {
+            GetInput(new CoreInputType { InputType = KeyCoreInputType.MouseLeft });
+            return;
+        }
+        if (Input.GetMouseButtonDown(1)) // Chuột phải
+        {
+            GetInput(new CoreInputType { InputType = KeyCoreInputType.MouseRight });
+            return;
+        }
+
+        // quét KeyCode
         foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
         {
             if (Input.GetKeyDown(keyCode))

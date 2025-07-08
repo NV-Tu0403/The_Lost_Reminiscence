@@ -13,7 +13,6 @@ public class CoreEvent : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -24,13 +23,12 @@ public class CoreEvent : MonoBehaviour
 
     #region sự kiện A1
 
-    public event Action OnStartGame;
-    public event Action OnPausedGame;
-    public event Action OnResumedGame;
+    public event Action OnNewSession;
+    public event Action OnContinueSession;
     public event Action OnQuitGame;
 
-    public event Action OnSaveGame;
-    public event Action OnLoadGame;
+    public event Action OnSavePanel;
+    public event Action OnUserPanel;
 
     #endregion
 
@@ -38,10 +36,10 @@ public class CoreEvent : MonoBehaviour
 
     public event Action OnBack;
 
-    public event Action OnNewSession;
-    public event Action OnContinueSession;
-    public event Action OnQuitSession;
+    public event Action OnPausedSession;
+    public event Action OnResumedSession;
     public event Action OnSaveSession;
+    public event Action OnQuitSession;
 
     #endregion
 
@@ -54,6 +52,7 @@ public class CoreEvent : MonoBehaviour
 
     #region sự kiện A4
 
+    public event Action<CoreStateType> OnChangeState;
     public event Action OnKeyDown;
 
     #endregion
@@ -62,13 +61,12 @@ public class CoreEvent : MonoBehaviour
 
     #region trigger sự kiện A1
 
-    public void triggerStartGame() => OnStartGame?.Invoke();
-    public void triggerPausedGame() => OnPausedGame?.Invoke();
-    public void triggerResumedGame() => OnResumedGame?.Invoke();
+    public void triggerNewSession() => OnNewSession?.Invoke();
+    public void triggerContinueSession() => OnContinueSession?.Invoke();
     public void triggerQuitGame() => OnQuitGame?.Invoke();
 
-    public void triggerSaveGame() => OnSaveGame?.Invoke();
-    public void triggerLoadGame() => OnLoadGame?.Invoke();
+    public void triggerSavePanel() => OnSavePanel?.Invoke();
+    public void triggerUserPanel() => OnUserPanel?.Invoke();
 
     #endregion
 
@@ -76,10 +74,10 @@ public class CoreEvent : MonoBehaviour
 
     public void triggerBack() => OnBack?.Invoke();
 
-    public void triggerNewSession() => OnNewSession?.Invoke();
-    public void triggerContinueSession() => OnContinueSession?.Invoke();
-    public void triggerQuitSession() => OnQuitSession?.Invoke();
+    public void triggerPausedSession() => OnPausedSession?.Invoke();
+    public void triggerResumedSession() => OnResumedSession?.Invoke();
     public void triggerSaveSession() => OnSaveSession?.Invoke();
+    public void triggerQuitSession() => OnQuitSession?.Invoke();
 
     #endregion
 
@@ -92,6 +90,7 @@ public class CoreEvent : MonoBehaviour
 
     #region trigger sự kiện A4
 
+    public void TriggerChangeState(CoreStateType stateType) => OnChangeState?.Invoke(stateType);
     public void triggerKeyDown() => OnKeyDown?.Invoke();
 
     #endregion
