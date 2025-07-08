@@ -389,8 +389,8 @@ namespace Code.Procession
                         foreach (var sub in m.SubProcesses)
                         {
                             // Nếu đã complete thì chuyển về InProgress, còn Locked thì mở khóa
-                            if (sub.Status == MainProcess.ProcessStatus.Completed || sub.Status == MainProcess.ProcessStatus.Locked)
-                                sub.Status = MainProcess.ProcessStatus.InProgress;
+                            // if (sub.Status == MainProcess.ProcessStatus.Completed || sub.Status == MainProcess.ProcessStatus.Locked)
+                            //     sub.Status = MainProcess.ProcessStatus.InProgress;
                             // Nếu là puzzle, force complete để đảm bảo trạng thái vật thể
                             if (sub.Type == MainProcess.ProcessType.Puzzle)
                             {
