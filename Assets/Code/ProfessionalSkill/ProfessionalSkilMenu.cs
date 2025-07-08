@@ -250,6 +250,9 @@ public class ProfessionalSkilMenu : MonoBehaviour
             sceneToLoad = "Phong_scene"; // Default scene if none is set
         }
 
+        // Gọi Procession để load dữ lieu tu GameProcession
+        ProgressionManager.Instance.InitProgression();
+
         SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>
         {
             PlayTimeManager.Instance.StartCounting();
