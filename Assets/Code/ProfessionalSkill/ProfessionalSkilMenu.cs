@@ -11,7 +11,7 @@ using UnityEngine.UI;
 using TMPro;
 
 
-public class ProfessionalSkilMenu : MonoBehaviour
+public class ProfessionalSkilMenu : CoreEventListenerBase
 {
     public static ProfessionalSkilMenu Instance { get; private set; }
 
@@ -20,10 +20,10 @@ public class ProfessionalSkilMenu : MonoBehaviour
     /// </summary>
     private string lastSelectedSaveFolder;  
     public string selectedSaveFolder;
-    public GameObject Menu;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         if (Instance == null)
         {
             Instance = this;
@@ -32,9 +32,20 @@ public class ProfessionalSkilMenu : MonoBehaviour
 
     private void Start()
     {
-
         RegisterSaveables();
         CheckUserAccounts();
+    }
+
+    public override void RegisterEvent(CoreEvent e)
+    {
+        e.OnNewSession += () => OnNewGame();
+        e.OnContinueSession += () => OnContinueGame(selectedSaveFolder);
+    }
+
+    public override void UnregisterEvent(CoreEvent e)
+    {
+        e.OnNewSession -= () => OnNewGame();
+        e.OnContinueSession -= () => OnContinueGame(selectedSaveFolder);
     }
 
     #region nghiệp vụ 1
@@ -128,7 +139,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
         }
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
-            Debug.LogError("currentUserBaseName is null or empty!");
+            //Debug.LogError("currentUserBaseName is null or empty!");
             // Wait 1 second and try again
             StartCoroutine(RetryRefreshSaveListAfterDelay());
             //return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
@@ -226,12 +237,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
             //Đặt vị trí mặc định
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
             SaveGameManager.Instance.SaveToFolder(newSaveFolder);
-
-            Core.Instance._menuCamera.SetActive(false);
-            Menu.SetActive(false);
         });
-        
-        
 
         return newSaveFolder;
     }
@@ -256,8 +262,6 @@ public class ProfessionalSkilMenu : MonoBehaviour
             PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
         });
 
-        Core.Instance._menuCamera.SetActive(false);
-        Menu.SetActive(false);
     }
 
     /// <summary>
@@ -286,7 +290,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
             Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
         }
 
-        //UpdateCurrentSaveText();
+        
     }
 
     /// <summary>
@@ -323,6 +327,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
             throw new Exception("No user logged in!");
         }
         SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
+
     }
 
     public void OnQuitSession(string currentSaveFolder)
@@ -345,7 +350,6 @@ public class ProfessionalSkilMenu : MonoBehaviour
             Debug.Log("[OnQuitSession] Unload complete.");
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         });
-
 
     }
 
