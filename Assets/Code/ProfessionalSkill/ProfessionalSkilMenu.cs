@@ -32,7 +32,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     private void Start()
     {
-
         RegisterSaveables();
         CheckUserAccounts();
     }
@@ -140,7 +139,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
-            Debug.LogError("currentUserBaseName is null or empty!");
+            //Debug.LogError("currentUserBaseName is null or empty!");
             // Wait 1 second and try again
             StartCoroutine(RetryRefreshSaveListAfterDelay());
             //return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
@@ -239,8 +238,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
             SaveGameManager.Instance.SaveToFolder(newSaveFolder);
         });
-        
-        _coreEvent.triggerTurnOffMenu();
 
         return newSaveFolder;
     }
@@ -265,7 +262,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
         });
 
-        _coreEvent.triggerTurnOffMenu();
     }
 
     /// <summary>
@@ -294,7 +290,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
         }
 
-        //UpdateCurrentSaveText();
+        
     }
 
     /// <summary>
@@ -331,6 +327,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             throw new Exception("No user logged in!");
         }
         SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
+
     }
 
     public void OnQuitSession(string currentSaveFolder)
@@ -353,7 +350,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.Log("[OnQuitSession] Unload complete.");
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         });
-
 
     }
 
