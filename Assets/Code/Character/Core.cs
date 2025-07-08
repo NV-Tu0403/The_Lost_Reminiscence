@@ -1,17 +1,21 @@
-﻿using UnityEngine;
+﻿using System.Data;
+using UnityEngine;
 
 public class Core : CoreEventListenerBase
 {
     public static Core Instance { get; private set; }
+    private StateMachine _stateMachine;
+
     public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động                                               
 
+    public string CurrentCoreState;
     public GameObject menuCamera;
     public GameObject MainMenu;
 
 
     protected override void Awake()
     {
-        base.Awake();
+     
         if (Instance == null)
         {
             Instance = this;
@@ -21,12 +25,26 @@ public class Core : CoreEventListenerBase
         //{
         //    Destroy(gameObject);
         //}
-
+        base.Awake();
+        _stateMachine = new StateMachine();
+        _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
         InitializeMenuCamera();
     }
 
+
     public override void RegisterEvent(CoreEvent e)
     {
+        //e.OnNewSession += () => _stateMachine.HandleAction(UIActionType.NewSession);
+        //e.OnContinueSession += () => _stateMachine.HandleAction(UIActionType.ContinueSession);
+        //e.OnQuitGame += () => _stateMachine.HandleAction(UIActionType.QuitGame);
+        //e.OnBack += () => _stateMachine.HandleAction(UIActionType.Back);
+        //e.OnSavePanel += () => _stateMachine.HandleAction(UIActionType.SavePanel);
+        //e.OnUserPanel += () => _stateMachine.HandleAction(UIActionType.UserPanel);
+
+        e.OnContinueSession += ContinueSession;
+
+        e.OnChangeState += UpdateCurrentCoreState;
+
         e.TurnOnMenu += TurnOnMenu;
         e.TurnOffMenu += TurnOffMenu;
 
@@ -35,6 +53,8 @@ public class Core : CoreEventListenerBase
 
     public override void UnregisterEvent(CoreEvent e)
     {
+        e.OnChangeState -= UpdateCurrentCoreState;
+
         e.TurnOnMenu -= TurnOnMenu;
         e.TurnOffMenu -= TurnOffMenu;
 
@@ -60,6 +80,18 @@ public class Core : CoreEventListenerBase
                 //Debug.Log("MenuCamera initialized and activated successfully.");
             }
         }
+    }
+
+    // debug state name
+    private void UpdateCurrentCoreState(CoreStateType stateType)
+    {
+        CurrentCoreState = stateType.ToString();
+        Debug.Log($"[Core] CurrentCoreState updated to: {CurrentCoreState}");
+    }
+
+    private void ContinueSession()
+    {
+        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
     }
 
     private void TurnOnMenu()
