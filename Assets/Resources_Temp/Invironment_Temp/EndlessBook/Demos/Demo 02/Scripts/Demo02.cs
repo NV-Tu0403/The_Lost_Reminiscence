@@ -3,6 +3,7 @@
     using System.Linq;
     using UnityEngine;
     using echo17.EndlessBook;
+    using UnityEditor.Localization.Plugins.XLIFF.V12;
 
     public enum BookActionTypeEnum
     {
@@ -99,7 +100,7 @@
                 touchPad.gameObject.SetActive(on);
                 if (debugMode)
                 {
-                    Debug.Log($"[Demo02] TouchPad GameObject {(on ? "enabled" : "disabled")} in state: {book.CurrentState}");
+                    //Debug.Log($"[Demo02] TouchPad GameObject {(on ? "enabled" : "disabled")} in state: {book.CurrentState}");
                 }
             }
         }
@@ -267,55 +268,37 @@
         {
             if (debugMode)
             {
-               // Debug.Log($"[Demo02] UIPageView TouchDown on {item.uIActionType}");
+                // Debug.Log($"[Demo02] UIPageView TouchDown on {item.uIActionType}");
             }
 
-            //switch (item.uIActionType)
-            //{
-            //    case UIActionType.NewGame:
-            //        ProfessionalSkilMenu.Instance.OnNewGame();
-            //        break;
-            //    case UIActionType.Continue:
-            //        //ProfessionalSkilMenu.Instance.OnContinueGame(SelectedSaveFolder); // chưa xong, cần xử lí thêm để truyền SelectedSaveFolder vào hợp lệ
-            //        break;
-            //    case UIActionType.Tutorialgame:
-            //        // hiện chưa có chức năng này, làm sau
-            //        break;
-            //    case UIActionType.SelectSaveItem:
-            //        // Hiện chưa có chức năng này, làm sau
-            //        break;
-            //    case UIActionType.DeleteSaveItem:
-            //        // Hiện chưa có chức năng này, làm sau
-            //        break;
-            //    case UIActionType.TurnToPage:
-            //        // Không cần xử lý gì ở đây, chỉ cần chờ TouchUp
-            //        break;
-            //    case UIActionType.QuitGame:
-            //        // Không cần xử lý gì ở đây, chỉ cần chờ TouchUp
-            //        break;
-            //}
         }
 
         protected virtual void UIPageViewTouchUpDetected(Vector2 screenPoint, UIItem item, bool dragging)
         {
             if (debugMode)
             {
-                Debug.LogWarning($"[Demo02] UIPageView TouchUp on {item.uIActionType}");
+                Debug.Log($"[Demo02] TOUCH UP {item.uIActionType} - {item.targetRenderer.gameObject.name}.");
             }
 
+            DeTectedMainMenu(item);
+            DeTectedSave(item);
+        }
+
+        /// <summary>
+        /// Xử lý các hành động từ menu chính như New Game, Continue, SavePanel, Quit.
+        /// </summary>
+        /// <param name="item"></param>
+        private void DeTectedMainMenu(UIItem item)
+        {
             switch (item.uIActionType)
             {
-                case UIActionType.NewGame:
-                case UIActionType.Continue:
+                case UIActionType.NewSession:
+                    TurnToPage(item.targetPage);
+                    break;
                 case UIActionType.SavePanel:
-                case UIActionType.Tutorialgame:
-                case UIActionType.BackToMenu:
-
-                case UIActionType.SelectSaveItem:
-
-                case UIActionType.DeleteSaveItem:
-
-                case UIActionType.TurnToPage:
+                    TurnToPage(item.targetPage);
+                    break;
+                case UIActionType.TutorialSession:
                     TurnToPage(item.targetPage);
                     break;
 
@@ -325,6 +308,32 @@
 #else
                     Application.Quit();
 #endif
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Xử lý các hành động từ menu lưu game như Select, Delete, Duplicate.
+        /// </summary>
+        /// <param name="item"></param>
+        private void DeTectedSave(UIItem item)
+        {
+            switch (item.uIActionType)
+            {
+                case UIActionType.Back:
+                    TurnToPage(item.targetPage);
+                    break;
+                case UIActionType.ContinueSession:
+                    TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerContinueSession();
+                    //ProfessionalSkilMenu.Instance.OnContinueGame(ProfessionalSkilMenu.Instance.selectedSaveFolder);
+                    break;
+                case UIActionType.SelectSaveItem:
+                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name);
+                    break;
+                case UIActionType.DeleteSaveItem:
+                    break;
+                case UIActionType.DuplicateSaveItem:
                     break;
             }
         }

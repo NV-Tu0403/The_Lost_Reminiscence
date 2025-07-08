@@ -11,7 +11,7 @@ using UnityEngine.UI;
 using TMPro;
 
 
-public class ProfessionalSkilMenu : MonoBehaviour
+public class ProfessionalSkilMenu : CoreEventListenerBase
 {
     public static ProfessionalSkilMenu Instance { get; private set; }
 
@@ -19,11 +19,11 @@ public class ProfessionalSkilMenu : MonoBehaviour
     /// hiện dùng để test lưu trữ thư mục save gần nhất đã chọn
     /// </summary>
     private string lastSelectedSaveFolder;  
-    private List<GameObject> saveItemInstances = new List<GameObject>();
-    private string selectedSaveFolder;
+    public string selectedSaveFolder;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         if (Instance == null)
         {
             Instance = this;
@@ -34,6 +34,18 @@ public class ProfessionalSkilMenu : MonoBehaviour
     {
         RegisterSaveables();
         CheckUserAccounts();
+    }
+
+    public override void RegisterEvent(CoreEvent e)
+    {
+        e.OnNewSession += () => OnNewGame();
+        e.OnContinueSession += () => OnContinueGame(selectedSaveFolder);
+    }
+
+    public override void UnregisterEvent(CoreEvent e)
+    {
+        e.OnNewSession -= () => OnNewGame();
+        e.OnContinueSession -= () => OnContinueGame(selectedSaveFolder);
     }
 
     #region nghiệp vụ 1
@@ -73,7 +85,6 @@ public class ProfessionalSkilMenu : MonoBehaviour
     {
         if (UserAccountManager.Instance.TryAutoLogin(out string errorMessage))
         {
-            RefreshSaveListUI();
 
             lastSelectedSaveFolder = GetValidLastSaveFolder();
             //ContinueGame_Bt.interactable = !string.IsNullOrEmpty(lastSelectedSaveFolder);
@@ -115,6 +126,25 @@ public class ProfessionalSkilMenu : MonoBehaviour
     /// <returns></returns>
     public SaveListContext RefreshSaveList()
     {
+        // Kiểm tra null trước khi sử dụng
+        if (UserAccountManager.Instance == null)
+        {
+            Debug.LogError("UserAccountManager.Instance is null!");
+            return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
+        }
+        if (SaveGameManager.Instance == null)
+        {
+            Debug.LogError("SaveGameManager.Instance is null!");
+            return new SaveListContext { UserName = UserAccountManager.Instance.currentUserBaseName, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
+        }
+        if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
+        {
+            //Debug.LogError("currentUserBaseName is null or empty!");
+            // Wait 1 second and try again
+            StartCoroutine(RetryRefreshSaveListAfterDelay());
+            //return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
+        }
+
         var saves = SaveGameManager.Instance.GetAllSaveFolders(UserAccountManager.Instance.currentUserBaseName);
         bool isContinueEnabled = saves.Any();
         return new SaveListContext
@@ -125,50 +155,10 @@ public class ProfessionalSkilMenu : MonoBehaviour
         };
     }
 
-    /// <summary>
-    /// Cập nhật giao diện người dùng với danh sách các thư mục lưu trữ hiện có.
-    /// </summary>
-    private void RefreshSaveListUI()
+    private IEnumerator RetryRefreshSaveListAfterDelay()
     {
-        foreach (var item in saveItemInstances)
-        {
-            Destroy(item);
-        }
-        saveItemInstances.Clear();
-
-        // Lấy danh sách các thư mục lưu trữ và cập nhật UI
-        var context = RefreshSaveList();
-        var saves = context.Saves;
-
-        //foreach (var save in saves)
-        //{
-        //    GameObject saveItem = Instantiate(saveItemTemplate, saveListPanel.transform);
-        //    saveItemInstances.Add(saveItem);
-
-        //    var saveNameText = saveItem.GetComponentInChildren<TMP_Text>();
-        //    var saveImage = saveItem.GetComponentInChildren<RawImage>();
-        //    var buttons = saveItem.GetComponentsInChildren<Button>();
-        //    var selectButton = buttons[0];
-        //    var deleteButton = buttons[1];
-
-        //    saveNameText.text = Path.GetFileName(save.FolderPath);
-
-        //    if (!string.IsNullOrEmpty(save.ImagePath))
-        //    {
-        //        byte[] imageBytes = File.ReadAllBytes(save.ImagePath);
-        //        Texture2D texture = new Texture2D(2, 2);
-        //        texture.LoadImage(imageBytes);
-        //        saveImage.texture = texture;
-        //    }
-        //    else
-        //    {
-        //        saveImage.gameObject.SetActive(false);
-        //    }
-
-        //    selectButton.onClick.AddListener(() => OnSelectSave(save.FolderPath));
-        //    deleteButton.onClick.AddListener(() => OnDeleteSave(save.FolderPath));
-        //}
-        //ContinueGame_Bt.interactable = context.IsContinueEnabled;
+        yield return new WaitForSeconds(1f);
+        RefreshSaveList();
     }
 
     private IEnumerator WaitUntilPlayerAndApply()
@@ -248,8 +238,6 @@ public class ProfessionalSkilMenu : MonoBehaviour
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
             SaveGameManager.Instance.SaveToFolder(newSaveFolder);
         });
-        
-        
 
         return newSaveFolder;
     }
@@ -273,25 +261,24 @@ public class ProfessionalSkilMenu : MonoBehaviour
             PlayTimeManager.Instance.StartCounting();
             PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
         });
+
     }
 
     /// <summary>
-    /// Xử lý khi người dùng chọn một thư mục lưu trữ.
+    /// nhận vào đường dẫn thư mục để đánh dấu là thư mục đã chọn.
+    /// load dữ liệu từ thư mục đó.
     /// </summary>
     /// <param name="folderPath"></param>
     public void OnSelectSave(string folderPath)
     {
         if (!Directory.Exists(folderPath))
         {
-            //errorText.text = "Selected save no longer exists!";
-            //errorText.color = Color.red;
             return;
         }
 
         selectedSaveFolder = folderPath;
         lastSelectedSaveFolder = folderPath;
 
-        //ContinueGame_Bt.interactable = true;
 
         SaveGameManager.Instance.LoadFromFolder(folderPath);
 
@@ -300,10 +287,10 @@ public class ProfessionalSkilMenu : MonoBehaviour
         var jsonFiles = jsonFileHandler.LoadJsonFiles(folderPath);
         foreach (var (fileName, json) in jsonFiles)
         {
-            Debug.Log($"[SaveContent] {fileName}:\n{json}");
+            Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
         }
 
-        //UpdateCurrentSaveText();
+        
     }
 
     /// <summary>
@@ -320,8 +307,6 @@ public class ProfessionalSkilMenu : MonoBehaviour
                 selectedSaveFolder = null;
                 //ContinueGame_Bt.interactable = false;
             }
-            RefreshSaveListUI();
-            //UpdateCurrentSaveText();
         }
         else
         {
@@ -342,6 +327,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
             throw new Exception("No user logged in!");
         }
         SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
+
     }
 
     public void OnQuitSession(string currentSaveFolder)
@@ -364,7 +350,6 @@ public class ProfessionalSkilMenu : MonoBehaviour
             Debug.Log("[OnQuitSession] Unload complete.");
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         });
-
 
     }
 

@@ -3,10 +3,12 @@ using UnityEngine;
 
 namespace DuckLe
 {
-    public class CharacterInput : Core
+    public class CharacterInput : MonoBehaviour
     {
         private PlayerController _pc;
         public CharacterCamera _characterCamera;
+
+        public bool isInputLocked = false; // Lộc thêm để kiểm soát input
 
         private float _lastSpacePressTime;
         private int _spacePressCount;
@@ -21,7 +23,7 @@ namespace DuckLe
 
             InitializeCharacterCamera();
 
-            if (Core.Instance._menuCamera.activeSelf)
+            if (Core.Instance.menuCamera.activeSelf)
             {
                 _characterCamera.gameObject.SetActive(false);
             }
@@ -29,7 +31,18 @@ namespace DuckLe
 
         void Update()
         {
-            if (!Core.Instance._menuCamera.activeSelf)
+            // Lộc thêm để kiểm soát input
+            if (isInputLocked)
+            {
+                // Khi bị lock input, đảm bảo nhân vật về Idle
+                if (_pc != null &&_pc._stateMachine != null)
+                {
+                    _pc._stateMachine.SetPrimaryState(new IdleState());
+                }
+                return; 
+            }
+
+            if (!Core.Instance.menuCamera.activeSelf)
             {
                 _characterCamera.gameObject.SetActive(true);
             }
@@ -68,6 +81,10 @@ namespace DuckLe
             _characterCamera.SetTarget(transform);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         private Vector3 GetMoveInput()
         {
             float h = Input.GetAxisRaw("Horizontal");

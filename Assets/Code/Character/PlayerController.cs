@@ -4,8 +4,8 @@ using Duckle;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Unity.Burst.Intrinsics;
-using Unity.Collections;
+//using Unity.Burst.Intrinsics;
+//using Unity.Collections;
 using UnityEngine;
 
 namespace DuckLe
@@ -99,7 +99,7 @@ namespace DuckLe
             if (Instance == null)
             {
                 Instance = this;
-                DontDestroyOnLoad(gameObject);
+                //DontDestroyOnLoad(gameObject);
             }
             else
             {
@@ -184,14 +184,14 @@ namespace DuckLe
             }
 
             // Kiểm tra trạng thái rơi
-            if (_rigidbody != null && _rigidbody.linearVelocity.y < -0.1f && (_data.collisionFlags & 1) == 0)
-            {
-                _stateMachine.AddSecondaryState(new FallingState());
-            }
-            else
-            {
-                _stateMachine.RemoveSecondaryState(new FallingState());
-            }
+            // if (_rigidbody != null && _rigidbody.linearVelocity.y < -0.1f && (_data.collisionFlags & 1) == 0)
+            // {
+            //     _stateMachine.AddSecondaryState(new FallingState());
+            // }
+            // else
+            // {
+            //     _stateMachine.RemoveSecondaryState(new FallingState());
+            // }
 
 #if UNITY_EDITOR
             //Debug.Log($"Trạng thái: {string.Join(", ", _stateMachine.GetAllStateNames())}");

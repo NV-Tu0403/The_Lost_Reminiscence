@@ -54,6 +54,7 @@ namespace Code.Puzzle.LightTree
             ReturnCameraToPlayer(sequence, playerCam, cameraMoveDuration, onComplete, characterCamera);
         }
 
+        
         private void DemoLightingTree()
         {
             // Demo: Tween Emission cho cây nếu có renderer
@@ -67,6 +68,11 @@ namespace Code.Puzzle.LightTree
                     glowDuration
                 );
             }
+        }
+        
+        public void ForceComplete(bool instant = true)
+        {
+            
         }
     }
 }

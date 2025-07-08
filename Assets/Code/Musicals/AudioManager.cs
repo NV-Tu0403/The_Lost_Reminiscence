@@ -22,6 +22,7 @@ public class AudioManager : MonoBehaviour
             return;
         }
         Instance = this;
+        transform.SetParent(null); // Đặt lại cha để không bị ảnh hưởng bởi các scene khác
         DontDestroyOnLoad(gameObject);
     }
 
