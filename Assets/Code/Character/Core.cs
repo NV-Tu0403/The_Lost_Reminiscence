@@ -1,5 +1,4 @@
-﻿using System.Data;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Core : CoreEventListenerBase
 {
@@ -34,12 +33,6 @@ public class Core : CoreEventListenerBase
 
     public override void RegisterEvent(CoreEvent e)
     {
-        //e.OnNewSession += () => _stateMachine.HandleAction(UIActionType.NewSession);
-        //e.OnContinueSession += () => _stateMachine.HandleAction(UIActionType.ContinueSession);
-        //e.OnQuitGame += () => _stateMachine.HandleAction(UIActionType.QuitGame);
-        //e.OnBack += () => _stateMachine.HandleAction(UIActionType.Back);
-        //e.OnSavePanel += () => _stateMachine.HandleAction(UIActionType.SavePanel);
-        //e.OnUserPanel += () => _stateMachine.HandleAction(UIActionType.UserPanel);
 
         e.OnNewSession += NewSession;
         e.OnContinueSession += ContinueSession;
@@ -96,11 +89,37 @@ public class Core : CoreEventListenerBase
     private void NewSession()
     {
         _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
+        _coreEvent.triggerTurnOffMenu();
     }
 
     private void ContinueSession()
     {
         _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
+        _coreEvent.triggerTurnOffMenu();
+    }
+
+    private void PauseSession()
+    {
+        _stateMachine.SetState(new PauseSessionState(_stateMachine, _coreEvent));
+        _coreEvent.triggerTurnOnMenu();
+    }
+
+    private void ResumeSession()
+    {
+        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
+        _coreEvent.triggerTurnOffMenu();
+    }
+
+    private void SaveSession()
+    {
+        // Logic to save the current session
+        Debug.Log("Session saved.");
+    }
+
+    private void QuitSession()
+    {
+        _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
+        _coreEvent.triggerTurnOnMenu();
     }
 
     private void TurnOnMenu()
