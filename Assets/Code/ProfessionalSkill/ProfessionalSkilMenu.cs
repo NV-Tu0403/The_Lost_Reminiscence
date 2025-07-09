@@ -11,7 +11,7 @@ using UnityEngine.UI;
 using TMPro;
 
 
-public class ProfessionalSkilMenu : CoreEventListenerBase
+public class ProfessionalSkilMenu : MonoBehaviour
 {
     public static ProfessionalSkilMenu Instance { get; private set; }
 
@@ -20,10 +20,10 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     private string lastSelectedSaveFolder;  
     public string selectedSaveFolder;
+    public GameObject Menu;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
         if (Instance == null)
         {
             Instance = this;
@@ -32,20 +32,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     private void Start()
     {
+
         RegisterSaveables();
         CheckUserAccounts();
-    }
-
-    public override void RegisterEvent(CoreEvent e)
-    {
-        e.OnNewSession += () => OnNewGame();
-        e.OnContinueSession += () => OnContinueGame(selectedSaveFolder);
-    }
-
-    public override void UnregisterEvent(CoreEvent e)
-    {
-        e.OnNewSession -= () => OnNewGame();
-        e.OnContinueSession -= () => OnContinueGame(selectedSaveFolder);
     }
 
     #region nghiệp vụ 1
@@ -57,6 +46,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         SaveGameManager.Instance.RegisterSaveable(PlayTimeManager.Instance);
         SaveGameManager.Instance.RegisterSaveable(PlayerCheckPoint.Instance);
+        
+        // Lộc thêm để test
+        SaveGameManager.Instance.RegisterSaveable(ProgressionManager.Instance);
     }
 
     /// <summary>
@@ -139,7 +131,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
-            //Debug.LogError("currentUserBaseName is null or empty!");
+            Debug.LogError("currentUserBaseName is null or empty!");
             // Wait 1 second and try again
             StartCoroutine(RetryRefreshSaveListAfterDelay());
             //return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
@@ -237,7 +229,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             //Đặt vị trí mặc định
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
             SaveGameManager.Instance.SaveToFolder(newSaveFolder);
+
+            Core.Instance._menuCamera.SetActive(false);
+            Menu.SetActive(false);
         });
+        
+        
 
         return newSaveFolder;
     }
@@ -260,8 +257,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             PlayTimeManager.Instance.StartCounting();
             PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
+            // Đảm bảo đồng bộ trạng thái puzzle/gate sau khi scene đã load xong
+            ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
         });
 
+        Core.Instance._menuCamera.SetActive(false);
+        Menu.SetActive(false);
     }
 
     /// <summary>
@@ -290,7 +291,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
         }
 
-        
+        //UpdateCurrentSaveText();
     }
 
     /// <summary>
@@ -327,7 +328,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             throw new Exception("No user logged in!");
         }
         SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
-
     }
 
     public void OnQuitSession(string currentSaveFolder)
@@ -350,6 +350,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.Log("[OnQuitSession] Unload complete.");
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         });
+
 
     }
 

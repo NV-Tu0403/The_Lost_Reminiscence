@@ -10,7 +10,7 @@ using UnityEngine.Serialization;
 
 namespace Code.Procession
 {
-    public class ProgressionManager : MonoBehaviour
+    public class ProgressionManager : MonoBehaviour, ISaveable
     {
         public static ProgressionManager Instance { get; private set; }
 
@@ -23,37 +23,17 @@ namespace Code.Procession
         // Dữ liệu tiến trình game
         private GameProgression progression;
 
+        // Đánh dấu dữ liệu đã thay đổi
+        private bool isDirty = false;
+
 
         #region public methods for save/load
-
-        // Lộc đã xóa hàm save/load để test
-        // Nếu cần, Việt có thể gọi 2 hàm ví dụ dưới vào SaveManager của Việt.
-        // public class SaveGameManager
-        // {
-        //     public void SaveProgress()
-        //     {
-        //         var progress = ProgressionManager.Instance.GetProgression();
-        //         var json = JsonUtility.ToJson(progress);
-        //         File.WriteAllText("save.json", json);
-        //     }
-        //
-        //     public void LoadProgress()
-        //     {
-        //         var json = File.ReadAllText("save.json");
-        //         var loaded = JsonUtility.FromJson<GameProgression>(json);
-        //         ProgressionManager.Instance.SetProgression(loaded);
-        //     }
-        // }
-
-        // Hàm public để trả về dữ liệu tiến trình hiện tại 
-        public GameProgression GetProgression() => progression;
 
         //Hàm public để UI gọi khi NewGame hoặc ContinueGame
         public void InitProgression()
         {
             var sequence = BuildEventSequence();
             EventManager.Instance.Init(sequence);
-            SyncPuzzleStatesWithProgression(); // Đồng bộ trạng thái puzzle/gate với progression
         }
 
         #endregion
@@ -121,6 +101,8 @@ namespace Code.Procession
             {
                 Debug.LogWarning($"[ProgressionManager] Event '{eventId}' not found in any process");
             }
+
+            isDirty = true;
         }
 
         // Đánh dấu hoàn thành SubProcess nếu tìm thấy, trả về true nếu thành công
@@ -141,6 +123,7 @@ namespace Code.Procession
                         GrantRewards(main.Rewards);
                     }
 
+                    isDirty = true;
                     return true;
                 }
             }
@@ -157,6 +140,7 @@ namespace Code.Procession
                 mainMatch.Status = MainProcess.ProcessStatus.Completed;
                 Debug.Log($"[ProgressionManager] MainProcess '{eventId}' marked Completed (direct).");
                 GrantRewards(mainMatch.Rewards);
+                isDirty = true;
                 return true;
             }
 
@@ -190,6 +174,7 @@ namespace Code.Procession
             {
                 mainProcess.Status = MainProcess.ProcessStatus.InProgress;
                 Debug.Log($"[ProgressionManager] Unlocked MainProcess '{id}'");
+                isDirty = true;
                 return true;
             }
 
@@ -200,6 +185,7 @@ namespace Code.Procession
                 {
                     subProcess.Status = MainProcess.ProcessStatus.InProgress;
                     Debug.Log($"[ProgressionManager] Unlocked SubProcess '{id}'");
+                    isDirty = true;
                     return true;
                 }
             }
@@ -304,6 +290,7 @@ namespace Code.Procession
                             Debug.Log($"[ProgressionManager] MainProcess '{main.Id}' completed by sub-conditions.");
                         }
 
+                        isDirty = true;
                         return true;
                     }
                 }
@@ -322,6 +309,7 @@ namespace Code.Procession
             {
                 mainProcess.Status = newStatus;
                 Debug.Log($"[ProgressionManager] Updated MainProcess {id} → {newStatus}");
+                isDirty = true;
                 return true;
             }
 
@@ -332,6 +320,7 @@ namespace Code.Procession
                 {
                     subProcess.Status = newStatus;
                     Debug.Log($"[ProgressionManager] Updated SubProcess {id} → {newStatus}");
+                    isDirty = true;
                     return true;
                 }
             }
@@ -389,8 +378,8 @@ namespace Code.Procession
                         foreach (var sub in m.SubProcesses)
                         {
                             // Nếu đã complete thì chuyển về InProgress, còn Locked thì mở khóa
-                            if (sub.Status == MainProcess.ProcessStatus.Completed || sub.Status == MainProcess.ProcessStatus.Locked)
-                                sub.Status = MainProcess.ProcessStatus.InProgress;
+                            // if (sub.Status == MainProcess.ProcessStatus.Completed || sub.Status == MainProcess.ProcessStatus.Locked)
+                            //     sub.Status = MainProcess.ProcessStatus.InProgress;
                             // Nếu là puzzle, force complete để đảm bảo trạng thái vật thể
                             if (sub.Type == MainProcess.ProcessType.Puzzle)
                             {
@@ -462,7 +451,48 @@ namespace Code.Procession
                 }
             }
         }
+        #endregion
 
+        
+        #region save/load methods
+
+        // Tên file lưu tiến trình
+        public string FileName => "progression.json";
+
+        // Serialize progression thành json
+        public string SaveToJson()
+        {
+            return JsonUtility.ToJson(progression);
+        }
+
+        // Deserialize json thành progression
+        public void LoadFromJson(string json)
+        {
+            if (!string.IsNullOrEmpty(json))
+            {
+                progression = JsonUtility.FromJson<GameProgression>(json);
+                isDirty = false;
+            }
+        }
+
+        // Chỉ lưu nếu progression khác null
+        public bool ShouldSave()
+        {
+            return progression != null;
+        }
+
+        // Đánh dấu dữ liệu đã thay đổi
+        public bool IsDirty => isDirty;
+
+        // Hook trước khi lưu (có thể thêm logic nếu cần)
+        public void BeforeSave() { }
+
+        // Hook sau khi load (có thể thêm logic nếu cần)
+        public void AfterLoad()
+        {
+            // Sync lại trạng thái puzzle
+            SyncPuzzleStatesWithProgression();
+        }
         #endregion
     }
 }

@@ -23,7 +23,7 @@ namespace DuckLe
 
             InitializeCharacterCamera();
 
-            if (Core.Instance.menuCamera.activeSelf)
+            if (Core.Instance._menuCamera.activeSelf)
             {
                 _characterCamera.gameObject.SetActive(false);
             }
@@ -41,8 +41,8 @@ namespace DuckLe
                 }
                 return; 
             }
-
-            if (!Core.Instance.menuCamera.activeSelf)
+            
+            if (!Core.Instance._menuCamera.activeSelf)
             {
                 _characterCamera.gameObject.SetActive(true);
             }
