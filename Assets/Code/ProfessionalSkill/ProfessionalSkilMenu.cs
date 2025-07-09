@@ -46,6 +46,9 @@ public class ProfessionalSkilMenu : MonoBehaviour
     {
         SaveGameManager.Instance.RegisterSaveable(PlayTimeManager.Instance);
         SaveGameManager.Instance.RegisterSaveable(PlayerCheckPoint.Instance);
+        
+        // Lộc thêm để test
+        SaveGameManager.Instance.RegisterSaveable(ProgressionManager.Instance);
     }
 
     /// <summary>
@@ -250,13 +253,12 @@ public class ProfessionalSkilMenu : MonoBehaviour
             sceneToLoad = "Phong_scene"; // Default scene if none is set
         }
 
-        // Gọi Procession để load dữ lieu tu GameProcession
-        ProgressionManager.Instance.InitProgression();
-
         SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>
         {
             PlayTimeManager.Instance.StartCounting();
             PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
+            // Đảm bảo đồng bộ trạng thái puzzle/gate sau khi scene đã load xong
+            ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
         });
 
         Core.Instance._menuCamera.SetActive(false);
