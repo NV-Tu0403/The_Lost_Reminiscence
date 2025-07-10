@@ -292,13 +292,13 @@
         {
             switch (item.uIActionType)
             {
-                case UIActionType.NewSession:
+                case UIActionType.NewGame:
                     TurnToPage(item.targetPage);
                     break;
                 case UIActionType.SavePanel:
                     TurnToPage(item.targetPage);
                     break;
-                case UIActionType.TutorialSession:
+                case UIActionType.Tutorialgame:
                     TurnToPage(item.targetPage);
                     break;
 
@@ -320,13 +320,12 @@
         {
             switch (item.uIActionType)
             {
-                case UIActionType.Back:
+                case UIActionType.BackToMenu:
                     TurnToPage(item.targetPage);
                     break;
-                case UIActionType.ContinueSession:
+                case UIActionType.Continue:
                     TurnToPage(item.targetPage);
-                    CoreEvent.Instance.triggerContinueSession();
-                    //ProfessionalSkilMenu.Instance.OnContinueGame(ProfessionalSkilMenu.Instance.selectedSaveFolder);
+                    ProfessionalSkilMenu.Instance.OnContinueGame(ProfessionalSkilMenu.Instance.selectedSaveFolder);
                     break;
                 case UIActionType.SelectSaveItem:
                     UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name);

@@ -25,7 +25,13 @@ namespace Events
 
         private void Start()
         {
-         
+            Debug.Log("FootstepEvent: " + footstepEvent);
+            if (!PlayerAudioManager.Instance.playerFootstepInstance.isValid())
+            {
+                Debug.LogWarning("Khứa PlayerFootstepIntance bên [PlayAudioManager] null nè trời");
+            }
+            else
+                footstepEvent = PlayerAudioManager.Instance.playerFootstepInstance;
         }
 
         void Update()
