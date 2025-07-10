@@ -9,13 +9,10 @@ public struct CoreInputType
 public class CoreInput : CoreEventListenerBase
 {
     [SerializeField] private InputActionMapping inputActionMapping; // Tham chiếu đến ScriptableObject
-    private StateMachine _stateMachine;
 
     protected override void Awake()
     {
         base.Awake();
-        _stateMachine = new StateMachine();
-        _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
     }
 
     private void Update()
@@ -35,56 +32,76 @@ public class CoreInput : CoreEventListenerBase
 
     private void Mapping()
     {
-        if (Input.GetMouseButtonDown(0)) // Chuột trái
-        {
-            GetInput(new CoreInputType { InputType = KeyCoreInputType.MouseLeft });
-            return;
-        }
-        if (Input.GetMouseButtonDown(1)) // Chuột phải
-        {
-            GetInput(new CoreInputType { InputType = KeyCoreInputType.MouseRight });
-            return;
-        }
+        //if (Input.GetMouseButtonDown(0)) // Chuột trái
+        //{
+        //    GetInput(new CoreInputType { InputType = KeyCoreInputType.MouseLeft });
+        //    return;
+        //}
+        //if (Input.GetMouseButtonDown(1)) // Chuột phải
+        //{
+        //    GetInput(new CoreInputType { InputType = KeyCoreInputType.MouseRight });
+        //    return;
+        //}
 
-        // quét KeyCode
-        foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
+        try
         {
-            if (Input.GetKeyDown(keyCode))
+            // quét KeyCode
+            foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
             {
-                // Chuyển từ KeyCode sang KeyCoreInputType nếu trùng
-                if (Enum.TryParse(keyCode.ToString(), out KeyCoreInputType mappedKey))
+                if (Input.GetKeyDown(keyCode))
                 {
-                    GetInput(new CoreInputType { InputType = mappedKey });
-                    break;
+                    // Chuyển từ KeyCode sang KeyCoreInputType nếu trùng
+                    if (Enum.TryParse(keyCode.ToString(), out KeyCoreInputType mappedKey))
+                    {
+                        GetInput(new CoreInputType { InputType = mappedKey });
+                        break;
+                    }
                 }
             }
         }
+        catch (Exception)
+        {
+
+            throw;
+        }
+
+
     }
 
-    /// <summary>
-    /// nhận vào một CoreInputType và tìm kiếm các hành động tương ứng trong InputActionMapping(Config).
-    /// </summary>
-    /// <param name="coreInputType"></param>
-    private void GetInput(CoreInputType coreInputType)
+    private void GetInput(CoreInputType input)
     {
-        if (inputActionMapping != null && inputActionMapping.TryGetActions(coreInputType.InputType, out var actions))
+        try
         {
-            foreach (var action in actions)
-            {
-                Debug.Log($"[CoreInput] Triggered UIAction: {action} for Key: {coreInputType.InputType}");
+            var currentState = (Core.Instance?.CurrentCoreState) ?? "";
+            if (!Enum.TryParse(currentState, out CoreStateType coreStateType)) return;
 
-                ExecuteAction(action);
+            if (inputActionMapping.TryGetActions(input.InputType, coreStateType, out var actions))
+            {
+                foreach (var action in actions)
+                {
+                    ExecuteAction(action);
+                    //Debug.Log($"[CoreInput] Action: {action} for Input: {input.InputType} in State: {coreStateType}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[CoreInput] No actions found for Input: {input.InputType} in State: {coreStateType}");
             }
         }
-        else
+        catch (Exception e)
         {
-            Debug.LogWarning($"[CoreInput] No actions found for input type: {coreInputType.InputType}");
+            throw e;
         }
     }
 
     private void ExecuteAction(UIActionType action)
     {
-        _stateMachine.HandleAction(action);
-    }
+        if (Core.Instance == null)
+        {
+            Debug.LogWarning("Core.Instance is null. Cannot forward action.");
+            return;
+        }
 
+        Core.Instance?.HandleAction(action);
+    }
 }

@@ -5,33 +5,39 @@ using System.Collections.Generic;
 public class InputActionMapping : ScriptableObject
 {
     [System.Serializable]
-    public struct KeyActionPair
+    public struct KeyStateAction
     {
-        public KeyCoreInputType key;
+        public CoreStateType state;
         public List<UIActionType> actions;
     }
 
-    [SerializeField]
-    private List<KeyActionPair> mappings = new List<KeyActionPair>();
+    [System.Serializable]
+    public struct KeyActionMap
+    {
+        public KeyCoreInputType key;
+        public List<KeyStateAction> stateActions;
+    }
 
-    // Phương thức để lấy danh sách hành động cho một key
-    public bool TryGetActions(KeyCoreInputType key, out List<UIActionType> actions)
+    [SerializeField]
+    private List<KeyActionMap> mappings;
+
+    public bool TryGetActions(KeyCoreInputType key, CoreStateType state, out List<UIActionType> actions)
     {
         actions = null;
         foreach (var mapping in mappings)
         {
             if (mapping.key == key)
             {
-                actions = mapping.actions;
-                return true;
+                foreach (var sa in mapping.stateActions)
+                {
+                    if (sa.state == state)
+                    {
+                        actions = sa.actions;
+                        return true;
+                    }
+                }
             }
         }
         return false;
-    }
-
-    // Phương thức để lấy toàn bộ ánh xạ (nếu cần)
-    public List<KeyActionPair> GetAllMappings()
-    {
-        return mappings;
     }
 }

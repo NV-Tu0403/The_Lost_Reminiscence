@@ -1,4 +1,5 @@
-﻿
+﻿using System.Diagnostics;
+
 /// <summary>
 /// Trạng thái khi đang ở trong menu chính.
 /// 
@@ -20,12 +21,15 @@ public class InMainMenuState : StateBase
                 break;
 
             case UIActionType.NewSession:
+                //_coreEvent.triggerNewSession();
                 _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
                 break;
             case UIActionType.ContinueSession:
+                //_coreEvent.triggerContinueSession();
                 _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
                 break;
             case UIActionType.TutorialSession:
+                //_coreEvent.triggerNewSession(); // giả sử Tutorial cũng là một phiên chơi mới
                 _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
                 break;
 
@@ -50,12 +54,10 @@ public class InSessionState : StateBase
     {
         switch (action)
         {
-            case UIActionType.OpenMenu:
             case UIActionType.PauseSession:
-            case UIActionType.QuitSesion:
                 _stateMachine.SetState(new PauseSessionState(_stateMachine, _coreEvent));
+                _coreEvent.triggerPausedSession();
                 break;
-
 
         }
     }
@@ -74,15 +76,15 @@ public class PauseSessionState : StateBase
         switch (action)
         {
             case UIActionType.SaveSesion:
-                _coreEvent.triggerSaveSession();
+                //_coreEvent.triggerSaveSession();
                 break;
             case UIActionType.QuitSesion:
-                _coreEvent.triggerQuitSession();
+                //_coreEvent.triggerQuitSession();
                 _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
                 break;
             case UIActionType.ResumeSession:
-                _coreEvent.triggerResumedSession(); // dừng pause
                 _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
+                _coreEvent.triggerResumedSession(); // dừng pause
                 break;
         }
     }

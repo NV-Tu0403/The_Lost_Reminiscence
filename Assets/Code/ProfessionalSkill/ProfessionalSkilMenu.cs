@@ -1,16 +1,18 @@
-﻿using DuckLe;
+﻿
 using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
-using Script.Procession;
 using UnityEngine;
 using System.Collections.Generic;
 using Code.Procession;
 using UnityEngine.UI;
-using TMPro;
 
-
+/// <summary>
+/// Điều phối các nghiệp vụ chuyên môn.
+/// Đăng kí Logic nghiệp vụ cho các Event ở đây, có thể gọi trigger các sự kiện từ đây (cẩn thận tránh lặp vô hạn).
+/// * KHÔNG ĐƯỢC ĐĂNG KÍ HOẶC CHỨA LOGIC CHANGECORESTATE Ở ĐÂY.
+/// </summary>
 public class ProfessionalSkilMenu : CoreEventListenerBase
 {
     public static ProfessionalSkilMenu Instance { get; private set; }
@@ -40,12 +42,16 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         e.OnNewSession += () => OnNewGame();
         e.OnContinueSession += () => OnContinueGame(selectedSaveFolder);
+        e.OnSaveSession += () => OnSaveSession();
+        e.OnQuitSession += () => OnQuitSession(lastSelectedSaveFolder);
     }
 
     public override void UnregisterEvent(CoreEvent e)
     {
         e.OnNewSession -= () => OnNewGame();
         e.OnContinueSession -= () => OnContinueGame(selectedSaveFolder);
+        e.OnSaveSession -= () => OnSaveSession();
+        e.OnQuitSession -= () => OnQuitSession(lastSelectedSaveFolder);
     }
 
     #region nghiệp vụ 1

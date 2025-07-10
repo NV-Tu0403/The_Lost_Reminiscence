@@ -1,5 +1,12 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Localization.Plugins.XLIFF.V20;
+using UnityEngine;
 
+/// <summary>
+/// Trung tâm điều phối toàn bộ các State của Core game.
+/// Căn cứ vào CoreState để điều tiết các Event.
+/// CoreState cần được cập nhật cẩn thận khi Event được kích hoạt (CoreState là bộ quy tắc để ràng buộc các Event
+/// , Giúp mọi thứ tách bạch dể hiểu và dể theo dõi hơn)
+/// </summary>
 public class Core : CoreEventListenerBase
 {
     public static Core Instance { get; private set; }
@@ -29,13 +36,16 @@ public class Core : CoreEventListenerBase
         _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
         InitializeMenuCamera();
     }
-
-
     public override void RegisterEvent(CoreEvent e)
     {
 
         e.OnNewSession += NewSession;
         e.OnContinueSession += ContinueSession;
+
+        e.OnPausedSession += PauseSession;
+        e.OnResumedSession += ResumeSession;
+        e.OnSaveSession += SaveSession;
+        e.OnQuitSession += QuitSession;
 
         e.OnChangeState += UpdateCurrentCoreState;
 
@@ -49,6 +59,11 @@ public class Core : CoreEventListenerBase
     {
         e.OnNewSession -= NewSession;
         e.OnContinueSession -= ContinueSession;
+
+        e.OnPausedSession -= PauseSession;
+        e.OnResumedSession -= ResumeSession;
+        e.OnSaveSession -= SaveSession;
+        e.OnQuitSession -= QuitSession;
 
         e.OnChangeState -= UpdateCurrentCoreState;
 
@@ -79,34 +94,46 @@ public class Core : CoreEventListenerBase
         }
     }
 
+    private void Update()
+    {
+        // Kiểm tra trạng thái hiện tại của StateMachine và xử lý hành động từ người dùng
+        if (_stateMachine.CurrentStateType != null)
+        {
+            Debug.Log($"[Core] Current State: {_stateMachine.CurrentStateType}");
+        }
+    }
+
     // debug state name
     private void UpdateCurrentCoreState(CoreStateType stateType)
     {
         CurrentCoreState = stateType.ToString();
-        Debug.Log($"[Core] CurrentCoreState updated to: {CurrentCoreState}");
+        //Debug.Log($"[Core] CurrentCoreState updated to: {CurrentCoreState}");
+    }
+
+    public void HandleAction(UIActionType action)
+    {
+        _stateMachine.HandleAction(action);
     }
 
     private void NewSession()
     {
-        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
         _coreEvent.triggerTurnOffMenu();
     }
 
     private void ContinueSession()
     {
+        // vì hiện tại Event OnContinue không được gọi bới Core Input nên SetState ở đây cho Continue
         _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
         _coreEvent.triggerTurnOffMenu();
     }
 
     private void PauseSession()
     {
-        _stateMachine.SetState(new PauseSessionState(_stateMachine, _coreEvent));
-        _coreEvent.triggerTurnOnMenu();
+        _coreEvent.triggerTurnOnMenu();// => (Event)TurnOnMenu -> turnOnMenu();
     }
 
     private void ResumeSession()
     {
-        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
         _coreEvent.triggerTurnOffMenu();
     }
 
@@ -118,7 +145,6 @@ public class Core : CoreEventListenerBase
 
     private void QuitSession()
     {
-        _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
         _coreEvent.triggerTurnOnMenu();
     }
 
