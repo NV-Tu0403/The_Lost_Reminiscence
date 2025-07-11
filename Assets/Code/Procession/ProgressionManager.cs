@@ -72,7 +72,7 @@ namespace Code.Procession
             if (progressionDataSo != null)
             {
                 progression = progressionDataSo.ToGameProgression();
-                Debug.Log("[ProgressionManager] Loaded from SO");
+                //Debug.Log("[ProgressionManager] Loaded from SO");
                 return;
             }
             Debug.LogError("ProgressionDataSO is null!");
