@@ -344,10 +344,43 @@ namespace DuckLe
         #region Movement
         public void Teleport(Vector3? position = null, Quaternion? rotation = null)
         {
-            _rigidbody.position = position ?? transform.position;
-            _rigidbody.rotation = rotation ?? transform.rotation;
-            _rigidbody.linearVelocity = Vector3.zero;
+            var targetPosition = position ?? transform.position;
+            var targetRotation = rotation ?? transform.rotation;
+
+            //Chuẩn hóa quaternion để tránh lỗi "not unit length"
+            if (targetRotation != Quaternion.identity)
+            {
+                targetRotation = NormalizeQuaternion(targetRotation);
+            }
+
+            if (_rigidbody.isKinematic)
+            {
+                transform.position = targetPosition;
+                transform.rotation = targetRotation;
+            }
+            else
+            {
+                _rigidbody.MovePosition(targetPosition);
+                _rigidbody.MoveRotation(targetRotation);
+                _rigidbody.linearVelocity = Vector3.zero;
+                _rigidbody.angularVelocity = Vector3.zero;
+            }
         }
+        private Quaternion NormalizeQuaternion(Quaternion q)
+        {
+            float magnitude = Mathf.Sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+            if (magnitude > 0f)
+            {
+                return new Quaternion(q.x / magnitude, q.y / magnitude, q.z / magnitude, q.w / magnitude);
+            }
+            else
+            {
+                Debug.LogWarning("Attempted to normalize a zero-length quaternion. Using identity.");
+                return Quaternion.identity;
+            }
+        }
+
+
 
         public void Jump(bool ignoreGrounded = false, float? overrideImpulse = null)
         {

@@ -294,12 +294,15 @@
             {
                 case UIActionType.NewSession:
                     TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerNewSession();
                     break;
                 case UIActionType.SavePanel:
                     TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerSavePanel();
                     break;
                 case UIActionType.TutorialSession:
                     TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerNewSession();
                     break;
 
                 case UIActionType.QuitGame:
@@ -327,7 +330,6 @@
                 case UIActionType.ContinueSession:
                     TurnToPage(item.targetPage);
                     CoreEvent.Instance.triggerContinueSession();
-                    //ProfessionalSkilMenu.Instance.OnContinueGame(ProfessionalSkilMenu.Instance.selectedSaveFolder);
                     break;
                 case UIActionType.RefreshSaveList:
                     UIPage05.Instance.RefreshSaveSlots();

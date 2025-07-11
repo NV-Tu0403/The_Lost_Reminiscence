@@ -129,24 +129,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8456019689715168554, guid: 372f043537980674294ad6ada4ba099a, type: 3}
   m_PrefabInstance: {fileID: 8146018565885743093}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &441947202 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9223153338814055006, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-  m_PrefabInstance: {fileID: 449738008825194067}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &441947215
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 441947202}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af633e32641973c4ebdab16edc9a4e03, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inputActionMapping: {fileID: 11400000, guid: 2ddc590c6b61f164e97b120c748395f4, type: 2}
 --- !u!1001 &481650364
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -329,11 +311,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &599823077 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8297008072439443603, guid: 3ca6086b540ea7741a2823c02d5e425d, type: 3}
-  m_PrefabInstance: {fileID: 481650364}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1271153313
 GameObject:
   m_ObjectHideFlags: 0
@@ -495,7 +472,7 @@ GameObject:
   - component: {fileID: 2065193076}
   - component: {fileID: 2065193075}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: HousePoinPlayerMenu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -638,14 +615,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1468110061373741538, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1495338261065581108, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4308075130808239124, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
       propertyPath: MainMenu
       value: 
@@ -653,15 +622,23 @@ PrefabInstance:
     - target: {fileID: 4308075130808239124, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
       propertyPath: menuCamera
       value: 
-      objectReference: {fileID: 599823077}
+      objectReference: {fileID: 0}
     - target: {fileID: 4308075130808239124, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: _menuCamera
+      propertyPath: GameObjectSetActiveCore.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4308075130808239124, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
+      propertyPath: 'GameObjectSetActiveCore.Array.data[0]'
       value: 
-      objectReference: {fileID: 599823077}
-    - target: {fileID: 7160408433322295689, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: Menu
+      objectReference: {fileID: 1271153313}
+    - target: {fileID: 4308075130808239124, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
+      propertyPath: 'GameObjectSetActiveCore.Array.data[1]'
       value: 
-      objectReference: {fileID: 319912864}
+      objectReference: {fileID: 580084805}
+    - target: {fileID: 4308075130808239124, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
+      propertyPath: 'GameObjectSetActiveCore.Array.data[2]'
+      value: 
+      objectReference: {fileID: 2065193074}
     - target: {fileID: 9223153338814055006, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
       propertyPath: m_Name
       value: Core
@@ -669,10 +646,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 9223153338814055006, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 441947215}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
 --- !u!1001 &8146018565885743093
 PrefabInstance:
