@@ -117,7 +117,7 @@ namespace Script.Puzzle.LightTree
 
         private void OnDestroy()
         {
-            Debug.Log($"[IdController] {gameObject.name} OnDestroy called");
+            //Debug.Log($"[IdController] {gameObject.name} OnDestroy called");
         }
     }
 }
