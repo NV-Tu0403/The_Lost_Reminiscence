@@ -6,13 +6,14 @@ namespace Code.UI
 {
     public class DevModeUI : MonoBehaviour
     {
-        [SerializeField] private Button devModeButton;
+        [SerializeField] private Button jumpMainButton;
         [SerializeField] private string mainId;
 
         private void Start()
         {
-            devModeButton.onClick.AddListener(() => 
-                ProgressionManager.Instance.ForceCompleteAllEventsInMain(mainId));
+            if (jumpMainButton != null)
+                jumpMainButton.onClick.AddListener(() =>
+                    ProgressionManager.Instance.JumpToMainProcess(mainId));
         }
     }
 }
