@@ -42,7 +42,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         e.OnNewSession += () => OnNewGame();
         e.OnContinueSession += () => OnContinueGame(selectedSaveFolder);
-        e.OnSaveSession += () => OnSaveSession();
+        e.OnSaveSession += () => OnSaveSession(lastSelectedSaveFolder);
         e.OnQuitSession += () => OnQuitSession(lastSelectedSaveFolder);
     }
 
@@ -50,7 +50,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         e.OnNewSession -= () => OnNewGame();
         e.OnContinueSession -= () => OnContinueGame(selectedSaveFolder);
-        e.OnSaveSession -= () => OnSaveSession();
+        e.OnSaveSession -= () => OnSaveSession(lastSelectedSaveFolder);
         e.OnQuitSession -= () => OnQuitSession(lastSelectedSaveFolder);
     }
 
@@ -238,7 +238,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             // Gọi Procession để load dữ lieu tu GameProcession
             ProgressionManager.Instance.InitProgression();
 
-            //án playerTransform
+            //gán playerTransform
             PlayerCheckPoint.Instance.SetPlayerTransform(player.transform);
             //Đặt vị trí mặc định
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
@@ -262,6 +262,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         if (string.IsNullOrEmpty(sceneToLoad) || sceneToLoad == "Unknown" || sceneToLoad == "Menu")
         {
             sceneToLoad = "Phong_scene"; // Default scene if none is set
+            Debug.LogError($"[OnContinueGame] Invalid scene name '{PlayerCheckPoint.Instance.CurrentMap}', loading default scene '{sceneToLoad}' instead.");
         }
 
         SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>
@@ -313,13 +314,11 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             {
                 lastSelectedSaveFolder = null;
                 selectedSaveFolder = null;
-                //ContinueGame_Bt.interactable = false;
+                UIPage05.Instance.RefreshSaveSlots();
             }
         }
         else
         {
-            //errorText.text = "Failed to delete save!";
-            //errorText.color = Color.red;
             Debug.LogError($"[OnDeleteSave] Failed to delete save folder: {folderPath}");
         }
     }
@@ -328,13 +327,24 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// Lưu tất cả dữ liệu của người dùng hiện tại vào thư mục lưu trữ tương ứng.
     /// </summary>
     /// <exception cref="Exception"></exception>
-    public void OnSaveSession()
+    public void OnSaveSession(string currentSaveFolder)
     {
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
             throw new Exception("No user logged in!");
         }
-        SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
+        //SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
+        if (!string.IsNullOrEmpty(currentSaveFolder))
+        {
+            try
+            {
+                SaveGameManager.Instance.SaveToFolder(currentSaveFolder);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[OnQuitSession] Failed to save before unloading: {ex.Message}");
+            }
+        }
 
     }
 
@@ -358,6 +368,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.Log("[OnQuitSession] Unload complete.");
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         });
+
+        UIPage05.Instance.RefreshSaveSlots();
 
     }
 

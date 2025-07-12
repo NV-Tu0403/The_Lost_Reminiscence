@@ -282,6 +282,7 @@
 
             DeTectedMainMenu(item);
             DeTectedSave(item);
+            DetecteedPauseSession(item);
         }
 
         /// <summary>
@@ -340,6 +341,22 @@
                 case UIActionType.DeleteSaveItem:
                     break;
                 case UIActionType.DuplicateSaveItem:
+                    break;
+            }
+        }
+
+        private void DetecteedPauseSession(UIItem item)
+        {
+            switch (item.uIActionType)
+            {
+                case UIActionType.ResumeSession:
+                    CoreEvent.Instance.triggerResumedSession();
+                    break;
+                case UIActionType.QuitSesion:
+                    CoreEvent.Instance.triggerQuitSession();
+                    break;
+                case UIActionType.SaveSesion:
+                    CoreEvent.Instance.triggerSaveSession();
                     break;
             }
         }
