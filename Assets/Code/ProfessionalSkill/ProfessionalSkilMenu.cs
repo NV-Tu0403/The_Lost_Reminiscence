@@ -63,6 +63,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         SaveGameManager.Instance.RegisterSaveable(PlayTimeManager.Instance);
         SaveGameManager.Instance.RegisterSaveable(PlayerCheckPoint.Instance);
+        SaveGameManager.Instance.RegisterSaveable(ProgressionManager.Instance);
     }
 
     /// <summary>
@@ -269,8 +270,10 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             PlayTimeManager.Instance.StartCounting();
             PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
+            
+            // Đồng bộ hóa dữ liệu vật thể
+            ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
         });
-
     }
 
     /// <summary>
