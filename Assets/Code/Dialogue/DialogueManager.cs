@@ -21,13 +21,13 @@ namespace Code.Dialogue
         private void Awake()
         {
             if (fullDialoguePanel != null) fullDialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + fullDialoguePanel );
+            //else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + fullDialoguePanel );
             
             if (bubbleDialoguePanel != null) bubbleDialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + bubbleDialoguePanel );
+            //else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + bubbleDialoguePanel );
             
             if (storyDialoguePanel != null) storyDialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + storyDialoguePanel );
+            //else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + storyDialoguePanel );
         }
 
         /// <summary>

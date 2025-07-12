@@ -15,7 +15,7 @@ namespace Code.Puzzle.InteractBridge
 
         public void ForceComplete(bool instant = true)
         {
-            
+            throw new NotImplementedException();
         }
     }
 }

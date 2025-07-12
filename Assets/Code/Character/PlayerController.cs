@@ -457,7 +457,7 @@ namespace DuckLe
             }
             catch (System.Exception)
             {
-                Debug.Log("oke");
+                Debug.Log("deo co gi de check ray");
             }
 
         }
