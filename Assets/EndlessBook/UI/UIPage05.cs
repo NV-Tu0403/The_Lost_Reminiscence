@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System;
+using System.Globalization;
 
 [Serializable]
 public struct SlotSave
@@ -61,7 +62,7 @@ public class UIPage05 : MonoBehaviour
     /// <summary>
     /// Làm mới danh sách Save Slot, hiển thị các Save Item theo thứ tự từ mới nhất đến cũ nhất.
     /// </summary>
-    private void RefreshSaveSlots()
+    public void RefreshSaveSlots()
     {
         try
         {
@@ -72,7 +73,7 @@ public class UIPage05 : MonoBehaviour
             SaveListContext context = ProfessionalSkilMenu.Instance.RefreshSaveList();
             List<SaveFolder> saves = context.Saves;
 
-            if (saves.Count <= 0)
+            if (saves.Count <= 0 || saves == null)
             {
                 StartCoroutine(RetryRefreshSaveSlotsAfterDelay());
             }

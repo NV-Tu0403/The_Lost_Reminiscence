@@ -294,12 +294,15 @@
             {
                 case UIActionType.NewSession:
                     TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerNewSession();
                     break;
                 case UIActionType.SavePanel:
                     TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerSavePanel();
                     break;
                 case UIActionType.TutorialSession:
                     TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerNewSession();
                     break;
 
                 case UIActionType.QuitGame:
@@ -318,6 +321,7 @@
         /// <param name="item"></param>
         private void DeTectedSave(UIItem item)
         {
+            //Debug.LogWarning($"[Demo02] DeTectedSave: {item.uIActionType} - {item.targetRenderer.gameObject.name}");
             switch (item.uIActionType)
             {
                 case UIActionType.Back:
@@ -326,7 +330,9 @@
                 case UIActionType.ContinueSession:
                     TurnToPage(item.targetPage);
                     CoreEvent.Instance.triggerContinueSession();
-                    //ProfessionalSkilMenu.Instance.OnContinueGame(ProfessionalSkilMenu.Instance.selectedSaveFolder);
+                    break;
+                case UIActionType.RefreshSaveList:
+                    UIPage05.Instance.RefreshSaveSlots();
                     break;
                 case UIActionType.SelectSaveItem:
                     UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name);

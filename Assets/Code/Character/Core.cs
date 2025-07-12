@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 /// <summary>
 /// Trung tâm điều phối toàn bộ các State của Core game.
@@ -14,13 +15,15 @@ public class Core : CoreEventListenerBase
     public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động                                               
 
     public string CurrentCoreState;
-    public GameObject menuCamera;
     public GameObject MainMenu;
+    public GameObject menuCamera;
+    public GameObject characterCamera;
 
+    public GameObject[] GameObjectSetActiveCore;
 
     protected override void Awake()
     {
-     
+
         if (Instance == null)
         {
             Instance = this;
@@ -33,12 +36,18 @@ public class Core : CoreEventListenerBase
         base.Awake();
         _stateMachine = new StateMachine();
         _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
-        InitializeMenuCamera();
+        //TryInitializeCamera();
+    }
+
+    private void Start()
+    {
+        SetUpCamera();
     }
 
     private void Update()
     {
         UpdateStateFix();
+        TryInitializeCamera();
     }
 
     public override void RegisterEvent(CoreEvent e)
@@ -46,6 +55,7 @@ public class Core : CoreEventListenerBase
 
         e.OnNewSession += NewSession;
         e.OnContinueSession += ContinueSession;
+        e.OnSavePanel += E_OnSavePanel;
 
         e.OnPausedSession += PauseSession;
         e.OnResumedSession += ResumeSession;
@@ -64,6 +74,7 @@ public class Core : CoreEventListenerBase
     {
         e.OnNewSession -= NewSession;
         e.OnContinueSession -= ContinueSession;
+        e.OnSavePanel -= E_OnSavePanel;
 
         e.OnPausedSession -= PauseSession;
         e.OnResumedSession -= ResumeSession;
@@ -81,20 +92,38 @@ public class Core : CoreEventListenerBase
     /// <summary>
     /// đảm bảo rằng MenuCamera đã được khởi tạo và kích hoạt.
     /// </summary>
-    private void InitializeMenuCamera()
+    private void TryInitializeCamera()
     {
+
         if (menuCamera == null)
         {
-            menuCamera = GameObject.Find("MenuCameras");
-            if (menuCamera == null)
-            {
-                menuCamera = Resources.Load<GameObject>("Prefab Loaded/MenuCamera");
-                //Debug.Log("MenuCamera loaded from Resources.");
-            }
+            GameObject[] all = Resources.FindObjectsOfTypeAll<GameObject>();
+            menuCamera = all.FirstOrDefault(obj => obj.name == "MenuCameras");
+            Debug.LogWarning("MenuCamera found!");
+        }
+        if (characterCamera == null)
+        {
+            GameObject[] all = Resources.FindObjectsOfTypeAll<GameObject>();
+            characterCamera = all.FirstOrDefault(obj => obj.name == "CharacterCamera(Clone)");
+            Debug.LogWarning("CharacterCamera found!");
+        }
+
+    }
+
+    /// <summary>
+    /// Thiết lập mặc định của camera (menu/Player).
+    /// </summary>
+    private void SetUpCamera()
+    {
+        if (menuCamera != null && characterCamera != null)
+        {
             if (!menuCamera.activeSelf)
             {
                 menuCamera.SetActive(true);
-                //Debug.Log("MenuCamera initialized and activated successfully.");
+            }
+            else
+            {
+                characterCamera.gameObject.SetActive(false);
             }
         }
     }
@@ -142,27 +171,48 @@ public class Core : CoreEventListenerBase
         _coreEvent.triggerTurnOffMenu();
     }
 
+    private void E_OnSavePanel()
+    {
+        UIPage05.Instance.RefreshSaveSlots();
+    }
+
     private void SaveSession()
     {
-        // Logic to save the current session
         Debug.Log("Session saved.");
     }
 
     private void QuitSession()
     {
         _coreEvent.triggerTurnOnMenu();
+        foreach (var obj in GameObjectSetActiveCore)
+        {
+            if (obj != null)
+            {
+                obj.SetActive(true);
+            }
+        }
     }
 
     private void TurnOnMenu()
     {
         menuCamera.SetActive(true);
         MainMenu.SetActive(true);
+        characterCamera.SetActive(false);
+
     }
 
     private void TurnOffMenu()
     {
         menuCamera.SetActive(false);
         MainMenu.SetActive(false);
+        foreach (var obj in GameObjectSetActiveCore)
+        {
+            if (obj != null)
+            {
+                obj.SetActive(false);
+            }
+        }
+        characterCamera.SetActive(true);
     }
 
     private void QuitGame()

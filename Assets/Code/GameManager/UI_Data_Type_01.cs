@@ -36,6 +36,7 @@ public enum UIActionType
 
     QuitSesion,
     SaveSesion,
+    RefreshSaveList
 }
 
 public enum KeyCoreInputType

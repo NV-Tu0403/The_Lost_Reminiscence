@@ -159,13 +159,13 @@ namespace DuckLe
             UpdateHealthUI();
 
             // Re-enable player
-            _playerController.enabled = true;
+            //_playerController.enabled = true;
 
-            // Play respawn animation
-            if (TryGetComponent<Animator>(out var anim))
-            {
-                anim.SetTrigger("Respawn");
-            }
+            //// Play respawn animation
+            //if (TryGetComponent<Animator>(out var anim))
+            //{
+            //    anim.SetTrigger("Respawn");
+            //}
 
             // TODO: Set player position to spawn point if needed
             // transform.position = GetSpawnPosition();
