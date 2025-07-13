@@ -28,11 +28,6 @@ namespace Code.Puzzle.LightTree
             }
         }
 
-        public void ForceComplete(bool instant = true)
-        {
-            throw new NotImplementedException();
-        }
-
         private void CheckDestroySups()
         {
             var allSups = FindObjectsOfType<SupController>();
@@ -74,6 +69,9 @@ namespace Code.Puzzle.LightTree
                 _onComplete?.Invoke();
             }
         }
+        
+        // Phương thức này sẽ được gọi khi người chơi muốn hoàn thành bước này ngay lập tức
+        public void ForceComplete(bool instant = true) {}
     }
     
     public class DestroyNotifier : MonoBehaviour
