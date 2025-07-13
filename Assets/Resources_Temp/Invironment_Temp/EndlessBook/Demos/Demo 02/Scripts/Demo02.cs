@@ -282,7 +282,7 @@
 
             DeTectedMainMenu(item);
             DeTectedSave(item);
-            DetecteedPauseSession(item);
+            DetectedPauseSession(item);
         }
 
         /// <summary>
@@ -345,7 +345,7 @@
             }
         }
 
-        private void DetecteedPauseSession(UIItem item)
+        private void DetectedPauseSession(UIItem item)
         {
             switch (item.uIActionType)
             {
@@ -353,6 +353,7 @@
                     CoreEvent.Instance.triggerResumedSession();
                     break;
                 case UIActionType.QuitSesion:
+                    TurnToPage(item.targetPage);
                     CoreEvent.Instance.triggerQuitSession();
                     break;
             }
