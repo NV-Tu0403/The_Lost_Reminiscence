@@ -151,6 +151,8 @@ public class Core : CoreEventListenerBase
 
     private void NewSession()
     {
+        // vì hiện tại Event NewSession không được gọi bới Core Input nên SetState ở đây cho NewSession
+        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
         _coreEvent.triggerTurnOffMenu();
     }
 

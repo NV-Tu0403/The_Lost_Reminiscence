@@ -355,9 +355,6 @@
                 case UIActionType.QuitSesion:
                     CoreEvent.Instance.triggerQuitSession();
                     break;
-                case UIActionType.SaveSesion:
-                    CoreEvent.Instance.triggerSaveSession();
-                    break;
             }
         }
 
