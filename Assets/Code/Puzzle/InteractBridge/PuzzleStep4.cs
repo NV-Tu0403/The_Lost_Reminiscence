@@ -13,9 +13,7 @@ namespace Code.Puzzle.InteractBridge
             onComplete?.Invoke();
         }
 
-        public void ForceComplete(bool instant = true)
-        {
-            throw new NotImplementedException();
-        }
+        // This method is called to force complete the step, if needed
+        public void ForceComplete(bool instant = true) { }
     }
 }

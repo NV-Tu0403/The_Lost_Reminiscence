@@ -142,10 +142,6 @@ namespace Code.Puzzle.LightTree
         }
         
         // DevMode: Bỏ qua hiệu ứng và hoàn thành ngay lập tức
-        public void ForceComplete(bool instant = true)
-        {
-            throw new NotImplementedException();
-        }
-
+        public void ForceComplete(bool instant = true) {}
     }
 }

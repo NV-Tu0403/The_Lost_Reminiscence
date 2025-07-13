@@ -52,11 +52,6 @@ namespace Code.Puzzle.InteractBridge
             }
         }
 
-        public void ForceComplete(bool instant = true)
-        {
-            throw new NotImplementedException();
-        }
-
         // Phương thức này sẽ được gọi khi bắt đầu bước puzzle, nó sẽ thiết lập vị trí ban đầu của các khối cầu.
         private void Start()
         {
@@ -150,5 +145,8 @@ namespace Code.Puzzle.InteractBridge
             countdownText.text = "";
             countdownCanvas.enabled = false;
         }
+        
+        // Phương thức này sẽ được gọi để buộc hoàn thành bước puzzle, nếu cần thiết.
+        public void ForceComplete(bool instant = true) {}
     }
 }
