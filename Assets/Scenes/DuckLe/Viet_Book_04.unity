@@ -462,7 +462,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 24d6cf42e16e7ce438b05af3a841f14a, type: 2}
   m_sharedMaterial: {fileID: -8183358872866151706, guid: 24d6cf42e16e7ce438b05af3a841f14a, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: -8183358872866151706, guid: 24d6cf42e16e7ce438b05af3a841f14a, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -2281,12 +2282,8 @@ MonoBehaviour:
   pagesFlippingSound: {fileID: 947353495}
   pagesFlippingSoundDelay: 0.3
   touchPad: {fileID: 1716851052}
-  pageViews:
-  - {fileID: 1414516648}
-  - {fileID: 809705117}
-  - {fileID: 2143177557}
-  - {fileID: 1483754029}
-  - {fileID: 423020272}
+  uiPageViews: []
+  debugMode: 0
 --- !u!4 &319912866
 Transform:
   m_ObjectHideFlags: 0
@@ -3487,7 +3484,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 24d6cf42e16e7ce438b05af3a841f14a, type: 2}
   m_sharedMaterial: {fileID: -8183358872866151706, guid: 24d6cf42e16e7ce438b05af3a841f14a, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: -8183358872866151706, guid: 24d6cf42e16e7ce438b05af3a841f14a, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -3681,6 +3679,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1496d9af016c40d47a462ea2f73b564c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pageViewCamera: {fileID: 0}
   raycastLayerMask:
     serializedVersion: 2
     m_Bits: 0
@@ -5479,7 +5478,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5932,6 +5931,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a20c0b4dc134f06438d43d0b2453ae79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pageViewCamera: {fileID: 0}
   raycastLayerMask:
     serializedVersion: 2
     m_Bits: 0
@@ -7934,27 +7934,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cec1bbda6ff35c849adadbee1e6ccc96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pageViewCamera: {fileID: 0}
   raycastLayerMask:
     serializedVersion: 2
     m_Bits: 256
   maxRayCastDistance: 15
+  checkInterval: 0.1
+  debugMode: 0
   menuItems:
-  - action: 1
+  - uIActionType: 0
     targetColliderObject: {fileID: 1246945772}
     targetRenderer: {fileID: 41038472}
     normalColor: {r: 0, g: 0, b: 0, a: 1}
     hoverColor: {r: 0.5471698, g: 0.26392898, b: 0, a: 1}
-  - action: 0
+    targetPage: 0
+    turnTime: 0
+  - uIActionType: 0
     targetColliderObject: {fileID: 441424246}
     targetRenderer: {fileID: 1261153328}
     normalColor: {r: 0, g: 0, b: 0, a: 1}
     hoverColor: {r: 0.4867924, g: 0.23480575, b: 0, a: 1}
-  - action: 2
+    targetPage: 0
+    turnTime: 0
+  - uIActionType: 0
     targetColliderObject: {fileID: 1283062291}
     targetRenderer: {fileID: 414002315}
     normalColor: {r: 0, g: 0, b: 0, a: 1}
     hoverColor: {r: 0.4867924, g: 0.23480575, b: 0, a: 1}
-  overrideCamera: {fileID: 1100358092}
+    targetPage: 0
+    turnTime: 0
 --- !u!1 &1062976958
 GameObject:
   m_ObjectHideFlags: 0
@@ -9543,7 +9551,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 24d6cf42e16e7ce438b05af3a841f14a, type: 2}
   m_sharedMaterial: {fileID: -8183358872866151706, guid: 24d6cf42e16e7ce438b05af3a841f14a, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: -8183358872866151706, guid: 24d6cf42e16e7ce438b05af3a841f14a, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -10861,6 +10870,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4cf74e65206bf24f9754e0d66e1d8ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pageViewCamera: {fileID: 0}
   raycastLayerMask:
     serializedVersion: 2
     m_Bits: 0
@@ -11277,6 +11287,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a20c0b4dc134f06438d43d0b2453ae79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pageViewCamera: {fileID: 0}
   raycastLayerMask:
     serializedVersion: 2
     m_Bits: 0
@@ -11395,6 +11406,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab2aa11fb3a771f4db0286893ce7999f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pageViewCamera: {fileID: 0}
   raycastLayerMask:
     serializedVersion: 2
     m_Bits: 0
@@ -15478,6 +15490,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ab44bf1bc9991944a324ebc81eeed27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pageViewCamera: {fileID: 0}
   raycastLayerMask:
     serializedVersion: 2
     m_Bits: 0
