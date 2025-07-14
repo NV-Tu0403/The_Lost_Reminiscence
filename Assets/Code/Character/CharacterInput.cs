@@ -22,31 +22,17 @@ namespace DuckLe
             }
 
             InitializeCharacterCamera();
-
-            //if (Core.Instance.menuCamera.activeSelf)
-            //{
-            //    _characterCamera.gameObject.SetActive(false);
-            //}
         }
 
         void Update()
         {
             // Lộc thêm để kiểm soát input
-            if (isInputLocked)
+
+            // Khi bị lock input, đảm bảo nhân vật về Idle
+            if (_pc != null && _pc._stateMachine != null)
             {
-                // Khi bị lock input, đảm bảo nhân vật về Idle
-                if (_pc != null &&_pc._stateMachine != null)
-                {
-                    _pc._stateMachine.SetPrimaryState(new IdleState());
-                }
-                return; 
+                _pc._stateMachine.SetPrimaryState(new IdleState());
             }
-
-            //if (!Core.Instance.menuCamera.activeSelf)
-            //{
-            //    _characterCamera.gameObject.SetActive(true);
-            //}
-
             if (_pc == null)
             {
                 Debug.LogError("PlayerController is not assigned in CharacterInput.");
