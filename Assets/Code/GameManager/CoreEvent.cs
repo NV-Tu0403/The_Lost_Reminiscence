@@ -45,6 +45,7 @@ public class CoreEvent : MonoBehaviour
 
     #region sự kiện A3
 
+    public event Action OnSelectSaveItem;
     public event Action TurnOnMenu;
     public event Action TurnOffMenu;
 
@@ -83,6 +84,7 @@ public class CoreEvent : MonoBehaviour
 
     #region trigger sự kiện A3
 
+    public void triggerSelectSaveItem() => OnSelectSaveItem?.Invoke();
     public void triggerTurnOnMenu() => TurnOnMenu?.Invoke();
     public void triggerTurnOffMenu() => TurnOffMenu?.Invoke();
 

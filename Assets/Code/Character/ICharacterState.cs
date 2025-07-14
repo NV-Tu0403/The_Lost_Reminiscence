@@ -273,7 +273,7 @@ namespace Duckle
                 _primaryState.OnExit(_controller);
                 _primaryState = state;
                 _primaryState.OnEnter(_controller);
-                //Debug.Log($"Primary state changed to: {state.Name}");
+                Debug.Log($"Primary state changed to: {state.Name}");
             }
             return true;
         }

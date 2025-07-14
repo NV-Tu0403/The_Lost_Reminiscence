@@ -22,6 +22,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     private string lastSelectedSaveFolder;  
     public string selectedSaveFolder;
+    public string SelectedSaveImagePath { get; private set; }
 
     protected override void Awake()
     {
@@ -42,7 +43,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         e.OnNewSession += () => OnNewGame();
         e.OnContinueSession += () => OnContinueGame(selectedSaveFolder);
-        e.OnSaveSession += () => OnSaveSession();
+        e.OnSaveSession += () => OnSaveSession(lastSelectedSaveFolder);
         e.OnQuitSession += () => OnQuitSession(lastSelectedSaveFolder);
     }
 
@@ -50,7 +51,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         e.OnNewSession -= () => OnNewGame();
         e.OnContinueSession -= () => OnContinueGame(selectedSaveFolder);
-        e.OnSaveSession -= () => OnSaveSession();
+        e.OnSaveSession -= () => OnSaveSession(lastSelectedSaveFolder);
         e.OnQuitSession -= () => OnQuitSession(lastSelectedSaveFolder);
     }
 
@@ -63,6 +64,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         SaveGameManager.Instance.RegisterSaveable(PlayTimeManager.Instance);
         SaveGameManager.Instance.RegisterSaveable(PlayerCheckPoint.Instance);
+        SaveGameManager.Instance.RegisterSaveable(ProgressionManager.Instance);
     }
 
     /// <summary>
@@ -238,7 +240,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             // Gọi Procession để load dữ lieu tu GameProcession
             ProgressionManager.Instance.InitProgression();
 
-            //án playerTransform
+            //gán playerTransform
             PlayerCheckPoint.Instance.SetPlayerTransform(player.transform);
             //Đặt vị trí mặc định
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
@@ -262,14 +264,17 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         if (string.IsNullOrEmpty(sceneToLoad) || sceneToLoad == "Unknown" || sceneToLoad == "Menu")
         {
             sceneToLoad = "Phong_scene"; // Default scene if none is set
+            Debug.LogError($"[OnContinueGame] Invalid scene name '{PlayerCheckPoint.Instance.CurrentMap}', loading default scene '{sceneToLoad}' instead.");
         }
 
         SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>
         {
             PlayTimeManager.Instance.StartCounting();
             PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
+            
+            // Đồng bộ hóa dữ liệu vật thể
+            ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
         });
-
     }
 
     /// <summary>
@@ -293,12 +298,24 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         // Log all JSON file contents in the selected save folder
         var jsonFileHandler = new JsonFileHandler();
         var jsonFiles = jsonFileHandler.LoadJsonFiles(folderPath);
+
         foreach (var (fileName, json) in jsonFiles)
         {
             Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
         }
 
-        
+        // Log thêm đường dẫn ảnh nếu có
+        string imagePath = Path.Combine(folderPath, "screenshot.png");
+        SelectedSaveImagePath = File.Exists(imagePath) ? imagePath : null;
+        if (File.Exists(imagePath))
+        {
+            Debug.Log($"[ProfessionalSkilMenu] Save image found at: {imagePath}");
+        }
+        else
+        {
+            Debug.LogWarning($"[ProfessionalSkilMenu] Save image not found at: {imagePath}");
+        }
+        _coreEvent.triggerSelectSaveItem();
     }
 
     /// <summary>
@@ -313,13 +330,11 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             {
                 lastSelectedSaveFolder = null;
                 selectedSaveFolder = null;
-                //ContinueGame_Bt.interactable = false;
+                UIPage05.Instance.RefreshSaveSlots();
             }
         }
         else
         {
-            //errorText.text = "Failed to delete save!";
-            //errorText.color = Color.red;
             Debug.LogError($"[OnDeleteSave] Failed to delete save folder: {folderPath}");
         }
     }
@@ -328,13 +343,35 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// Lưu tất cả dữ liệu của người dùng hiện tại vào thư mục lưu trữ tương ứng.
     /// </summary>
     /// <exception cref="Exception"></exception>
-    public void OnSaveSession()
+    public void OnSaveSession(string currentSaveFolder)
     {
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
             throw new Exception("No user logged in!");
         }
-        SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
+        //SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
+        if (!string.IsNullOrEmpty(currentSaveFolder))
+        {
+            try
+            {
+                SaveGameManager.Instance.SaveToFolder(currentSaveFolder);
+                StartCoroutine(CaptureScreenshotToFolder(currentSaveFolder, success =>
+                {
+                    if (success)
+                    {
+                        Core.Instance.TurnOnMenu();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Screenshot capture failed!");
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[OnQuitSession] Failed to save before unloading: {ex.Message}");
+            }
+        }
 
     }
 
@@ -344,6 +381,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             try
             {
+                Core.Instance.TurnOffMenu();
                 SaveGameManager.Instance.SaveToFolder(currentSaveFolder);
             }
             catch (Exception ex)
@@ -352,13 +390,81 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
         }
 
-        // Sau khi đã save xong mới unload
-        SceneController.Instance.UnloadAllAdditiveScenes(() =>
+        StartCoroutine(CaptureScreenshotToFolder(currentSaveFolder, success =>
         {
-            Debug.Log("[OnQuitSession] Unload complete.");
-            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
-        });
+            if (success)
+            {
+                // Sau khi đã save xong mới unload
+                SceneController.Instance.UnloadAllAdditiveScenes(() =>
+                {
+                    PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+                });
+                Core.Instance.TurnOnMenu();
+            }
+            else
+            {
+                Debug.LogWarning("Screenshot capture failed!");
+            }
+        }));
 
+        UIPage05.Instance.RefreshSaveSlots();
+
+    }
+
+    /// <summary>
+    /// Chụp ảnh màn hình kích thước 1024x1024 và lưu vào thư mục truyền vào.
+    /// </summary>
+    /// <param name="folderPath">Đường dẫn thư mục lưu ảnh</param>
+    /// <returns>Coroutine IEnumerator</returns>
+    public IEnumerator CaptureScreenshotToFolder(string folderPath, Action<bool> onComplete)
+    {
+        if (!Directory.Exists(folderPath))
+        {
+            Debug.LogError($"[CaptureScreenshotToFolder] Folder does not exist: {folderPath}");
+            onComplete?.Invoke(false);
+            yield break;
+        }
+
+        yield return new WaitForSeconds(1f);  // đảm bảo UI đã tắt hoàn toàn
+        yield return null; // đợi 1 frame
+
+        int width = 1920;
+        int height = 1080;
+        RenderTexture rt = new RenderTexture(width, height, 24);
+        Texture2D screenShot = new Texture2D(width, height, TextureFormat.RGB24, false);
+
+        Camera mainCam = Camera.main;
+        if (mainCam == null)
+        {
+            Debug.LogError("[CaptureScreenshotToFolder] Main camera not found.");
+            onComplete?.Invoke(false);
+            yield break;
+        }
+
+        mainCam.targetTexture = rt;
+        mainCam.Render();
+        RenderTexture.active = rt;
+        screenShot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+        screenShot.Apply();
+
+        mainCam.targetTexture = null;
+        RenderTexture.active = null;
+        Destroy(rt);
+
+        try
+        {
+            byte[] bytes = screenShot.EncodeToPNG();
+            string screenshotPath = Path.Combine(folderPath, "screenshot.png");
+            File.WriteAllBytes(screenshotPath, bytes);
+            Debug.Log($"[CaptureScreenshotToFolder] Screenshot saved to: {screenshotPath}");
+
+            onComplete?.Invoke(true); // hoàn thành
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[CaptureScreenshotToFolder] Failed to save screenshot: {ex.Message}");
+            onComplete?.Invoke(false);
+        }
     }
 
     #endregion

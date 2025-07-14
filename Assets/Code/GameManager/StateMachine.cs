@@ -74,13 +74,13 @@ public abstract class StateBase : IState
 
     public virtual void OnEnter()
     {
-        Debug.Log($"[UIState] Entered: {StateType}");
+        //Debug.Log($"[UIState] Entered: {StateType}");
         _coreEvent.TriggerChangeState(StateType);
     }
 
     public virtual void OnExit()
     {
-        Debug.Log($"[UIState] Exited: {StateType}");
+        //Debug.Log($"[UIState] Exited: {StateType}");
         _coreEvent.TriggerChangeState(StateType);
     }
 

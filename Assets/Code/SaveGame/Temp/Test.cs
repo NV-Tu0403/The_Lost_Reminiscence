@@ -472,7 +472,7 @@ public class Test : MonoBehaviour
         //Loading(true);
         try
         {
-            ProfessionalSkilMenu.Instance.OnSaveSession();
+            ProfessionalSkilMenu.Instance.OnSaveSession(lastSelectedSaveFolder);
             errorText.text = "Game saved successfully!";
             errorText.color = Color.green;
             RefreshSaveList();
