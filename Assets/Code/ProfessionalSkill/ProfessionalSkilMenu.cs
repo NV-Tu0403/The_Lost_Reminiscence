@@ -24,6 +24,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public string selectedSaveFolder;
     public string SelectedSaveImagePath { get; private set; }
 
+    public string SceneDefault = "Phong_scene";
+
     protected override void Awake()
     {
         base.Awake();
@@ -64,6 +66,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         SaveGameManager.Instance.RegisterSaveable(PlayTimeManager.Instance);
         SaveGameManager.Instance.RegisterSaveable(PlayerCheckPoint.Instance);
+        SaveGameManager.Instance.RegisterSaveable(MapStateSave.Instance);
         SaveGameManager.Instance.RegisterSaveable(ProgressionManager.Instance);
     }
 
@@ -178,10 +181,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             yield return null;
         }
 
-        //PlayerCheckPoint.Instance.SetPlayerTransform(p);
         PlayerCheckPoint.Instance.ApplyLoadedPosition();
-        //Debug.Log("[WaitUntil] Player position applied.");
-    }
+    } 
 
     private IEnumerator LoadImageAsync(string imagePath, RawImage saveImage)
     {
@@ -227,7 +228,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
 
         // Load scene và chờ callback khi load xong
-        SceneController.Instance.LoadAdditiveScene("Phong_scene", PlayerCheckPoint.Instance, () =>
+        SceneController.Instance.LoadAdditiveScene(SceneDefault, PlayerCheckPoint.Instance, () =>
         {
             //Đảm bảo Player đã tồn tại sau khi load scene
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -271,7 +272,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             PlayTimeManager.Instance.StartCounting();
             PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
-            
+            MapStateSave.Instance.ApplyMapState();
+
             // Đồng bộ hóa dữ liệu vật thể
             ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
         });
