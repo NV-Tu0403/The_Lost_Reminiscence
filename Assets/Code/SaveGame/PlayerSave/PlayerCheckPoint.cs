@@ -146,7 +146,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             }
         }
 
-        Vector3 targetPos = new Vector3(0, 3, 0);
+        Vector3 targetPos = new Vector3(0, 3, 2);
 
         // Nếu có Rigidbody
         if (playerTransform.TryGetComponent(out Rigidbody rb))

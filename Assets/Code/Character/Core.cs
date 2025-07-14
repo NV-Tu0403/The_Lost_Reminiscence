@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using UnityEngine;
+using System.Collections;
 
 /// <summary>
 /// Trung tâm điều phối toàn bộ các State của Core game.
@@ -19,7 +20,15 @@ public class Core : CoreEventListenerBase
     public GameObject menuCamera;
     public GameObject characterCamera;
 
-    public GameObject[] GameObjectSetActiveCore;
+    /// <summary>
+    /// Các đối tượng sẽ được bật khi ở Scene Menu
+    /// </summary>
+    public GameObject[] ObjOnMenu;
+
+    /// <summary>
+    /// Các đối tượng sẽ được tắt khi ở Scene Core
+    /// </summary>
+    public GameObject[] ObjOffMenu;
 
     protected override void Awake()
     {
@@ -42,6 +51,7 @@ public class Core : CoreEventListenerBase
     private void Start()
     {
         SetUpCamera();
+        StartCoroutine(ActiveObjMenuCoroutine(true));
     }
 
     private void Update()
@@ -149,8 +159,52 @@ public class Core : CoreEventListenerBase
         _stateMachine.HandleAction(action);
     }
 
+    /// <summary>
+    /// Coroutine để bật/tắt các đối tượng menu cần/ ko cần.
+    /// true: bật obj menu cần
+    /// false: tắt obj menu ko cần
+    /// </summary>
+    /// <param name="oke"></param>
+    /// <returns></returns>
+    private IEnumerator ActiveObjMenuCoroutine(bool oke)
+    {
+        if (oke)
+        {
+            foreach (var obj in ObjOnMenu)
+            {
+                if (obj != null)
+                    obj.SetActive(true);
+            }
+            foreach (var obj in ObjOffMenu)
+            {
+                if (obj != null)
+                    obj.SetActive(false);
+            }
+        }
+        else
+        {
+            foreach (var obj in ObjOnMenu)
+            {
+                if (obj != null)
+                    obj.SetActive(false);
+            }
+            foreach (var obj in ObjOffMenu)
+            {
+                if (obj != null)
+                    obj.SetActive(true);
+            }
+        }
+
+        yield return new WaitForSeconds(2f); // Đợi 2 giây
+
+        // TODO: thêm logic sau khi chờ nếu cần, ví dụ:
+        // Debug.Log("Đã chờ 2 giây xong.");
+    }
+
     private void NewSession()
     {
+        // vì hiện tại Event NewSession không được gọi bới Core Input nên SetState ở đây cho NewSession
+        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
         _coreEvent.triggerTurnOffMenu();
     }
 
@@ -168,7 +222,11 @@ public class Core : CoreEventListenerBase
 
     private void ResumeSession()
     {
-        _coreEvent.triggerTurnOffMenu();
+        if (CurrentCoreState != CoreStateType.InMainMenuState.ToString())
+        {
+            _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
+            _coreEvent.triggerTurnOffMenu();
+        }
     }
 
     private void E_OnSavePanel()
@@ -183,14 +241,9 @@ public class Core : CoreEventListenerBase
 
     private void QuitSession()
     {
+        _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
+        StartCoroutine(ActiveObjMenuCoroutine(true));
         _coreEvent.triggerTurnOnMenu();
-        foreach (var obj in GameObjectSetActiveCore)
-        {
-            if (obj != null)
-            {
-                obj.SetActive(true);
-            }
-        }
     }
 
     private void TurnOnMenu()
@@ -205,13 +258,7 @@ public class Core : CoreEventListenerBase
     {
         menuCamera.SetActive(false);
         MainMenu.SetActive(false);
-        foreach (var obj in GameObjectSetActiveCore)
-        {
-            if (obj != null)
-            {
-                obj.SetActive(false);
-            }
-        }
+        StartCoroutine(ActiveObjMenuCoroutine(false));
         characterCamera.SetActive(true);
     }
 

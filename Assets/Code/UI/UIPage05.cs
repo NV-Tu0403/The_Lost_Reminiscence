@@ -160,7 +160,7 @@ public class UIPage05 : MonoBehaviour
     /// </summary>
     /// <param name="slotName">Tên của GameObject slotSaves</param>
     /// <returns>Đường dẫn folderPath hoặc null nếu không tìm thấy</returns>
-    public void GetFolderPathBySlotName(string slotName)
+    public void GetFolderPathBySlotName(string slotName, UIActionType uIActionType)
     {
         string Path = null;
         for (int i = 0; i < slotSaves.Length && i < instantiatedSaveItems.Count; i++)
@@ -173,14 +173,23 @@ public class UIPage05 : MonoBehaviour
         }
         if (Path != null)
         {
-            Debug.Log($"[UIPage05] Selected Save Path: {Path}");
-            ProfessionalSkilMenu.Instance.OnSelectSave(Path);
+            switch (uIActionType)
+            {
+                case UIActionType.SelectSaveItem:
+                    ProfessionalSkilMenu.Instance.OnSelectSave(Path);
+                    break;
+                case UIActionType.DeleteSaveItem:
+                    ProfessionalSkilMenu.Instance.OnDeleteSave(Path);
+                    RefreshSaveSlots();
+                    break;
+            }
         }
         else
         {
             Debug.LogWarning($"[UIPage05] No Save Item found for slot: {slotName}");
         }
     }
+
 
     /// <summary>
     /// Load ảnh bất đồng bộ cho RawImage.
