@@ -3,24 +3,38 @@ using UnityEngine;
 
 public class ScreenshotDisplayer : CoreEventListenerBase
 {
-    public Renderer[] targetRenderers; // Gán Plane hoặc object 3D cần hiển thị ảnh
-    public string screenshotPath;
+    public static ScreenshotDisplayer Instance { get; private set; }
 
-    private void Update()
+    public Renderer[] targetRenderers; // Gán Plane hoặc object 3D cần hiển thị ảnh
+    //public string screenshotPath;
+
+    protected override void Awake()
     {
-        screenshotPath = ProfessionalSkilMenu.Instance.SelectedSaveImagePath;
+        base.Awake();
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+
     }
+
+    //private void Update()
+    //{
+    //    screenshotPath = ProfessionalSkilMenu.Instance.SelectedSaveImagePath;
+    //}
 
     public override void RegisterEvent(CoreEvent e)
     {
-        e.OnSelectSaveItem += LoadScreenshotToPlane;
+        //e.OnSelectSaveItem += (path) => LoadScreenshotToPlane(path) ;
+        //e.OnSelectSaveItem += LoadScreenshotToPlane;
     }
 
     public override void UnregisterEvent(CoreEvent e)
     {
-        e.OnSelectSaveItem -= LoadScreenshotToPlane;
+        //e.OnSelectSaveItem -= LoadScreenshotToPlane;
     }
-    public void LoadScreenshotToPlane()
+
+    public void LoadScreenshotToPlane(string path)
     {
         if (targetRenderers == null)
         {
@@ -28,13 +42,13 @@ public class ScreenshotDisplayer : CoreEventListenerBase
             return;
         }
 
-        if (!File.Exists(screenshotPath))
+        if (!File.Exists(path))
         {
-            Debug.LogError($"[ScreenshotDisplayer] File not found at: {screenshotPath}");
+            Debug.LogError($"[ScreenshotDisplayer] File not found at: {path}");
             return;
         }
 
-        byte[] imageBytes = File.ReadAllBytes(screenshotPath);
+        byte[] imageBytes = File.ReadAllBytes(path);
         Texture2D texture = new Texture2D(2, 2);
         texture.LoadImage(imageBytes); // Tự resize dựa trên ảnh
 
@@ -47,6 +61,6 @@ public class ScreenshotDisplayer : CoreEventListenerBase
             materialInstance.mainTexture = texture;
         }
 
-        Debug.Log($"[ScreenshotDisplayer] Screenshot loaded into Plane from: {screenshotPath}");
+        //Debug.Log($"[ScreenshotDisplayer] Screenshot loaded into Plane from: {path}");
     }
 }

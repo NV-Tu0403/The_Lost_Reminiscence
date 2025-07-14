@@ -345,27 +345,28 @@ namespace DuckLe
         public void Teleport(Vector3? position = null, Quaternion? rotation = null)
         {
             var targetPosition = position ?? transform.position;
-            var targetRotation = rotation ?? transform.rotation;
+            //var targetRotation = rotation ?? transform.rotation;
 
-            //Chuẩn hóa quaternion để tránh lỗi "not unit length"
-            if (targetRotation != Quaternion.identity)
-            {
-                targetRotation = NormalizeQuaternion(targetRotation);
-            }
+            ////Chuẩn hóa quaternion để tránh lỗi "not unit length"
+            //if (targetRotation != Quaternion.identity)
+            //{
+            //    targetRotation = NormalizeQuaternion(targetRotation);
+            //}
 
             if (_rigidbody.isKinematic)
             {
                 transform.position = targetPosition;
-                transform.rotation = targetRotation;
+                //transform.rotation = targetRotation;
             }
             else
             {
                 _rigidbody.MovePosition(targetPosition);
-                _rigidbody.MoveRotation(targetRotation);
+                //_rigidbody.MoveRotation(targetRotation);
                 _rigidbody.linearVelocity = Vector3.zero;
                 _rigidbody.angularVelocity = Vector3.zero;
             }
         }
+
         private Quaternion NormalizeQuaternion(Quaternion q)
         {
             float magnitude = Mathf.Sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
@@ -379,8 +380,6 @@ namespace DuckLe
                 return Quaternion.identity;
             }
         }
-
-
 
         public void Jump(bool ignoreGrounded = false, float? overrideImpulse = null)
         {
