@@ -329,16 +329,20 @@
                     TurnToPage(item.targetPage);
                     break;
                 case UIActionType.ContinueSession:
-                    TurnToPage(item.targetPage);
-                    CoreEvent.Instance.triggerContinueSession();
+                    if (!string.IsNullOrWhiteSpace(ProfessionalSkilMenu.Instance.selectedSaveFolder))// Iem tà đạo (CHƯA CÓ TG FIX)
+                    {
+                        TurnToPage(item.targetPage);
+                        CoreEvent.Instance.triggerContinueSession();
+                    }
                     break;
                 case UIActionType.RefreshSaveList:
                     UIPage05.Instance.RefreshSaveSlots();
                     break;
                 case UIActionType.SelectSaveItem:
-                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name);
+                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.SelectSaveItem);
                     break;
                 case UIActionType.DeleteSaveItem:
+                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.DeleteSaveItem);
                     break;
                 case UIActionType.DuplicateSaveItem:
                     break;

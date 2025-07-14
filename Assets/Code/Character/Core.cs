@@ -51,13 +51,7 @@ public class Core : CoreEventListenerBase
     private void Start()
     {
         SetUpCamera();
-        foreach (var obj in ObjOffMenu)
-        {
-            if (obj != null)
-            {
-                obj.SetActive(false);
-            }
-        }
+        StartCoroutine(ActiveObjMenuCoroutine(true));
     }
 
     private void Update()
@@ -165,24 +159,10 @@ public class Core : CoreEventListenerBase
         _stateMachine.HandleAction(action);
     }
 
-    private void NewSession()
-    {
-        // vì hiện tại Event NewSession không được gọi bới Core Input nên SetState ở đây cho NewSession
-        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
-        _coreEvent.triggerTurnOffMenu();
-    }
-
-    private void ContinueSession()
-    {
-        // vì hiện tại Event OnContinue không được gọi bới Core Input nên SetState ở đây cho Continue
-        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
-        _coreEvent.triggerTurnOffMenu();
-    }
-
     /// <summary>
-    /// Coroutine để bật/tắt các đối tượng trong menu.
-    /// true: bật obj menu
-    /// false: tắt obj menu
+    /// Coroutine để bật/tắt các đối tượng menu cần/ ko cần.
+    /// true: bật obj menu cần
+    /// false: tắt obj menu ko cần
     /// </summary>
     /// <param name="oke"></param>
     /// <returns></returns>
@@ -221,6 +201,20 @@ public class Core : CoreEventListenerBase
         // Debug.Log("Đã chờ 2 giây xong.");
     }
 
+    private void NewSession()
+    {
+        // vì hiện tại Event NewSession không được gọi bới Core Input nên SetState ở đây cho NewSession
+        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
+        _coreEvent.triggerTurnOffMenu();
+    }
+
+    private void ContinueSession()
+    {
+        // vì hiện tại Event OnContinue không được gọi bới Core Input nên SetState ở đây cho Continue
+        _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
+        _coreEvent.triggerTurnOffMenu();
+    }
+
     private void PauseSession()
     {
         _coreEvent.triggerTurnOnMenu();// => (Event)TurnOnMenu -> turnOnMenu();
@@ -228,7 +222,11 @@ public class Core : CoreEventListenerBase
 
     private void ResumeSession()
     {
-        _coreEvent.triggerTurnOffMenu();
+        if (CurrentCoreState != CoreStateType.InMainMenuState.ToString())
+        {
+            _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
+            _coreEvent.triggerTurnOffMenu();
+        }
     }
 
     private void E_OnSavePanel()
@@ -243,8 +241,8 @@ public class Core : CoreEventListenerBase
 
     private void QuitSession()
     {
+        _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
         StartCoroutine(ActiveObjMenuCoroutine(true));
-
         _coreEvent.triggerTurnOnMenu();
     }
 
