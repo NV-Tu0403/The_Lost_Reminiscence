@@ -138,6 +138,16 @@ public class Core : CoreEventListenerBase
         }
     }
 
+    public void ActiveCameraTemp(bool oke)
+    {
+
+        menuCamera.SetActive(oke);
+        characterCamera.SetActive(oke);
+        MainMenu.SetActive(oke);
+        
+        Debug.Log($"[Core] ActiveCameraTemp called with: {oke}");
+    }
+
     // debug state name
     private void UpdateCurrentCoreState(CoreStateType stateType)
     {
@@ -243,10 +253,10 @@ public class Core : CoreEventListenerBase
     {
         _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
         StartCoroutine(ActiveObjMenuCoroutine(true));
-        _coreEvent.triggerTurnOnMenu();
+        //_coreEvent.triggerTurnOnMenu();
     }
 
-    private void TurnOnMenu()
+    public void TurnOnMenu()
     {
         menuCamera.SetActive(true);
         MainMenu.SetActive(true);
@@ -254,7 +264,7 @@ public class Core : CoreEventListenerBase
 
     }
 
-    private void TurnOffMenu()
+    public void TurnOffMenu()
     {
         menuCamera.SetActive(false);
         MainMenu.SetActive(false);
