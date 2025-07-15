@@ -94,7 +94,7 @@ public class CoreInput : CoreEventListenerBase
         }
         catch (Exception e)
         {
-            throw e;
+            Debug.LogWarning($"[CoreInput] Error processing input {input.InputType}: {e.Message}");
         }
     }
 

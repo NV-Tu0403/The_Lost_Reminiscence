@@ -150,7 +150,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea1425c567dc0844ebceb7d6a18ec48a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _menuCamera: {fileID: 0}
+  IsDebugMode: 0
+  CurrentCoreState: 
+  MainMenu: {fileID: 0}
+  menuCamera: {fileID: 0}
+  characterCamera: {fileID: 0}
+  ObjOnMenu: []
+  ObjOffMenu: []
   target: {fileID: 0}
   rotationSpeed: 2
   followSpeed: 10
@@ -161,11 +167,11 @@ MonoBehaviour:
     m_Bits: 128
   minDistance: 0.5
   maxDistance: 3
-  useInterpolation: 0
+  useInterpolation: 1
   useDistanceAndHeightInterpolation: 1
   mainCamera: {fileID: 0}
   isAiming: 0
-  rightOffset: 0
+  rightOffset: 0.7
   transitionSpeed: 10
   distanceSmoothingSpeed: 10
   sphereCastRadius: 0.2

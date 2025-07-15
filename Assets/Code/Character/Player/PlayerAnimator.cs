@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 //using Fusion;
-using DuckLe;
 
 [System.Serializable]
 public struct AnimationCCData
