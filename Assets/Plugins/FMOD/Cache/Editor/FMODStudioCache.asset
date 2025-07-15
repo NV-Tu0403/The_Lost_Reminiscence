@@ -53,10 +53,10 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/FMOD Banks/Desktop/Master_Bank.strings.bank
   Name: Master_Bank.strings
   StudioPath: bank:/Master_Bank.strings
-  lastModified: 638872304261208960
+  lastModified: 638881310885170226
   FileSizes:
   - Name: 
-    Value: 1794
+    Value: 1958
   Exists: 1
 --- !u!114 &-8463265120637191040
 MonoBehaviour:
@@ -73,7 +73,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/FMOD Banks/Desktop/Fa_Skills_Bank.bank
   Name: Fa_Skills_Bank
   StudioPath: bank:/Fa_Skills_Bank
-  lastModified: 638872295155957278
+  lastModified: 638881303164306529
   FileSizes: []
   Exists: 1
 --- !u!114 &-7732206372751187197
@@ -122,33 +122,6 @@ MonoBehaviour:
   MinDistance: 1
   MaxDistance: 20
   Length: 720
---- !u!114 &-7373319420780902344
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
-  m_Name: event:/Environment/Ambience/RandomNote
-  m_EditorClassIdentifier: 
-  Path: event:/Environment/Ambience/RandomNote
-  Guid:
-    Data1: 1177741025
-    Data2: 1302345479
-    Data3: -882533968
-    Data4: 1714464639
-  Banks:
-  - {fileID: 574614722729033730}
-  IsStream: 0
-  Is3D: 1
-  IsOneShot: 1
-  Parameters: []
-  MinDistance: 1
-  MaxDistance: 20
-  Length: 4000
 --- !u!114 &-6934711716723194125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -278,7 +251,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/FMOD Banks/Desktop/Music_Bank.bank
   Name: Music_Bank
   StudioPath: bank:/Music_Bank
-  lastModified: 638872295156504072
+  lastModified: 638881310888413136
   FileSizes: []
   Exists: 1
 --- !u!114 &-3979078058752003827
@@ -326,6 +299,33 @@ MonoBehaviour:
   lastModified: 638872295155563081
   FileSizes: []
   Exists: 1
+--- !u!114 &-1861927057558275058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Fa/Reactions/Fa-Idle
+  m_EditorClassIdentifier: 
+  Path: event:/Fa/Reactions/Fa-Idle
+  Guid:
+    Data1: 1789209057
+    Data2: 1146753348
+    Data3: -540544577
+    Data4: -1264007941
+  Banks:
+  - {fileID: -4030902863828614196}
+  IsStream: 1
+  Is3D: 1
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 14956
 --- !u!114 &-662033937238671730
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -403,7 +403,6 @@ MonoBehaviour:
   - {fileID: -7732206372751187197}
   EditorEvents:
   - {fileID: 7158909156850143629}
-  - {fileID: -7373319420780902344}
   - {fileID: -6867078617523933996}
   - {fileID: 2412244395744285569}
   - {fileID: 1907448722883831631}
@@ -413,36 +412,47 @@ MonoBehaviour:
   - {fileID: 8167350206727874520}
   - {fileID: -4144745628440661615}
   - {fileID: -3979078058752003827}
+  - {fileID: 3527780442289795005}
+  - {fileID: 5219224778790859919}
+  - {fileID: 4123897613386947474}
+  - {fileID: 5733858696071593969}
+  - {fileID: -1861927057558275058}
   EditorParameters: []
   MasterBanks:
   - {fileID: 433052142744343603}
   StringsBanks:
   - {fileID: -8636697509883786869}
   cacheVersion: 131847
-  cacheTime: 638872304261208960
+  cacheTime: 638881310888413136
   SerializableEventsDict:
   - key: event:/Environment/Ambience/Tutorial
     index: 0
-  - key: event:/Environment/Ambience/RandomNote
-    index: 1
   - key: event:/Player/Actions/Player_Damage
-    index: 2
+    index: 1
   - key: event:/Player/Actions/Heart_Beats
-    index: 3
+    index: 2
   - key: event:/Player/Actions/Player_Throw_Object
-    index: 4
+    index: 3
   - key: event:/Player/Grass_Footsteps
-    index: 5
+    index: 4
   - key: event:/Player/Water_Footstep
-    index: 6
+    index: 5
   - key: event:/Player/Actions/Player_Interact
-    index: 7
+    index: 6
   - key: event:/Player/Grass_Footsteps 2
-    index: 8
+    index: 7
   - key: event:/Player/Actions/Player_Use_MemoryPiece
-    index: 9
+    index: 8
   - key: event:/Music/Eploration/Tutorial
+    index: 9
+  - key: event:/Fa/Skills/Skill-4
     index: 10
+  - key: event:/Fa/Skills/Skill-2
+    index: 11
+  - key: event:/Fa/Skills/Skill-1
+    index: 12
+  - key: event:/Fa/Skills/Skill-3
+    index: 13
 --- !u!114 &433052142744343603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -458,7 +468,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/FMOD Banks/Desktop/Master_Bank.bank
   Name: Master_Bank
   StudioPath: bank:/Master_Bank
-  lastModified: 638872304261199804
+  lastModified: 638881310885170226
   FileSizes: []
   Exists: 1
 --- !u!114 &574614722729033730
@@ -476,7 +486,7 @@ MonoBehaviour:
   Path: Assets/StreamingAssets/FMOD Banks/Desktop/Ambience_Bank.bank
   Name: Ambience_Bank
   StudioPath: bank:/Ambience_Bank
-  lastModified: 638872295155368269
+  lastModified: 638881303164074961
   FileSizes: []
   Exists: 1
 --- !u!114 &1907448722883831631
@@ -553,6 +563,114 @@ MonoBehaviour:
     Data4: -362700689
   Banks:
   - {fileID: -9105960948018445041}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
+--- !u!114 &3527780442289795005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Fa/Skills/Skill-4
+  m_EditorClassIdentifier: 
+  Path: event:/Fa/Skills/Skill-4
+  Guid:
+    Data1: -2092903906
+    Data2: 1341930231
+    Data3: -1204720763
+    Data4: -596005659
+  Banks:
+  - {fileID: -8463265120637191040}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
+--- !u!114 &4123897613386947474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Fa/Skills/Skill-1
+  m_EditorClassIdentifier: 
+  Path: event:/Fa/Skills/Skill-1
+  Guid:
+    Data1: -1566664732
+    Data2: 1097490432
+    Data3: 1178410395
+    Data4: -1705309772
+  Banks:
+  - {fileID: -8463265120637191040}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
+--- !u!114 &5219224778790859919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Fa/Skills/Skill-2
+  m_EditorClassIdentifier: 
+  Path: event:/Fa/Skills/Skill-2
+  Guid:
+    Data1: -1090493822
+    Data2: 1075479879
+    Data3: -1881461835
+    Data4: -864107993
+  Banks:
+  - {fileID: -8463265120637191040}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
+--- !u!114 &5733858696071593969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Fa/Skills/Skill-3
+  m_EditorClassIdentifier: 
+  Path: event:/Fa/Skills/Skill-3
+  Guid:
+    Data1: -1470361106
+    Data2: 1198174881
+    Data3: 1732748419
+    Data4: 1857625113
+  Banks:
+  - {fileID: -8463265120637191040}
   IsStream: 0
   Is3D: 1
   IsOneShot: 1
