@@ -2,10 +2,9 @@ using UnityEngine;
 using FMODUnity;
 
 public class FMODEvents : MonoBehaviour
-{
-
-    [field: Header("Player SFX")]
-    [field: SerializeField] public EventReference playerFootstepEvent {get; private set;}
+{  
+    [field: Header("Music")]
+    [field: SerializeField] public EventReference m_MusicGame {get; private set;}
 
     public static FMODEvents Instance {get; private set;}
 
@@ -17,4 +16,12 @@ public class FMODEvents : MonoBehaviour
         }
         Instance = this;
     }
+
+    private void Start()
+    {
+        AudioManager.Instance.PlayAmbience(m_MusicGame);
+    }
+
+
+
 }
