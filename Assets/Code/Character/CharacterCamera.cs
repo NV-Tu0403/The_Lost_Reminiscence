@@ -24,7 +24,7 @@ public class CharacterCamera : Core
     private float targetHeight;
     private float smoothedDistance;
     public bool isAiming = false;
-    [SerializeField] private float rightOffset = 0f;
+    [SerializeField] private float rightOffset = 0.7f;
     [SerializeField] private float transitionSpeed = 10f;
     [SerializeField] public float distanceSmoothingSpeed = 10f;
     [SerializeField] public float sphereCastRadius = 0.2f;
@@ -158,7 +158,7 @@ public class CharacterCamera : Core
 
         Vector3 desiredPosition = target.position + Vector3.up * height + direction * currentDistance;
 
-        if (isAiming && rightOffset != 0f)
+        if (/*isAiming && */rightOffset != 0f)
         {
             Vector3 rightDirection = target.right;
             desiredPosition += rightDirection * rightOffset;
@@ -173,7 +173,7 @@ public class CharacterCamera : Core
         smoothedDistance = Mathf.Lerp(smoothedDistance, targetDistance, distanceSmoothingSpeed * Time.deltaTime);
         currentDistance = smoothedDistance;
 
-        desiredPosition = target.position + Vector3.up * height + direction * smoothedDistance;
+        //desiredPosition = target.position + Vector3.up * height + direction * smoothedDistance;
 
         if (useInterpolation)
         {

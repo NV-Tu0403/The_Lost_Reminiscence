@@ -132,7 +132,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         }
 
         _lastLoadedData = null;
-        Debug.Log($"[PlayerCheckPoint] Applied position: {playerTransform.position}");
+        //Debug.Log($"[PlayerCheckPoint] Applied position: {playerTransform.position}");
     }
 
     public void ResetPlayerPositionWord()
@@ -168,7 +168,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
         _lastLoadedData = null;
         _isDirty = true;
-        Debug.Log($"[PlayerCheckPoint] Reset position to: {playerTransform.position}");
+        //Debug.Log($"[PlayerCheckPoint] Reset position to: {playerTransform.position}");
     }
 
     public void SetPlayerTransform(Transform transform)

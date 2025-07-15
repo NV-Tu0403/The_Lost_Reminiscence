@@ -13,7 +13,8 @@ public class Core : CoreEventListenerBase
     public static Core Instance { get; private set; }
     private StateMachine _stateMachine;
 
-    public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động                                               
+    public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
+    public bool IsDebugMode = false;
 
     public string CurrentCoreState;
     public GameObject MainMenu;
@@ -58,6 +59,11 @@ public class Core : CoreEventListenerBase
     {
         UpdateStateFix();
         TryInitializeCamera();
+
+        if (IsDebugMode)
+        {
+            ActiveMenu(false, false);
+        }
     }
 
     public override void RegisterEvent(CoreEvent e)
