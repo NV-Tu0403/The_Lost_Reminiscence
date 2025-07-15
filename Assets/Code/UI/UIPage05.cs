@@ -117,7 +117,6 @@ public class UIPage05 : MonoBehaviour
         // Lấy các thành phần UI
         TMP_Text saveNameText = saveItem.GetComponentInChildren<TMP_Text>();
         RawImage saveImage = saveItem.GetComponentInChildren<RawImage>();
-        //Button selectButton = saveItem.GetComponentInChildren<Button>();
 
         // Thiết lập tên
         if (saveNameText != null)
@@ -135,11 +134,6 @@ public class UIPage05 : MonoBehaviour
             saveImage.gameObject.SetActive(false);
         }
 
-        //// Thiết lập sự kiện nhấn cho nút chọn
-        //if (selectButton != null)
-        //{
-        //    selectButton.onClick.AddListener(() => OnSelectSaveItem(save.FolderPath));
-        //}
     }
 
     /// <summary>
@@ -171,15 +165,16 @@ public class UIPage05 : MonoBehaviour
                
             }
         }
+
         if (Path != null)
         {
             switch (uIActionType)
             {
                 case UIActionType.SelectSaveItem:
-                    ProfessionalSkilMenu.Instance.OnSelectSave(Path);
+                    CoreEvent.Instance.triggerSelectSaveItem(Path);  // kích hoạt sự kiện chọn Save Item với Path
                     break;
                 case UIActionType.DeleteSaveItem:
-                    ProfessionalSkilMenu.Instance.OnDeleteSave(Path);
+                    ProfessionalSkilMenu.Instance.OnDeleteSave(Path); // (cần chuyển sang dùng sưj kiện để xữ lí tập trung)
                     RefreshSaveSlots();
                     break;
             }
@@ -189,7 +184,6 @@ public class UIPage05 : MonoBehaviour
             Debug.LogWarning($"[UIPage05] No Save Item found for slot: {slotName}");
         }
     }
-
 
     /// <summary>
     /// Load ảnh bất đồng bộ cho RawImage.
