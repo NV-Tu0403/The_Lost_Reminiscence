@@ -22,7 +22,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     private string lastSelectedSaveFolder;  
     public string selectedSaveFolder;
-    public string SelectedSaveImagePath { get; private set; }
+    public string SelectedSaveImagePath;
 
     public string SceneDefault = "Phong_scene";
 
@@ -47,6 +47,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnContinueSession += () => OnContinueGame(selectedSaveFolder);
         e.OnSaveSession += () => OnSaveSession(lastSelectedSaveFolder);
         e.OnQuitSession += () => OnQuitSession(lastSelectedSaveFolder);
+
+        e.OnSelectSaveItem += (path) => OnSelectSave(path);
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -55,6 +57,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnContinueSession -= () => OnContinueGame(selectedSaveFolder);
         e.OnSaveSession -= () => OnSaveSession(lastSelectedSaveFolder);
         e.OnQuitSession -= () => OnQuitSession(lastSelectedSaveFolder);
+
+        e.OnSelectSaveItem -= (path) => OnSelectSave(path);
     }
 
     #region nghiệp vụ 1
@@ -172,6 +176,10 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         RefreshSaveList();
     }
 
+    /// <summary>
+    /// Chờ cho đến khi Player được khởi tạo và áp dụng vị trí đã lưu.
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator WaitUntilPlayerAndApply()
     {
         Transform p = null;
@@ -182,15 +190,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
 
         PlayerCheckPoint.Instance.ApplyLoadedPosition();
-    } 
-
-    private IEnumerator LoadImageAsync(string imagePath, RawImage saveImage)
-    {
-        byte[] imageBytes = File.ReadAllBytes(imagePath);
-        Texture2D texture = new Texture2D(2, 2);
-        texture.LoadImage(imageBytes);
-        saveImage.texture = texture;
-        yield return null;
     }
 
     //private void UpdateCurrentSaveText()
@@ -211,6 +210,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
 
         string newSaveFolder = SaveGameManager.Instance.CreateNewSaveFolder(UserAccountManager.Instance.currentUserBaseName);
+
+        selectedSaveFolder = newSaveFolder;
+        lastSelectedSaveFolder = newSaveFolder;
 
         PlayTimeManager.Instance.ResetSession();
         PlayTimeManager.Instance.StartCounting();
@@ -240,8 +242,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             
             // Gọi Procession để load dữ lieu tu GameProcession
             ProgressionManager.Instance.InitProgression();
-
-            //gán playerTransform
             PlayerCheckPoint.Instance.SetPlayerTransform(player.transform);
             //Đặt vị trí mặc định
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
@@ -264,15 +264,15 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         string sceneToLoad = PlayerCheckPoint.Instance.CurrentMap;
         if (string.IsNullOrEmpty(sceneToLoad) || sceneToLoad == "Unknown" || sceneToLoad == "Menu")
         {
-            sceneToLoad = "Phong_scene"; // Default scene if none is set
+            sceneToLoad = SceneDefault;
             Debug.LogError($"[OnContinueGame] Invalid scene name '{PlayerCheckPoint.Instance.CurrentMap}', loading default scene '{sceneToLoad}' instead.");
         }
 
         SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>
         {
             PlayTimeManager.Instance.StartCounting();
-            PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
             MapStateSave.Instance.ApplyMapState();
+            PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
 
             // Đồng bộ hóa dữ liệu vật thể
             ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
@@ -294,30 +294,20 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         selectedSaveFolder = folderPath;
         lastSelectedSaveFolder = folderPath;
 
-
         SaveGameManager.Instance.LoadFromFolder(folderPath);
 
-        // Log all JSON file contents in the selected save folder
-        var jsonFileHandler = new JsonFileHandler();
-        var jsonFiles = jsonFileHandler.LoadJsonFiles(folderPath);
+        var jsonFileHandler = new JsonFileHandler();                // tạo mới JsonFileHandler để lấy danh sách các file JSON
+        var jsonFiles = jsonFileHandler.LoadJsonFiles(folderPath);  // lấy danh sách các file JSON
 
-        foreach (var (fileName, json) in jsonFiles)
-        {
-            Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
-        }
+        //foreach (var (fileName, json) in jsonFiles)
+        //{
+        //    Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
+        //}
 
-        // Log thêm đường dẫn ảnh nếu có
         string imagePath = Path.Combine(folderPath, "screenshot.png");
-        SelectedSaveImagePath = File.Exists(imagePath) ? imagePath : null;
-        if (File.Exists(imagePath))
-        {
-            Debug.Log($"[ProfessionalSkilMenu] Save image found at: {imagePath}");
-        }
-        else
-        {
-            Debug.LogWarning($"[ProfessionalSkilMenu] Save image not found at: {imagePath}");
-        }
-        _coreEvent.triggerSelectSaveItem();
+        SelectedSaveImagePath = File.Exists(imagePath) ? imagePath : null; // lấy thêm đường dẫn ảnh nếu có
+
+        ScreenshotDisplayer.Instance.LoadScreenshotToPlane(SelectedSaveImagePath);
     }
 
     /// <summary>
@@ -361,7 +351,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 {
                     if (success)
                     {
-                        Core.Instance.TurnOnMenu();
+                        //Core.Instance.TurnOnMenu();
                     }
                     else
                     {
@@ -383,8 +373,24 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             try
             {
-                Core.Instance.TurnOffMenu();
+                Core.Instance.ActiveMenu(false, false); // tạm tắt menu để chụp ảnh
+
                 SaveGameManager.Instance.SaveToFolder(currentSaveFolder);
+                StartCoroutine(CaptureScreenshotToFolder(currentSaveFolder, success =>
+                {
+                    if (success)
+                    {
+                        SceneController.Instance.UnloadAllAdditiveScenes(() =>
+                        {
+                            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+                        });
+                        Core.Instance.ActiveMenu(true, true); // bật lại menu (hoàn thành QuitSesion)
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Screenshot capture failed!");
+                    }
+                }));
             }
             catch (Exception ex)
             {
@@ -392,25 +398,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
         }
 
-        StartCoroutine(CaptureScreenshotToFolder(currentSaveFolder, success =>
-        {
-            if (success)
-            {
-                // Sau khi đã save xong mới unload
-                SceneController.Instance.UnloadAllAdditiveScenes(() =>
-                {
-                    PlayerCheckPoint.Instance.ResetPlayerPositionWord();
-                });
-                Core.Instance.TurnOnMenu();
-            }
-            else
-            {
-                Debug.LogWarning("Screenshot capture failed!");
-            }
-        }));
-
         UIPage05.Instance.RefreshSaveSlots();
-
     }
 
     /// <summary>
@@ -427,7 +415,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             yield break;
         }
 
-        yield return new WaitForSeconds(1f);  // đảm bảo UI đã tắt hoàn toàn
+        yield return new WaitForSeconds(0.8f);  // đảm bảo UI đã tắt hoàn toàn
         yield return null; // đợi 1 frame
 
         int width = 1920;
