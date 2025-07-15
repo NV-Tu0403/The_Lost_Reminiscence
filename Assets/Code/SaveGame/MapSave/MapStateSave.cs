@@ -49,7 +49,7 @@ public class MapStateSave : MonoBehaviour, ISaveable
     {
         objectStates.Clear();
 
-        var allObjects = FindObjectsOfType<MapStateObject>();
+        var allObjects = FindObjectsByType<MapStateObject>(FindObjectsSortMode.None);
         foreach (var obj in allObjects)
         {
             string id = obj.UniqueID;
@@ -88,9 +88,12 @@ public class MapStateSave : MonoBehaviour, ISaveable
         ApplyMapState();
     }
 
+    /// <summary>
+    /// Áp dụng trạng thái đã lưu cho tất cả các đối tượng trong map hiện tại.
+    /// </summary>
     public void ApplyMapState()
     {
-        var allObjects = FindObjectsOfType<MapStateObject>();
+        var allObjects = FindObjectsByType<MapStateObject>(FindObjectsSortMode.None);
         foreach (var obj in allObjects)
         {
             if (objectStates.TryGetValue(obj.UniqueID, out var state))

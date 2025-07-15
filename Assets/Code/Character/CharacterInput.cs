@@ -28,11 +28,11 @@ namespace DuckLe
         {
             // Lộc thêm để kiểm soát input
 
-            // Khi bị lock input, đảm bảo nhân vật về Idle
-            if (_pc != null && _pc._stateMachine != null)
-            {
-                _pc._stateMachine.SetPrimaryState(new IdleState());
-            }
+            //// Khi bị lock input, đảm bảo nhân vật về Idle
+            //if (_pc != null && _pc._stateMachine != null)
+            //{
+            //    _pc._stateMachine.SetPrimaryState(new IdleState());
+            //}
             if (_pc == null)
             {
                 Debug.LogError("PlayerController is not assigned in CharacterInput.");
