@@ -304,11 +304,19 @@ namespace Duckle
                 return;
             }
 
-            Vector3 spawnPosition = controller.transform.position + controller.transform.forward * 1.5f + Vector3.up * 1f;
+            // Dùng ray từ camera trung tâm
+            Ray camRay = controller.GetCameraRayCenter();
+            Vector3 forward = camRay.direction.normalized;
+
+            // Vị trí spawn: phía trước camera 1.5m
+            Vector3 spawnPosition = camRay.origin + forward * 1.5f;
+
+            //Vector3 spawnPosition = controller.transform.position + controller.transform.forward * 1.5f + Vector3.up * 1f;
+
             GameObject thrownObject = Object.Instantiate(gameObject, spawnPosition, Quaternion.identity);
             if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
             {
-                rb.linearVelocity = controller.transform.forward * force;
+                rb.linearVelocity = forward * force;
             }
             if (thrownObject.TryGetComponent<ThrowableObject>(out var throwable))
             {

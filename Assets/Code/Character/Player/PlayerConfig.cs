@@ -17,11 +17,11 @@ public class PlayerConfig : ScriptableObject
 
     [Header("Movement Settings")]
     public float jumpImpulse = 8.0f;
-    public float walkSpeed = 2.0f;
-    public float runSpeed = 6.0f;
+    public float walkSpeed = 1.5f;
+    public float runSpeed = 4.0f;
     public float sprintSpeed = 8.0f;
     public float dashSpeed = 12.0f;
-    public float rotationSpeed = 100f;
+    public float rotationSpeed = 2f;
     public float acceleration = 15.0f;
     public float braking = 15.0f;
     public float dashCooldown = 2.0f;
@@ -30,13 +30,20 @@ public class PlayerConfig : ScriptableObject
     [Header("Camera Action Settings")]
     public float zoomFactor = 8f;
 
+    [Header("Camera Aim")]
+    public float targetMaxDistance = 1f;
+    public float targetHeight = 1.7f;
+    public float rightOffset = 0.7f;
+    public bool isAiming = true;
+
+
     [Header("Attack Settings")]
     public float attackRange = 2f;
     public float attackCooldown = 1f;
     public float attackDuration = 0.5f;
 
     [Header("Throwing Settings")]
-    public string prefabPath = "Fusion_M3/Prefabs/Item/Capsule";
+    public string prefabPath = "Prefab Loaded/ObjThrowDefaul";
     public float throwForceMin = 1f;
     public float throwForceMax = 100f;
     public float throwForce = 10f;

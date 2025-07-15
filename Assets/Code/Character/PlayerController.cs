@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
 namespace DuckLe
@@ -454,6 +455,9 @@ namespace DuckLe
             GameObject prefab = Resources.Load<GameObject>(config.prefabPath);
             if (prefab == null) return;
 
+            //forward = GetCameraRayCenter().direction.normalized; // lấy hướng từ camera
+            //Vector3 spawnPosition = position + forward * 1.5f + Vector3.up * 1.5f;
+
             Vector3 spawnPosition = position + transform.forward + transform.right * 0.5f + Vector3.up * 1.5f;
             GameObject networkObject = Object.Instantiate(prefab, spawnPosition, Quaternion.identity);
             if (networkObject.TryGetComponent<Rigidbody>(out var rb))
@@ -471,6 +475,17 @@ namespace DuckLe
         }
 
         /// <summary>
+        /// Trả về hướng nhìn hiện tại của camera từ trung tâm màn hình.
+        /// </summary>
+        public Ray GetCameraRayCenter()
+        {
+            Camera cam = Camera.main;
+            return cam != null
+                ? cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f))
+                : new Ray(Vector3.zero, Vector3.forward);
+        }
+
+        /// <summary>
         /// chiếu tia từ camera để kiểm tra đối tượng người chơi đang nhìn vào.
         /// </summary>
         public void CheckItemByLooking()
@@ -479,9 +494,10 @@ namespace DuckLe
             {
                 if (Time.time - lastCheckTime < checkInterval) return;
                 lastCheckTime = Time.time;
-                //Ray ray = new Ray(transform.position + Vector3.up * 1.5f, Camera.main.ScreenPointToRay(Input.mousePosition).direction);\
-                Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+
+                Ray ray = GetCameraRayCenter();
                 Debug.DrawRay(ray.origin, ray.direction * 15f, Color.red, 0.1f, true);
+
                 if (Physics.Raycast(ray, out RaycastHit hit, 15f))
                 {
                     CurrentSourcesLookAt = hit.collider.gameObject;
@@ -619,23 +635,23 @@ namespace DuckLe
                 savedDistance = _playerInput._characterCamera.maxDistance;
                 savedHeight = _playerInput._characterCamera.height;
                 isCameraSettingsSaved = true;
-                Debug.Log($"Aim: Saved camera state - Distance={savedDistance}, Height={savedHeight}");
+                //Debug.Log($"Aim: Saved camera state - Distance={savedDistance}, Height={savedHeight}");
             }
 
             if (Input_M)
             {
 
                 _playerInput._characterCamera.transform.SetParent(transform);
-                _playerInput._characterCamera.SetTargetValues(1f, 1.7f, 0.7f, true);
-                //_playerInput._characterCamera.useInterpolation = false;
-                Debug.Log("Aim: Entered aiming mode");
+                _playerInput._characterCamera.SetTargetValues(config.targetMaxDistance, config.targetHeight, config.rightOffset, config.isAiming);
+                _playerInput._characterCamera.useInterpolation = false;
+                //Debug.Log("Aim: Entered aiming mode");
             }
             else
             {
                 _playerInput._characterCamera.transform.SetParent(null);
                 _playerInput._characterCamera.useInterpolation = true;
-                _playerInput._characterCamera.SetTargetValues(savedDistance, savedHeight, 0f, false);
-                Debug.Log($"Aim: Exited aiming mode, Restored - Distance={savedDistance}, Height={savedHeight}");
+                _playerInput._characterCamera.SetTargetValues(savedDistance, savedHeight, config.rightOffset, false);
+                //Debug.Log($"Aim: Exited aiming mode, Restored - Distance={savedDistance}, Height={savedHeight}");
                 isCameraSettingsSaved = false;
             }
         }
