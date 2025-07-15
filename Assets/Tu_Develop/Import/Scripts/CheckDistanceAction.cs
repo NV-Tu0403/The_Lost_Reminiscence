@@ -5,12 +5,12 @@ using Action = Unity.Behavior.Action;
 using Unity.Properties;
 
 [Serializable, GeneratePropertyBag]
-[NodeDescription(name: "Check Distance", story: "Check [Distance] Between [Self] and [Target]", category: "Action", id: "f07487a8b84ae1c14518aed97aea054d")]
+[NodeDescription(name: "CheckDistance", story: "Return [Distance] between [Self] and [Target]", category: "Action", id: "4e0ce73556a6fc315bd82aa248b7182d")]
 public partial class CheckDistanceAction : Action
 {
     [SerializeReference] public BlackboardVariable<float> Distance;
     [SerializeReference] public BlackboardVariable<GameObject> Self;
-    [SerializeReference] public BlackboardVariable<GameObject> Target;
+    [SerializeReference] public BlackboardVariable<Transform> Target;
 
     protected override Status OnStart()
     {
@@ -19,10 +19,13 @@ public partial class CheckDistanceAction : Action
 
     protected override Status OnUpdate()
     {
-        if (Self.Value != null && Target.Value != null)
+        if (Self?.Value == null || Target?.Value == null)
         {
-            Distance.Value = Vector3.Distance(Self.Value.transform.position, Target.Value.transform.position);
+            Distance.Value = -1f; // hoặc giá trị báo lỗi
+            return Status.Failure;
         }
+        float distance = Vector3.Distance(Self.Value.transform.position, Target.Value.position);
+        Distance.Value = distance;
         return Status.Success;
     }
 

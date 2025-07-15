@@ -5,10 +5,6 @@ using Unity.Behavior;
 public enum FaState
 {
     Idle,
-	Follow,
-	Observe,
-	Signal,
-	Support,
 	CombatAssist,
 	PuzzleAssist
 }

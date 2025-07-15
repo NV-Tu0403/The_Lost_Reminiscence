@@ -52,6 +52,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
         return true;
     }
+
     public bool IsDirty => _isDirty;
 
     public void BeforeSave()
