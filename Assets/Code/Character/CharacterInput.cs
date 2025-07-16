@@ -13,6 +13,7 @@ namespace DuckLe
         private float _lastSpacePressTime;
         private int _spacePressCount;
 
+        private int currentIndex = 0;
         private float aimCooldown = 0.5f;         // Thời gian cooldown giữa 2 lần bật aim
         private float nextAvailableAimTime = 0f;  // Thời điểm tiếp theo được phép aim
 
@@ -45,6 +46,7 @@ namespace DuckLe
             MoveType moveType = GetSpecialActionsInput();
 
             GetAttackInput();
+            GetObjInListSlot();
             GetUseResourceInput();
             InteractInput();
 
@@ -70,10 +72,6 @@ namespace DuckLe
             _characterCamera.SetTarget(transform);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
         private Vector3 GetMoveInput()
         {
             float h = Input.GetAxisRaw("Horizontal");
@@ -191,6 +189,48 @@ namespace DuckLe
 
             }
         }
+
+        public void GetObjInListSlot()
+        {
+            float scroll = Input.mouseScrollDelta.y;
+            int totalSlots = _pc.ListSlot.transform.childCount;
+
+            if (totalSlots == 0)
+            {
+                //Debug.Log("Không có Item nào trong ListSlot!");
+                return;
+            }
+            //if (isInputLocked) // Kiểm tra nếu input bị khóa
+            //{
+            //    Debug.Log("Input is locked, không thay đổi slot.");
+            //    return;
+            //}
+            if (totalSlots <= 0)
+            {
+                //Debug.Log("Không có Item nào để thay đổi.");
+                return;
+            }
+            if (currentIndex < 0 || currentIndex >= totalSlots)
+            {
+                currentIndex = 0; // Đặt lại về chỉ số hợp lệ
+            }
+            if (scroll == 0)
+            {
+                return; // Không làm gì nếu không có scroll
+            }
+
+            if (scroll > 0)
+            {
+                currentIndex = (currentIndex + 1) % totalSlots;
+                _pc.ChangeSlotIndex(currentIndex);
+            }
+            else if (scroll < 0)
+            {
+                currentIndex = (currentIndex - 1 + totalSlots) % totalSlots;
+                _pc.ChangeSlotIndex(currentIndex);
+            }
+        }
+
     }
 }
 //_____________________________________ ĐANG LỖI / CẦN CẢI TIẾN _____________________________________
