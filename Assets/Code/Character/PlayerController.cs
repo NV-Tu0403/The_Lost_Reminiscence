@@ -1,6 +1,7 @@
 ﻿#define ENABLE_UNSAFE_CODE
 
 using Duckle;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -50,9 +51,9 @@ namespace DuckLe
         [SerializeField] private GameObject _Object;
 
         [Header("Slot Settings")]
-        [SerializeField] private GameObject FacePlayer; // mặt người chơi (tạm thời)
+        public GameObject FacePlayer; // mặt người chơi (tạm thời)
         [SerializeField] private LayerMask lookAtLayerMask;
-        [SerializeField] private GameObject ListSlot; // Danh sách Slot (tạm thời)
+       public GameObject ListSlot; // Danh sách Slot (tạm thời)
 
         [Header("Resource Settings")]
         public CharacterStateMachine _stateMachine; // Changed from private to public
@@ -637,43 +638,6 @@ namespace DuckLe
             return Mathf.Clamp(force, config.throwForceMin, config.throwForceMax);
         }
 
-        public void ZoomCamaraThrow(bool Input_M)
-        {
-            if (Input_M)
-            {
-                Vector3 rightOffset = transform.right * 10f;
-                Vector3 targetPosition = transform.position + rightOffset + Vector3.up * _playerInput._characterCamera.height;
-
-                if (_playerInput._characterCamera.mainCamera.orthographic)
-                {
-                    _playerInput._characterCamera.mainCamera.orthographicSize /= 8f;
-                }
-                else
-                {
-                    _playerInput._characterCamera.mainCamera.fieldOfView /= 8f;
-                }
-
-                _playerInput._characterCamera.mainCamera.transform.position = Vector3.Lerp(
-                    _playerInput._characterCamera.mainCamera.transform.position,
-                    targetPosition,
-                    Time.deltaTime * 2f
-                );
-            }
-            else
-            {
-                if (_playerInput._characterCamera.mainCamera.orthographic)
-                {
-                    _playerInput._characterCamera.mainCamera.orthographicSize *= 8f;
-                }
-                else
-                {
-                    _playerInput._characterCamera.mainCamera.fieldOfView *= 8f;
-                }
-
-                _playerInput._characterCamera.mainCamera.transform.position = _playerInput._characterCamera.transform.position;
-            }
-        }
-
         /// <summary>
         /// Thay đổi góc nhìn của camera khi nhấn nút Aim.
         /// </summary>
@@ -747,6 +711,71 @@ namespace DuckLe
                 {
                     Debug.LogWarning("No children to swap in ListBody[3] or ListBody[1]!");
                 }
+            }
+        }
+
+        public int previousIndex = -1; // -1 = chưa có gì
+        public GameObject currentEquippedItem;
+        public Coroutine deactivateCoroutine;
+
+        /// <summary>
+        /// lấy GameObject từ list Slot và thay đổi chỉ mục của nó vào ListBody[2] 
+        /// </summary>
+        /// <param name="Index"></param>
+        /// <returns></returns>
+        /// <summary>
+        /// lấy GameObject từ list Slot và thay đổi chỉ mục của nó vào ListBody[2] 
+        /// </summary>
+        /// <param name="Index"></param>
+        /// <returns></returns>
+        public GameObject ChangeSlotIndex(int index)
+        {
+            if (ListSlot == null || ListSlot.transform.childCount == 0)
+            {
+                Debug.LogWarning("[PlayerController] ListSlot is null or empty.");
+                return null;
+            }
+
+            if (index < 0 || index >= ListSlot.transform.childCount)
+            {
+                Debug.LogWarning($"[PlayerController] Index {index} is out of bounds.");
+                return null;
+            }
+
+            // Trả item cũ về slot nếu có
+            if (previousIndex >= 0 && currentEquippedItem != null)
+            {
+                currentEquippedItem.transform.SetParent(ListSlot.transform, false);
+                currentEquippedItem.SetActive(false);
+            }
+
+            // Lấy item mới từ index
+            Transform itemTransform = ListSlot.transform.GetChild(index);
+            GameObject newItem = itemTransform.gameObject;
+
+            newItem.transform.SetParent(ListBody[1].transform, false);
+            newItem.transform.localPosition = new Vector3(1f, 2f, 0f);
+            newItem.transform.localRotation = Quaternion.identity;
+            newItem.SetActive(true);
+
+            currentEquippedItem = newItem;
+            previousIndex = index;
+
+            if (deactivateCoroutine != null)
+                StopCoroutine(deactivateCoroutine);
+            deactivateCoroutine = StartCoroutine(DeactivateAfterDelay(newItem, 1f));
+
+            Debug.Log($"[PlayerController] Equipped item '{newItem.name}' from ListSlot[{index}]");
+            return newItem;
+        }
+
+
+        private IEnumerator DeactivateAfterDelay(GameObject obj, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (obj != null)
+            {
+                obj.SetActive(false);
             }
         }
 
