@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using FMOD.Studio;
 
 namespace Events
 {
@@ -15,31 +14,15 @@ namespace Events
         [Header("Control")]
         public bool isActive = true;
 
-        [Header("Audio")]
-        public EventInstance footstepEvent;
-
         void Awake()
         {
             controller = GetComponent<CharacterController>();
-        }
-
-        private void Start()
-        {
-            Debug.Log("FootstepEvent: " + footstepEvent);
-            if (!PlayerAudioManager.Instance.playerFootstepInstance.isValid())
-            {
-                Debug.LogWarning("Khứa PlayerFootstepIntance bên [PlayAudioManager] null nè trời");
-            }
-            else
-                footstepEvent = PlayerAudioManager.Instance.playerFootstepInstance;
         }
 
         void Update()
         {
             if (!isActive) return;
             HandleMovement();
-
-            UpdateSound();
         }
 
         private void HandleMovement()
@@ -71,22 +54,6 @@ namespace Events
             transform.position = pos;
             controller.enabled = true;
             verticalVelocity = 0f;
-        }
-
-        private void UpdateSound()
-        {
-            if (controller.velocity.magnitude > 0.1f && controller.isGrounded)
-            {
-                PLAYBACK_STATE playbackState;
-                footstepEvent.getPlaybackState(out playbackState);
-                if (playbackState != PLAYBACK_STATE.PLAYING)
-                {
-                    footstepEvent.start();
-                }
-            } else 
-            {
-                footstepEvent.stop(STOP_MODE.ALLOWFADEOUT);
-            }
         }
     }
     
