@@ -710,6 +710,9 @@ namespace Unity.VisualScripting.Generated.Aot
 	// TreeLoadingScreen.op_Implicit
 	// TreeLoadingScreen.op_Equality
 	// TreeLoadingScreen.op_Inequality
+	// DungeonTrigger.op_Implicit
+	// DungeonTrigger.op_Equality
+	// DungeonTrigger.op_Inequality
 	// ChapterUI.op_Implicit
 	// ChapterUI.op_Equality
 	// ChapterUI.op_Inequality
@@ -965,18 +968,6 @@ namespace Unity.VisualScripting.Generated.Aot
 	// TMPro.Examples.WarpTextExample.op_Implicit
 	// TMPro.Examples.WarpTextExample.op_Equality
 	// TMPro.Examples.WarpTextExample.op_Inequality
-	// Sketchfab.SketchfabBrowser.op_Implicit
-	// Sketchfab.SketchfabBrowser.op_Equality
-	// Sketchfab.SketchfabBrowser.op_Inequality
-	// Sketchfab.SketchfabModelWindow.op_Implicit
-	// Sketchfab.SketchfabModelWindow.op_Equality
-	// Sketchfab.SketchfabModelWindow.op_Inequality
-	// Sketchfab.SketchfabExporter.op_Implicit
-	// Sketchfab.SketchfabExporter.op_Equality
-	// Sketchfab.SketchfabExporter.op_Inequality
-	// Sketchfab.SketchfabPlugin.op_Implicit
-	// Sketchfab.SketchfabPlugin.op_Equality
-	// Sketchfab.SketchfabPlugin.op_Inequality
 	// DunGen.AdjacentRoomCulling.op_Implicit
 	// DunGen.AdjacentRoomCulling.op_Equality
 	// DunGen.AdjacentRoomCulling.op_Inequality
@@ -9840,6 +9831,41 @@ namespace Unity.VisualScripting.Generated.Aot
 			optimized.Invoke(default(object[]));
 		}
 		
+		// DungeonTrigger.op_Implicit
+		[global::UnityEngine.Scripting.PreserveAttribute()]
+		public static void DungeonTrigger_op_Implicit()
+		{
+			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
+			bool conversion = ((bool)(arg0));
+			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
+			optimized.Invoke(null, arg0);
+			optimized.Invoke(default(object[]));
+		}
+		
+		// DungeonTrigger.op_Equality
+		[global::UnityEngine.Scripting.PreserveAttribute()]
+		public static void DungeonTrigger_op_Equality()
+		{
+			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
+			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
+			bool @operator = (arg0 == arg1);
+			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
+			optimized.Invoke(null, arg0, arg1);
+			optimized.Invoke(default(object[]));
+		}
+		
+		// DungeonTrigger.op_Inequality
+		[global::UnityEngine.Scripting.PreserveAttribute()]
+		public static void DungeonTrigger_op_Inequality()
+		{
+			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
+			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
+			bool @operator = (arg0 != arg1);
+			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
+			optimized.Invoke(null, arg0, arg1);
+			optimized.Invoke(default(object[]));
+		}
+		
 		// ChapterUI.op_Implicit
 		[global::UnityEngine.Scripting.PreserveAttribute()]
 		public static void ChapterUI_op_Implicit()
@@ -12806,146 +12832,6 @@ namespace Unity.VisualScripting.Generated.Aot
 		// TMPro.Examples.WarpTextExample.op_Inequality
 		[global::UnityEngine.Scripting.PreserveAttribute()]
 		public static void TMPro_Examples_WarpTextExample_op_Inequality()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
-			bool @operator = (arg0 != arg1);
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0, arg1);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabBrowser.op_Implicit
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabBrowser_op_Implicit()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			bool conversion = ((bool)(arg0));
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabBrowser.op_Equality
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabBrowser_op_Equality()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
-			bool @operator = (arg0 == arg1);
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0, arg1);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabBrowser.op_Inequality
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabBrowser_op_Inequality()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
-			bool @operator = (arg0 != arg1);
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0, arg1);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabModelWindow.op_Implicit
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabModelWindow_op_Implicit()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			bool conversion = ((bool)(arg0));
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabModelWindow.op_Equality
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabModelWindow_op_Equality()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
-			bool @operator = (arg0 == arg1);
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0, arg1);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabModelWindow.op_Inequality
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabModelWindow_op_Inequality()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
-			bool @operator = (arg0 != arg1);
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0, arg1);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabExporter.op_Implicit
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabExporter_op_Implicit()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			bool conversion = ((bool)(arg0));
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabExporter.op_Equality
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabExporter_op_Equality()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
-			bool @operator = (arg0 == arg1);
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0, arg1);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabExporter.op_Inequality
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabExporter_op_Inequality()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
-			bool @operator = (arg0 != arg1);
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0, arg1);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabPlugin.op_Implicit
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabPlugin_op_Implicit()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			bool conversion = ((bool)(arg0));
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabPlugin.op_Equality
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabPlugin_op_Equality()
-		{
-			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
-			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
-			bool @operator = (arg0 == arg1);
-			global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool> optimized = new global::Unity.VisualScripting.StaticFunctionInvoker<UnityEngine.Object, UnityEngine.Object, bool>(default(global::System.Reflection.MethodInfo));
-			optimized.Invoke(null, arg0, arg1);
-			optimized.Invoke(default(object[]));
-		}
-		
-		// Sketchfab.SketchfabPlugin.op_Inequality
-		[global::UnityEngine.Scripting.PreserveAttribute()]
-		public static void Sketchfab_SketchfabPlugin_op_Inequality()
 		{
 			global::UnityEngine.Object arg0 = default(global::UnityEngine.Object);
 			global::UnityEngine.Object arg1 = default(global::UnityEngine.Object);
