@@ -19,7 +19,7 @@ namespace Code.Character
                 return;
             }
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
 
             EventBus.Subscribe("Respawn", OnRespawnEvent);
             EventBus.Subscribe("Checkpoint", OnCheckpointEvent);

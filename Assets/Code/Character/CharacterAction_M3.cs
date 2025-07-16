@@ -190,9 +190,9 @@ namespace Duckle
                 Vector3 camForward = controller._playerInput._characterCamera.mainCamera.transform.forward;
                 camForward.y = 0;
 
-                if (camForward.sqrMagnitude > 0.001f)
+                if (camForward./*direction.*/sqrMagnitude > 0.001f)
                 {
-                    lastRotationDirection = camForward.normalized;
+                    lastRotationDirection = camForward.normalized /*direction*/;
                 }
 
                 if (lastRotationDirection.sqrMagnitude > 0.001f)
