@@ -2,11 +2,8 @@
 
 using Duckle;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using Unity.Burst.Intrinsics;
-using Unity.Collections;
-using UnityEditor.VersionControl;
+
 using UnityEngine;
 
 namespace DuckLe
@@ -32,7 +29,6 @@ namespace DuckLe
 
     public class PlayerController : MonoBehaviour
     {
-
         public static PlayerController Instance { get; private set; }
 
         [SerializeField] public PlayerConfig config; // Tham chiếu đến PlayerConfig
@@ -54,6 +50,8 @@ namespace DuckLe
         [SerializeField] private GameObject _Object;
 
         [Header("Slot Settings")]
+        [SerializeField] private GameObject FacePlayer; // mặt người chơi (tạm thời)
+        [SerializeField] private LayerMask lookAtLayerMask;
         [SerializeField] private GameObject ListSlot; // Danh sách Slot (tạm thời)
 
         [Header("Resource Settings")]
@@ -64,6 +62,15 @@ namespace DuckLe
         /// </summary>
         public IUsable CurrentUsable { get; set; }
         public GameObject CurrentSourcesLookAt { get; set; } // Đối tượng mà người chơi đang nhìn vào
+        public Vector3 CurrentLookAtHitPoint { get; private set; } // tọa độ điểm va chạm của tia nhìn
+        //public Vector3 HitPoint { get; private set; } // tọa độ điểm khi nhấn chuôt
+
+        [SerializeField] private GameObject markerPrefab; // Prefab dùng để đánh dấu (test)
+        [SerializeField] private Material laserMaterial; // Material cho laser line (test)
+        [SerializeField] private float laserWidth = 0.02f; // Độ rộng của laser line (test)
+
+        private GameObject currentMarker;
+        private LineRenderer laserLine;
 
         private MoveType _currentMoveType = MoveType.Walk; // Lưu MoveType hiện tại
         private float _meleeActionEndTime;
@@ -73,7 +80,7 @@ namespace DuckLe
         private float savedHeight = 0f;
         private bool isCameraSettingsSaved = false;
 
-        private float checkInterval = 0.1f;
+        [SerializeField] private float checkInterval = 0.1f;
         private float lastCheckTime;
 
         private void Awake()
@@ -485,6 +492,53 @@ namespace DuckLe
                 : new Ray(Vector3.zero, Vector3.forward);
         }
 
+        public void MarkHitPoint(Vector3 point)
+        {
+            // Tạo marker
+            if (currentMarker == null && markerPrefab != null)
+            {
+                currentMarker = Instantiate(markerPrefab);
+            }
+
+            if (currentMarker != null)
+            {
+                currentMarker.transform.position = point;
+            }
+
+            // Tạo laser
+            if (laserLine == null)
+            {
+                GameObject laserObj = new GameObject("LaserLine");
+                laserLine = laserObj.AddComponent<LineRenderer>();
+                laserLine.material = laserMaterial;
+                laserLine.positionCount = 2;
+                laserLine.startWidth = laserWidth;
+                laserLine.endWidth = laserWidth;
+                laserLine.useWorldSpace = true;
+            }
+
+            // 3. Cập nhật line
+            Camera cam = Camera.main;
+            if (cam != null)
+            {
+                laserLine.SetPosition(0, FacePlayer.transform.position);
+                laserLine.SetPosition(1, point);
+            }
+        }
+
+        public Vector3 ReturnPoinHit()
+        {
+            if (CurrentLookAtHitPoint != null)
+            {
+                return CurrentLookAtHitPoint;
+            }
+            else
+            {
+                Debug.LogWarning("CurrentLookAtHitPoint is null. Returning Vector3.zero.");
+                return Vector3.zero;
+            }
+        }
+
         /// <summary>
         /// chiếu tia từ camera để kiểm tra đối tượng người chơi đang nhìn vào.
         /// </summary>
@@ -498,14 +552,17 @@ namespace DuckLe
                 Ray ray = GetCameraRayCenter();
                 Debug.DrawRay(ray.origin, ray.direction * 15f, Color.red, 0.1f, true);
 
-                if (Physics.Raycast(ray, out RaycastHit hit, 15f))
+                if (Physics.Raycast(ray, out RaycastHit hit, 50f, lookAtLayerMask))
                 {
                     CurrentSourcesLookAt = hit.collider.gameObject;
+                    CurrentLookAtHitPoint = hit.point; // Lưu tọa độ điểm va chạm
+                    MarkHitPoint(hit.point); // Gọi hàm đánh dấu
+                    //Debug.Log($"Looking at: {CurrentSourcesLookAt.name}");
                 }
             }
             catch (System.Exception)
             {
-                Debug.Log("deo co gi de check ray");
+                Debug.Log("[PlayerController] lỗi con me no roi, ngu vai lon");
             }
 
         }
@@ -650,7 +707,7 @@ namespace DuckLe
             {
                 _playerInput._characterCamera.transform.SetParent(null);
                 _playerInput._characterCamera.useInterpolation = true;
-                _playerInput._characterCamera.SetTargetValues(savedDistance, savedHeight, config.rightOffset, false);
+                _playerInput._characterCamera.SetTargetValues(savedDistance, savedHeight, _playerInput._characterCamera.rightOffset, false);
                 //Debug.Log($"Aim: Exited aiming mode, Restored - Distance={savedDistance}, Height={savedHeight}");
                 isCameraSettingsSaved = false;
             }

@@ -139,6 +139,12 @@ namespace DuckLe
         private void GetAttackInput()
         {
             //if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
+            if (Input.GetMouseButtonDown(0))
+            {
+                var PointLookAt = _pc.ReturnPoinHit();
+                Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
+            }
+
             if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(Duckle.ThrowType.ThrowItem, 2f);
 
             //if (Time.time >= nextAvailableAimTime) // Kiểm tra cooldown

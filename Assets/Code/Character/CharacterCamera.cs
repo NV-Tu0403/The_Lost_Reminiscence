@@ -24,10 +24,10 @@ public class CharacterCamera : Core
     private float targetHeight;
     private float smoothedDistance;
     public bool isAiming = false;
-    [SerializeField] private float rightOffset = 0.7f;
-    [SerializeField] private float transitionSpeed = 10f;
-    [SerializeField] public float distanceSmoothingSpeed = 10f;
-    [SerializeField] public float sphereCastRadius = 0.2f;
+    public float rightOffset = 0.7f;
+    public float transitionSpeed = 10f;
+    public float distanceSmoothingSpeed = 10f;
+    public float sphereCastRadius = 0.2f;
 
     private void Start()
     {
