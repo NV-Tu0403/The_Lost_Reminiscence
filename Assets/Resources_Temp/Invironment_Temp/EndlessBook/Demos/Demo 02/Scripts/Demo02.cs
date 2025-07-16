@@ -3,7 +3,6 @@
     using System.Linq;
     using UnityEngine;
     using echo17.EndlessBook;
-    using UnityEditor.Localization.Plugins.XLIFF.V12;
 
     public enum BookActionTypeEnum
     {

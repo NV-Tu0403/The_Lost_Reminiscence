@@ -96,8 +96,7 @@ public class UIPage05 : MonoBehaviour
         }
         catch (Exception)
         {
-
-            throw;
+            Debug.LogWarning("[UIPage05] Failed to refresh save slots. Retrying in 1 second...");
         }
     }
 
