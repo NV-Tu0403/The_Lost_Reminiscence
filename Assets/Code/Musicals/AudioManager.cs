@@ -34,7 +34,7 @@ public class AudioManager : MonoBehaviour
     // Phát hoặc chuyển ambience
     public void PlayAmbience(EventReference eventPath)
     {
-        if (currentAmbiencePath.Path == eventPath.Path) return;   
+        if (currentAmbiencePath.Equals(eventPath)) return;
         StopAmbience(); // Dừng ambience cũ nếu có
         ambienceInstance = RuntimeManager.CreateInstance(eventPath);
         var result = ambienceInstance.start();
