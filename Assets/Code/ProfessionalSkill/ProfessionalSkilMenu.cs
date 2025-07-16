@@ -144,12 +144,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         // Kiểm tra null trước khi sử dụng
         if (UserAccountManager.Instance == null)
         {
-            Debug.LogError("UserAccountManager.Instance is null!");
+            Debug.LogWarning("UserAccountManager.Instance is null!");
             return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
         }
         if (SaveGameManager.Instance == null)
         {
-            Debug.LogError("SaveGameManager.Instance is null!");
+            Debug.LogWarning("SaveGameManager.Instance is null!");
             return new SaveListContext { UserName = UserAccountManager.Instance.currentUserBaseName, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
         }
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))

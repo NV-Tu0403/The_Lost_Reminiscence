@@ -64,6 +64,8 @@ public class Core : CoreEventListenerBase
         {
             ActiveMenu(false, false);
         }
+
+        ActiveMouseCursor();
     }
 
     public override void RegisterEvent(CoreEvent e)
@@ -115,13 +117,13 @@ public class Core : CoreEventListenerBase
         {
             GameObject[] all = Resources.FindObjectsOfTypeAll<GameObject>();
             menuCamera = all.FirstOrDefault(obj => obj.name == "MenuCameras");
-            Debug.LogWarning("MenuCamera found!");
+            //Debug.Log("MenuCamera found!");
         }
         if (characterCamera == null)
         {
             GameObject[] all = Resources.FindObjectsOfTypeAll<GameObject>();
             characterCamera = all.FirstOrDefault(obj => obj.name == "CharacterCamera(Clone)");
-            Debug.LogWarning("CharacterCamera found!");
+            //Debug.Log("CharacterCamera found!");
         }
 
     }
@@ -155,7 +157,7 @@ public class Core : CoreEventListenerBase
     {
         if (_stateMachine.CurrentStateType != null)
         {
-            Debug.Log($"[Core] Current State: {_stateMachine.CurrentStateType}");
+            //Debug.Log($"[Core] Current State: {_stateMachine.CurrentStateType}");
             CurrentCoreState = _stateMachine.CurrentStateType.ToString();
         }
     }
@@ -199,6 +201,28 @@ public class Core : CoreEventListenerBase
         }
 
         yield return new WaitForSeconds(0.2f);
+    }
+
+    private void ActiveMouseCursor()
+    {
+        bool ShowCursor = CurrentCoreState != CoreStateType.InSessionState.ToString() || IsDebugMode;
+
+        if (IsDebugMode)
+        {
+            ShowCursor = false;
+        }
+
+        if (ShowCursor)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            //Debug.Log("Cursor is visible and unlocked.");
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     private void NewSession()
@@ -305,13 +329,14 @@ public class Timer
 
 // ----------------------------------------------------LUỒNG DỮ LIỆU:--------------------------------------------------
 
-// - 
+//-
 
-// ----------------------------------------------------TỐI ƯU:--------------------------------------------------
+//----------------------------------------------------TỐI ƯU: --------------------------------------------------
 
-// - Attribute + Reflection	Tự động hóa 100%, ít lỗi	(Dùng Reflection, cần setup kỹ)
+//-Attribute + Reflection   Tự động hóa 100%, ít lỗi	(Dùng Reflection, cần setup kỹ)
 // -
 
 // ----------------------------------------------------NOTE:--------------------------------------------------
 
 // -
+
