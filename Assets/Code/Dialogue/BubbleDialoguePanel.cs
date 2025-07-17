@@ -17,16 +17,16 @@ namespace Code.Dialogue
         [SerializeField] private AudioClip appearSfx;
         [SerializeField] private AudioSource sfxSource;
         
-        private Action _onDialogueEnd;
-        private DialogueNodeSO _currentNode;
-        private Coroutine _typingCoroutine;
-        private CanvasGroup _canvasGroup;
+        private Action onDialogueEnd;
+        private DialogueNodeSO currentNode;
+        private Coroutine typingCoroutine;
+        private CanvasGroup canvasGroup;
         private bool isTyping = false;
         private const float TypewriterDelay = 0.05f;
         
         private void Awake()
         {
-            _canvasGroup = GetComponent<CanvasGroup>();
+            canvasGroup = GetComponent<CanvasGroup>();
         }
         
         /// <summary>
@@ -39,8 +39,8 @@ namespace Code.Dialogue
         {
             EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             gameObject.SetActive(true);
-            _onDialogueEnd = onEnd;
-            _currentNode = node;
+            onDialogueEnd = onEnd;
+            currentNode = node;
 
             ShowAnimation();
             ShowNode(node);
@@ -58,10 +58,10 @@ namespace Code.Dialogue
                 EndDialogue();
                 return;
             }
-            _currentNode = node;
-            if (_typingCoroutine != null)
-                StopCoroutine(_typingCoroutine);
-            _typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
+            currentNode = node;
+            if (typingCoroutine != null)
+                StopCoroutine(typingCoroutine);
+            typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
         }
 
         /// <summary>
@@ -94,13 +94,13 @@ namespace Code.Dialogue
 
         private void ShowAnimation()
         {
-            if (_canvasGroup == null) return;
+            if (canvasGroup == null) return;
 
             RectTransform rectTransform = transform as RectTransform;
             if (rectTransform == null) return;
 
             // Khởi tạo trạng thái
-            _canvasGroup.alpha = 0f;
+            canvasGroup.alpha = 0f;
             transform.localScale = Vector3.one * 0.8f; // scale nhỏ ban đầu
 
             // Vị trí ban đầu: thấp hơn 30px
@@ -109,7 +109,7 @@ namespace Code.Dialogue
             rectTransform.anchoredPosition = startPos;
 
             // Tween hiệu ứng
-            _canvasGroup.DOFade(1f, 0.3f).SetEase(Ease.OutSine);
+            canvasGroup.DOFade(1f, 0.3f).SetEase(Ease.OutSine);
             transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack);
             rectTransform.DOAnchorPos(originalPos, 0.3f).SetEase(Ease.OutCubic);
 
@@ -121,7 +121,7 @@ namespace Code.Dialogue
         
         private void HideAnimation()
         {
-            if (_canvasGroup == null) return;
+            if (canvasGroup == null) return;
 
             // Lưu vị trí hiện tại để tween anchorPos
             RectTransform rectTransform = transform as RectTransform;
@@ -134,17 +134,16 @@ namespace Code.Dialogue
             rectTransform.DOAnchorPos(endPos, 0.25f).SetEase(Ease.OutSine);
 
             // Fade out
-            _canvasGroup.DOFade(0f, 0.25f).SetEase(Ease.InSine);
+            canvasGroup.DOFade(0f, 0.25f).SetEase(Ease.InSine);
 
             // Scale down + gọi callback
             transform.DOScale(Vector3.zero, 0.25f).SetEase(Ease.InBack)
                 .OnComplete(() =>
                 {
                     gameObject.SetActive(false);
-                    _onDialogueEnd?.Invoke();
+                    onDialogueEnd?.Invoke();
                     rectTransform.anchoredPosition = startPos; // reset vị trí để dùng lại
                 });
         }
-
     }
 }

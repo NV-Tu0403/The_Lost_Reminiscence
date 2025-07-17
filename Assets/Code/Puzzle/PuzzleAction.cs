@@ -1,6 +1,4 @@
 using Code.GameEventSystem;
-using Script.Puzzle;
-using UnityEngine;
 
 namespace Code.Puzzle
 {
