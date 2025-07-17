@@ -1,10 +1,10 @@
 using UnityEngine;
 using UnityEngine.Video;
 
-namespace Events.Cutscene.Scripts
+namespace Code.Cutscene
 {
     [CreateAssetMenu(fileName = "Cutscene_", menuName = "Events/Cutscene", order = 1)]
-    public class CutsceneSO : ScriptableObject
+    public class CutsceneSo : ScriptableObject
     {
         public string cutsceneId;
         public VideoClip videoClip;

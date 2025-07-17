@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System;
+using System.Globalization;
 
 [Serializable]
 public struct SlotSave
@@ -61,7 +62,7 @@ public class UIPage05 : MonoBehaviour
     /// <summary>
     /// Làm mới danh sách Save Slot, hiển thị các Save Item theo thứ tự từ mới nhất đến cũ nhất.
     /// </summary>
-    private void RefreshSaveSlots()
+    public void RefreshSaveSlots()
     {
         try
         {
@@ -72,7 +73,7 @@ public class UIPage05 : MonoBehaviour
             SaveListContext context = ProfessionalSkilMenu.Instance.RefreshSaveList();
             List<SaveFolder> saves = context.Saves;
 
-            if (saves.Count <= 0)
+            if (saves.Count <= 0 || saves == null)
             {
                 StartCoroutine(RetryRefreshSaveSlotsAfterDelay());
             }
@@ -95,8 +96,7 @@ public class UIPage05 : MonoBehaviour
         }
         catch (Exception)
         {
-
-            throw;
+            Debug.LogWarning("[UIPage05] Failed to refresh save slots. Retrying in 1 second...");
         }
     }
 
@@ -116,7 +116,6 @@ public class UIPage05 : MonoBehaviour
         // Lấy các thành phần UI
         TMP_Text saveNameText = saveItem.GetComponentInChildren<TMP_Text>();
         RawImage saveImage = saveItem.GetComponentInChildren<RawImage>();
-        //Button selectButton = saveItem.GetComponentInChildren<Button>();
 
         // Thiết lập tên
         if (saveNameText != null)
@@ -134,11 +133,6 @@ public class UIPage05 : MonoBehaviour
             saveImage.gameObject.SetActive(false);
         }
 
-        //// Thiết lập sự kiện nhấn cho nút chọn
-        //if (selectButton != null)
-        //{
-        //    selectButton.onClick.AddListener(() => OnSelectSaveItem(save.FolderPath));
-        //}
     }
 
     /// <summary>
@@ -159,7 +153,7 @@ public class UIPage05 : MonoBehaviour
     /// </summary>
     /// <param name="slotName">Tên của GameObject slotSaves</param>
     /// <returns>Đường dẫn folderPath hoặc null nếu không tìm thấy</returns>
-    public void GetFolderPathBySlotName(string slotName)
+    public void GetFolderPathBySlotName(string slotName, UIActionType uIActionType)
     {
         string Path = null;
         for (int i = 0; i < slotSaves.Length && i < instantiatedSaveItems.Count; i++)
@@ -170,10 +164,19 @@ public class UIPage05 : MonoBehaviour
                
             }
         }
+
         if (Path != null)
         {
-            Debug.Log($"[UIPage05] Selected Save Path: {Path}");
-            ProfessionalSkilMenu.Instance.OnSelectSave(Path);
+            switch (uIActionType)
+            {
+                case UIActionType.SelectSaveItem:
+                    CoreEvent.Instance.triggerSelectSaveItem(Path);  // kích hoạt sự kiện chọn Save Item với Path
+                    break;
+                case UIActionType.DeleteSaveItem:
+                    ProfessionalSkilMenu.Instance.OnDeleteSave(Path); // (cần chuyển sang dùng sưj kiện để xữ lí tập trung)
+                    RefreshSaveSlots();
+                    break;
+            }
         }
         else
         {

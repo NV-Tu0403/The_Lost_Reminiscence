@@ -62,7 +62,7 @@ public class ChapterUI : MonoBehaviour
             return;
         }
 
-        ProfessionalSkilMenu.Instance.OnContinueGame(lastSelectedSaveFolder);
+        //ProfessionalSkilMenu.Instance.OnContinueGame(lastSelectedSaveFolder);
     }
 
     private void OnDestroy()

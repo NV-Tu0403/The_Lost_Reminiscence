@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Code.Procession;
-using Script.Procession;
 using UnityEngine;
 
 // Script này quản lý các sự kiện trong game,
@@ -12,8 +11,8 @@ namespace Code.GameEventSystem
     {
         public static EventManager Instance { get; private set; }
 
-        private List<string> _eventSequence = new List<string>();
-        private int _currentEventIndex = 0;
+        private List<string> eventSequence = new List<string>();
+        private int currentEventIndex = 0;
 
         /// <summary>
         /// Đảm bảo chỉ có một instance EventManager tồn tại (singleton pattern).
@@ -35,8 +34,8 @@ namespace Code.GameEventSystem
         /// <param name="eventSequence">Danh sách các eventId sẽ được xử lý theo thứ tự.</param>
         public void Init(List<string> eventSequence)
         {
-            _eventSequence = eventSequence;
-            _currentEventIndex = 0;
+            this.eventSequence = eventSequence;
+            currentEventIndex = 0;
 
             RegisterEventBusListeners();
             AutoTriggerFirstEvent();
@@ -47,10 +46,10 @@ namespace Code.GameEventSystem
         /// </summary>
         private void RegisterEventBusListeners()
         {
-            foreach (var eventId in _eventSequence)
+            foreach (var eventId in eventSequence)
                 EventBus.Subscribe(eventId, OnEventFinished);
 
-            Debug.Log($"[EventManager] Subscribed to {_eventSequence.Count} events via EventBus.");
+            //Debug.Log($"[EventManager] Subscribed to {_eventSequence.Count} events via EventBus.");
         }
 
         /// <summary>
@@ -67,7 +66,7 @@ namespace Code.GameEventSystem
                 return;
             }
 
-            Debug.Log($"[EventManager] Event '{eventId}' finished. Updating progression...");
+            //Debug.Log($"[EventManager] Event '{eventId}' finished. Updating progression...");
 
             ProgressionManager.Instance.HandleEventFinished(eventId);
             UpdateEventIndex(eventId);
@@ -80,14 +79,14 @@ namespace Code.GameEventSystem
         /// <param name="eventId">ID của sự kiện vừa hoàn thành.</param>
         private void UpdateEventIndex(string eventId)
         {
-            if (_eventSequence[_currentEventIndex] == eventId)
+            if (eventSequence[currentEventIndex] == eventId)
             {
-                _currentEventIndex++;
+                currentEventIndex++;
             }
             else
             {
-                int idx = _eventSequence.IndexOf(eventId);
-                if (idx >= 0) _currentEventIndex = idx + 1;
+                int idx = eventSequence.IndexOf(eventId);
+                if (idx >= 0) currentEventIndex = idx + 1;
             }
         }
 
@@ -96,12 +95,12 @@ namespace Code.GameEventSystem
         /// </summary>
         private void AutoTriggerFirstEvent()
         {
-            if (_eventSequence.Count == 0) return;
+            if (eventSequence.Count == 0) return;
 
-            string firstEventId = _eventSequence[0];
+            string firstEventId = eventSequence[0];
             if (ProgressionManager.Instance.CanTrigger(firstEventId))
             {
-                Debug.Log($"[EventManager] Auto trigger first event: {firstEventId}");
+                //Debug.Log($"[EventManager] Auto trigger first event: {firstEventId}");
                 EventExecutor.Instance.TriggerEvent(firstEventId);
             }
         }
@@ -111,20 +110,16 @@ namespace Code.GameEventSystem
         /// </summary>
         private void TryTriggerNextEvent()
         {
-            if (_currentEventIndex >= _eventSequence.Count) return;
+            if (currentEventIndex >= eventSequence.Count) return;
 
-            string nextEventId = _eventSequence[_currentEventIndex];
+            string nextEventId = eventSequence[currentEventIndex];
             if (!ProgressionManager.Instance.CanTrigger(nextEventId)) return;
 
             var processData = ProgressionManager.Instance.GetProcessData(nextEventId) as SubProcess;
             if (processData != null && processData.Trigger == MainProcess.TriggerType.Automatic)
             {
-                Debug.Log($"[EventManager] Auto triggering next event: {nextEventId}");
+                //Debug.Log($"[EventManager] Auto triggering next event: {nextEventId}");
                 EventExecutor.Instance.TriggerEvent(nextEventId);
-            }
-            else
-            {
-                Debug.Log($"[EventManager] Next event '{nextEventId}' is not Auto. Waiting...");
             }
         }
 
@@ -133,10 +128,23 @@ namespace Code.GameEventSystem
         /// </summary>
         private void OnDestroy()
         {
-            foreach (var eventId in _eventSequence)
+            foreach (var eventId in eventSequence)
                 EventBus.Unsubscribe(eventId, OnEventFinished);
+            //Debug.Log("[EventManager] Unsubscribed from all events.");
+        }
 
-            Debug.Log("[EventManager] Unsubscribed from all events.");
+        /// <summary>
+        /// Cho phép hoàn thành cưỡng bức một event (dùng cho DevMode).
+        /// </summary>
+        public void ForceCompleteEvent(string eventId)
+        {
+            // Đánh dấu progression đã hoàn thành
+            ProgressionManager.Instance.HandleEventFinished(eventId);
+            // Phát event lên EventBus để các hệ thống khác (VFX, puzzle, ...) nhận được
+            var data = EventExecutor.Instance.GetEventDataById(eventId);
+            EventBus.Publish(eventId, data);
+            UpdateEventIndex(eventId);
+            TryTriggerNextEvent();
         }
     }
 }

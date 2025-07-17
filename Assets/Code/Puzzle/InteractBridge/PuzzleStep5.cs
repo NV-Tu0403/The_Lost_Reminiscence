@@ -128,7 +128,7 @@ namespace Code.Puzzle.InteractBridge
                 {
                     controller.enabled = true;
                 }
-                Debug.Log("Player position reset to: " + playerResetPoint.position);
+                //Debug.Log("Player position reset to: " + playerResetPoint.position);
             }
         }
 
@@ -145,5 +145,8 @@ namespace Code.Puzzle.InteractBridge
             countdownText.text = "";
             countdownCanvas.enabled = false;
         }
+        
+        // Phương thức này sẽ được gọi để buộc hoàn thành bước puzzle, nếu cần thiết.
+        public void ForceComplete(bool instant = true) {}
     }
 }

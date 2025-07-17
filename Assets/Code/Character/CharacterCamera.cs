@@ -24,10 +24,10 @@ public class CharacterCamera : Core
     private float targetHeight;
     private float smoothedDistance;
     public bool isAiming = false;
-    [SerializeField] private float rightOffset = 0f;
-    [SerializeField] private float transitionSpeed = 10f;
-    [SerializeField] public float distanceSmoothingSpeed = 10f;
-    [SerializeField] public float sphereCastRadius = 0.2f;
+    public float rightOffset = 0.7f;
+    public float transitionSpeed = 10f;
+    public float distanceSmoothingSpeed = 10f;
+    public float sphereCastRadius = 0.2f;
 
     private void Start()
     {
@@ -37,11 +37,11 @@ public class CharacterCamera : Core
             Debug.LogError("Camera component không tìm thấy trên PersonCamera_M3!");
         }
 
-        if (Core.IsInitialized && Core.Instance.IsOffline)
+        if (Core.Instance.IsOffline)
         {
             InitializeOffline();
         }
-        else if (Core.IsInitialized && !Core.Instance.IsOffline)
+        else if (!Core.Instance.IsOffline)
         {
             InitializeOnline();
         }
@@ -158,7 +158,7 @@ public class CharacterCamera : Core
 
         Vector3 desiredPosition = target.position + Vector3.up * height + direction * currentDistance;
 
-        if (isAiming && rightOffset != 0f)
+        if (/*isAiming && */rightOffset != 0f)
         {
             Vector3 rightDirection = target.right;
             desiredPosition += rightDirection * rightOffset;
@@ -173,7 +173,7 @@ public class CharacterCamera : Core
         smoothedDistance = Mathf.Lerp(smoothedDistance, targetDistance, distanceSmoothingSpeed * Time.deltaTime);
         currentDistance = smoothedDistance;
 
-        desiredPosition = target.position + Vector3.up * height + direction * smoothedDistance;
+        //desiredPosition = target.position + Vector3.up * height + direction * smoothedDistance;
 
         if (useInterpolation)
         {

@@ -65,7 +65,7 @@ namespace Code.GameEventSystem
                 // Gán callback cho Checkpoint để phát eventId khi hoàn thành
                 if (data.type == EventType_Dl.Checkpoint)
                 {
-                    data.onFinish = () => EventBus.Publish(eventId, data);
+                    data.OnFinish = () => EventBus.Publish(eventId, data);
                 }
                 action.Execute(data);
             }

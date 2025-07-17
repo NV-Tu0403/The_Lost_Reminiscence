@@ -1,5 +1,4 @@
 using Code.Trigger;
-using Script.Puzzle.InteractBridge;
 using UnityEngine;
 
 namespace Code.Puzzle.InteractBridge
@@ -18,15 +17,11 @@ namespace Code.Puzzle.InteractBridge
             if (puzzleStep5 != null)
             {
                 // Nếu puzzle đã hoàn thành, thực hiện hành động cần thiết
-                Debug.Log("Puzzle 5 đã hoàn thành!");
+               // Debug.Log("Puzzle 5 đã hoàn thành!");
                 puzzleStep5.puzzleCompleted = true;
             }
             else
-            {
-                Debug.Log("Puzzle chưa hoàn thành.");
-            }
             // Vô hiệu hóa zone sau khi trigger
-            
             DisableZone();
         }
     }

@@ -19,11 +19,11 @@ namespace Code.Character
                 return;
             }
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
 
             EventBus.Subscribe("Respawn", OnRespawnEvent);
             EventBus.Subscribe("Checkpoint", OnCheckpointEvent);
-            Debug.Log("[PlayerRespawnManager] Subscribed to Respawn and Checkpoint events.");
+            //Debug.Log("[PlayerRespawnManager] Subscribed to Respawn and Checkpoint events.");
         }
 
         private void OnDestroy()
@@ -51,6 +51,19 @@ namespace Code.Character
             {
                 player.Teleport(_lastCheckpointPosition, _lastCheckpointRotation);
                 // TODO: Thêm hiệu ứng respawn, reset trạng thái, v.v.
+            }
+        }
+
+        // Thêm hàm này để cho phép teleport đến checkpoint bất kỳ
+        public void TeleportToCheckpoint(Vector3 position, Quaternion rotation)
+        {
+            var player = PlayerController.Instance;
+            if (player != null)
+            {
+                player.Teleport(position, rotation);
+                _lastCheckpointPosition = position;
+                _lastCheckpointRotation = rotation;
+                Debug.Log("[PlayerRespawnManager] Teleported player to checkpoint (DevMode skip).");
             }
         }
     }

@@ -1,6 +1,5 @@
 using Code.Puzzle.InteractBridge;
 using Code.Trigger;
-using Script.Puzzle.InteractBridge;
 using UnityEngine;
 
 namespace Script.Trigger
@@ -15,7 +14,7 @@ namespace Script.Trigger
 
         protected override void OnTriggered(Collider other)
         {
-            var puzzleStep5 = FindObjectOfType<PuzzleStep5>();
+            var puzzleStep5 = FindFirstObjectByType<PuzzleStep5>();
             if (puzzleStep5 != null)
             {
                 puzzleStep5.ResetPlayer();

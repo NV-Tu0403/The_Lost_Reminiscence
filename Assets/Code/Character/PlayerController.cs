@@ -1,11 +1,10 @@
 ﻿#define ENABLE_UNSAFE_CODE
 
 using Duckle;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using Unity.Burst.Intrinsics;
-using Unity.Collections;
+
 using UnityEngine;
 
 namespace DuckLe
@@ -31,7 +30,6 @@ namespace DuckLe
 
     public class PlayerController : MonoBehaviour
     {
-
         public static PlayerController Instance { get; private set; }
 
         [SerializeField] public PlayerConfig config; // Tham chiếu đến PlayerConfig
@@ -53,7 +51,9 @@ namespace DuckLe
         [SerializeField] private GameObject _Object;
 
         [Header("Slot Settings")]
-        [SerializeField] private GameObject ListSlot; // Danh sách Slot (tạm thời)
+        public GameObject FacePlayer; // mặt người chơi (tạm thời)
+        [SerializeField] private LayerMask lookAtLayerMask;
+       public GameObject ListSlot; // Danh sách Slot (tạm thời)
 
         [Header("Resource Settings")]
         public CharacterStateMachine _stateMachine; // Changed from private to public
@@ -63,6 +63,15 @@ namespace DuckLe
         /// </summary>
         public IUsable CurrentUsable { get; set; }
         public GameObject CurrentSourcesLookAt { get; set; } // Đối tượng mà người chơi đang nhìn vào
+        public Vector3 CurrentLookAtHitPoint { get; private set; } // tọa độ điểm va chạm của tia nhìn
+        //public Vector3 HitPoint { get; private set; } // tọa độ điểm khi nhấn chuôt
+
+        [SerializeField] private GameObject markerPrefab; // Prefab dùng để đánh dấu (test)
+        [SerializeField] private Material laserMaterial; // Material cho laser line (test)
+        [SerializeField] private float laserWidth = 0.02f; // Độ rộng của laser line (test)
+
+        private GameObject currentMarker;
+        private LineRenderer laserLine;
 
         private MoveType _currentMoveType = MoveType.Walk; // Lưu MoveType hiện tại
         private float _meleeActionEndTime;
@@ -72,7 +81,7 @@ namespace DuckLe
         private float savedHeight = 0f;
         private bool isCameraSettingsSaved = false;
 
-        private float checkInterval = 0.1f;
+        [SerializeField] private float checkInterval = 0.1f;
         private float lastCheckTime;
 
         private void Awake()
@@ -184,14 +193,14 @@ namespace DuckLe
             }
 
             // Kiểm tra trạng thái rơi
-            if (_rigidbody != null && _rigidbody.linearVelocity.y < -0.1f && (_data.collisionFlags & 1) == 0)
-            {
-                _stateMachine.AddSecondaryState(new FallingState());
-            }
-            else
-            {
-                _stateMachine.RemoveSecondaryState(new FallingState());
-            }
+            // if (_rigidbody != null && _rigidbody.linearVelocity.y < -0.1f && (_data.collisionFlags & 1) == 0)
+            // {
+            //     _stateMachine.AddSecondaryState(new FallingState());
+            // }
+            // else
+            // {
+            //     _stateMachine.RemoveSecondaryState(new FallingState());
+            // }
 
 #if UNITY_EDITOR
             //Debug.Log($"Trạng thái: {string.Join(", ", _stateMachine.GetAllStateNames())}");
@@ -344,9 +353,41 @@ namespace DuckLe
         #region Movement
         public void Teleport(Vector3? position = null, Quaternion? rotation = null)
         {
-            _rigidbody.position = position ?? transform.position;
-            _rigidbody.rotation = rotation ?? transform.rotation;
-            _rigidbody.linearVelocity = Vector3.zero;
+            var targetPosition = position ?? transform.position;
+            //var targetRotation = rotation ?? transform.rotation;
+
+            ////Chuẩn hóa quaternion để tránh lỗi "not unit length"
+            //if (targetRotation != Quaternion.identity)
+            //{
+            //    targetRotation = NormalizeQuaternion(targetRotation);
+            //}
+
+            if (_rigidbody.isKinematic)
+            {
+                transform.position = targetPosition;
+                //transform.rotation = targetRotation;
+            }
+            else
+            {
+                _rigidbody.MovePosition(targetPosition);
+                //_rigidbody.MoveRotation(targetRotation);
+                _rigidbody.linearVelocity = Vector3.zero;
+                _rigidbody.angularVelocity = Vector3.zero;
+            }
+        }
+
+        private Quaternion NormalizeQuaternion(Quaternion q)
+        {
+            float magnitude = Mathf.Sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+            if (magnitude > 0f)
+            {
+                return new Quaternion(q.x / magnitude, q.y / magnitude, q.z / magnitude, q.w / magnitude);
+            }
+            else
+            {
+                Debug.LogWarning("Attempted to normalize a zero-length quaternion. Using identity.");
+                return Quaternion.identity;
+            }
         }
 
         public void Jump(bool ignoreGrounded = false, float? overrideImpulse = null)
@@ -422,6 +463,9 @@ namespace DuckLe
             GameObject prefab = Resources.Load<GameObject>(config.prefabPath);
             if (prefab == null) return;
 
+            //forward = GetCameraRayCenter().direction.normalized; // lấy hướng từ camera
+            //Vector3 spawnPosition = position + forward * 1.5f + Vector3.up * 1.5f;
+
             Vector3 spawnPosition = position + transform.forward + transform.right * 0.5f + Vector3.up * 1.5f;
             GameObject networkObject = Object.Instantiate(prefab, spawnPosition, Quaternion.identity);
             if (networkObject.TryGetComponent<Rigidbody>(out var rb))
@@ -439,6 +483,64 @@ namespace DuckLe
         }
 
         /// <summary>
+        /// Trả về hướng nhìn hiện tại của camera từ trung tâm màn hình.
+        /// </summary>
+        public Ray GetCameraRayCenter()
+        {
+            Camera cam = Camera.main;
+            return cam != null
+                ? cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f))
+                : new Ray(Vector3.zero, Vector3.forward);
+        }
+
+        public void MarkHitPoint(Vector3 point)
+        {
+            // Tạo marker
+            if (currentMarker == null && markerPrefab != null)
+            {
+                currentMarker = Instantiate(markerPrefab);
+            }
+
+            if (currentMarker != null)
+            {
+                currentMarker.transform.position = point;
+            }
+
+            // Tạo laser
+            if (laserLine == null)
+            {
+                GameObject laserObj = new GameObject("LaserLine");
+                laserLine = laserObj.AddComponent<LineRenderer>();
+                laserLine.material = laserMaterial;
+                laserLine.positionCount = 2;
+                laserLine.startWidth = laserWidth;
+                laserLine.endWidth = laserWidth;
+                laserLine.useWorldSpace = true;
+            }
+
+            // 3. Cập nhật line
+            Camera cam = Camera.main;
+            if (cam != null)
+            {
+                laserLine.SetPosition(0, FacePlayer.transform.position);
+                laserLine.SetPosition(1, point);
+            }
+        }
+
+        public Vector3 ReturnPoinHit()
+        {
+            if (CurrentLookAtHitPoint != null)
+            {
+                return CurrentLookAtHitPoint;
+            }
+            else
+            {
+                Debug.LogWarning("CurrentLookAtHitPoint is null. Returning Vector3.zero.");
+                return Vector3.zero;
+            }
+        }
+
+        /// <summary>
         /// chiếu tia từ camera để kiểm tra đối tượng người chơi đang nhìn vào.
         /// </summary>
         public void CheckItemByLooking()
@@ -447,17 +549,21 @@ namespace DuckLe
             {
                 if (Time.time - lastCheckTime < checkInterval) return;
                 lastCheckTime = Time.time;
-                //Ray ray = new Ray(transform.position + Vector3.up * 1.5f, Camera.main.ScreenPointToRay(Input.mousePosition).direction);\
-                Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+
+                Ray ray = GetCameraRayCenter();
                 Debug.DrawRay(ray.origin, ray.direction * 15f, Color.red, 0.1f, true);
-                if (Physics.Raycast(ray, out RaycastHit hit, 15f))
+
+                if (Physics.Raycast(ray, out RaycastHit hit, 50f, lookAtLayerMask))
                 {
                     CurrentSourcesLookAt = hit.collider.gameObject;
+                    CurrentLookAtHitPoint = hit.point; // Lưu tọa độ điểm va chạm
+                    MarkHitPoint(hit.point); // Gọi hàm đánh dấu
+                    //Debug.Log($"Looking at: {CurrentSourcesLookAt.name}");
                 }
             }
             catch (System.Exception)
             {
-                Debug.Log("oke");
+                Debug.Log("[PlayerController] lỗi con me no roi, ngu vai lon");
             }
 
         }
@@ -532,43 +638,6 @@ namespace DuckLe
             return Mathf.Clamp(force, config.throwForceMin, config.throwForceMax);
         }
 
-        public void ZoomCamaraThrow(bool Input_M)
-        {
-            if (Input_M)
-            {
-                Vector3 rightOffset = transform.right * 10f;
-                Vector3 targetPosition = transform.position + rightOffset + Vector3.up * _playerInput._characterCamera.height;
-
-                if (_playerInput._characterCamera.mainCamera.orthographic)
-                {
-                    _playerInput._characterCamera.mainCamera.orthographicSize /= 8f;
-                }
-                else
-                {
-                    _playerInput._characterCamera.mainCamera.fieldOfView /= 8f;
-                }
-
-                _playerInput._characterCamera.mainCamera.transform.position = Vector3.Lerp(
-                    _playerInput._characterCamera.mainCamera.transform.position,
-                    targetPosition,
-                    Time.deltaTime * 2f
-                );
-            }
-            else
-            {
-                if (_playerInput._characterCamera.mainCamera.orthographic)
-                {
-                    _playerInput._characterCamera.mainCamera.orthographicSize *= 8f;
-                }
-                else
-                {
-                    _playerInput._characterCamera.mainCamera.fieldOfView *= 8f;
-                }
-
-                _playerInput._characterCamera.mainCamera.transform.position = _playerInput._characterCamera.transform.position;
-            }
-        }
-
         /// <summary>
         /// Thay đổi góc nhìn của camera khi nhấn nút Aim.
         /// </summary>
@@ -587,23 +656,23 @@ namespace DuckLe
                 savedDistance = _playerInput._characterCamera.maxDistance;
                 savedHeight = _playerInput._characterCamera.height;
                 isCameraSettingsSaved = true;
-                Debug.Log($"Aim: Saved camera state - Distance={savedDistance}, Height={savedHeight}");
+                //Debug.Log($"Aim: Saved camera state - Distance={savedDistance}, Height={savedHeight}");
             }
 
             if (Input_M)
             {
 
                 _playerInput._characterCamera.transform.SetParent(transform);
-                _playerInput._characterCamera.SetTargetValues(1f, 1.7f, 0.7f, true);
-                //_playerInput._characterCamera.useInterpolation = false;
-                Debug.Log("Aim: Entered aiming mode");
+                _playerInput._characterCamera.SetTargetValues(config.targetMaxDistance, config.targetHeight, config.rightOffset, config.isAiming);
+                _playerInput._characterCamera.useInterpolation = false;
+                //Debug.Log("Aim: Entered aiming mode");
             }
             else
             {
                 _playerInput._characterCamera.transform.SetParent(null);
                 _playerInput._characterCamera.useInterpolation = true;
-                _playerInput._characterCamera.SetTargetValues(savedDistance, savedHeight, 0f, false);
-                Debug.Log($"Aim: Exited aiming mode, Restored - Distance={savedDistance}, Height={savedHeight}");
+                _playerInput._characterCamera.SetTargetValues(savedDistance, savedHeight, _playerInput._characterCamera.rightOffset, false);
+                //Debug.Log($"Aim: Exited aiming mode, Restored - Distance={savedDistance}, Height={savedHeight}");
                 isCameraSettingsSaved = false;
             }
         }
@@ -642,6 +711,71 @@ namespace DuckLe
                 {
                     Debug.LogWarning("No children to swap in ListBody[3] or ListBody[1]!");
                 }
+            }
+        }
+
+        public int previousIndex = -1; // -1 = chưa có gì
+        public GameObject currentEquippedItem;
+        public Coroutine deactivateCoroutine;
+
+        /// <summary>
+        /// lấy GameObject từ list Slot và thay đổi chỉ mục của nó vào ListBody[2] 
+        /// </summary>
+        /// <param name="Index"></param>
+        /// <returns></returns>
+        /// <summary>
+        /// lấy GameObject từ list Slot và thay đổi chỉ mục của nó vào ListBody[2] 
+        /// </summary>
+        /// <param name="Index"></param>
+        /// <returns></returns>
+        public GameObject ChangeSlotIndex(int index)
+        {
+            if (ListSlot == null || ListSlot.transform.childCount == 0)
+            {
+                Debug.LogWarning("[PlayerController] ListSlot is null or empty.");
+                return null;
+            }
+
+            if (index < 0 || index >= ListSlot.transform.childCount)
+            {
+                Debug.LogWarning($"[PlayerController] Index {index} is out of bounds.");
+                return null;
+            }
+
+            // Trả item cũ về slot nếu có
+            if (previousIndex >= 0 && currentEquippedItem != null)
+            {
+                currentEquippedItem.transform.SetParent(ListSlot.transform, false);
+                currentEquippedItem.SetActive(false);
+            }
+
+            // Lấy item mới từ index
+            Transform itemTransform = ListSlot.transform.GetChild(index);
+            GameObject newItem = itemTransform.gameObject;
+
+            newItem.transform.SetParent(ListBody[1].transform, false);
+            newItem.transform.localPosition = new Vector3(1f, 2f, 0f);
+            newItem.transform.localRotation = Quaternion.identity;
+            newItem.SetActive(true);
+
+            currentEquippedItem = newItem;
+            previousIndex = index;
+
+            if (deactivateCoroutine != null)
+                StopCoroutine(deactivateCoroutine);
+            deactivateCoroutine = StartCoroutine(DeactivateAfterDelay(newItem, 1f));
+
+            Debug.Log($"[PlayerController] Equipped item '{newItem.name}' from ListSlot[{index}]");
+            return newItem;
+        }
+
+
+        private IEnumerator DeactivateAfterDelay(GameObject obj, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (obj != null)
+            {
+                obj.SetActive(false);
             }
         }
 

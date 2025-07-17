@@ -3,7 +3,6 @@
     using System.Linq;
     using UnityEngine;
     using echo17.EndlessBook;
-    using UnityEditor.Localization.Plugins.XLIFF.V12;
 
     public enum BookActionTypeEnum
     {
@@ -282,6 +281,7 @@
 
             DeTectedMainMenu(item);
             DeTectedSave(item);
+            DetectedPauseSession(item);
         }
 
         /// <summary>
@@ -292,14 +292,17 @@
         {
             switch (item.uIActionType)
             {
-                case UIActionType.NewGame:
+                case UIActionType.NewSession:
                     TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerNewSession();
                     break;
                 case UIActionType.SavePanel:
                     TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerSavePanel();
                     break;
-                case UIActionType.Tutorialgame:
+                case UIActionType.TutorialSession:
                     TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerNewSession();
                     break;
 
                 case UIActionType.QuitGame:
@@ -318,21 +321,43 @@
         /// <param name="item"></param>
         private void DeTectedSave(UIItem item)
         {
+            //Debug.LogWarning($"[Demo02] DeTectedSave: {item.uIActionType} - {item.targetRenderer.gameObject.name}");
             switch (item.uIActionType)
             {
-                case UIActionType.BackToMenu:
+                case UIActionType.Back:
                     TurnToPage(item.targetPage);
                     break;
-                case UIActionType.Continue:
-                    TurnToPage(item.targetPage);
-                    ProfessionalSkilMenu.Instance.OnContinueGame(ProfessionalSkilMenu.Instance.selectedSaveFolder);
+                case UIActionType.ContinueSession:
+                    if (!string.IsNullOrWhiteSpace(ProfessionalSkilMenu.Instance.selectedSaveFolder))// Iem tà đạo (CHƯA CÓ TG FIX)
+                    {
+                        TurnToPage(item.targetPage);
+                        CoreEvent.Instance.triggerContinueSession();
+                    }
+                    break;
+                case UIActionType.RefreshSaveList:
+                    UIPage05.Instance.RefreshSaveSlots();
                     break;
                 case UIActionType.SelectSaveItem:
-                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name);
+                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.SelectSaveItem);
                     break;
                 case UIActionType.DeleteSaveItem:
+                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.DeleteSaveItem);
                     break;
                 case UIActionType.DuplicateSaveItem:
+                    break;
+            }
+        }
+
+        private void DetectedPauseSession(UIItem item)
+        {
+            switch (item.uIActionType)
+            {
+                case UIActionType.ResumeSession:
+                    CoreEvent.Instance.triggerResumedSession();
+                    break;
+                case UIActionType.QuitSesion:
+                    TurnToPage(item.targetPage);
+                    CoreEvent.Instance.triggerQuitSession();
                     break;
             }
         }

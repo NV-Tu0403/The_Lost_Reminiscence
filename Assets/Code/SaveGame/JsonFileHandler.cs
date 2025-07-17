@@ -13,7 +13,7 @@ public class JsonFileHandler
         {
             string filePath = Path.Combine(saveFolderPath, fileName);
             File.WriteAllText(filePath, jsonContent);
-            Debug.Log($"Saved JSON to: {filePath}");
+            //Debug.Log($"Saved JSON to: {filePath}");
         }
         catch (Exception e)
         {

@@ -1,17 +1,19 @@
-﻿using DuckLe;
+﻿
 using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
-using Script.Procession;
 using UnityEngine;
 using System.Collections.Generic;
 using Code.Procession;
 using UnityEngine.UI;
-using TMPro;
 
-
-public class ProfessionalSkilMenu : MonoBehaviour
+/// <summary>
+/// Điều phối các nghiệp vụ chuyên môn.
+/// Đăng kí Logic nghiệp vụ cho các Event ở đây, có thể gọi trigger các sự kiện từ đây (cẩn thận tránh lặp vô hạn).
+/// * KHÔNG ĐƯỢC ĐĂNG KÍ HOẶC CHỨA LOGIC CHANGECORESTATE Ở ĐÂY.
+/// </summary>
+public class ProfessionalSkilMenu : CoreEventListenerBase
 {
     public static ProfessionalSkilMenu Instance { get; private set; }
 
@@ -20,10 +22,13 @@ public class ProfessionalSkilMenu : MonoBehaviour
     /// </summary>
     private string lastSelectedSaveFolder;  
     public string selectedSaveFolder;
-    public GameObject Menu;
+    public string SelectedSaveImagePath;
 
-    private void Awake()
+    public string SceneDefault = "Phong_scene";
+
+    protected override void Awake()
     {
+        base.Awake();
         if (Instance == null)
         {
             Instance = this;
@@ -32,9 +37,28 @@ public class ProfessionalSkilMenu : MonoBehaviour
 
     private void Start()
     {
-
         RegisterSaveables();
         CheckUserAccounts();
+    }
+
+    public override void RegisterEvent(CoreEvent e)
+    {
+        e.OnNewSession += () => OnNewGame();
+        e.OnContinueSession += () => OnContinueGame(selectedSaveFolder);
+        e.OnSaveSession += () => OnSaveSession(lastSelectedSaveFolder);
+        e.OnQuitSession += () => OnQuitSession(lastSelectedSaveFolder);
+
+        e.OnSelectSaveItem += (path) => OnSelectSave(path);
+    }
+
+    public override void UnregisterEvent(CoreEvent e)
+    {
+        e.OnNewSession -= () => OnNewGame();
+        e.OnContinueSession -= () => OnContinueGame(selectedSaveFolder);
+        e.OnSaveSession -= () => OnSaveSession(lastSelectedSaveFolder);
+        e.OnQuitSession -= () => OnQuitSession(lastSelectedSaveFolder);
+
+        e.OnSelectSaveItem -= (path) => OnSelectSave(path);
     }
 
     #region nghiệp vụ 1
@@ -46,6 +70,8 @@ public class ProfessionalSkilMenu : MonoBehaviour
     {
         SaveGameManager.Instance.RegisterSaveable(PlayTimeManager.Instance);
         SaveGameManager.Instance.RegisterSaveable(PlayerCheckPoint.Instance);
+        SaveGameManager.Instance.RegisterSaveable(MapStateSave.Instance);
+        SaveGameManager.Instance.RegisterSaveable(ProgressionManager.Instance);
     }
 
     /// <summary>
@@ -118,17 +144,17 @@ public class ProfessionalSkilMenu : MonoBehaviour
         // Kiểm tra null trước khi sử dụng
         if (UserAccountManager.Instance == null)
         {
-            Debug.LogError("UserAccountManager.Instance is null!");
+            Debug.LogWarning("UserAccountManager.Instance is null!");
             return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
         }
         if (SaveGameManager.Instance == null)
         {
-            Debug.LogError("SaveGameManager.Instance is null!");
+            Debug.LogWarning("SaveGameManager.Instance is null!");
             return new SaveListContext { UserName = UserAccountManager.Instance.currentUserBaseName, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
         }
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
-            Debug.LogError("currentUserBaseName is null or empty!");
+            //Debug.LogError("currentUserBaseName is null or empty!");
             // Wait 1 second and try again
             StartCoroutine(RetryRefreshSaveListAfterDelay());
             //return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
@@ -150,6 +176,10 @@ public class ProfessionalSkilMenu : MonoBehaviour
         RefreshSaveList();
     }
 
+    /// <summary>
+    /// Chờ cho đến khi Player được khởi tạo và áp dụng vị trí đã lưu.
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator WaitUntilPlayerAndApply()
     {
         Transform p = null;
@@ -159,18 +189,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
             yield return null;
         }
 
-        //PlayerCheckPoint.Instance.SetPlayerTransform(p);
         PlayerCheckPoint.Instance.ApplyLoadedPosition();
-        //Debug.Log("[WaitUntil] Player position applied.");
-    }
-
-    private IEnumerator LoadImageAsync(string imagePath, RawImage saveImage)
-    {
-        byte[] imageBytes = File.ReadAllBytes(imagePath);
-        Texture2D texture = new Texture2D(2, 2);
-        texture.LoadImage(imageBytes);
-        saveImage.texture = texture;
-        yield return null;
     }
 
     //private void UpdateCurrentSaveText()
@@ -192,6 +211,9 @@ public class ProfessionalSkilMenu : MonoBehaviour
 
         string newSaveFolder = SaveGameManager.Instance.CreateNewSaveFolder(UserAccountManager.Instance.currentUserBaseName);
 
+        selectedSaveFolder = newSaveFolder;
+        lastSelectedSaveFolder = newSaveFolder;
+
         PlayTimeManager.Instance.ResetSession();
         PlayTimeManager.Instance.StartCounting();
 
@@ -208,7 +230,7 @@ public class ProfessionalSkilMenu : MonoBehaviour
         }
 
         // Load scene và chờ callback khi load xong
-        SceneController.Instance.LoadAdditiveScene("Phong_scene", PlayerCheckPoint.Instance, () =>
+        SceneController.Instance.LoadAdditiveScene(SceneDefault, PlayerCheckPoint.Instance, () =>
         {
             //Đảm bảo Player đã tồn tại sau khi load scene
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -220,18 +242,13 @@ public class ProfessionalSkilMenu : MonoBehaviour
             
             // Gọi Procession để load dữ lieu tu GameProcession
             ProgressionManager.Instance.InitProgression();
-
-            //án playerTransform
             PlayerCheckPoint.Instance.SetPlayerTransform(player.transform);
             //Đặt vị trí mặc định
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
             SaveGameManager.Instance.SaveToFolder(newSaveFolder);
-
-            Core.Instance._menuCamera.SetActive(false);
-            Menu.SetActive(false);
         });
-        
-        
+
+
 
         return newSaveFolder;
     }
@@ -247,17 +264,19 @@ public class ProfessionalSkilMenu : MonoBehaviour
         string sceneToLoad = PlayerCheckPoint.Instance.CurrentMap;
         if (string.IsNullOrEmpty(sceneToLoad) || sceneToLoad == "Unknown" || sceneToLoad == "Menu")
         {
-            sceneToLoad = "Phong_scene"; // Default scene if none is set
+            sceneToLoad = SceneDefault;
+            Debug.LogError($"[OnContinueGame] Invalid scene name '{PlayerCheckPoint.Instance.CurrentMap}', loading default scene '{sceneToLoad}' instead.");
         }
 
         SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>
         {
             PlayTimeManager.Instance.StartCounting();
+            MapStateSave.Instance.ApplyMapState();
             PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
-        });
 
-        Core.Instance._menuCamera.SetActive(false);
-        Menu.SetActive(false);
+            // Đồng bộ hóa dữ liệu vật thể
+            ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
+        });
     }
 
     /// <summary>
@@ -275,18 +294,20 @@ public class ProfessionalSkilMenu : MonoBehaviour
         selectedSaveFolder = folderPath;
         lastSelectedSaveFolder = folderPath;
 
-
         SaveGameManager.Instance.LoadFromFolder(folderPath);
 
-        // Log all JSON file contents in the selected save folder
-        var jsonFileHandler = new JsonFileHandler();
-        var jsonFiles = jsonFileHandler.LoadJsonFiles(folderPath);
-        foreach (var (fileName, json) in jsonFiles)
-        {
-            Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
-        }
+        var jsonFileHandler = new JsonFileHandler();                // tạo mới JsonFileHandler để lấy danh sách các file JSON
+        var jsonFiles = jsonFileHandler.LoadJsonFiles(folderPath);  // lấy danh sách các file JSON
 
-        //UpdateCurrentSaveText();
+        //foreach (var (fileName, json) in jsonFiles)
+        //{
+        //    Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
+        //}
+
+        string imagePath = Path.Combine(folderPath, "screenshot.png");
+        SelectedSaveImagePath = File.Exists(imagePath) ? imagePath : null; // lấy thêm đường dẫn ảnh nếu có
+
+        ScreenshotDisplayer.Instance.LoadScreenshotToPlane(SelectedSaveImagePath);
     }
 
     /// <summary>
@@ -301,13 +322,11 @@ public class ProfessionalSkilMenu : MonoBehaviour
             {
                 lastSelectedSaveFolder = null;
                 selectedSaveFolder = null;
-                //ContinueGame_Bt.interactable = false;
+                UIPage05.Instance.RefreshSaveSlots();
             }
         }
         else
         {
-            //errorText.text = "Failed to delete save!";
-            //errorText.color = Color.red;
             Debug.LogError($"[OnDeleteSave] Failed to delete save folder: {folderPath}");
         }
     }
@@ -316,13 +335,36 @@ public class ProfessionalSkilMenu : MonoBehaviour
     /// Lưu tất cả dữ liệu của người dùng hiện tại vào thư mục lưu trữ tương ứng.
     /// </summary>
     /// <exception cref="Exception"></exception>
-    public void OnSaveSession()
+    public void OnSaveSession(string currentSaveFolder)
     {
         if (string.IsNullOrEmpty(UserAccountManager.Instance.currentUserBaseName))
         {
             throw new Exception("No user logged in!");
         }
-        SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
+        //SaveGameManager.Instance.SaveAll(UserAccountManager.Instance.currentUserBaseName);
+        if (!string.IsNullOrEmpty(currentSaveFolder))
+        {
+            try
+            {
+                SaveGameManager.Instance.SaveToFolder(currentSaveFolder);
+                StartCoroutine(CaptureScreenshotToFolder(currentSaveFolder, success =>
+                {
+                    if (success)
+                    {
+                        //Core.Instance.TurnOnMenu();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Screenshot capture failed!");
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[OnQuitSession] Failed to save before unloading: {ex.Message}");
+            }
+        }
+
     }
 
     public void OnQuitSession(string currentSaveFolder)
@@ -331,7 +373,24 @@ public class ProfessionalSkilMenu : MonoBehaviour
         {
             try
             {
+                Core.Instance.ActiveMenu(false, false); // tạm tắt menu để chụp ảnh
+
                 SaveGameManager.Instance.SaveToFolder(currentSaveFolder);
+                StartCoroutine(CaptureScreenshotToFolder(currentSaveFolder, success =>
+                {
+                    if (success)
+                    {
+                        SceneController.Instance.UnloadAllAdditiveScenes(() =>
+                        {
+                            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+                        });
+                        Core.Instance.ActiveMenu(true, true); // bật lại menu (hoàn thành QuitSesion)
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Screenshot capture failed!");
+                    }
+                }));
             }
             catch (Exception ex)
             {
@@ -339,14 +398,63 @@ public class ProfessionalSkilMenu : MonoBehaviour
             }
         }
 
-        // Sau khi đã save xong mới unload
-        SceneController.Instance.UnloadAllAdditiveScenes(() =>
+        UIPage05.Instance.RefreshSaveSlots();
+    }
+
+    /// <summary>
+    /// Chụp ảnh màn hình kích thước 1024x1024 và lưu vào thư mục truyền vào.
+    /// </summary>
+    /// <param name="folderPath">Đường dẫn thư mục lưu ảnh</param>
+    /// <returns>Coroutine IEnumerator</returns>
+    public IEnumerator CaptureScreenshotToFolder(string folderPath, Action<bool> onComplete)
+    {
+        if (!Directory.Exists(folderPath))
         {
-            Debug.Log("[OnQuitSession] Unload complete.");
-            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
-        });
+            Debug.LogError($"[CaptureScreenshotToFolder] Folder does not exist: {folderPath}");
+            onComplete?.Invoke(false);
+            yield break;
+        }
 
+        yield return new WaitForSeconds(0.8f);  // đảm bảo UI đã tắt hoàn toàn
+        yield return null; // đợi 1 frame
 
+        int width = 1920;
+        int height = 1080;
+        RenderTexture rt = new RenderTexture(width, height, 24);
+        Texture2D screenShot = new Texture2D(width, height, TextureFormat.RGB24, false);
+
+        Camera mainCam = Camera.main;
+        if (mainCam == null)
+        {
+            Debug.LogError("[CaptureScreenshotToFolder] Main camera not found.");
+            onComplete?.Invoke(false);
+            yield break;
+        }
+
+        mainCam.targetTexture = rt;
+        mainCam.Render();
+        RenderTexture.active = rt;
+        screenShot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+        screenShot.Apply();
+
+        mainCam.targetTexture = null;
+        RenderTexture.active = null;
+        Destroy(rt);
+
+        try
+        {
+            byte[] bytes = screenShot.EncodeToPNG();
+            string screenshotPath = Path.Combine(folderPath, "screenshot.png");
+            File.WriteAllBytes(screenshotPath, bytes);
+            Debug.Log($"[CaptureScreenshotToFolder] Screenshot saved to: {screenshotPath}");
+
+            onComplete?.Invoke(true); // hoàn thành
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[CaptureScreenshotToFolder] Failed to save screenshot: {ex.Message}");
+            onComplete?.Invoke(false);
+        }
     }
 
     #endregion

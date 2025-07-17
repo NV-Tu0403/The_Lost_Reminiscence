@@ -21,13 +21,13 @@ namespace Code.Dialogue
         private void Awake()
         {
             if (fullDialoguePanel != null) fullDialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + fullDialoguePanel );
+            //else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + fullDialoguePanel );
             
             if (bubbleDialoguePanel != null) bubbleDialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + bubbleDialoguePanel );
+            //else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + bubbleDialoguePanel );
             
             if (storyDialoguePanel != null) storyDialoguePanel.gameObject.SetActive(false);
-            else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + storyDialoguePanel );
+            //else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + storyDialoguePanel );
         }
 
         /// <summary>
@@ -65,15 +65,15 @@ namespace Code.Dialogue
             {
                 case DialogueDisplayMode.FullPanel:
                     fullDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
-                    Debug.Log("[DialogueManager] Hiển thị FullDialoguePanel: " + dialogueId);
+                    //Debug.Log("[DialogueManager] Hiển thị FullDialoguePanel: " + dialogueId);
                     break;
                 case DialogueDisplayMode.BubblePanel:
                     bubbleDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
-                    Debug.Log("[DialogueManager] Hiển thị BubbleDialoguePanel: " + dialogueId);
+                    //Debug.Log("[DialogueManager] Hiển thị BubbleDialoguePanel: " + dialogueId);
                     break;
                 case DialogueDisplayMode.StoryPanel:
                     storyDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
-                    Debug.Log("[DialogueManager] Hiển thị StoryDialoguePanel: " + dialogueId);
+                    //Debug.Log("[DialogueManager] Hiển thị StoryDialoguePanel: " + dialogueId);
                     break;
                 default:
                     Debug.LogWarning($"DialogueNodeSO {dialogueId} không có displayMode hợp lệ!");
@@ -127,11 +127,11 @@ namespace Code.Dialogue
         /// </summary>
         private void OnStartDialogueEvent(object data)
         {
-            Debug.Log($"[DialogueManager] OnStartDialogueEvent received | Data: {data}");
+            //Debug.Log($"[DialogueManager] OnStartDialogueEvent received | Data: {data}");
             var eventData = data as BaseEventData;
             if (eventData == null) return;
-            Debug.Log($"[DialogueManager] Starting dialogue with eventId: {eventData.eventId}");
-            StartDialogue(eventData.eventId, eventData.onFinish);
+            //Debug.Log($"[DialogueManager] Starting dialogue with eventId: {eventData.eventId}");
+            StartDialogue(eventData.eventId, eventData.OnFinish);
         }
     }
 }

@@ -52,6 +52,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
         return true;
     }
+
     public bool IsDirty => _isDirty;
 
     public void BeforeSave()
@@ -131,7 +132,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         }
 
         _lastLoadedData = null;
-        Debug.Log($"[PlayerCheckPoint] Applied position: {playerTransform.position}");
+        //Debug.Log($"[PlayerCheckPoint] Applied position: {playerTransform.position}");
     }
 
     public void ResetPlayerPositionWord()
@@ -146,7 +147,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             }
         }
 
-        Vector3 targetPos = new Vector3(0, 3, 0);
+        Vector3 targetPos = new Vector3(0, 3, 2);
 
         // Nếu có Rigidbody
         if (playerTransform.TryGetComponent(out Rigidbody rb))
@@ -167,7 +168,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
         _lastLoadedData = null;
         _isDirty = true;
-        Debug.Log($"[PlayerCheckPoint] Reset position to: {playerTransform.position}");
+        //Debug.Log($"[PlayerCheckPoint] Reset position to: {playerTransform.position}");
     }
 
     public void SetPlayerTransform(Transform transform)

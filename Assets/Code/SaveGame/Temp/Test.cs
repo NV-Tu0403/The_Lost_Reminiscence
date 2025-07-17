@@ -377,7 +377,7 @@ public class Test : MonoBehaviour
     {
         Loading(true);
 
-        Core.Instance._menuCamera.SetActive(false);
+        Core.Instance.menuCamera.SetActive(false);
         lastSelectedSaveFolder = ProfessionalSkilMenu.Instance.OnNewGame();
 
         UpdateCurrentSaveText();
@@ -419,7 +419,7 @@ public class Test : MonoBehaviour
         Loading(true);
         try
         {
-            Core.Instance._menuCamera.SetActive(false);
+            Core.Instance.menuCamera.SetActive(false);
             ProfessionalSkilMenu.Instance.OnContinueGame(lastSelectedSaveFolder);
             GamePlayUI.SetActive(true);
             MainUI.SetActive(false);
@@ -447,7 +447,7 @@ public class Test : MonoBehaviour
         try
         {
             Loading(true);
-            Core.Instance._menuCamera.SetActive(true);
+            Core.Instance.menuCamera.SetActive(true);
             ProfessionalSkilMenu.Instance.OnQuitSession(lastSelectedSaveFolder);
             lastSelectedSaveFolder = null;
             ContinueGame_Bt.interactable = false;
@@ -472,7 +472,7 @@ public class Test : MonoBehaviour
         //Loading(true);
         try
         {
-            ProfessionalSkilMenu.Instance.OnSaveSession();
+            ProfessionalSkilMenu.Instance.OnSaveSession(lastSelectedSaveFolder);
             errorText.text = "Game saved successfully!";
             errorText.color = Color.green;
             RefreshSaveList();
