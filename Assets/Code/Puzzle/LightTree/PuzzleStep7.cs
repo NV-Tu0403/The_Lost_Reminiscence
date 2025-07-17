@@ -30,7 +30,7 @@ namespace Code.Puzzle.LightTree
 
         private void CheckDestroySups()
         {
-            var allSups = FindObjectsOfType<SupController>();
+            var allSups = FindObjectsByType<SupController>(FindObjectsSortMode.None);
             foreach (var sup in allSups)
             {
                 if (sup != null && sup.gameObject != null)
@@ -45,7 +45,7 @@ namespace Code.Puzzle.LightTree
 
         private void CheckDestroyIds()
         {
-            var allIds = FindObjectsOfType<IdController>();
+            var allIds = FindObjectsByType<IdController>(FindObjectsSortMode.None);
            
             foreach (var id in allIds)
             {
