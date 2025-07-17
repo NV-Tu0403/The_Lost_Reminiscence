@@ -72,6 +72,7 @@ namespace Code.Dialogue
         private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
         {
             isTyping = true;
+            Debug.Log(isTyping);
             yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
             isTyping = false;
             yield return new WaitForSeconds(timeToHide);

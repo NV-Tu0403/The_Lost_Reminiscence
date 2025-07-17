@@ -411,7 +411,7 @@ namespace Code.Procession
 
             if (checkpointSub != null)
             {
-                var checkpointZones = FindObjectsOfType<CheckpointZone>();
+                var checkpointZones = FindObjectsByType<CheckpointZone>(FindObjectsSortMode.None);
                 foreach (var zone in checkpointZones)
                 {
                     if (zone.eventId == checkpointSub.Id)
