@@ -25,7 +25,7 @@ struct SpeedTreeVB
 	float2 texcoord3	: TEXCOORD3;
 	half4 color			: COLOR;
 	
-	UNITY_VERTEX_INPUT_INSTANCE_ID
+	//UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 
@@ -43,6 +43,8 @@ struct SpeedTreeVB
 
 uniform half _WindQuality;
 uniform half _WindEnabled;
+uniform float4 _ST_WindBranchAnchor;
+uniform float4 _ST_WindGlobal;
 
 #include "SpeedTreeWind.cginc"
 
@@ -83,7 +85,7 @@ void OffsetSpeedTreeVertex(inout SpeedTreeVB data, float lodValue)
 		// frond wind, if needed
 		#if defined(ENABLE_WIND) && defined(GEOM_TYPE_FROND)
 			if (windQuality == WIND_QUALITY_PALM)
-				finalPosition = RippleFrond(finalPosition, data.normal, data.texcoord.x, data.texcoord.y, data.texcoord2.x, data.texcoord2.y, data.texcoord2.z);
+				; // finalPosition = RippleFrond(finalPosition, data.normal, data.texcoord.x, data.texcoord.y, data.texcoord2.x, data.texcoord2.y, data.texcoord2.z);
 		#endif
 
 	#elif defined(GEOM_TYPE_LEAF)
@@ -115,7 +117,7 @@ void OffsetSpeedTreeVertex(inout SpeedTreeVB data, float lodValue)
 			if (windQuality > WIND_QUALITY_FASTEST && windQuality < WIND_QUALITY_PALM)
 			{
 				float leafWindTrigOffset = data.texcoord1.x + data.texcoord1.y;
-				finalPosition = LeafWind(windQuality == WIND_QUALITY_BEST, data.texcoord2.w > 0.0, finalPosition, data.normal, data.texcoord2.x, float3(0,0,0), data.texcoord2.y, data.texcoord2.z, leafWindTrigOffset, rotatedWindVector);
+				// finalPosition = LeafWind(windQuality == WIND_QUALITY_BEST, data.texcoord2.w > 0.0, finalPosition, data.normal, data.texcoord2.x, float3(0,0,0), data.texcoord2.y, data.texcoord2.z, leafWindTrigOffset, rotatedWindVector);
 			}
 		#endif
 
@@ -130,15 +132,15 @@ void OffsetSpeedTreeVertex(inout SpeedTreeVB data, float lodValue)
 		#ifndef GEOM_TYPE_MESH
 			if (windQuality >= WIND_QUALITY_BETTER)
 			{
-				// branch wind (applies to all 3D geometry)
-				finalPosition = BranchWind(windQuality == WIND_QUALITY_PALM, finalPosition, treePos, float4(data.texcoord.zw, 0, 0), rotatedWindVector, rotatedBranchAnchor);
+				// Nếu không có BranchWind thì bỏ qua hoặc chỉ giữ finalPosition nguyên gốc
+				// finalPosition = BranchWind(windQuality == WIND_QUALITY_PALM, finalPosition, treePos, float4(data.texcoord.zw, 0, 0), rotatedWindVector, rotatedBranchAnchor);
 			}
 		#endif
 
 		if (windQuality > WIND_QUALITY_NONE)
 		{
 			// global wind
-			finalPosition = GlobalWind(finalPosition, treePos, true, rotatedWindVector, _ST_WindGlobal.x);
+			// finalPosition = GlobalWind(finalPosition, treePos, true, rotatedWindVector, _ST_WindGlobal.x);
 		}
 	#endif
 
