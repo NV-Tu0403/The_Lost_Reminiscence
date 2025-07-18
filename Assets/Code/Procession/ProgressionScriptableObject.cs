@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using Code.Procession;
 using Script.Procession.Conditions;
 using Script.Procession.Reward.ScriptableObjects;
 
@@ -16,7 +17,7 @@ public class ProgressionDataSO : ScriptableObject
     {
         var progression = new GameProgression
         {
-            MainProcesses = MainProcesses.ConvertAll(so => so.ToMainProcess())
+            mainProcesses = MainProcesses.ConvertAll(so => so.ToMainProcess())
         };
         // Debug.Log($"[ProgressionDataSO] Converted {progression.MainProcesses.Count} MainProcesses");
         return progression;

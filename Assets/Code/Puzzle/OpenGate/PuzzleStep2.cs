@@ -52,17 +52,13 @@ namespace Code.Puzzle.OpenGate
 
             seq.AppendCallback(() =>
             {
-                Debug.Log("[PuzzleStep2] Camera đã tới vị trí cổng → phát sáng nốt nhạc");
-
                 if (noteGlowController != null)
                 {
                     noteGlowController.OnGlowComplete = () =>
                     {
                         noteAudio?.Play();
-                        Debug.Log("[PuzzleStep2] Nốt nhạc đã sáng đủ → bắt đầu mở cổng");
                         OpenGate();
                     };
-
                     noteGlowController.TriggerGlowSequence();
                 }
                 else
