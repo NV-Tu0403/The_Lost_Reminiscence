@@ -763,7 +763,7 @@ namespace DuckLe
 
             if (deactivateCoroutine != null)
                 StopCoroutine(deactivateCoroutine);
-            deactivateCoroutine = StartCoroutine(DeactivateAfterDelay(newItem, 1f));
+            deactivateCoroutine = StartCoroutine(DeactivateAfterDelay(newItem, 0.6f));
 
             Debug.Log($"[PlayerController] Equipped item '{newItem.name}' from ListSlot[{index}]");
             return newItem;
