@@ -128,7 +128,7 @@ namespace Code.Puzzle.InteractBridge
                 {
                     controller.enabled = true;
                 }
-                Debug.Log("Player position reset to: " + playerResetPoint.position);
+                //Debug.Log("Player position reset to: " + playerResetPoint.position);
             }
         }
 

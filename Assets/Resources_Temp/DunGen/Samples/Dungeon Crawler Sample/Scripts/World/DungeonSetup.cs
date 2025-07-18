@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -9,7 +10,7 @@ namespace DunGen.DungeonCrawler
 	/// Must be attached to the same GameObject as the dungeon generator
 	/// </summary>
 	[RequireComponent(typeof(RuntimeDungeon))]
-	sealed class DungeonSetup : MonoBehaviour
+	class DungeonSetup : MonoBehaviour
 	{
 		[SerializeField]
 		[Tooltip("The player prefab to spawn once the dungeon is complete")]
@@ -18,8 +19,7 @@ namespace DunGen.DungeonCrawler
 		private PlayerUI playerUI;
 		private RuntimeDungeon runtimeDungeon;
 		private GameObject spawnedPlayerInstance;
-
-
+		
 		private void OnEnable()
 		{
 			playerUI = FindObjectOfType<PlayerUI>();

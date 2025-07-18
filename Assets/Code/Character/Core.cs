@@ -12,6 +12,7 @@ public class Core : CoreEventListenerBase
 {
     public static Core Instance { get; private set; }
     private StateMachine _stateMachine;
+    private CameraZoomController _cameraZoomController;
 
     public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
     public bool IsDebugMode = false;
@@ -46,6 +47,7 @@ public class Core : CoreEventListenerBase
         base.Awake();
         _stateMachine = new StateMachine();
         _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
+        _cameraZoomController = CameraZoomController.Instance;
         //TryInitializeCamera();
     }
 
@@ -229,14 +231,16 @@ public class Core : CoreEventListenerBase
     {
         // vì hiện tại Event NewSession không được gọi bới Core Input nên SetState ở đây cho NewSession
         _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
-        ActiveMenu(false, false);
+        if (!_cameraZoomController.ZoomState) // chỉ tắt menu nếu camera không đang zoom/zoom xong
+        {
+            ActiveMenu(false, false);
+        }
     }
 
     private void ContinueSession()
     {
         // vì hiện tại Event OnContinue không được gọi bới Core Input nên SetState ở đây cho Continue
         _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
-        ActiveMenu(false, false);
     }
 
     private void PauseSession()
