@@ -6,7 +6,7 @@ namespace Code.UI.DevMode
     {
         [SerializeField] private GameObject devModePanel;
         [SerializeField] private KeyCode enableDevModeUI;
-        
+
         private void Start()
         {
             if (devModePanel != null) devModePanel.SetActive(false);
@@ -14,7 +14,10 @@ namespace Code.UI.DevMode
 
         private void Update()
         {
-            if (Input.GetKeyDown(enableDevModeUI)) devModePanel.SetActive(true);
+            if (Input.GetKeyDown(enableDevModeUI) && devModePanel != null)
+            {
+                devModePanel.SetActive(!devModePanel.activeSelf);
+            }
         }
     }
 }
