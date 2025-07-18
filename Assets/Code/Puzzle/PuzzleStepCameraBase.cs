@@ -7,8 +7,8 @@ namespace Code.Puzzle
     public abstract class PuzzleStepCameraBase : MonoBehaviour
     {
         // Lưu vị trí/góc quay camera ban đầu
-        protected Vector3 _playerCamPosition;
-        protected Quaternion _playerCamRotation;
+        private Vector3 _playerCamPosition;
+        private Quaternion _playerCamRotation;
 
         // Hàm kiểm tra Camera.main có tồn tại không, dùng chung cho các step
         protected bool CheckCameraAvailable(Action onComplete)

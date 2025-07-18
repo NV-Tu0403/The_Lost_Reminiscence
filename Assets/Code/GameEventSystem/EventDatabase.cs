@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Duckle;
 using UnityEngine;
@@ -27,6 +28,6 @@ namespace Code.GameEventSystem
         public string eventId;
         public EventType_Dl type;
         [TextArea] public string description;
-        [System.NonSerialized] public System.Action onFinish;
+        [NonSerialized] public Action OnFinish;
     }
 }

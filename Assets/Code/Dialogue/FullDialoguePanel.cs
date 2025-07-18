@@ -34,18 +34,18 @@ namespace Code.Dialogue
 
 
         // Callback để thông báo về bên ngoài khi kết thúc toàn bộ dialogue
-        private Action _onDialogueEnd;
+        private Action onDialogueEnd;
 
         // Tham chiếu node đang hiển thị
-        private DialogueNodeSO _currentNode;
+        private DialogueNodeSO currentNode;
 
         // Coroutine gõ chữ
-        private Coroutine _typingCoroutine;
-        private bool _isTyping = false;
+        private Coroutine typingCoroutine;
+        private bool isTyping = false;
         
         // Coroutine nhấp nháy
-        private Tween _blinkNextTween;
-        private Tween _blinkSkipTween;
+        private Tween blinkNextTween;
+        private Tween blinkSkipTween;
 
         // Thời gian delay giữa các ký tự (0.05s) => Lưu ý GIỮA CÁC KÝ TỰ, không phải giữa các từ.
         private const float TypewriterDelay = 0.05f;
@@ -60,7 +60,7 @@ namespace Code.Dialogue
         {
             EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             gameObject.SetActive(true);
-            _onDialogueEnd = onEnd;
+            onDialogueEnd = onEnd;
 
             // Phát âm thanh mở hội thoại
             if (sfxSource != null && appearSfx != null)
@@ -74,8 +74,8 @@ namespace Code.Dialogue
             skipButton.onClick.AddListener(OnSkipPressed);
 
             // Bắt đầu blink cho Skip
-            StopBlinking(ref _blinkSkipTween);
-            StartBlinking(skipButton, ref _blinkSkipTween);
+            StopBlinking(ref blinkSkipTween);
+            StartBlinking(skipButton, ref blinkSkipTween);
             
             // Bắt đầu hiển thị node đầu tiên
             ShowNode(rootNode);
@@ -90,22 +90,22 @@ namespace Code.Dialogue
         /// </summary>
         private void ShowNode(DialogueNodeSO node)
         {
-            StopBlinking(ref _blinkNextTween);
+            StopBlinking(ref blinkNextTween);
             
             if (node == null)
             {
                 EndDialogue();
                 return;
             }
-            _currentNode = node;
-            Debug.Log("Hiển thị node: " + _currentNode);
+            currentNode = node;
+            //Debug.Log("Hiển thị node: " + currentNode);
             
             ShowSpeaker(node);
             ClearChoices();
             nextButton.gameObject.SetActive(false);
-            if (_typingCoroutine != null)
-                StopCoroutine(_typingCoroutine);
-            _typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
+            if (typingCoroutine != null)
+                StopCoroutine(typingCoroutine);
+            typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
         }
 
         /// <summary>
@@ -116,12 +116,10 @@ namespace Code.Dialogue
         /// </summary>
         private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
         {
-            _isTyping = true;
-            Debug.Log("Bắt đầu gõ chữ: " + _isTyping);
+            isTyping = true;
+            Debug.Log(isTyping);
             yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
-            
-            _isTyping = false;
-            Debug.Log("Kết thúc gõ chữ: " + _isTyping);
+            isTyping = false;
             
             if (node.choices != null && node.choices.Length > 0)
                 ShowChoices(node);
@@ -130,8 +128,8 @@ namespace Code.Dialogue
                 ShowNextButton(node);
     
                 // Bắt đầu blink cho Next
-                StopBlinking(ref _blinkNextTween);
-                StartBlinking(nextButton, ref _blinkNextTween);
+                StopBlinking(ref blinkNextTween);
+                StartBlinking(nextButton, ref blinkNextTween);
             }
         }
 
@@ -233,10 +231,10 @@ namespace Code.Dialogue
         private void OnSkipPressed()
         {
             // Nếu đang gõ chữ, dừng và show full text (tránh crash)
-            if (_typingCoroutine != null)
-                StopCoroutine(_typingCoroutine);
+            if (typingCoroutine != null)
+                StopCoroutine(typingCoroutine);
 
-            _isTyping = false;
+            isTyping = false;
             EndDialogue();
         }
 
@@ -247,14 +245,14 @@ namespace Code.Dialogue
         /// </summary>
         private void EndDialogue()
         {
-            StopBlinking(ref _blinkNextTween);
+            StopBlinking(ref blinkNextTween);
             
             ClearChoices();
             nextButton.onClick.RemoveAllListeners();
             skipButton.onClick.RemoveAllListeners();
 
             gameObject.SetActive(false);
-            _onDialogueEnd?.Invoke();
+            onDialogueEnd?.Invoke();
         }
         
         
