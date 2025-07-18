@@ -6,7 +6,7 @@ public class FloatMovement : MonoBehaviour
     public float speed = 2f;           
 
     private Vector3 startPos;
-
+        
     void Start()
     {
         startPos = transform.position;
