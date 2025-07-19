@@ -39,11 +39,15 @@ namespace Code.Cutscene
             //Debug.Log($"[CutsceneManager] Starting cutscene with eventId: {eventData.eventId}");
             StartCutscene(eventData.eventId, eventData.OnFinish);
         }
-        
-        public void StartCutscene(string cutsceneId, Action onFinished)
+
+        private void StartCutscene(string cutsceneId, Action onFinished)
         {
             if (cutsceneId == null) return;
             this.onFinished = onFinished;
+            
+            // Hiển thị chuột
+            Core.Instance.IsCutscenePlaying = true;
+            Core.Instance.ActiveMouseCursor(true);
             
             //  Tự load CutsceneDataSO asset từ Resources/Cutscenes/eventId
             if (GetCutsceneDataFromResource(cutsceneId, onFinished, out var data)) return;
@@ -132,6 +136,10 @@ namespace Code.Cutscene
             // Gọi callback để báo cutscene đã xong
             onFinished?.Invoke();
             onFinished = null;
+            
+            // Ẩn chuột
+            Core.Instance.IsCutscenePlaying = false;
+            Core.Instance.ActiveMouseCursor(false);
 
             // Phát sự kiện để các hệ thống khác biết cutscene đã kết thúc
             EventBus.Publish("EndCutscene");
