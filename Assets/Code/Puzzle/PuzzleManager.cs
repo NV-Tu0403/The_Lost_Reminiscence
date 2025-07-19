@@ -8,7 +8,7 @@ namespace Code.Puzzle
     {
         // Xử lý các câu đố trong game
         public static PuzzleManager Instance { get; private set; }
-        private Action _onFinish;
+        private Action onFinish;
         private Dictionary<string, IPuzzleStep> _steps;
         
         private void Awake()
@@ -34,7 +34,7 @@ namespace Code.Puzzle
         {
             if (puzzleId == null) return;
             
-            _onFinish = onFinish;
+            this.onFinish = onFinish;
             if (_steps.TryGetValue(puzzleId, out var step)) step.StartStep(FinishPuzzle);
             else Debug.LogError($"[PuzzleManager] Không tìm thấy bước câu đố '{puzzleId}'.");
         }
@@ -42,8 +42,8 @@ namespace Code.Puzzle
         private void FinishPuzzle()
         {
             //Debug.Log("[PuzzleManager] Câu đố đã hoàn thành.");
-            _onFinish?.Invoke();
-            _onFinish = null;
+            onFinish?.Invoke();
+            onFinish = null;
         }
 
         public void ForceCompletePuzzle(string puzzleId)

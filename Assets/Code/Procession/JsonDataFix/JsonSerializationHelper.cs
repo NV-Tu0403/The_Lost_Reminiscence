@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using Code.Procession;
 using Script.Procession;
 using Script.Procession.Conditions;
 using Script.Procession.Reward.Base;

@@ -1,6 +1,5 @@
 using System;
 using Code.GameEventSystem;
-using Events.Cutscene.Scripts;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -16,7 +15,7 @@ namespace Code.Cutscene
         public AudioSource audioSource;
         public Button skipButton;
 
-        private Action _onFinished;
+        private Action onFinished;
         
         private void Awake()
         {
@@ -37,14 +36,18 @@ namespace Code.Cutscene
         private void OnStartCutsceneEvent(object data)
         { var eventData = data as BaseEventData;
             if (eventData == null) return;
-            Debug.Log($"[CutsceneManager] Starting cutscene with eventId: {eventData.eventId}");
-            StartCutscene(eventData.eventId, eventData.onFinish);
+            //Debug.Log($"[CutsceneManager] Starting cutscene with eventId: {eventData.eventId}");
+            StartCutscene(eventData.eventId, eventData.OnFinish);
         }
-        
-        public void StartCutscene(string cutsceneId, Action onFinished)
+
+        private void StartCutscene(string cutsceneId, Action onFinished)
         {
             if (cutsceneId == null) return;
-            _onFinished = onFinished;
+            this.onFinished = onFinished;
+            
+            // Hiển thị chuột
+            Core.Instance.IsCutscenePlaying = true;
+            Core.Instance.ActiveMouseCursor(true);
             
             //  Tự load CutsceneDataSO asset từ Resources/Cutscenes/eventId
             if (GetCutsceneDataFromResource(cutsceneId, onFinished, out var data)) return;
@@ -55,11 +58,10 @@ namespace Code.Cutscene
             ShowUI(data, out var rt);
 
             PlayCutscene(data);
-
-            Debug.Log($"[CutsceneManager] Playing cutscene: {cutsceneId} (clip: {clip.name})");
+            //Debug.Log($"[CutsceneManager] Playing cutscene: {cutsceneId} (clip: {clip.name})");
         }
 
-        private void PlayCutscene(CutsceneSO data)
+        private void PlayCutscene(CutsceneSo data)
         {
             // Play video
             videoPlayer.clip = data.videoClip;
@@ -75,7 +77,7 @@ namespace Code.Cutscene
             videoPlayer.loopPointReached += OnVideoEnd;
         }
 
-        private void ShowUI(CutsceneSO data, out RenderTexture rt)
+        private void ShowUI(CutsceneSo data, out RenderTexture rt)
         {
             // Hiển thị UI panel, bật/tắt skip theo data.skippable
             cutscenePanel.SetActive(true);
@@ -87,7 +89,7 @@ namespace Code.Cutscene
             cutsceneImage.texture = rt;
         }
 
-        private static bool GetVideoClipFormData(string cutsceneId, Action onFinished, CutsceneSO data, out VideoClip clip)
+        private static bool GetVideoClipFormData(string cutsceneId, Action onFinished, CutsceneSo data, out VideoClip clip)
         {
             clip = data.videoClip;
             if (clip == null)
@@ -99,9 +101,9 @@ namespace Code.Cutscene
             return false;
         }
 
-        private static bool GetCutsceneDataFromResource(string cutsceneId, Action onFinished, out CutsceneSO data)
+        private static bool GetCutsceneDataFromResource(string cutsceneId, Action onFinished, out CutsceneSo data)
         {
-            data = Resources.Load<CutsceneSO>($"Cutscenes/{cutsceneId}");
+            data = Resources.Load<CutsceneSo>($"Cutscenes/{cutsceneId}");
             if (data == null)
             {
                 Debug.LogError($"[CutsceneManager] Không tìm thấy CutsceneDataSO với ID: {cutsceneId}");
@@ -132,8 +134,12 @@ namespace Code.Cutscene
             cutscenePanel.SetActive(false);
 
             // Gọi callback để báo cutscene đã xong
-            _onFinished?.Invoke();
-            _onFinished = null;
+            onFinished?.Invoke();
+            onFinished = null;
+            
+            // Ẩn chuột
+            Core.Instance.IsCutscenePlaying = false;
+            Core.Instance.ActiveMouseCursor(false);
 
             // Phát sự kiện để các hệ thống khác biết cutscene đã kết thúc
             EventBus.Publish("EndCutscene");

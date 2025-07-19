@@ -17,6 +17,14 @@ public class Core : CoreEventListenerBase
     public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
     public bool IsDebugMode = false;
 
+    #region Lộc thêm cờ để kiểm soát trạng thái của game
+    public bool IsCutscenePlaying { get; set; } = false;
+    public bool IsDialoguePlaying { get; set; } = false;
+    public bool IsDevMode { get; set; } = false;
+    
+    #endregion
+    
+    
     public string CurrentCoreState;
     public GameObject MainMenu;
 
@@ -70,8 +78,14 @@ public class Core : CoreEventListenerBase
             ActiveMenu(false, false);
         }
 
-        bool ShowCursor = CurrentCoreState != CoreStateType.InSessionState.ToString() || IsDebugMode;
-        ActiveMouseCursor(ShowCursor);
+        // Lộc thêm
+        if (!IsCutscenePlaying 
+            && !IsDialoguePlaying
+            && !IsDevMode) 
+        {
+            bool ShowCursor = CurrentCoreState != CoreStateType.InSessionState.ToString() || IsDebugMode;
+            ActiveMouseCursor(ShowCursor);
+        }
     }
 
     public override void RegisterEvent(CoreEvent e)
@@ -223,7 +237,7 @@ public class Core : CoreEventListenerBase
     /// False: Tắt.
     /// </summary>
     /// <param name="oke"></param>
-    private void ActiveMouseCursor(bool oke)
+    public void ActiveMouseCursor(bool oke) // Lộc chuyển thành public để có thể gọi từ các class khác
     {
         //bool ShowCursor = CurrentCoreState != CoreStateType.InSessionState.ToString() || IsDebugMode;
 

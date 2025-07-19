@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Localization.Settings;
 
-namespace Loc_Backend.Localization.Scripts
+namespace Code.Dialogue
 {
     public class LanguageSelector : MonoBehaviour
     {
