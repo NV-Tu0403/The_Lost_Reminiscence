@@ -6,7 +6,7 @@ public class ScreenshotDisplayer : CoreEventListenerBase
     public static ScreenshotDisplayer Instance { get; private set; }
 
     public Renderer[] targetRenderers; // Gán Plane hoặc object 3D cần hiển thị ảnh
-    //public string screenshotPath;
+    string defaultPath = "Assets/Art/Background/Image/z6579043891587_74bb0e45eb0ddde2694f7c2c53fd4ad6.jpg";
 
     protected override void Awake()
     {
@@ -15,7 +15,24 @@ public class ScreenshotDisplayer : CoreEventListenerBase
         {
             Instance = this;
         }
+    }
 
+    private void Start()
+    {
+        if (targetRenderers == null || targetRenderers.Length == 0)
+        {
+            Debug.LogError("[ScreenshotDisplayer] targetRenderers is not assigned or empty!");
+        }
+
+        // load ảnh mặc định
+        if (File.Exists(defaultPath))
+        {
+            LoadScreenshotToPlane(defaultPath);
+        }
+        else
+        {
+            Debug.LogWarning($"[ScreenshotDisplayer] Default screenshot not found at: {defaultPath}");
+        }
     }
 
     //private void Update()

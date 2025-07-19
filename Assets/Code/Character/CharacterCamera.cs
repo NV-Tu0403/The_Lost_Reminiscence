@@ -12,8 +12,9 @@ public class CharacterCamera : MonoBehaviour
     [SerializeField] private float minDistance = 0.5f;
     [SerializeField] public float maxDistance = 3.0f;
     [SerializeField] public bool useInterpolation = false;
-    [SerializeField] private bool useDistanceAndHeightInterpolation = true; // Thêm tùy chọn mới
+    [SerializeField] private bool useDistanceAndHeightInterpolation = true;
 
+    private bool lockRotationUntilInput = true;
     private float currentDistance;
     private float yaw;
     private float pitch;
@@ -55,9 +56,22 @@ public class CharacterCamera : MonoBehaviour
     {
         if (target == null) return;
 
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = Input.GetAxis("Mouse Y");
+
+        // Nếu có input thật -> unlock rotation
+        if (Mathf.Abs(mouseX) > 0.01f || Mathf.Abs(mouseY) > 0.01f)
+        {
+            lockRotationUntilInput = false;
+        }
+
+        if (lockRotationUntilInput)
+            return; // Không update pitch/yaw nếu chưa có input
+
         yaw += Input.GetAxis("Mouse X") * rotationSpeed;
         pitch -= Input.GetAxis("Mouse Y") * rotationSpeed;
         pitch = Mathf.Clamp(pitch, -40f, 80f);
+
 
         if (useDistanceAndHeightInterpolation)
         {
@@ -201,6 +215,7 @@ public class CharacterCamera : MonoBehaviour
         }
 
         // Nếu dùng interpolation thì nên reset distance cho khớp:
-        smoothedDistance = currentDistance = defaultDistance;
+        //smoothedDistance = currentDistance = defaultDistance;
+        lockRotationUntilInput = true; // khóa input
     }
 }
