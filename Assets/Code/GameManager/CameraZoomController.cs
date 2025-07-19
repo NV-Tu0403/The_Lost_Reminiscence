@@ -47,7 +47,13 @@ public class CameraZoomController : MonoBehaviour
         originalCamPos = targetCamera.transform.position;
     }
 
-    public async Task PerformZoomSequence(int targetIndex)
+    /// <summary>
+    /// zoom vào
+    /// </summary>
+    /// <param name="targetIndex"></param>
+    /// <param name="logicBeforeZoom"></param>
+    /// <returns></returns>
+    public async Task PerformZoomSequence(int targetIndex, Func<Task> logicBeforeZoom = null, bool ZoomIn = true)
     {
         if (listTargetObj == null || listTargetObj.Count <= targetIndex)
         {
@@ -55,35 +61,71 @@ public class CameraZoomController : MonoBehaviour
             return;
         }
 
-        // đợi zoomDelay giây trước khi bắt đầu zoom
         await Task.Delay(TimeSpan.FromSeconds(zoomDelay));
         ZoomState = true;
 
-        //// Trigger map load (hidden)
-        CoreEvent.Instance.triggerContinueSession();
+        // Logic async bên ngoài truyền vào
+        if (logicBeforeZoom != null)
+            await logicBeforeZoom.Invoke();
 
-        // Move & zoom camera
         Transform target = listTargetObj[targetIndex];
         Vector3 zoomPos = target.position + offsetFromTarget;
 
-        Sequence zoomIn = DOTween.Sequence();
-        zoomIn.Append(targetCamera.transform.DOMove(zoomPos, zoomDuration).SetEase(Ease.InOutSine));
-        zoomIn.Join(targetCamera.DOFieldOfView(targetFOV, zoomDuration).SetEase(Ease.InOutSine));
+        if (ZoomIn)
+        {
+            Sequence zoom = DOTween.Sequence();
+            zoom.Append(targetCamera.transform.DOMove(zoomPos, zoomDuration).SetEase(Ease.InOutSine));
+            zoom.Join(targetCamera.DOFieldOfView(targetFOV, zoomDuration + 2.8f).SetEase(Ease.InOutSine));
 
-        await zoomIn.AsyncWaitForCompletion();
+            await zoom.AsyncWaitForCompletion(); await Task.Delay(300);
 
-        // [Optional] Có thể thêm delay giữa zoomIn và zoomOut nếu cần
-        await Task.Delay(300); // Ví dụ: giữ trạng thái zoom 0.3 giây
+            targetCamera.transform.position = originalCamPos;
+            targetCamera.fieldOfView = originalFOV;
+        }
+        else
+        {
+            targetCamera.transform.position = zoomPos;
+            targetCamera.fieldOfView = targetFOV;
 
-        // Trả camera về trạng thái ban đầu
-        Sequence zoomOut = DOTween.Sequence();
-        zoomOut.Append(targetCamera.transform.DOMove(originalCamPos, zoomDuration).SetEase(Ease.InOutSine));
-        zoomOut.Join(targetCamera.DOFieldOfView(originalFOV, zoomDuration).SetEase(Ease.InOutSine));
+            await Task.Delay(300);
 
-        //await zoomOut.AsyncWaitForCompletion();
+            Sequence zoom = DOTween.Sequence();
+            zoom.Append(targetCamera.transform.DOMove(originalCamPos, zoomDuration).SetEase(Ease.InOutSine));
+            zoom.Join(targetCamera.DOFieldOfView(originalFOV, zoomDuration / 2.8f).SetEase(Ease.InOutSine));
 
+            //await zoom.AsyncWaitForCompletion();
+            //await Task.Delay(30);
+        }
         ZoomState = false;
 
-        Debug.Log("Zoom sequence complete. Gameplay can resume.");
+    }
+
+    public Task PerformZoomSequence(int targetIndex, Action logicBeforeZoom, bool ZoomIn)
+    {
+        // Chuyển Action → Func<Task> bằng cách đóng gói lại
+        Func<Task> wrapped = () =>
+        {
+            logicBeforeZoom?.Invoke();
+            return Task.CompletedTask;
+        };
+
+        return PerformZoomSequence(targetIndex, wrapped, ZoomIn);
+    }
+
+    /// <summary>
+    /// Zoom vào một vị trí mục tiêu với FOV cụ thể.
+    /// WaitForCompletion = true: Chờ hoàn thành trước khi tiếp tục
+    /// </summary>
+    /// <param name="targetPos"></param>
+    /// <param name="targetFOV"></param>
+    /// <param name="WaitForCompletion"></param>
+    /// <returns></returns>
+    public async Task ZoomToTargetAsync(Vector3 targetPos, float targetFOV, bool WaitForCompletion = true)
+    {
+        Sequence zoom = DOTween.Sequence();
+        zoom.Append(targetCamera.transform.DOMove(targetPos, zoomDuration).SetEase(Ease.InOutSine));
+        zoom.Join(targetCamera.DOFieldOfView(targetFOV, zoomDuration * 2).SetEase(Ease.InOutSine));
+
+        await zoom.AsyncWaitForCompletion();
     }
 }

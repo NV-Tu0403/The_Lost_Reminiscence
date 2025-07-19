@@ -65,7 +65,6 @@ public class CoreInput : CoreEventListenerBase
             throw;
         }
 
-
     }
 
     private void GetInput(CoreInputType input)

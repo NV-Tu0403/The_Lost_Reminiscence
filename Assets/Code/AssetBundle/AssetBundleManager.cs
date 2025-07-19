@@ -2,7 +2,6 @@
 using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.UI;
 using TMPro;
 
 public class AssetBundleManager : MonoBehaviour

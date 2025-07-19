@@ -76,7 +76,7 @@ public class SceneController : MonoBehaviour
             {
                 var asyncOp = SceneManager.UnloadSceneAsync(sceneName);
                 yield return new WaitUntil(() => asyncOp.isDone);
-                Debug.Log($"Unloaded scene: {sceneName}");
+                //Debug.Log($"Unloaded scene: {sceneName}");
             }
         }
         loadedScenes.RemoveAll(scene => !ExcludedScenes.Contains(scene));
