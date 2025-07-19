@@ -19,8 +19,11 @@ public class Core : CoreEventListenerBase
 
     public string CurrentCoreState;
     public GameObject MainMenu;
-    public GameObject menuCamera;
-    public GameObject characterCamera;
+
+    [Header("Camera")]
+    public GameObject menuCameraObj;
+    public GameObject characterCameraObj;
+    public Camera _characterCamera;
 
     /// <summary>
     /// Các đối tượng sẽ được bật khi ở Scene Menu
@@ -47,8 +50,8 @@ public class Core : CoreEventListenerBase
         base.Awake();
         _stateMachine = new StateMachine();
         _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
+        TryInitializeCamera();
         _cameraZoomController = CameraZoomController.Instance;
-        //TryInitializeCamera();
     }
 
     private void Start()
@@ -67,7 +70,8 @@ public class Core : CoreEventListenerBase
             ActiveMenu(false, false);
         }
 
-        ActiveMouseCursor();
+        bool ShowCursor = CurrentCoreState != CoreStateType.InSessionState.ToString() || IsDebugMode;
+        ActiveMouseCursor(ShowCursor);
     }
 
     public override void RegisterEvent(CoreEvent e)
@@ -114,20 +118,23 @@ public class Core : CoreEventListenerBase
     /// </summary>
     private void TryInitializeCamera()
     {
-
-        if (menuCamera == null)
+        if (menuCameraObj == null)
         {
             GameObject[] all = Resources.FindObjectsOfTypeAll<GameObject>();
-            menuCamera = all.FirstOrDefault(obj => obj.name == "MenuCameras");
+            menuCameraObj = all.FirstOrDefault(obj => obj.name == "MenuCameras");
             //Debug.Log("MenuCamera found!");
         }
-        if (characterCamera == null)
+        if (characterCameraObj == null)
         {
-            GameObject[] all = Resources.FindObjectsOfTypeAll<GameObject>();
-            characterCamera = all.FirstOrDefault(obj => obj.name == "CharacterCamera(Clone)");
-            //Debug.Log("CharacterCamera found!");
+            characterCameraObj = FindObjectsByType<CharacterCamera>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .Select(cam => cam.gameObject)
+                .FirstOrDefault();
+            if (characterCameraObj != null)
+            {
+                //_characterCamera = characterCameraObj.GetComponent<CharacterCamera>();
+                _characterCamera = characterCameraObj.GetComponent<Camera>();
+            }
         }
-
     }
 
     /// <summary>
@@ -135,15 +142,15 @@ public class Core : CoreEventListenerBase
     /// </summary>
     private void SetUpCamera()
     {
-        if (menuCamera != null && characterCamera != null)
+        if (menuCameraObj != null && characterCameraObj != null)
         {
-            if (!menuCamera.activeSelf)
+            if (!menuCameraObj.activeSelf)
             {
-                menuCamera.SetActive(true);
+                menuCameraObj.SetActive(true);
             }
             else
             {
-                characterCamera.gameObject.SetActive(false);
+                characterCameraObj.gameObject.SetActive(false);
             }
         }
     }
@@ -176,8 +183,8 @@ public class Core : CoreEventListenerBase
     /// <param name="oke"></param>
     public void ActiveMenu(bool MenuOke, bool ObjOke)
     {
-        characterCamera.SetActive(!MenuOke);
-        menuCamera.SetActive(MenuOke);
+        characterCameraObj.SetActive(!MenuOke);
+        menuCameraObj.SetActive(MenuOke);
         MainMenu.SetActive(MenuOke);
         StartCoroutine(ActiveObjMenu(ObjOke));
 
@@ -191,39 +198,50 @@ public class Core : CoreEventListenerBase
     /// <returns></returns>
     public IEnumerator ActiveObjMenu(bool oke)
     {
-        foreach (var obj in ObjOnMenu)
+        if ((ObjOnMenu != null))
         {
-            if (obj != null)
-                obj.SetActive(oke);
+            foreach (var obj in ObjOnMenu)
+            {
+                if (obj != null)
+                    obj.SetActive(oke);
+            }
         }
-        foreach (var obj in ObjOffMenu)
+        if (ObjOffMenu != null)
         {
-            if (obj != null)
-                obj.SetActive(!oke);
+            foreach (var obj in ObjOffMenu)
+            {
+                if (obj != null)
+                    obj.SetActive(!oke);
+            }
         }
 
         yield return new WaitForSeconds(0.2f);
     }
 
-    private void ActiveMouseCursor()
+    /// <summary>
+    /// True: Bật.
+    /// False: Tắt.
+    /// </summary>
+    /// <param name="oke"></param>
+    private void ActiveMouseCursor(bool oke)
     {
-        bool ShowCursor = CurrentCoreState != CoreStateType.InSessionState.ToString() || IsDebugMode;
+        //bool ShowCursor = CurrentCoreState != CoreStateType.InSessionState.ToString() || IsDebugMode;
 
         if (IsDebugMode)
         {
-            ShowCursor = false;
+            oke = false;
         }
 
-        if (ShowCursor)
+        if (oke)
         {
             Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            Cursor.visible = oke;
             //Debug.Log("Cursor is visible and unlocked.");
         }
         else
         {
             Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            Cursor.visible = !oke;
         }
     }
 
@@ -231,10 +249,6 @@ public class Core : CoreEventListenerBase
     {
         // vì hiện tại Event NewSession không được gọi bới Core Input nên SetState ở đây cho NewSession
         _stateMachine.SetState(new InSessionState(_stateMachine, _coreEvent));
-        if (!_cameraZoomController.ZoomState) // chỉ tắt menu nếu camera không đang zoom/zoom xong
-        {
-            ActiveMenu(false, false);
-        }
     }
 
     private void ContinueSession()
@@ -274,21 +288,6 @@ public class Core : CoreEventListenerBase
         //StartCoroutine(ActiveObjMenu(true));
     }
 
-    //public void TurnOnMenu()
-    //{
-    //    menuCamera.SetActive(true);
-    //    MainMenu.SetActive(true);
-    //    characterCamera.SetActive(false);
-
-    //}
-
-    //public void TurnOffMenu()
-    //{
-    //    menuCamera.SetActive(false);
-    //    MainMenu.SetActive(false);
-    //    StartCoroutine(ActiveObjMenuCoroutine(false));
-    //    characterCamera.SetActive(true);
-    //}
 
     private void QuitGame()
     {

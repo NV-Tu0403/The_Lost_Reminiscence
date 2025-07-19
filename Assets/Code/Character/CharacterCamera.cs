@@ -1,7 +1,7 @@
 ﻿using DuckLe;
 using UnityEngine;
 
-public class CharacterCamera : Core
+public class CharacterCamera : MonoBehaviour
 {
     [SerializeField] private Transform target;
     [SerializeField] private float rotationSpeed = 2.0f;
@@ -185,5 +185,22 @@ public class CharacterCamera : Core
             transform.position = desiredPosition;
             transform.rotation = rotation;
         }
+    }
+
+    public void ApplySavedTransform(Vector3 position, Quaternion rotation, float fov = 60f)
+    {
+        transform.position = position;
+        transform.rotation = rotation;
+
+        yaw = rotation.eulerAngles.y;
+        pitch = rotation.eulerAngles.x;
+
+        if (mainCamera != null)
+        {
+            mainCamera.fieldOfView = fov;
+        }
+
+        // Nếu dùng interpolation thì nên reset distance cho khớp:
+        smoothedDistance = currentDistance = defaultDistance;
     }
 }

@@ -112,7 +112,7 @@ namespace DuckLe
             }
             else
             {
-                Debug.LogError("Another instance of PlayerController already exists. Destroying this instance.");
+                Debug.LogError("Du ma. đã tồn tại Player hoặc Core ở đâu đó ròi, kiểm tra lại lai Scene đi tk ngu.");
                 Destroy(gameObject);
             }
 

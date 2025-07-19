@@ -302,8 +302,10 @@
             {
                 case UIActionType.NewSession:
                     await TurnToPage(item.targetPage, false);
-                    //await cameraZoomController.PerformZoomSequence(0);
-                    CoreEvent.Instance.triggerNewSession();
+                    Core.Instance.ActiveMenu(true, false);
+                    await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerNewSession(), true);
+                    await TurnToPage(7, false);
+                    Core.Instance.ActiveMenu(false, false);
                     break;
                 case UIActionType.SavePanel:
                     await TurnToPage(item.targetPage, true);
@@ -340,13 +342,12 @@
                     if (!string.IsNullOrWhiteSpace(ProfessionalSkilMenu.Instance.selectedSaveFolder))// Iem tà đạo (CHƯA CÓ TG FIX)
                     {
                         Core.Instance.ActiveMenu(true, false);
-                        await cameraZoomController.PerformZoomSequence(0);
+                        await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerContinueSession(), true);
                         Core.Instance.ActiveMenu(false, false);
-                        if (!cameraZoomController.ZoomState) 
+                        if (!cameraZoomController.ZoomState)
                         {
                             await TurnToPage(item.targetPage, false);
                         }
-                        //CoreEvent.Instance.triggerContinueSession();
                     }
                     break;
                 case UIActionType.RefreshSaveList:
@@ -372,7 +373,7 @@
                     break;
                 case UIActionType.QuitSesion:
                     await TurnToPage(item.targetPage, true);
-                    CoreEvent.Instance.triggerQuitSession();
+                    await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
                     break;
             }
         }
