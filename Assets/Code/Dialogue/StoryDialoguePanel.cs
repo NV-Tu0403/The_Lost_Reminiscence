@@ -30,6 +30,11 @@ namespace Code.Dialogue
         public void ShowDialogue(DialogueNodeSO rootNode, Action onEnd)
         {
             EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
+            
+            // Hiện chuột
+            Core.Instance.IsDialoguePlaying = true;
+            Core.Instance.ActiveMouseCursor(true);
+            
             gameObject.SetActive(true);
             onDialogueEnd = onEnd;
 
@@ -110,6 +115,10 @@ namespace Code.Dialogue
         /// </summary>
         private void EndDialogue()
         {
+            // Tắt chuột
+            Core.Instance.IsDialoguePlaying = false;
+            Core.Instance.ActiveMouseCursor(false);
+            
             StopBlinking(ref blinkNextTween);
             nextButton.onClick.RemoveAllListeners();
             skipButton.onClick.RemoveAllListeners();
