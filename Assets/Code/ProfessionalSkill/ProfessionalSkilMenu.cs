@@ -21,7 +21,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
 
     private Core _core;
-    private string lastSelectedSaveFolder;  
+    private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
     public string SelectedSaveImagePath;
 
@@ -176,6 +176,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             IsContinueEnabled = isContinueEnabled
         };
     }
+    public void RefreshSaveImage(string currentSaveFolder)
+    {
+        string imagePath = Path.Combine(currentSaveFolder, "screenshot.png");
+        SelectedSaveImagePath = File.Exists(imagePath) ? imagePath : null;
+        ScreenshotDisplayer.Instance.LoadScreenshotToPlane(SelectedSaveImagePath);
+    }
 
     private IEnumerator RetryRefreshSaveListAfterDelay()
     {
@@ -198,12 +204,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         PlayerCheckPoint.Instance.ApplyLoadedPosition();
     }
-
-    //private void UpdateCurrentSaveText()
-    //{
-    //    if (currentSaveText == null) return;
-    //    currentSaveText.text = string.IsNullOrEmpty(lastSelectedSaveFolder) ? "Current Save: None" : $"Current Save: {Path.GetFileName(lastSelectedSaveFolder)}";
-    //}
     #endregion
 
     #region nghiep vụ 2
@@ -314,10 +314,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         //    Debug.Log($"[ProfessionalSkilMenu] OnSelectSave - {fileName}:\n{json}");
         //}
 
-        string imagePath = Path.Combine(folderPath, "screenshot.png");
-        SelectedSaveImagePath = File.Exists(imagePath) ? imagePath : null; // lấy thêm đường dẫn ảnh nếu có
-
-        ScreenshotDisplayer.Instance.LoadScreenshotToPlane(SelectedSaveImagePath);
+        RefreshSaveImage(folderPath);
     }
 
     /// <summary>
@@ -394,6 +391,13 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                         {
                             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
                         });
+
+                        //// Gọi lại load ảnh tại đây – sau khi ảnh mới đã được chụp xong
+                        //string imagePath = Path.Combine(currentSaveFolder, "screenshot.png");
+                        //SelectedSaveImagePath = File.Exists(imagePath) ? imagePath : null;
+                        //ScreenshotDisplayer.Instance.LoadScreenshotToPlane(SelectedSaveImagePath);
+                        RefreshSaveImage(currentSaveFolder);
+
                         Core.Instance.ActiveMenu(true, true); // bật lại menu (hoàn thành QuitSesion)
                     }
                     else
@@ -409,6 +413,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
 
         UIPage05.Instance.RefreshSaveSlots();
+
     }
 
     /// <summary>

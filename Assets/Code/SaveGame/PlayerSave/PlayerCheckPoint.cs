@@ -100,6 +100,8 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         {
             mapName = CurrentMap,
             position = new SerializableVector3(playerTransform.position),
+            playerRotation = new SerializableQuaternion(playerTransform.rotation),
+
 
             // camera 
             cameraPosition = new SerializableVector3(characterCameraTransform?.position ?? Vector3.zero),
@@ -107,7 +109,9 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             cameraFOV = characterCamera?.fieldOfView ?? 60f
         };
 
-        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}");
+        Quaternion rot = playerTransform.rotation;
+        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position},\n" +
+                  $"\nRotation (Euler): {rot.eulerAngles}");
         return JsonUtility.ToJson(data, true);
     }
 
@@ -156,12 +160,15 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         }
 
         Vector3 loadedPos = _lastLoadedData.position.ToVector3();
+        Quaternion loadedRot = _lastLoadedData.playerRotation.ToQuaternion();
 
         // Nếu có Rigidbody
         if (playerTransform.TryGetComponent(out Rigidbody rb))
         {
             rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
             rb.position = loadedPos;
+            rb.rotation = loadedRot;
         }
         // Nếu có NavMeshAgent
         else if (playerTransform.TryGetComponent(out NavMeshAgent agent))
@@ -171,6 +178,8 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         else
         {
             playerTransform.position = loadedPos;
+            playerTransform.position = loadedPos;
+            playerTransform.rotation = loadedRot;
         }
 
         if (characterCameraTransform != null && characterCamera != null)
@@ -192,7 +201,10 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         }
 
         _lastLoadedData = null;
-        //Debug.Log($"[PlayerCheckPoint] Applied position: {playerTransform.position}");
+
+        Quaternion rot = playerTransform.rotation;
+        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}," +
+                  $"\nRotation (Euler): {rot.eulerAngles}");
     }
 
     public void SetCharacterCamera(Transform camTransform, Camera cam)
@@ -262,6 +274,7 @@ public class PlayerCheckPointData
 {
     public string mapName;
     public SerializableVector3 position;
+    public SerializableQuaternion playerRotation;
 
     public SerializableVector3 cameraPosition;
     public SerializableQuaternion cameraRotation;
