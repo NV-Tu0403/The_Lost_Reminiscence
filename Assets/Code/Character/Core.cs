@@ -302,7 +302,6 @@ public class Core : CoreEventListenerBase
         //StartCoroutine(ActiveObjMenu(true));
     }
 
-
     private void QuitGame()
     {
         Debug.Log("Quitting game...");

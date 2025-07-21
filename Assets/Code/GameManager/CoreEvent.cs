@@ -54,6 +54,7 @@ public class CoreEvent : MonoBehaviour
     #region sự kiện A4
 
     public event Action<CoreStateType> OnChangeState;
+    public event Action<AccountStateType> OnAccountChangeState;
     public event Action OnKeyDown;
 
     #endregion
@@ -93,6 +94,7 @@ public class CoreEvent : MonoBehaviour
     #region trigger sự kiện A4
 
     public void TriggerChangeState(CoreStateType stateType) => OnChangeState?.Invoke(stateType);
+    public void TriggerAccountChangeState(AccountStateType accountStateType) => OnAccountChangeState?.Invoke(accountStateType);
     public void triggerKeyDown() => OnKeyDown?.Invoke();
 
     #endregion

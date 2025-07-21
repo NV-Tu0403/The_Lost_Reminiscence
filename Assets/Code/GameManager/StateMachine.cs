@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine;
 
 /// <summary>
 /// Giao diện bắt buộc Khi triển khai State.
@@ -86,6 +85,26 @@ public abstract class StateBase : IState
 
     // Bắt buộc lớp con triển khai
     public abstract void HandleAction(UIActionType action);
+}
+
+public abstract class StateAccount : IState
+{
+    protected readonly StateMachine _stateMachine;
+
+    public void HandleAction(UIActionType action)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OnEnter()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OnExit()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 
