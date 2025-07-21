@@ -16,7 +16,10 @@ namespace Code.UI.DevMode
         {
             if (Input.GetKeyDown(enableDevModeUI) && devModePanel != null)
             {
-                devModePanel.SetActive(!devModePanel.activeSelf);
+                bool isActive = !devModePanel.activeSelf;
+                devModePanel.SetActive(isActive);
+                Core.Instance.IsDevMode = isActive;
+                Core.Instance.ActiveMouseCursor(isActive);
             }
         }
     }

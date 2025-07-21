@@ -112,7 +112,7 @@ namespace DuckLe
             }
             else
             {
-                Debug.LogError("Another instance of PlayerController already exists. Destroying this instance.");
+                Debug.LogError("Du ma. đã tồn tại Player hoặc Core ở đâu đó ròi, kiểm tra lại lai Scene đi tk ngu.");
                 Destroy(gameObject);
             }
 
@@ -763,7 +763,7 @@ namespace DuckLe
 
             if (deactivateCoroutine != null)
                 StopCoroutine(deactivateCoroutine);
-            deactivateCoroutine = StartCoroutine(DeactivateAfterDelay(newItem, 1f));
+            deactivateCoroutine = StartCoroutine(DeactivateAfterDelay(newItem, 0.6f));
 
             Debug.Log($"[PlayerController] Equipped item '{newItem.name}' from ListSlot[{index}]");
             return newItem;

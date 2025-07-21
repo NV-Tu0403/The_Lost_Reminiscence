@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
@@ -10,6 +9,8 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
     public string FileName => "PlayerCheckPoint.json";
     [SerializeField] private Transform playerTransform;
     public Transform PlayerTransform => playerTransform;
+    [SerializeField] private Transform characterCameraTransform;
+    [SerializeField] private Camera characterCamera; // nếu cần lấy FOV
     public string CurrentMap { get; private set; } = "Unknown";
     private PlayerCheckPointData _lastLoadedData;
     private bool _isDirty;
@@ -30,6 +31,19 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
                 Debug.LogError("[PlayerCheckPoint] Player Transform not found!");
                 return;
             }
+        }
+    }
+
+    private void Update()
+    {
+
+        if (characterCameraTransform == null)
+        {
+            characterCameraTransform = Core.Instance?.characterCameraObj?.transform;
+        }
+        if (characterCamera == null)
+        {
+            characterCamera = Core.Instance?.characterCameraObj?.GetComponent<Camera>();
         }
     }
 
@@ -71,6 +85,11 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
     public string SaveToJson()
     {
+        if (characterCameraTransform == null || characterCamera == null)
+        {
+            Debug.LogWarning("[PlayerCheckPoint] CharacterCamera is null — save will miss camera data.");
+        }
+
         if (!ShouldSave())
         {
             Debug.LogWarning("[PlayerCheckPoint] Save skipped due to invalid state.");
@@ -80,10 +99,19 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         var data = new PlayerCheckPointData
         {
             mapName = CurrentMap,
-            position = new SerializableVector3(playerTransform.position)
+            position = new SerializableVector3(playerTransform.position),
+            playerRotation = new SerializableQuaternion(playerTransform.rotation),
+
+
+            // camera 
+            cameraPosition = new SerializableVector3(characterCameraTransform?.position ?? Vector3.zero),
+            cameraRotation = new SerializableQuaternion(characterCameraTransform?.rotation ?? Quaternion.identity),
+            cameraFOV = characterCamera?.fieldOfView ?? 60f
         };
 
-        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}");
+        Quaternion rot = playerTransform.rotation;
+        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position},\n" +
+                  $"\nRotation (Euler): {rot.eulerAngles}");
         return JsonUtility.ToJson(data, true);
     }
 
@@ -95,14 +123,32 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             return;
         }
 
-        var data = JsonUtility.FromJson<PlayerCheckPointData>(json);
-        if (ExcludedScenes.Contains(data.mapName))
-        {
-            data.mapName = "Unknown";
-        }
+        //var data = JsonUtility.FromJson<PlayerCheckPointData>(json);
+        //if (ExcludedScenes.Contains(data.mapName))
+        //{
+        //    data.mapName = "Unknown";
+        //}
 
-        _lastLoadedData = data;
-        CurrentMap = data.mapName;
+        _lastLoadedData = JsonUtility.FromJson<PlayerCheckPointData>(json);
+        CurrentMap = _lastLoadedData.mapName;
+    }
+
+    public void AssignCameraFromCore()
+    {
+        //var cameraObj = Core.Instance?.characterCameraObj;
+        //var cameraComp = cameraObj?.GetComponent<Camera>();
+
+        var cameraObj = characterCameraTransform;
+        var cameraComp = characterCamera;
+
+        if (cameraObj != null && cameraComp != null)
+        {
+            SetCharacterCamera(cameraObj.transform, cameraComp);
+        }
+        else
+        {
+            Debug.LogWarning("[PlayerCheckPoint] Failed to assign character camera from Core.");
+        }
     }
 
     public void ApplyLoadedPosition()
@@ -114,12 +160,15 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         }
 
         Vector3 loadedPos = _lastLoadedData.position.ToVector3();
+        Quaternion loadedRot = _lastLoadedData.playerRotation.ToQuaternion();
 
         // Nếu có Rigidbody
         if (playerTransform.TryGetComponent(out Rigidbody rb))
         {
             rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
             rb.position = loadedPos;
+            rb.rotation = loadedRot;
         }
         // Nếu có NavMeshAgent
         else if (playerTransform.TryGetComponent(out NavMeshAgent agent))
@@ -129,10 +178,39 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         else
         {
             playerTransform.position = loadedPos;
+            playerTransform.position = loadedPos;
+            playerTransform.rotation = loadedRot;
+        }
+
+        if (characterCameraTransform != null && characterCamera != null)
+        {
+            if (characterCamera.TryGetComponent(out CharacterCamera camLogic))
+            {
+                camLogic.ApplySavedTransform(
+                    _lastLoadedData.cameraPosition.ToVector3(),
+                    _lastLoadedData.cameraRotation.ToQuaternion(),
+                    _lastLoadedData.cameraFOV
+                );
+            }
+            else
+            {
+                characterCameraTransform.position = _lastLoadedData.cameraPosition.ToVector3();
+                characterCameraTransform.rotation = _lastLoadedData.cameraRotation.ToQuaternion();
+                characterCamera.fieldOfView = _lastLoadedData.cameraFOV;
+            }
         }
 
         _lastLoadedData = null;
-        //Debug.Log($"[PlayerCheckPoint] Applied position: {playerTransform.position}");
+
+        Quaternion rot = playerTransform.rotation;
+        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}," +
+                  $"\nRotation (Euler): {rot.eulerAngles}");
+    }
+
+    public void SetCharacterCamera(Transform camTransform, Camera cam)
+    {
+        characterCameraTransform = camTransform;
+        characterCamera = cam;
     }
 
     public void ResetPlayerPositionWord()
@@ -196,7 +274,11 @@ public class PlayerCheckPointData
 {
     public string mapName;
     public SerializableVector3 position;
-    // Thêm các trường khác nếu cần thiết, ví dụ: rotation, health, v.v.
+    public SerializableQuaternion playerRotation;
+
+    public SerializableVector3 cameraPosition;
+    public SerializableQuaternion cameraRotation;
+    public float cameraFOV;
 }
 
 /// <summary>
@@ -215,4 +297,17 @@ public struct SerializableVector3
     }
 
     public Vector3 ToVector3() => new Vector3(x, y, z);
+}
+
+[System.Serializable]
+public struct SerializableQuaternion
+{
+    public float x, y, z, w;
+
+    public SerializableQuaternion(Quaternion q)
+    {
+        x = q.x; y = q.y; z = q.z; w = q.w;
+    }
+
+    public Quaternion ToQuaternion() => new Quaternion(x, y, z, w);
 }
