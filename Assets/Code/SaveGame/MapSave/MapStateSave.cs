@@ -99,7 +99,7 @@ public class MapStateSave : MonoBehaviour, ISaveable
             if (objectStates.TryGetValue(obj.UniqueID, out var state))
             {
                 obj.ApplyState(state);
-                Debug.Log($"[MapStateSave] Applied state for object {obj.UniqueID} in map {currentMap}");   
+                //Debug.Log($"[MapStateSave] Applied state for object {obj.UniqueID} in map {currentMap}");   
             }
         }
     }
