@@ -1,3 +1,4 @@
+#nullable enable
 using UnityEngine;
 
 public enum TaskType
@@ -10,9 +11,8 @@ public enum TaskType
 public class FaTask
 {
     public TaskType Type;
-    public Vector3? TargetPosition; // Dùng cho MoveTo hoặc vị trí dùng skill
-    public string? SkillName; // Có thể null nếu không phải UseSkill
-    // Có thể thêm các trường khác nếu cần
+    public Transform? TaskPosition;
+    public string? SkillName;
 
     public FaTask(TaskType type)
     {

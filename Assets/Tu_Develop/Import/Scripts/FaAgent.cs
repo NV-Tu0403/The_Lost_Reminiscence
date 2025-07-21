@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.Collections.Generic;
+using Unity.Behavior;
 using UnityEngine;
 
 public class FaAgent : MonoBehaviour, FaInterface
 {
+    private Transform? _targetPositionHelper;
     private Dictionary<string, float> cooldownTimers = new Dictionary<string, float>();
 
     // Bổ sung TaskQueue quản lý task cho Fa
@@ -49,12 +52,16 @@ public class FaAgent : MonoBehaviour, FaInterface
             // Lệnh: move x y z
             if (float.TryParse(parts[1], out float x) && float.TryParse(parts[2], out float y) && float.TryParse(parts[3], out float z))
             {
-                var task = new FaTask(TaskType.MoveTo)
+                if (_targetPositionHelper != null)
                 {
-                    TargetPosition = new Vector3(x, y, z)
-                };
-                AddTask(task);
-                Debug.Log($"Đã thêm task MoveTo: {task.TargetPosition}");
+                    _targetPositionHelper.position = new Vector3(x, y, z);
+                    var task = new FaTask(TaskType.MoveTo)
+                    {
+                        TaskPosition = _targetPositionHelper
+                    };
+                    AddTask(task);
+                    Debug.Log($"Đã thêm task MoveTo: {_targetPositionHelper.position}");
+                }
             }
         }
         else if (parts[0].ToLower() == "useskill" && parts.Length >= 2)
@@ -66,10 +73,14 @@ public class FaAgent : MonoBehaviour, FaInterface
             };
             if (parts.Length == 5 && float.TryParse(parts[2], out float x) && float.TryParse(parts[3], out float y) && float.TryParse(parts[4], out float z))
             {
-                task.TargetPosition = new Vector3(x, y, z);
+                if (_targetPositionHelper != null)
+                {
+                    _targetPositionHelper.position = new Vector3(x, y, z);
+                    task.TaskPosition = _targetPositionHelper;
+                }
             }
             AddTask(task);
-            Debug.Log($"Đã thêm task UseSkill: {task.SkillName} tại {task.TargetPosition}");
+            Debug.Log($"Đã thêm task UseSkill: {task.SkillName} tại {task.TaskPosition?.position}");
         }
         else
         {
@@ -117,7 +128,14 @@ public class FaAgent : MonoBehaviour, FaInterface
         cooldownTimers["ProtectiveAura"] = 20f;
     }
 
-    private bool isBusy = false; // Flag đơn giản để demo trạng thái busy/idle
+    public BehaviorGraphAgent faBHA;
+
+    private void Start()
+    {
+        faBHA = GetComponent<BehaviorGraphAgent>();
+        var go = new GameObject("FaTargetPositionHelper");
+        _targetPositionHelper = go.transform;
+    }
 
     void Update()
     {
@@ -127,5 +145,54 @@ public class FaAgent : MonoBehaviour, FaInterface
         {
             cooldownTimers[key] = Mathf.Max(0, cooldownTimers[key] - Time.deltaTime);
         }
+
+        // Xử lý task: khi idle và có task thì đẩy dữ liệu vào blackboard
+        if (HasTask())
+        {
+            var task = GetNextTask();
+            if (task != null)
+            {
+                var playerTaskType = PlayerTaskType.None;
+                if (task.Type == TaskType.MoveTo)
+                {
+                    playerTaskType = PlayerTaskType.Move;
+                }
+                // Thêm các điều kiện else if cho các loại skill khác nếu cần
+                // else if (task.Type == TaskType.UseSkill) { ... }
+
+                faBHA.BlackboardReference.SetVariableValue("TaskFromPlayer", playerTaskType);
+
+                // Nếu TargetPosition là thì cần kiểm tra null
+                if (task.TaskPosition != null)
+                    faBHA.BlackboardReference.SetVariableValue("TaskPosition", task.TaskPosition.position);
+                else
+                    faBHA.BlackboardReference.SetVariableValue("TaskPosition", Vector3.zero);
+                faBHA.BlackboardReference.SetVariableValue("SkillName", task.SkillName ?? "");
+                faBHA.BlackboardReference.SetVariableValue("TaskType", task.Type.ToString());
+                faBHA.BlackboardReference.SetVariableValue("PlayerControl", true);
+            }
+        }
     }
+
+    public bool ActivePlayerControl(bool v)
+    {
+        try
+        {
+            if (v)
+            {
+                faBHA.BlackboardReference.SetVariableValue("PlayerControl", true);
+            }
+            else
+            {
+                faBHA.BlackboardReference.SetVariableValue("PlayerControl", false);
+            }
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Lỗi khi thay đổi chế độ chỉ huy NPC: {ex.Message}");
+            return false;
+        }
+    }
+
 }
