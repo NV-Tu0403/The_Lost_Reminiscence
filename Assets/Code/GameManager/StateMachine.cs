@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine;
 
 /// <summary>
 /// Giao diện bắt buộc Khi triển khai State.
@@ -85,6 +84,33 @@ public abstract class StateBase : IState
     }
 
     // Bắt buộc lớp con triển khai
+    public abstract void HandleAction(UIActionType action);
+}
+
+public abstract class StateAccount : IState
+{
+    protected readonly StateMachine _stateMachine;
+    protected CoreEvent _coreEvent;
+
+    public AccountStateType StateType { get; protected set; } // state enum
+
+    protected StateAccount(StateMachine stateMachine, CoreEvent coreEvent, AccountStateType stateType)
+    {
+        _stateMachine = stateMachine;
+        _coreEvent = coreEvent;
+        StateType = stateType;
+    }
+
+    public void OnEnter()
+    {
+        _coreEvent.TriggerAccountChangeState(StateType);
+    }
+
+    public void OnExit()
+    {
+       _coreEvent.TriggerAccountChangeState(StateType);
+    }
+
     public abstract void HandleAction(UIActionType action);
 }
 

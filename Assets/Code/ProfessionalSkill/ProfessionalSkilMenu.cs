@@ -6,6 +6,10 @@ using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using Code.Procession;
+using Loc_Backend.Scripts;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 /// <summary>
 /// Điều phối các nghiệp vụ chuyên môn.
@@ -16,11 +20,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 {
     public static ProfessionalSkilMenu Instance { get; private set; }
 
-    /// <summary>
-    /// hiện dùng để test lưu trữ thư mục save gần nhất đã chọn
-    /// </summary>
-
     private Core _core;
+    public BackendSync backendSync;
+
     private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
     public string SelectedSaveImagePath;
@@ -90,8 +92,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         if (!File.Exists(userAccountsPath) ||
             JsonUtility.FromJson<UserAccountData>(File.ReadAllText(userAccountsPath)).Users.Count == 0)
         {
-            //loginPanel.SetActive(true);
             lastSelectedSaveFolder = null;
+            // set trạng thái không có tài khoản hiện tại
+            _core._accountStateMachine.SetState(new NoCurrentAccountState(_core._accountStateMachine, _coreEvent));
             Debug.Log("[Test] No users found. Showing login panel.");
         }
         else
@@ -105,13 +108,19 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     private void TryAutoLogin()
     {
-        if (UserAccountManager.Instance.TryAutoLogin(out string errorMessage))
+        if (_core._userAccountManager.TryAutoLogin(out string errorMessage))
         {
-
             lastSelectedSaveFolder = GetValidLastSaveFolder();
-            //ContinueGame_Bt.interactable = !string.IsNullOrEmpty(lastSelectedSaveFolder);
-            //UpdateCurrentSaveText();
             PlayTimeManager.Instance.StartCounting();
+
+            if (!_core._userAccountManager.IsSynced(_core._userAccountManager.currentUserBaseName))
+            {
+                _core._accountStateMachine.SetState(new NoConnectToServerState(_core._accountStateMachine, _coreEvent));
+            }
+            else
+            {
+                _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
+            }
         }
         else
         {
@@ -176,6 +185,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             IsContinueEnabled = isContinueEnabled
         };
     }
+
     public void RefreshSaveImage(string currentSaveFolder)
     {
         string imagePath = Path.Combine(currentSaveFolder, "screenshot.png");
@@ -479,6 +489,273 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.LogError($"[CaptureScreenshotToFolder] Failed to save screenshot: {ex.Message}");
             onComplete?.Invoke(false);
         }
+    }
+
+    #endregion
+
+    #region Nghiệp vụ 3
+
+    /// <summary>
+    /// đăng ký tài khoản mới.
+    /// </summary>
+    private void RegisterAccount(string userName, string passWord)
+    {
+        try
+        {
+            if (_core._userAccountManager.CreateAccount(userName, passWord, out string errorMessage))
+            {
+                if (!_core._userAccountManager.IsSynced(userName))
+                {
+                    LoginAccount(userName, passWord); // tự đăng nhập ngay sau khi đăng ký thành công
+                    _core._accountStateMachine.SetState(new NoConnectToServerState(_core._accountStateMachine, _coreEvent));
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"[RegisterAccount] Error during account registration: {e.Message}", e);
+        }
+    }
+
+    /// <summary>
+    /// đăng nhập thủ công
+    /// </summary>
+    private void LoginAccount(string userName, string passWord)
+    {
+        try
+        {
+            if (_core._userAccountManager.Login(userName, passWord, out string errorMessage))
+            {
+                if (!_core._userAccountManager.IsSynced(userName))
+                {
+                    _core._accountStateMachine.SetState(new NoConnectToServerState(_core._accountStateMachine, _coreEvent));
+                }
+                else
+                {
+                    _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
+                }
+            }
+        }
+        catch (Exception e)
+        {
+
+            throw new Exception($"[LoginAccount] Error during login: {e.Message}", e);
+        }
+    }
+
+    private void LogoutAccount()
+    {
+        if (_core._userAccountManager.Logout(out string errorMessage))
+        {
+            lastSelectedSaveFolder = null;
+            selectedSaveFolder = null;
+            _core._accountStateMachine.SetState(new NoCurrentAccountState(_core._accountStateMachine, _coreEvent));
+        }
+        else
+        {
+            Debug.LogError($"[LogoutAccount] Failed to logout: {errorMessage}");
+        }
+    }
+
+    private void SyncToServer(string userName, string passWord, string email)
+    {
+        try
+        {
+            // yêu cầu đăng nhập lại trước khi đồng bộ
+            if (!_core._userAccountManager.Login(userName, passWord, out string errorMessage))
+            {
+                Debug.LogWarning($"Cloud register login check failed: {errorMessage}");
+                return;
+            }
+
+            // kiểm tra email format (cơ bản) (không phải iem dành việc đâu nah chỉ là iem không muống server phải bỏ thêm băng thông để xử lí mấy lỗi vặt thôi)
+            if (string.IsNullOrEmpty(email) || !email.Contains("@"))
+            {
+                Debug.LogWarning("Invalid email for cloud register");
+                return;
+            }
+
+            // yêu cầu đăng ký OTP để đồng bộ Account to Server
+            StartCoroutine(backendSync.RequestCloudRegister(userName, passWord, email, (success, message) =>
+            {
+                if (success)
+                {
+                    _core._accountStateMachine.SetState(new ConectingServer(_core._accountStateMachine, _coreEvent));
+                    Debug.Log("Cloud register OTP sent");
+                }
+                else
+                {
+
+                    Debug.LogWarning($"Cloud register failed: {message}");
+                }
+            }));
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"[YsncToServer] Error during cloud registration: {e.Message}", e);
+        }
+    }
+
+    private void OnOtp(string otp, string userName)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(otp))
+            {
+                Debug.LogWarning("OTP is null or empty");
+                return;
+            }
+
+            StartCoroutine(backendSync.VerifyOtp(userName, otp, (success, message) =>
+            {
+                if (success)
+                {
+                    if (_core._userAccountManager.MarkAsSynced(userName))
+                    {
+                        _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Failed to mark user as synced after OTP verification");
+                    }
+                    Debug.Log("Cloud registration verified");
+                }
+                else
+                {
+                    Debug.LogWarning($"OTP verification failed: {message}");
+                }
+            }));
+        }
+        catch (Exception e)
+        {
+
+            throw new Exception($"[OnOtp] Error during OTP verification: {e.Message}", e);
+        }
+    }
+
+    public async Task<bool> BackUpSaveItemAsync(string folderPath)
+    {
+        if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
+        {
+            Debug.LogError($"[BackUpSaveItem] Invalid folder path: {folderPath}");
+            return false;
+        }
+
+        try
+        {
+            string rootBackupDir = Path.Combine(Application.persistentDataPath, "User_DataGame", "BackUpTray");
+            Directory.CreateDirectory(rootBackupDir);
+
+            // Tên thư mục backup có timestamp
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string folderName = Path.GetFileName(folderPath);
+            string backupTargetPath = Path.Combine(rootBackupDir, $"{folderName}_backup_{timestamp}");
+
+            // Xoá nếu đã tồn tại
+            if (Directory.Exists(backupTargetPath))
+            {
+                Directory.Delete(backupTargetPath, true);
+            }
+
+            await Task.Run(() =>
+            {
+                CopyDirectory(folderPath, backupTargetPath);
+            });
+
+            Debug.Log($"[BackUpSaveItem] Backup thành công: {backupTargetPath}");
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[BackUpSaveItem] Lỗi khi backup: {e.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Sao chép toàn bộ nội dung của thư mục nguồn sang thư mục đích, bao gồm cả các thư mục con và tập tin bên trong.
+    /// </summary>
+    /// <param name="sourceDir"></param>
+    /// <param name="destDir"></param>
+    private void CopyDirectory(string sourceDir, string destDir)
+    {
+        Directory.CreateDirectory(destDir);
+
+        foreach (string filePath in Directory.GetFiles(sourceDir))
+        {
+            string destFile = Path.Combine(destDir, Path.GetFileName(filePath));
+            File.Copy(filePath, destFile, true);
+        }
+
+        foreach (string dirPath in Directory.GetDirectories(sourceDir))
+        {
+            string destSubDir = Path.Combine(destDir, Path.GetFileName(dirPath));
+            CopyDirectory(dirPath, destSubDir);
+        }
+    }
+
+    /// <summary>
+    /// Xoá toàn bộ nội dung trong thư mục BackUpTray và tạo lại thư mục trống.
+    /// </summary>
+    /// <returns></returns>
+    private async Task<bool> ClearBackupTrayAsync()
+    {
+        string rootBackupDir = Path.Combine(Application.persistentDataPath, "User_DataGame", "BackUpTray");
+
+        if (!Directory.Exists(rootBackupDir))
+        {
+            Debug.LogWarning("[ClearBackupTrayAsync] Backup tray does not exist.");
+            return false;
+        }
+
+        try
+        {
+            await Task.Run(() =>
+            {
+                // Xoá toàn bộ
+                Directory.Delete(rootBackupDir, true);
+                // Tạo lại trống
+                Directory.CreateDirectory(rootBackupDir);
+            });
+
+            Debug.Log("[ClearBackupTrayAsync] Backup tray cleared successfully.");
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[ClearBackupTrayAsync] Error clearing backup tray: {e.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Phân tích tên thư mục backup để lấy tên gốc và timestamp.
+    /// </summary>
+    /// <param name="folderName"></param>
+    /// <returns></returns>
+    public static (string originalName, string backupTimestamp) ParseBackupFolderName(string folderName)
+    {
+        // Regex: match _backup_yyyyMMdd_HHmmss ở cuối
+        var match = Regex.Match(folderName, @"^(.*)(_backup_\d{8}_\d{6})$");
+
+        if (match.Success)
+        {
+            string originalName = match.Groups[1].Value;
+            string backupTimestamp = match.Groups[2].Value;
+            return (originalName, backupTimestamp);
+        }
+        else
+        {
+            // Không match, trả lại nguyên tên
+            return (folderName, string.Empty);
+        }
+
+
+        //string folder = "MySave_backup_20250720_160001";
+        //var result = ParseBackupFolderName(folder);
+
+        //Debug.Log($"Original name: {result.originalName}");       // "MySave"
+        //Debug.Log($"Backup timestamp: {result.backupTimestamp}"); // "_backup_20250720_160001"
     }
 
     #endregion

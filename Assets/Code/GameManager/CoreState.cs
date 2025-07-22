@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-
+﻿
 /// <summary>
 /// Trạng thái khi đang ở trong menu chính.
 /// 

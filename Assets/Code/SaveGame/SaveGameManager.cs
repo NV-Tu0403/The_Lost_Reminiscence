@@ -132,7 +132,6 @@ public class SaveGameManager : MonoBehaviour
         }
     }
 
-
     private bool SaveAllToTempFolder(string tempFolderPath)
     {
         bool hasError = false;
