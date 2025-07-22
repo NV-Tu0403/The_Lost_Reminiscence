@@ -90,21 +90,28 @@ public abstract class StateBase : IState
 public abstract class StateAccount : IState
 {
     protected readonly StateMachine _stateMachine;
+    protected CoreEvent _coreEvent;
 
-    public void HandleAction(UIActionType action)
+    public AccountStateType StateType { get; protected set; } // state enum
+
+    protected StateAccount(StateMachine stateMachine, CoreEvent coreEvent, AccountStateType stateType)
     {
-        throw new NotImplementedException();
+        _stateMachine = stateMachine;
+        _coreEvent = coreEvent;
+        StateType = stateType;
     }
 
     public void OnEnter()
     {
-        throw new NotImplementedException();
+        _coreEvent.TriggerAccountChangeState(StateType);
     }
 
     public void OnExit()
     {
-        throw new NotImplementedException();
+       _coreEvent.TriggerAccountChangeState(StateType);
     }
+
+    public abstract void HandleAction(UIActionType action);
 }
 
 

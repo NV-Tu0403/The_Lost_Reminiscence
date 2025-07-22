@@ -45,7 +45,16 @@ public enum UIActionType
 
     QuitSesion,
     SaveSesion,
-    RefreshSaveList
+    RefreshSaveList,
+
+
+    Login,
+    Register,
+    Logout,
+    ConnectToServer,
+    ConnectingToServer,
+    ysncFileSave
+
 }
 
 public enum KeyCoreInputType

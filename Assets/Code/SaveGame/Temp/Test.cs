@@ -494,7 +494,7 @@ public class Test : MonoBehaviour
         Loading(true);
         try
         {
-            userAccountManager.Logout();
+            userAccountManager.Logout(out string errorMessage);
             lastSelectedSaveFolder = null;
             ContinueGame_Bt.interactable = false;
             NewGame_Bt.interactable = false;
