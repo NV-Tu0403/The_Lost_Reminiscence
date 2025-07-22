@@ -10,6 +10,15 @@ public enum CoreStateType
     PauseSessionState
 }
 
+public enum AccountStateType
+{
+    NoCurrentAccount,       // hệ thống không tự đăng nhập được
+    NoConnectToServer,      // đã có Account và chưa connect
+    ConectingServer,
+    HaveConnectToServer,    // đã connect
+
+}
+
 /// <summary>
 /// Các loại hành động trong giao diện người dùng.
 /// </summary>
@@ -36,7 +45,16 @@ public enum UIActionType
 
     QuitSesion,
     SaveSesion,
-    RefreshSaveList
+    RefreshSaveList,
+
+
+    Login,
+    Register,
+    Logout,
+    ConnectToServer,
+    ConnectingToServer,
+    ysncFileSave
+
 }
 
 public enum KeyCoreInputType
