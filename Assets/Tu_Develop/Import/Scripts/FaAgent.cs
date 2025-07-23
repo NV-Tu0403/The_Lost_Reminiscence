@@ -5,48 +5,51 @@ using UnityEngine;
 
 public class FaAgent : MonoBehaviour, FaInterface
 {
+    [Header("References")] public GameObject? playerObject;
     private Transform? _targetPositionHelper;
-    private Dictionary<string, float> cooldownTimers = new Dictionary<string, float>();
-
+    private readonly Dictionary<string, float> _cooldownTimers = new Dictionary<string, float>();
     // Bổ sung TaskQueue quản lý task cho Fa
-    public TaskQueue taskQueue = new TaskQueue();
-
+    private readonly TaskQueue _taskQueue = new TaskQueue();
     // Hàm thêm task vào queue
     public void AddTask(FaTask task)
     {
-        taskQueue.AddTask(task);
+        _taskQueue.AddTask(task);
     }
-
     // Hàm lấy task tiếp theo
     public FaTask? GetNextTask()
     {
-        return taskQueue.GetNextTask();
+        return _taskQueue.GetNextTask();
     }
-
     // Kiểm tra còn task không
     public bool HasTask()
     {
-        return taskQueue.HasTask();
+        return _taskQueue.HasTask();
     }
-
-    public float GetCooldownRemaining(string skillName)
-    {
-        return cooldownTimers.ContainsKey(skillName) ? cooldownTimers[skillName] : 0;
-    }
-
     public bool IsSkillAvailable(string skillName)
     {
-        return !cooldownTimers.ContainsKey(skillName) || cooldownTimers[skillName] <= 0;
+        return !_cooldownTimers.ContainsKey(skillName) || _cooldownTimers[skillName] <= 0;
+    }
+    
+    // Hàm này sẽ được gọi từ Behavior Graph để bắt đầu đếm ngược
+    public void StartSkillCooldown(string skillName, float duration)
+    {
+        if (_cooldownTimers.ContainsKey(skillName))
+        {
+            _cooldownTimers[skillName] = duration;
+        }
+        else
+        {
+            _cooldownTimers.Add(skillName, duration);
+        }
+        Debug.Log($"[FaAgent] Skill '{skillName}' bắt đầu cooldown {duration} giây.");
     }
 
     public void OnPlayerCommand(string command)
     {
-        // Giao tiếp từ phía player → Fa phản hồi
         Debug.Log($"Fa nhận lệnh: {command}");
-
         var parts = command.Trim().Split(' ');
         if (parts.Length == 0) return;
-
+        // MOVE
         if (parts[0].ToLower() == "move" && parts.Length == 4)
         {
             // Lệnh: move x y z
@@ -64,112 +67,123 @@ public class FaAgent : MonoBehaviour, FaInterface
                 }
             }
         }
+        // SKILL
         else if (parts[0].ToLower() == "useskill" && parts.Length >= 2)
         {
-            // Lệnh: useskill skillName [x y z]
+            var skillName = parts[1]; // Skill name/number
+            
+            // Check cooldown
+            if (!IsSkillAvailable(skillName))
+            {
+                Debug.Log($"[FaAgent] Skill '{skillName}' chưa hồi chiêu.");
+                return;
+            }
+
             var task = new FaTask(TaskType.UseSkill)
             {
-                SkillName = parts[1]
+                SkillName = skillName
             };
-            if (parts.Length == 5 && float.TryParse(parts[2], out float x) && float.TryParse(parts[3], out float y) && float.TryParse(parts[4], out float z))
+
+            if (parts.Length > 2)
             {
-                if (_targetPositionHelper != null)
+                var targetKeyword = parts[2].ToLower();
+                if (targetKeyword == "player")
                 {
-                    _targetPositionHelper.position = new Vector3(x, y, z);
-                    task.TaskPosition = _targetPositionHelper;
+                    task.TargetObject = playerObject;
                 }
+                else
+                {
+                    task.TargetObject = this.gameObject;
+                }
+                
+                AddTask(task);
+                Debug.Log($"Đã thêm task UseSkill: {task.SkillName} trên mục tiêu: {task.TargetObject?.name}");
             }
-            AddTask(task);
-            Debug.Log($"Đã thêm task UseSkill: {task.SkillName} tại {task.TaskPosition?.position}");
         }
         else
         {
-            Debug.LogWarning("Lệnh không hợp lệ. Ví dụ: 'move 1 2 3' hoặc 'useskill EgoLight' hoặc 'useskill GuideSignal 1 2 3'");
+            Debug.LogWarning("Lệnh không hợp lệ.");
         }
     }
-
-    public void UpdateLearning(float deltaTime)
-    {
-        // Cập nhật cơ chế tự học
-    }
-
-    public void UseEgoLight()
-    {
-        if (!IsSkillAvailable("EgoLight")) return;
-        // Làm chậm kẻ địch bóng tối
-        cooldownTimers["EgoLight"] = 25f;
-    }
-
-    public void UseGuideSignal(Vector3 targetPosition)
-    {
-        if (!IsSkillAvailable("GuideSignal")) return;
-        // Gọi animation + hiệu ứng ánh sáng
-        cooldownTimers["GuideSignal"] = 10f;
-    }
-
-    public void UseKnowledgeLight(Vector3 areaCenter)
-    {
-        if (!IsSkillAvailable("KnowledgeLight")) return;
-        // Chiếu sáng khu vực
-        cooldownTimers["KnowledgeLight"] = 15f;
-    }
-
-    public void UseLightRadar()
-    {
-        if (!IsSkillAvailable("LightRadar")) return;
-        // Gọi hiện vật thể ẩn
-        cooldownTimers["LightRadar"] = 12f;
-    }
-
-    public void UseProtectiveAura(GameObject target)
-    {
-        if (!IsSkillAvailable("ProtectiveAura")) return;
-        // Tạo lá chắn quanh player
-        cooldownTimers["ProtectiveAura"] = 20f;
-    }
-
-    public BehaviorGraphAgent faBHA;
+    public BehaviorGraphAgent? faBha;
 
     private void Start()
     {
-        faBHA = GetComponent<BehaviorGraphAgent>();
+        faBha = GetComponent<BehaviorGraphAgent>();
         var go = new GameObject("FaTargetPositionHelper");
         _targetPositionHelper = go.transform;
+
+        if (playerObject == null) playerObject = GameObject.Find("Player");
     }
 
     void Update()
     {
-        // Giảm cooldown mỗi frame (giữ nguyên code cũ)
-        List<string> keys = new List<string>(cooldownTimers.Keys);
+        // Giảm cooldown mỗi frame
+        List<string> keys = new List<string>(_cooldownTimers.Keys);
         foreach (string key in keys)
         {
-            cooldownTimers[key] = Mathf.Max(0, cooldownTimers[key] - Time.deltaTime);
+            _cooldownTimers[key] = Mathf.Max(0, _cooldownTimers[key] - Time.deltaTime);
         }
 
-        // Xử lý task: khi idle và có task thì đẩy dữ liệu vào blackboard
-        if (HasTask())
+        if (faBha == null) return;
+        
+        // 2. Đồng bộ hóa trạng thái cooldown LÊN Blackboard
+        // Tên skill trong C# phải khớp với tên trong hàm IsSkillAvailable
+        // Tên biến trên Blackboard phải khớp với những gì bạn đã tạo
+        faBha.BlackboardReference.SetVariableValue("IsVangSangBaoHoAvailable", IsSkillAvailable("EgoLight"));
+        faBha.BlackboardReference.SetVariableValue("IsTinHieuDanLoiAvailable", IsSkillAvailable("GuideSignal"));
+        faBha.BlackboardReference.SetVariableValue("IsAnhSangTriThucAvailable", IsSkillAvailable("KnowledgeLight"));
+        
+        // 3. Xử lý giao task (như đã sửa ở lần trước)
+        bool isGraphBusy;
+        faBha.BlackboardReference.GetVariableValue("IsTaskRunning", out isGraphBusy);
+        
+        // Chỉ xử lý task mới khi Graph rảnh và hàng đợi có task
+        if (!isGraphBusy && HasTask())
         {
             var task = GetNextTask();
             if (task != null)
             {
                 var playerTaskType = PlayerTaskType.None;
+
                 if (task.Type == TaskType.MoveTo)
                 {
                     playerTaskType = PlayerTaskType.Move;
                 }
-                // Thêm các điều kiện else if cho các loại skill khác nếu cần
-                // else if (task.Type == TaskType.UseSkill) { ... }
+                // *** PHẦN LOGIC BỊ THIẾU MÀ BẠN CẦN THÊM VÀO ***
+                else if (task.Type == TaskType.UseSkill)
+                {
+                    // Dựa vào SkillName (hiện là "1", "2", "3" từ input) để chọn đúng enum
+                    switch (task.SkillName)
+                    {
+                        case "1":
+                            playerTaskType = PlayerTaskType.TinHieuDanLoi;
+                            break;
+                        case "2":
+                            playerTaskType = PlayerTaskType.AnhSangTriThuc;
+                            break;
+                        case "3":
+                            playerTaskType = PlayerTaskType.VangSangBaoHo;
+                            break;
+                        default:
+                            Debug.LogWarning($"Skill name '{task.SkillName}' không hợp lệ!");
+                            playerTaskType = PlayerTaskType.None;
+                            break;
+                    }
+                }
 
-                faBHA.BlackboardReference.SetVariableValue("TaskFromPlayer", playerTaskType);
+                // Nếu không có task nào hợp lệ thì không làm gì cả
+                if (playerTaskType == PlayerTaskType.None) return;
 
-                // Nếu TargetPosition là thì cần kiểm tra null
+                // Đẩy dữ liệu vào Blackboard
+                faBha.BlackboardReference.SetVariableValue("TaskFromPlayer", playerTaskType);
+                
                 if (task.TaskPosition != null)
-                    faBHA.BlackboardReference.SetVariableValue("TaskPosition", task.TaskPosition.position);
-                else
-                    faBHA.BlackboardReference.SetVariableValue("TaskPosition", Vector3.zero);
-                faBHA.BlackboardReference.SetVariableValue("SkillName", task.SkillName ?? "");
-                faBHA.BlackboardReference.SetVariableValue("TaskType", task.Type.ToString());
-                faBHA.BlackboardReference.SetVariableValue("PlayerControl", true);
+                    faBha.BlackboardReference.SetVariableValue("TaskPosition", task.TaskPosition);
+                if (task.TargetObject != null)
+                    faBha.BlackboardReference.SetVariableValue("TargetObject", task.TargetObject);
+                // Bật chế độ PlayerControl để Graph nhận task
+                faBha.BlackboardReference.SetVariableValue("PlayerControl", true);
             }
         }
     }
@@ -178,14 +192,7 @@ public class FaAgent : MonoBehaviour, FaInterface
     {
         try
         {
-            if (v)
-            {
-                faBHA.BlackboardReference.SetVariableValue("PlayerControl", true);
-            }
-            else
-            {
-                faBHA.BlackboardReference.SetVariableValue("PlayerControl", false);
-            }
+            faBha?.BlackboardReference.SetVariableValue("PlayerControl", v);
             return true;
         }
         catch (System.Exception ex)
@@ -195,4 +202,49 @@ public class FaAgent : MonoBehaviour, FaInterface
         }
     }
 
+    public bool ReturnPlayerControlFromBlackBoard()
+    {
+        // Kiểm tra an toàn, phòng trường hợp BHA chưa được gán
+        if (faBha == null)
+        {
+            return false;
+        }
+
+        bool isControlled;
+        // Dùng GetVariableValue để đọc giá trị từ Blackboard
+        if (faBha.BlackboardReference.GetVariableValue("PlayerControl", out isControlled))
+        {
+            // Nếu tìm thấy biến, trả về giá trị của nó
+            return isControlled;
+        }
+
+        // Nếu không tìm thấy biến trên Blackboard, trả về false và báo lỗi
+        Debug.LogWarning("Không tìm thấy biến 'PlayerControl' trên Blackboard!");
+        return false;
+    }
+
+    #region  FaInterface
+    // Hàm này cần được sửa lại cho đúng tên và tham số như trong Interface
+    public void UseProtectiveAura(bool self) 
+    {
+        if (!IsSkillAvailable("ProtectiveAura")) return;
+        // ... logic tạo lá chắn ...
+        StartSkillCooldown("ProtectiveAura", 20f);
+    }
+
+    public void UseGuideSignal()
+    {
+        if (!IsSkillAvailable("GuideSignal")) return;
+        Debug.Log("Thực thi kỹ năng TinHieuDanLoi (GuideSignal)!");
+        StartSkillCooldown("GuideSignal", 10f);
+    }
+
+    public void UseKnowledgeLight()
+    {
+        if (!IsSkillAvailable("KnowledgeLight")) return;
+        Debug.Log("Thực thi kỹ năng AnhSangTriThuc (KnowledgeLight)!");
+        StartSkillCooldown("KnowledgeLight", 15f);
+    }
+
+    #endregion
 }
