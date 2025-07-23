@@ -19,7 +19,6 @@ public struct UIItem
     public Color hoverColor;
     public int targetPage;
     public float turnTime;
-
 }
 
 /// <summary>
@@ -41,6 +40,8 @@ public class UIPageView : MonoBehaviour
     [SerializeField] private float maxRayCastDistance = 100f; // Khoảng cách tối đa raycast
     [SerializeField] private float checkInterval = 0.1f;
     [SerializeField] private bool debugMode = false;
+
+    [Header ("Item UI")]
     [SerializeField] private UIItem[] menuItems;
 
 

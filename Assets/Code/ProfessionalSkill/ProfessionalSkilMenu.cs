@@ -10,6 +10,7 @@ using Loc_Backend.Scripts;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using TMPro;
 
 /// <summary>
 /// Điều phối các nghiệp vụ chuyên môn.
@@ -58,6 +59,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnQuitSession += () => OnQuitSession(lastSelectedSaveFolder);
 
         e.OnSelectSaveItem += (path) => OnSelectSave(path);
+
+        e.OnLogin += () => Login();
+        e.OnRegister += () => Register();
+        e.OnLogout += () => Logout();
+        e.OnConnectToServer += () => ConnectToServer();
+        e.OnConnectingToServer += () => OnOtp();
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -495,141 +502,124 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     #region Nghiệp vụ 3
 
-    /// <summary>
-    /// đăng ký tài khoản mới.
-    /// </summary>
-    private void RegisterAccount(string userName, string passWord)
+    private void Register()
     {
-        try
+        TMP_InputField[] inputs = UiPage06_C.Instance.GetInputFieldsByAction(UIActionType.Register);
+
+        if (inputs.Length < 2)
         {
-            if (_core._userAccountManager.CreateAccount(userName, passWord, out string errorMessage))
-            {
-                if (!_core._userAccountManager.IsSynced(userName))
-                {
-                    LoginAccount(userName, passWord); // tự đăng nhập ngay sau khi đăng ký thành công
-                    _core._accountStateMachine.SetState(new NoConnectToServerState(_core._accountStateMachine, _coreEvent));
-                }
-            }
+            Debug.LogError("Không đủ input field cho đăng ký (cần ít nhất 2).");
+            return;
         }
-        catch (Exception e)
+
+        string userName = inputs[0].text;
+        string passWord = inputs[1].text;
+
+        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord))
         {
-            throw new Exception($"[RegisterAccount] Error during account registration: {e.Message}", e);
+            Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
+            return;
+        }
+        _core.RegisterAccount(userName, passWord);
+
+        foreach (var input in inputs)
+        {
+            input.text = string.Empty;
         }
     }
 
-    /// <summary>
-    /// đăng nhập thủ công
-    /// </summary>
-    private void LoginAccount(string userName, string passWord)
+    private void Login()
     {
-        try
-        {
-            if (_core._userAccountManager.Login(userName, passWord, out string errorMessage))
-            {
-                if (!_core._userAccountManager.IsSynced(userName))
-                {
-                    _core._accountStateMachine.SetState(new NoConnectToServerState(_core._accountStateMachine, _coreEvent));
-                }
-                else
-                {
-                    _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
-                }
-            }
-        }
-        catch (Exception e)
-        {
+        TMP_InputField[] inputs = UiPage06_C.Instance.GetInputFieldsByAction(UIActionType.Login);
 
-            throw new Exception($"[LoginAccount] Error during login: {e.Message}", e);
+        if (inputs.Length < 2)
+        {
+            Debug.LogError("Không đủ input field cho login (cần ít nhất 2).");
+            return;
+        }
+
+        string userName = inputs[0].text;
+        string passWord = inputs[1].text;
+
+        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord))
+        {
+            Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
+            return;
+        }
+
+        
+        if (_core.LogoutAccount())
+        {
+            _core.LoginAccount(userName, passWord);
+        }
+
+        foreach (var input in inputs)
+        {
+            input.text = string.Empty;
         }
     }
 
-    private void LogoutAccount()
+    private void Logout()
     {
-        if (_core._userAccountManager.Logout(out string errorMessage))
-        {
-            lastSelectedSaveFolder = null;
-            selectedSaveFolder = null;
-            _core._accountStateMachine.SetState(new NoCurrentAccountState(_core._accountStateMachine, _coreEvent));
-        }
-        else
-        {
-            Debug.LogError($"[LogoutAccount] Failed to logout: {errorMessage}");
-        }
+        _core.LogoutAccount();
+        lastSelectedSaveFolder = null;
+        selectedSaveFolder = null;
+        UIPage05.Instance.RefreshSaveSlots();
     }
 
-    private void SyncToServer(string userName, string passWord, string email)
+    private void ConnectToServer()
     {
-        try
+        TMP_InputField[] inputs = UiPage06_C.Instance.GetInputFieldsByAction(UIActionType.ConnectToServer);
+
+        if (inputs.Length < 3)
         {
-            // yêu cầu đăng nhập lại trước khi đồng bộ
-            if (!_core._userAccountManager.Login(userName, passWord, out string errorMessage))
-            {
-                Debug.LogWarning($"Cloud register login check failed: {errorMessage}");
-                return;
-            }
-
-            // kiểm tra email format (cơ bản) (không phải iem dành việc đâu nah chỉ là iem không muống server phải bỏ thêm băng thông để xử lí mấy lỗi vặt thôi)
-            if (string.IsNullOrEmpty(email) || !email.Contains("@"))
-            {
-                Debug.LogWarning("Invalid email for cloud register");
-                return;
-            }
-
-            // yêu cầu đăng ký OTP để đồng bộ Account to Server
-            StartCoroutine(backendSync.RequestCloudRegister(userName, passWord, email, (success, message) =>
-            {
-                if (success)
-                {
-                    _core._accountStateMachine.SetState(new ConectingServer(_core._accountStateMachine, _coreEvent));
-                    Debug.Log("Cloud register OTP sent");
-                }
-                else
-                {
-
-                    Debug.LogWarning($"Cloud register failed: {message}");
-                }
-            }));
+            Debug.LogError("Không đủ input field cho login (cần ít nhất 3).");
+            return;
         }
-        catch (Exception e)
+
+        string userName = inputs[0].text;
+        string passWord = inputs[1].text;
+        string email = inputs[2].text;
+
+        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord) || string.IsNullOrWhiteSpace(email))
         {
-            throw new Exception($"[YsncToServer] Error during cloud registration: {e.Message}", e);
+            Debug.LogWarning("Tên đăng nhập hoặc mật khẩu hoặc email trống.");
+            return;
+        }
+
+        _core.SyncToServer(userName, passWord, email);
+
+        foreach (var input in inputs)
+        {
+            input.text = string.Empty;
         }
     }
-
-    private void OnOtp(string otp, string userName)
+    
+    private void OnOtp()
     {
-        try
-        {
-            if (string.IsNullOrEmpty(otp))
-            {
-                Debug.LogWarning("OTP is null or empty");
-                return;
-            }
+        string userName = _core._userAccountManager.currentUserBaseName;
 
-            StartCoroutine(backendSync.VerifyOtp(userName, otp, (success, message) =>
-            {
-                if (success)
-                {
-                    if (_core._userAccountManager.MarkAsSynced(userName))
-                    {
-                        _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
-                    }
-                    else
-                    {
-                        Debug.LogWarning("Failed to mark user as synced after OTP verification");
-                    }
-                    Debug.Log("Cloud registration verified");
-                }
-                else
-                {
-                    Debug.LogWarning($"OTP verification failed: {message}");
-                }
-            }));
+        TMP_InputField[] inputs = UiPage06_C.Instance.GetInputFieldsByAction(UIActionType.ConnectingToServer);
+
+        if (inputs.Length < 1)
+        {
+            Debug.LogError("Không đủ input field cho login (cần ít nhất 2).");
+            return;
         }
-        catch (Exception e)
-        {
 
-            throw new Exception($"[OnOtp] Error during OTP verification: {e.Message}", e);
+        string otp = inputs[0].text;
+
+        if (string.IsNullOrWhiteSpace(otp))
+        {
+            Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
+            return;
+        }
+
+        _core.VerifyOTPAccount(otp, userName);
+
+        foreach (var input in inputs)
+        {
+            input.text = string.Empty;
         }
     }
 
@@ -698,7 +688,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// Xoá toàn bộ nội dung trong thư mục BackUpTray và tạo lại thư mục trống.
     /// </summary>
     /// <returns></returns>
-    private async Task<bool> ClearBackupTrayAsync()
+    public async Task<bool> ClearBackupTrayAsync()
     {
         string rootBackupDir = Path.Combine(Application.persistentDataPath, "User_DataGame", "BackUpTray");
 

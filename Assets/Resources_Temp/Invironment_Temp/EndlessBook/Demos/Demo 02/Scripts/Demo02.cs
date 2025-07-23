@@ -289,6 +289,7 @@
 
             DeTectedMainMenu(item);
             DeTectedSave(item);
+            DetectedAccoutFuntion(item);
             DetectedPauseSession(item);
         }
 
@@ -359,7 +360,36 @@
                 case UIActionType.DeleteSaveItem:
                     UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.DeleteSaveItem);
                     break;
-                case UIActionType.DuplicateSaveItem:
+                case UIActionType.SyncFileSave:
+                    CoreEvent.Instance.triggerSyncFileSave();
+                    break;
+            }
+        }
+
+        private void DetectedAccoutFuntion(UIItem item)
+        {
+            string accountState = Core.Instance.CurrentAccountState;
+
+            switch (item.uIActionType)
+            {
+                case UIActionType.Logout:
+                    // nếu không có CurrentAccount thì cho phép đăng nhập
+                    if (accountState == AccountStateType.NoCurrentAccount.ToString()) 
+                        CoreEvent.Instance.triggerLogin();
+                    // nếu có CurrentAccount thì cho phép đăng xuất
+                    else if (accountState == AccountStateType.NoConnectToServer.ToString() || accountState == AccountStateType.HaveConnectToServer.ToString()) 
+                        CoreEvent.Instance.triggerLogout();
+                    break;
+                case UIActionType.ConnectToServer:
+                    // nếu không có CurrentAccount thì cho phép đăng kí
+                    if (accountState == AccountStateType.NoCurrentAccount.ToString())
+                        CoreEvent.Instance.triggerRegister();
+                    // nếu có CurrentAccount thì cho phép kết nối tới server bằng liên kết email
+                    if (accountState == AccountStateType.NoConnectToServer.ToString())
+                        CoreEvent.Instance.triggerConnectToServer();
+                    break;
+                case UIActionType.ConnectingToServer:
+                    CoreEvent.Instance.triggerConnectingToServer();
                     break;
             }
         }
