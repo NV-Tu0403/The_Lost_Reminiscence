@@ -86,7 +86,7 @@ public class HaveConnectToServer : StateAccount
             case UIActionType.Logout:
                 //_coreEvent.triggerLogout();
                 break;
-            case UIActionType.ysncFileSave:
+            case UIActionType.SyncFileSave:
                 //_coreEvent.triggerSyncFileSave();
                 break;
                 //default:
