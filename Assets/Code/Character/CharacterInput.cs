@@ -137,11 +137,13 @@ namespace DuckLe
         private void GetAttackInput()
         {
             //if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
-            if (Input.GetMouseButtonDown(0))
-            {
-                var PointLookAt = _pc.ReturnPoinHit();
-                Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
-            }
+            
+            // Sử dụng script PlayerTaskInput để thực hiện đẩy task cho Fa rồi.
+            // if (Input.GetMouseButtonDown(0))
+            // {
+            //     var PointLookAt = _pc.ReturnPoinHit();
+            //     Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
+            // }
 
             if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(Duckle.ThrowType.ThrowItem, 2f);
 
@@ -231,6 +233,16 @@ namespace DuckLe
             }
         }
 
+
+        #region  Methods
+        public Vector3 ReturnPointInput()
+        {
+            var pointLookAt = _pc.ReturnPoinHit();
+            Debug.Log("[PlayerInput] PointLookAt: " + pointLookAt);
+            return pointLookAt;
+        }
+        
+        #endregion
     }
 }
 //_____________________________________ ĐANG LỖI / CẦN CẢI TIẾN _____________________________________
