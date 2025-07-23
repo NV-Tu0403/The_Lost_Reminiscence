@@ -11,27 +11,30 @@ using System.Collections;
 public class Core : CoreEventListenerBase
 {
     public static Core Instance { get; private set; }
-    private StateMachine _stateMachine;
+
+    public StateMachine _stateMachine;
+    public StateMachine _accountStateMachine;
+    public UserAccountManager _userAccountManager;
     private CameraZoomController _cameraZoomController;
 
-    public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
-    public bool IsDebugMode = false;
+    #region biến cần thiết
 
     #region Lộc thêm cờ để kiểm soát trạng thái của game
     public bool IsCutscenePlaying { get; set; } = false;
     public bool IsDialoguePlaying { get; set; } = false;
     public bool IsDevMode { get; set; } = false;
-    
-    #endregion
-    
-    
-    public string CurrentCoreState;
-    public GameObject MainMenu;
 
-    [Header("Camera")]
-    public GameObject menuCameraObj;
-    public GameObject characterCameraObj;
-    public Camera _characterCamera;
+    #endregion
+
+    public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
+    public bool IsDebugMode = false;
+
+    [Header("State")]
+    public string CurrentCoreState;
+    public string CurrentAccountState;
+
+    [Header("Menu")]
+    public GameObject MainMenu;
 
     /// <summary>
     /// Các đối tượng sẽ được bật khi ở Scene Menu
@@ -43,21 +46,31 @@ public class Core : CoreEventListenerBase
     /// </summary>
     public GameObject[] ObjOffMenu;
 
+    [Header("Camera")]
+    public GameObject menuCameraObj;
+    public GameObject characterCameraObj;
+    public Camera _characterCamera;
+
+    #endregion
+
     protected override void Awake()
     {
-
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        //else
-        //{
-        //    Destroy(gameObject);
-        //}
+
+        if (_userAccountManager == null)
+        {
+            _userAccountManager = UserAccountManager.Instance;
+        }
+
         base.Awake();
         _stateMachine = new StateMachine();
+        _accountStateMachine = new StateMachine();
         _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
+        _accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
         TryInitializeCamera();
         _cameraZoomController = CameraZoomController.Instance;
     }
@@ -79,9 +92,9 @@ public class Core : CoreEventListenerBase
         }
 
         // Lộc thêm
-        if (!IsCutscenePlaying 
+        if (!IsCutscenePlaying
             && !IsDialoguePlaying
-            && !IsDevMode) 
+            && !IsDevMode)
         {
             bool ShowCursor = CurrentCoreState != CoreStateType.InSessionState.ToString() || IsDebugMode;
             ActiveMouseCursor(ShowCursor);
@@ -101,9 +114,7 @@ public class Core : CoreEventListenerBase
         e.OnQuitSession += QuitSession;
 
         e.OnChangeState += UpdateCurrentCoreState;
-
-        //e.TurnOnMenu += TurnOnMenu;
-        //e.TurnOffMenu += TurnOffMenu;
+        e.OnAccountChangeState += UpdateAccountState;
 
         e.OnQuitGame += QuitGame;
     }
@@ -120,9 +131,7 @@ public class Core : CoreEventListenerBase
         e.OnQuitSession -= QuitSession;
 
         e.OnChangeState -= UpdateCurrentCoreState;
-
-        //e.TurnOnMenu -= TurnOnMenu;
-        //e.TurnOffMenu -= TurnOffMenu;
+        e.OnAccountChangeState -= UpdateAccountState;
 
         e.OnQuitGame -= QuitGame;
     }
@@ -174,6 +183,11 @@ public class Core : CoreEventListenerBase
     {
         CurrentCoreState = stateType.ToString();
         //Debug.Log($"[Core] CurrentCoreState updated to: {CurrentCoreState}");
+    }
+    private void UpdateAccountState(AccountStateType accountStateType)
+    {
+        CurrentAccountState = accountStateType.ToString();
+        //Debug.Log($"[Core] Current Account State updated to: {accountStateType}");
     }
 
     private void UpdateStateFix()
@@ -302,7 +316,6 @@ public class Core : CoreEventListenerBase
         //StartCoroutine(ActiveObjMenu(true));
     }
 
-
     private void QuitGame()
     {
         Debug.Log("Quitting game...");
@@ -311,6 +324,17 @@ public class Core : CoreEventListenerBase
 #else
                     Application.Quit();
 #endif
+    }
+
+    private void CheckCurrentAccount()
+    {
+        if (UserAccountManager.Instance.currentUserBaseName != null)
+        {
+        }
+        else
+        {
+            Debug.LogWarning("CoreEvent Instance is null, cannot invoke OnAccountChangeState.");
+        }
     }
 }
 

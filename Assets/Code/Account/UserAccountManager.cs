@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,10 +9,11 @@ using UnityEngine;
 [System.Serializable]
 public class UserAccount
 {
-    public string UserName; // e.g., "a_20250525_153959"
-    public string BaseName; // e.g., "a"
-    public string TimeCheckIn; // e.g., "20250525_153959"
+    public string UserName; //"a_20250525_153959"
+    public string BaseName; // "a"
+    public string TimeCheckIn; // "20250525_153959"
     public string PasswordHash;
+    public bool SyncToServer = false; // Mặc định là false
 }
 
 [System.Serializable]
@@ -220,7 +221,8 @@ public class UserAccountManager : MonoBehaviour
             UserName = userName,
             BaseName = baseName,
             TimeCheckIn = timeCheckIn,
-            PasswordHash = HashPassword(password)
+            PasswordHash = HashPassword(password),
+            SyncToServer = false
         });
         SaveUserData();
 
@@ -279,10 +281,52 @@ public class UserAccountManager : MonoBehaviour
         return true;
     }
 
-    public void Logout()
+    public bool Logout(out string errorMessage)
     {
+        errorMessage = "";
         currentUserBaseName = null;
-        Debug.Log("User logged out.");
+        return true;
+    }
+
+    /// <summary>
+    /// Kiểm tra xem người dùng hiện tại có kết nối với máy chủ chưa.
+    /// trả về true nếu đã đồng bộ, false nếu chưa đồng bộ hoặc không tìm thấy người dùng.
+    /// </summary>
+    /// <returns></returns>
+    public bool IsSynced(string userName)
+    {
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogWarning("CurrentUserName is null or empty.");
+            return false;
+        }
+        var user = userData.Users.FirstOrDefault(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+        if (user == null)
+        {
+            Debug.LogWarning($"User '{userName}' not found.");
+            return false;
+        }
+        return user.SyncToServer;
+    }
+
+    /// <summary>
+    /// Đánh dấu người dùng là đã đồng bộ với máy chủ.
+    /// </summary>
+    /// <param name="userName"></param>
+    public bool MarkAsSynced(string userName)
+    {
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogWarning("UserName is null or empty.");
+            return false;
+        }
+        var user = userData.Users.FirstOrDefault(u => u.UserName == userName);
+        if (user != null)
+        {
+            user.SyncToServer = true;
+            SaveUserData();
+        }
+        return user.SyncToServer;
     }
 
     public void UpdateLastSession(string lastFileSave, double playTime)
