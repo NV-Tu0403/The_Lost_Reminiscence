@@ -117,6 +117,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         if (_core._userAccountManager.TryAutoLogin(out string errorMessage))
         {
+            UiPage06_C.Instance.ShowLogMessage(errorMessage);
             lastSelectedSaveFolder = GetValidLastSaveFolder();
             PlayTimeManager.Instance.StartCounting();
 
@@ -128,6 +129,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             {
                 _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
             }
+
+            UiPage06_C.Instance.ActiveObj(true, false, false);
+           
         }
         else
         {
@@ -508,7 +512,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (inputs.Length < 2)
         {
-            Debug.LogError("Không đủ input field cho đăng ký (cần ít nhất 2).");
+            //Debug.LogError("Không đủ input field cho đăng ký (cần ít nhất 2).");
+            UiPage06_C.Instance.ShowLogMessage("Không đủ input field cho đăng ký (cần ít nhất 2).");
             return;
         }
 
@@ -517,7 +522,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord))
         {
-            Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
+            //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
+            UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass ní.");   
             return;
         }
         _core.RegisterAccount(userName, passWord);
@@ -526,6 +532,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             input.text = string.Empty;
         }
+
     }
 
     private void Login()
@@ -534,7 +541,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (inputs.Length < 2)
         {
-            Debug.LogError("Không đủ input field cho login (cần ít nhất 2).");
+            //Debug.LogError("Không đủ input field cho login (cần ít nhất 2).");
+            UiPage06_C.Instance.ShowLogMessage("Không đủ input field cho login (cần ít nhất 2).");
             return;
         }
 
@@ -543,11 +551,11 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord))
         {
-            Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
+            //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
+            UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass ní..");
             return;
         }
 
-        
         if (_core.LogoutAccount())
         {
             _core.LoginAccount(userName, passWord);
@@ -573,7 +581,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (inputs.Length < 3)
         {
-            Debug.LogError("Không đủ input field cho login (cần ít nhất 3).");
+            //Debug.LogError("Không đủ input field cho login (cần ít nhất 3).");
+            UiPage06_C.Instance.ShowLogMessage("Không đủ input field cho đăng ký (cần ít nhất 3).");
             return;
         }
 
@@ -583,7 +592,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord) || string.IsNullOrWhiteSpace(email))
         {
-            Debug.LogWarning("Tên đăng nhập hoặc mật khẩu hoặc email trống.");
+            //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu hoặc email trống.");
+            UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass hoặc email ní..");
             return;
         }
 
@@ -611,7 +621,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (string.IsNullOrWhiteSpace(otp))
         {
-            Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
+            //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
+            UiPage06_C.Instance.ShowLogMessage("vl... OTP để trống kìa.");
             return;
         }
 
