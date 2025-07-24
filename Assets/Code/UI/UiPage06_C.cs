@@ -27,6 +27,22 @@ public struct UIUpdateObjBt
     public TMP_Text Confim;
 }
 
+[Serializable]
+public struct UpdateActiveObj
+{
+    public GameObject[] PanelInfoObj;
+    public GameObject[] PanelFuntionObj;
+
+    public GameObject[] ConnectObj;
+}
+
+[Serializable]
+public struct UpdateAccountLogPage
+{
+    public TMP_Text[] Message;
+}
+
+
 public class UiPage06_C : MonoBehaviour
 {
     public static UiPage06_C Instance { get; private set; }
@@ -47,9 +63,13 @@ public class UiPage06_C : MonoBehaviour
 
     [SerializeField] private UIInputItem[] inputItems;
 
-    [SerializeField] private UIUpdateObjBt[] updateObjects;
+    [SerializeField] private UIUpdateObjBt[] updateObjBt;
 
     [SerializeField] private UIUpdateObjInfo[] updateObjInfos;
+
+    [SerializeField] private UpdateActiveObj[] updateActiveObj;
+
+    [SerializeField] private UpdateAccountLogPage[] updateAccountLogPage;
 
     /// <summary>
     /// Lấy các trường nhập liệu từ UIInputItem theo uIActionType.
@@ -76,7 +96,7 @@ public class UiPage06_C : MonoBehaviour
     /// <param name="type"></param>
     public void UpdateTextFields(AccountStateType type)
     {
-        foreach (var obj in updateObjects)
+        foreach (var obj in updateObjBt)
         {
             if (type == AccountStateType.NoCurrentAccount)
             {
@@ -133,4 +153,63 @@ public class UiPage06_C : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Kích hoạt hoặc vô hiệu hóa các Obj UI.
+    /// </summary>
+    /// <param name="PanelInfoObj"></param>
+    /// <param name="PanelFuntionObj"></param>
+    public void ActiveObj(bool PanelInfoObj, bool PanelFuntionObj, bool connectObj)
+    {
+        foreach (var obj in updateActiveObj)
+        {
+            if (obj.PanelInfoObj != null)
+            {
+                foreach (var panel in obj.PanelInfoObj)
+                {
+                    if (panel != null)
+                    {
+                        panel.SetActive(PanelInfoObj);
+                    }
+                }
+            }
+            if (obj.PanelFuntionObj != null)
+            {
+                foreach (var panel in obj.PanelFuntionObj)
+                {
+                    if (panel != null)
+                    {
+                        panel.SetActive(PanelFuntionObj);
+                    }
+                }
+            }
+            if (obj.ConnectObj != null)
+            {
+                foreach (var connect in obj.ConnectObj)
+                {
+                    if (connect != null)
+                    {
+                        connect.SetActive(connectObj);
+                    }
+                }
+            }
+        }
+    }
+
+    public void ShowLogMessage(string message)
+    {
+        foreach (var page in updateAccountLogPage)
+        {
+            if (page.Message == null) continue;
+
+            foreach (var msg in page.Message)
+            {
+                if (msg != null)
+                {
+                    msg.text = message;
+                }
+            }
+        }
+    }
+
 }
