@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace Code.Boss
 {
@@ -16,6 +17,7 @@ namespace Code.Boss
         
         private UIConfig uiConfig;
         private bool isVisible = false;
+        private Coroutine castAnimationCoroutine;
 
         public void Initialize(BossController controller)
         {
@@ -38,7 +40,7 @@ namespace Code.Boss
                 
                 // Set colors
                 var fillImage = castSlider.fillRect.GetComponent<Image>();
-                if (fillImage != null)
+                if (fillImage != null && uiConfig != null)
                 {
                     fillImage.color = uiConfig.skillCastColor;
                 }
@@ -72,7 +74,11 @@ namespace Code.Boss
         {
             if (castSlider != null && isVisible)
             {
+                // Trực tiếp set giá trị thay vì animation phức tạp
                 castSlider.value = data.floatValue;
+                
+                // Debug để xem progress có được nhận không
+                Debug.Log($"[BossSkillCastBar] Progress updated: {data.floatValue:F2}");
             }
         }
 

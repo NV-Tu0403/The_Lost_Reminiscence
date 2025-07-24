@@ -25,7 +25,9 @@ namespace Code.Boss.States.Phase2
             
             Debug.Log("[Boss State] Entered ScreamState - Casting Scream skill");
             BossEventSystem.Trigger(BossEventType.ScreamStarted);
-            BossEventSystem.Trigger(BossEventType.SkillCasted);
+            
+            // Trigger skill cast với skill name để UI hiển thị
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Scream" });
         }
 
         public override void Update()

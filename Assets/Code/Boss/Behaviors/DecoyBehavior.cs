@@ -56,13 +56,12 @@ namespace Code.Boss
                 transform.rotation = Quaternion.LookRotation(direction);
             }
         }
+        
 
-        private void OnTriggerEnter(Collider other)
+        // Method này sẽ được gọi từ PlayerTestController thông qua BossManager
+        public void OnAttacked()
         {
-            if (other.CompareTag("Player"))
-            {
-                HandlePlayerContact();
-            }
+            HandlePlayerContact();
         }
 
         private void HandlePlayerContact()

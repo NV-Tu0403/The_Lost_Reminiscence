@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace Code.Boss
 {
@@ -16,6 +17,8 @@ namespace Code.Boss
         
         private BossController bossController;
         private UIConfig uiConfig;
+        private Coroutine healthAnimationCoroutine;
+        private Image fillImage;
 
         public void Initialize(BossController controller)
         {
@@ -34,15 +37,14 @@ namespace Code.Boss
                 healthSlider.maxValue = bossController.Config.maxHealthPerPhase;
                 healthSlider.value = bossController.Config.maxHealthPerPhase;
                 
-                // Set colors
-                var fillImage = healthSlider.fillRect.GetComponent<Image>();
-                if (fillImage != null)
+                // Get fill image reference for animations
+                fillImage = healthSlider.fillRect?.GetComponent<Image>();
+                if (fillImage != null && uiConfig != null)
                 {
                     fillImage.color = uiConfig.bossHealthColor;
                 }
             }
         }
-
 
         private void RegisterEvents()
         {
@@ -55,16 +57,42 @@ namespace Code.Boss
             int currentHealth = data.intValue;
             int maxHealth = (int)data.floatValue;
             
-            if (healthSlider != null)
-            {
-                healthSlider.maxValue = maxHealth;
-                healthSlider.value = currentHealth;
-            }
-            
+            // Update text immediately
             if (healthText != null)
             {
                 healthText.text = $"{currentHealth}/{maxHealth}";
             }
+
+            // Start smooth health bar animation
+            if (healthAnimationCoroutine != null)
+            {
+                StopCoroutine(healthAnimationCoroutine);
+            }
+            healthAnimationCoroutine = StartCoroutine(AnimateHealthBarSmooth(currentHealth, maxHealth));
+        }
+
+        private IEnumerator AnimateHealthBarSmooth(int currentHealth, int maxHealth)
+        {
+            if (healthSlider == null || uiConfig == null) yield break;
+            
+            float startValue = healthSlider.value;
+            float targetValue = currentHealth;
+            float elapsed = 0f;
+            float duration = uiConfig.uiAnimationSpeed;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                
+                // Sử dụng animation curve từ config để smooth hơn
+                float smoothT = uiConfig.uiAnimationCurve.Evaluate(t);
+                healthSlider.value = Mathf.Lerp(startValue, targetValue, smoothT);
+                
+                yield return null;
+            }
+
+            healthSlider.value = targetValue;
         }
 
         private void OnPhaseChanged(BossEventData data)

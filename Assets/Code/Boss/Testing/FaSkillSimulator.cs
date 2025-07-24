@@ -253,10 +253,6 @@ namespace Code.Boss.Testing
                         material.SetColor("_EmissionColor", Color.green * 0.5f);
                     }
                     
-                    // 4. Console log rõ ràng
-                    Debug.Log("[Fa Simulator] ===== REAL DECOY REVEALED! =====");
-                    Debug.Log($"[Fa Simulator] Real decoy is at position: {decoy.transform.position}");
-                    
                     break;
                 }
             }

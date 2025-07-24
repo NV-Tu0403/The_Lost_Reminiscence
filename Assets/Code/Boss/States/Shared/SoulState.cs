@@ -18,7 +18,9 @@ namespace Code.Boss.States.Shared
             
             Debug.Log("[Boss State] Entered SoulState - Teleporting and spawning soul");
             BossEventSystem.Trigger(BossEventType.SoulStateStarted);
-            BossEventSystem.Trigger(BossEventType.SkillCasted);
+            
+            // Trigger skill cast với skill name để UI hiển thị
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Soul Teleport" });
             
             // Calculate teleport position
             CalculateTeleportPosition();

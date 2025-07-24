@@ -23,7 +23,9 @@ namespace Code.Boss.States.Phase1
             
             Debug.Log("[Boss State] Entered DecoyState - Casting Decoy skill");
             BossEventSystem.Trigger(BossEventType.DecoyStarted);
-            BossEventSystem.Trigger(BossEventType.SkillCasted);
+            
+            // Trigger skill cast với skill name để UI hiển thị
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Decoy" });
             
             // Play decoy spawn sound
             if (config.audioConfig.decoySpawnSound != null)

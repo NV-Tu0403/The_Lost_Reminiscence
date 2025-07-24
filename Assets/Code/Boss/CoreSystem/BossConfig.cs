@@ -113,6 +113,10 @@ namespace Code.Boss
         public Color bossHealthColor = Color.red;
         public Color playerHealthColor = Color.green;
         public Color skillCastColor = Color.yellow;
+        
+        [Header("Animation Settings")]
+        public float uiAnimationSpeed = 1f; // Tốc độ animation chung cho UI
+        public AnimationCurve uiAnimationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1); // Curve cho smooth animation
     }
 
     [Serializable]
