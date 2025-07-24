@@ -53,7 +53,10 @@ public enum UIActionType
     Logout,
     ConnectToServer,
     ConnectingToServer,
-    SyncFileSave
+    SyncFileSave,
+
+    Confim,
+    Cancel,
 
 }
 

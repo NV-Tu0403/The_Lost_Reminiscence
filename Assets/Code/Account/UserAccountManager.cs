@@ -199,18 +199,18 @@ public class UserAccountManager : MonoBehaviour
         errorMessage = "";
         if (string.IsNullOrEmpty(baseName))
         {
-            errorMessage = "UserName cannot be empty!";
+            errorMessage = "điền tên vào tk mù!";
             return false;
         }
         if (string.IsNullOrEmpty(password))
         {
-            errorMessage = "Password cannot be empty!";
+            errorMessage = "điền pass vào tk khung!";
             return false;
         }
 
         if (userData.Users.Any(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase)))
         {
-            errorMessage = $"UserName '{baseName}' is already used!";
+            errorMessage = $"UserName '{baseName}' được dùng rồi!";
             return false;
         }
 
@@ -237,20 +237,20 @@ public class UserAccountManager : MonoBehaviour
         var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase));
         if (user == null)
         {
-            errorMessage = $"User '{baseName}' does not exist!";
+            errorMessage = $"deo tìm thấy tk '{baseName}'!";
             return false;
         }
 
         if (!string.IsNullOrEmpty(password) && user.PasswordHash != HashPassword(password))
         {
-            errorMessage = "Incorrect password!";
+            errorMessage = "vl pass sai ròi kìa!";
             return false;
         }
 
         currentUserBaseName = baseName;
         userData.LastAccount = user.UserName;
         SaveUserData();
-        Debug.Log($"Logged in user: {baseName}");
+        //Debug.Log($"Logged in user: {baseName}");
         return true;
     }
 
@@ -259,14 +259,14 @@ public class UserAccountManager : MonoBehaviour
         errorMessage = "";
         if (string.IsNullOrEmpty(userData.LastAccount))
         {
-            errorMessage = "No LastAccount found.";
+            errorMessage = "đéo xác nhận đcj Ac đăng nhập gần nhất.";
             return false;
         }
 
         var user = userData.Users.FirstOrDefault(u => u.UserName == userData.LastAccount);
         if (user == null)
         {
-            errorMessage = $"LastAccount '{userData.LastAccount}' not found.";
+            errorMessage = $"LastAccount '{userData.LastAccount}' deo tim thay.";
             return false;
         }
 

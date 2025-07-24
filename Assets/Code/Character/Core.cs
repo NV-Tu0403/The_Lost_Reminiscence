@@ -318,15 +318,18 @@ public class Core : CoreEventListenerBase
         {
             if (_userAccountManager.CreateAccount(userName, passWord, out string errorMessage))
             {
+                UiPage06_C.Instance.ShowLogMessage($"Ac '{userName}' tạo thành công.");
                 if (!_userAccountManager.IsSynced(userName))
                 {
                     LoginAccount(userName, passWord); // tự đăng nhập ngay sau khi đăng ký thành công
                     _accountStateMachine.SetState(new NoConnectToServerState(_accountStateMachine, _coreEvent));
                 }
             }
+            UiPage06_C.Instance.ShowLogMessage(errorMessage);
         }
         catch (Exception e)
         {
+            UiPage06_C.Instance.ShowLogMessage($"Lỗi đăng ký tài khoản: {e.Message}");
             throw new Exception($"[RegisterAccount] Error during account registration: {e.Message}", e);
         }
     }
@@ -340,6 +343,7 @@ public class Core : CoreEventListenerBase
         {
             if (_userAccountManager.Login(userName, passWord, out string errorMessage))
             {
+                UiPage06_C.Instance.ShowLogMessage(errorMessage);
                 if (!_userAccountManager.IsSynced(userName))
                 {
                     _accountStateMachine.SetState(new NoConnectToServerState(_accountStateMachine, _coreEvent));
@@ -349,10 +353,11 @@ public class Core : CoreEventListenerBase
                     _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
                 }
             }
+            UiPage06_C.Instance.ShowLogMessage(errorMessage);
         }
         catch (Exception e)
         {
-
+            UiPage06_C.Instance.ShowLogMessage($"Lỗi đăng nhập: {e.Message}");
             throw new Exception($"[LoginAccount] Error during login: {e.Message}", e);
         }
     }
@@ -361,6 +366,7 @@ public class Core : CoreEventListenerBase
     {
         if (_userAccountManager.Logout(out string errorMessage))
         {
+            UiPage06_C.Instance.ShowLogMessage(errorMessage);
             _accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
             return true;
         }
@@ -378,6 +384,7 @@ public class Core : CoreEventListenerBase
             // yêu cầu đăng nhập lại trước khi đồng bộ
             if (!_userAccountManager.Login(userName, passWord, out string errorMessage))
             {
+                UiPage06_C.Instance.ShowLogMessage($"Đăng nhập thất bại: {errorMessage}");
                 Debug.LogWarning($"Cloud register login check failed: {errorMessage}");
                 return;
             }
@@ -395,17 +402,19 @@ public class Core : CoreEventListenerBase
                 if (success)
                 {
                     _accountStateMachine.SetState(new ConectingServer(_accountStateMachine, _coreEvent));
-                    Debug.Log("Cloud register OTP sent");
+                    //Debug.Log("Cloud register OTP sent");
+                    UiPage06_C.Instance.ShowLogMessage($"Đăng ký OTP thành công. Vui lòng kiểm tra email: {email}");
                 }
                 else
                 {
-
-                    Debug.LogWarning($"Cloud register failed: {message}");
+                    UiPage06_C.Instance.ShowLogMessage($"Đăng ký OTP thất bại: {message}");
+                    //Debug.LogWarning($"Cloud register failed: {message}");
                 }
             }));
         }
         catch (Exception e)
         {
+            UiPage06_C.Instance.ShowLogMessage($"Lỗi đăng ký tài khoản trên máy chủ: {e.Message}");
             throw new Exception($"[YsncToServer] Error during cloud registration: {e.Message}", e);
         }
     }
@@ -416,7 +425,8 @@ public class Core : CoreEventListenerBase
         {
             if (string.IsNullOrEmpty(otp))
             {
-                Debug.LogWarning("OTP is null or empty");
+                UiPage06_C.Instance.ShowLogMessage("OTP không được để trống.");
+                //Debug.LogWarning("OTP is null or empty");
                 return;
             }
 
@@ -424,25 +434,27 @@ public class Core : CoreEventListenerBase
             {
                 if (success)
                 {
+                    UiPage06_C.Instance.ShowLogMessage("Xác thực OTP thành công. Tài khoản đã được đồng bộ với máy chủ.");
                     if (_userAccountManager.MarkAsSynced(userName))
                     {
                         _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
                     }
                     else
                     {
-                        Debug.LogWarning("Failed to mark user as synced after OTP verification");
+                        UiPage06_C.Instance.ShowLogMessage("Không thể đánh dấu tài khoản đã đồng bộ sau khi xác thực OTP.");
+                        //Debug.LogWarning("Failed to mark user as synced after OTP verification");
                     }
-                    Debug.Log("Cloud registration verified");
                 }
                 else
                 {
+                    UiPage06_C.Instance.ShowLogMessage($"Xác thực OTP thất bại: {message}");
                     Debug.LogWarning($"OTP verification failed: {message}");
                 }
             }));
         }
         catch (Exception e)
         {
-
+            UiPage06_C.Instance.ShowLogMessage($"Lỗi xác thực OTP: {e.Message}");
             throw new Exception($"[OnOtp] Error during OTP verification: {e.Message}", e);
         }
     }
