@@ -47,7 +47,11 @@ namespace Code.Boss
             
             BossState previousState = currentState;
             currentState = newState;
-            currentState?.Enter();
+            if (currentState != null)
+            {
+                currentState.Initialize(bossController, bossController.Config); // Set config
+                currentState.Enter(); 
+            }
             
             // Trigger state change event
             BossEventSystem.Trigger(BossEventType.StateChanged, 

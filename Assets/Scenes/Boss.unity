@@ -119,6 +119,89 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &62534467
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 62534471}
+  - component: {fileID: 62534470}
+  - component: {fileID: 62534469}
+  - component: {fileID: 62534468}
+  m_Layer: 0
+  m_Name: Boss-Fa
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &62534468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 62534467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e504827cbf34909b3f6d1dde52784aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  radarCooldown: 10
+  secondSkillCooldown: 8
+  thirdSkillCooldown: 15
+  radarEffectPrefab: {fileID: 7163107133092685090, guid: 5d78ef430ab6afc4ea868a57cc3ee607, type: 3}
+  secondSkillEffectPrefab: {fileID: 0}
+  thirdSkillEffectPrefab: {fileID: 0}
+--- !u!114 &62534469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 62534467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0384a5335dd442898875aeac87978dc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableFaIntegration: 1
+--- !u!114 &62534470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 62534467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 956f5d185079465f90ed6186c4fd4855, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bossController: {fileID: 480415759}
+  bossConfig: {fileID: 11400000, guid: 4c1e7f394efe7104d8a89d03775c816e, type: 2}
+  bossHealthBarPrefab: {fileID: 192699831}
+  skillCastBarPrefab: {fileID: 1309238058}
+  playerHealthBarPrefab: {fileID: 65605274}
+  playerMaxHealth: 3
+--- !u!4 &62534471
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 62534467}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -20.26, y: 0.6600001, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &65605274
 GameObject:
   m_ObjectHideFlags: 0
@@ -567,7 +650,6 @@ GameObject:
   m_Component:
   - component: {fileID: 480415758}
   - component: {fileID: 480415760}
-  - component: {fileID: 480415761}
   - component: {fileID: 480415759}
   m_Layer: 0
   m_Name: Boss
@@ -633,24 +715,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &480415761
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 480415757}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 956f5d185079465f90ed6186c4fd4855, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bossController: {fileID: 480415759}
-  bossConfig: {fileID: 11400000, guid: 4c1e7f394efe7104d8a89d03775c816e, type: 2}
-  bossHealthBarPrefab: {fileID: 192699831}
-  skillCastBarPrefab: {fileID: 1309238058}
-  playerHealthBarPrefab: {fileID: 65605274}
-  playerMaxHealth: 3
 --- !u!1 &575492134
 GameObject:
   m_ObjectHideFlags: 0
@@ -2241,6 +2305,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1557659724}
   - {fileID: 94248785}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2449,12 +2514,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1557659721}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -4.7199993, y: 3.0700002, z: -2.98}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1519815574}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1557659725
 MonoBehaviour:
@@ -5842,10 +5907,10 @@ GameObject:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1557659724}
   - {fileID: 1919169631}
   - {fileID: 1403960358}
   - {fileID: 480415758}
   - {fileID: 1519815574}
   - {fileID: 1526365298}
   - {fileID: 1682797334}
+  - {fileID: 62534471}

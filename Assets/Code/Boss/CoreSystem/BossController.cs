@@ -84,6 +84,12 @@ namespace Code.Boss
 
         private void InitializeSystems()
         {
+            if (bossConfig == null)
+            {
+                Debug.LogError("BossConfig is not assigned! Please assign a valid BossConfig.");
+                return;
+            }
+            
             // Initialize FSM
             stateMachine = new BossStateMachine();
             stateMachine.Initialize(this);
