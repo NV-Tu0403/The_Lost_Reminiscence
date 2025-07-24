@@ -1,575 +1,325 @@
-# Boss FSM System - Complete Setup Guide
+# Boss System Setup Guide
 
-## 🎯 Tổng quan
-Hướng dẫn chi tiết setup toàn bộ Boss FSM system từ A-Z, bao gồm:
-- Boss Controller & State Machine
-- Animation System Integration
-- Fa Skills Integration
-- UI System Setup
-- Audio & Effects
-- Testing & Debug
+## 📋 Tổng quan hệ thống
+Hệ thống Boss FSM với 2 Phase, UI components riêng biệt, và tích hợp với kĩ năng Fa.
 
----
-
-## 📁 Cấu trúc Files Boss System
+## 🗂️ Cấu trúc folder hiện tại
 
 ```
 Boss/
-├── Core System/
-│   ├── BossEventSystem.cs          # Event system riêng cho Boss
-│   ├── BossConfig.cs               # Configuration ScriptableObject
-│   ├── BossStateMachine.cs         # FSM core engine
-│   ├── BossController.cs           # Controller chính
-│   └── BossSubSystems.cs           # Health, Soul, UI managers
-├── States/
-│   ├── Phase1/
-│   │   ├── IdleState.cs
-│   │   ├── LureState.cs
-│   │   ├── MockState.cs
-│   │   └── DecoyState.cs
-│   ├── Phase2/
-│   │   ├── AngryState.cs
-│   │   ├── FearZoneState.cs
-│   │   ├── ScreamState.cs
-│   │   └── CookState.cs
-│   └── Shared/
-│       ├── SoulState.cs
-│       └── PhaseChangeState.cs
-├── Behaviors/
-│   ├── BossBehaviors.cs            # Decoy, Soul, FearZone behaviors
-│   └── BossUIComponents.cs         # Health bars, cast bars
-├── Integration/
-│   ├── BossManager.cs              # Manager tổng thể
-│   └── FaBossIntegration.cs        # Tích hợp với Fa system
-└── Testing/                        # Test environment (đã có)
+├── CoreSystem/          # Hệ thống cốt lõi
+│   ├── BossConfig.cs           # Configuration ScriptableObject
+│   ├── BossController.cs       # Controller chính
+│   ├── BossEventSystem.cs      # Event management
+│   ├── BossStateMachine.cs     # FSM và BossState base class
+│   └── BossSubSystems.cs       # Health & Soul management
+│
+├── States/              # Tất cả các state của Boss
+│   ├── Phase1/                 # States cho Phase 1
+│   │   ├── IdleState.cs        # Đứng yên
+│   │   ├── LureState.cs        # Tiến lại gần rồi rút lui
+│   │   ├── MockState.cs        # Vặn vẹo và cười méo mó
+│   │   └── DecoyState.cs       # Skill spawn bóng ảo
+│   ├── Phase2/                 # States cho Phase 2
+│   │   ├── AngryState.cs       # Di chuyển xoay quanh center
+│   │   ├── FearZoneState.cs    # Skill tạo vùng tối
+│   │   ├── ScreamState.cs      # Skill gây hiệu ứng screen
+│   │   └── CookState.cs        # Khi boss bị defeat
+│   └── Shared/                 # States dùng chung
+│       ├── SoulState.cs        # Teleport và spawn soul
+│       └── PhaseChangeState.cs # Chuyển phase
+│
+├── UI/                  # UI components riêng biệt
+│   ├── BossHealthBar.cs        # Boss HP slider
+│   ├── PlayerHealthBar.cs      # Player HP slider  
+│   └── BossSkillCastBar.cs     # Skill cast progress
+│
+├── Behaviors/           # Behavior scripts cho entities
+│   ├── DecoyBehavior.cs        # AI cho decoys
+│   ├── SoulBehavior.cs         # AI cho souls
+│   ├── FearBehaviour.cs        # Fear zone effects
+│   └── MemoryFragmentBehavior.cs # Memory fragment
+│
+├── Testing/             # Scripts để test
+│   ├── PlayerTestController.cs # Player movement & attack
+│   └── FaSkillSimulator.cs     # Giả lập kĩ năng Fa
+│
+├── Integration/         # Tích hợp với hệ thống khác
+│   ├── BossManager.cs          # Manager tổng
+│   └── FaBossIntegration.cs    # Liên kết với Fa
+│
+└── README_Setup.md      # File hướng dẫn này
 ```
 
----
+## 🚀 Setup nhanh
 
-## 🚀 Setup Step-by-Step
+### 1. Tạo GameObject Boss trong Scene
+```
+1. Tạo Empty GameObject, đặt tên "Boss"
+2. Add tag "Boss" cho GameObject này
+3. Add các components sau:
+   - NavMeshAgent
+   - Animator (optional)
+   - AudioSource (optional)
+   - Collider (Box/Capsule)
+   - BossController script (từ CoreSystem/)
+```
 
-### **Step 1: Tạo Boss Configuration**
+### 2. Setup UI System
+```
+1. Tạo Canvas trong scene
+2. Add các UI components:
+   - BossHealthBar (từ UI/)
+   - PlayerHealthBar (từ UI/)
+   - BossSkillCastBar (từ UI/)
+3. Assign references trong Inspector
+```
 
-1. **Tạo BossConfig ScriptableObject:**
-   ```
-   Right-click trong Project → Create → Boss → Boss Configuration
-   Đặt tên: "MainBossConfig"
-   ```
+### 3. Tạo Player Test Object
+```
+1. Tạo Empty GameObject, đặt tên "PlayerTest" 
+2. Add tag "Player"
+3. Add components:
+   - CharacterController (auto-add)
+   - PlayerTestController (từ Testing/)
+4. Đặt ở vị trí phù hợp trong scene
+```
 
-2. **Cấu hình thông số:**
-   ```csharp
-   General Settings:
+### 4. Tạo BossConfig ScriptableObject
+```
+1. Click chuột phải trong Project
+2. Create > [Create Menu cho BossConfig]
+3. Điều chỉnh các thông số:
    - Max Health Per Phase: 3
-   - Move Speed: 5
-   - Rotation Speed: 90
-
-   Phase 1 Settings:
-   - Idle Duration: 2s
-   - Lure Duration: 3s
-   - Mock Duration: 2s
-   - Decoy Cast Time: 2s
-   - Soul State Cast Time: 1.5s
-
-   Phase 2 Settings:
-   - Angry Move Duration: 5s
-   - Fear Zone Cast Time: 2s
-   - Scream Cast Time: 3s
-   - Cook State Duration: 3s
-
-   Soul Settings:
-   - Max Souls: 2
-   - Soul Move Speed: 4
-   - Soul Spawn Radius: 15
-
-   UI Settings:
-   - Boss Health Position: (0, 0.8)
-   - Player Health Position: (0, -0.8)
-   - Health Bar Size: (300, 30)
-   ```
-
-### **Step 2: Setup Boss GameObject**
-
-1. **Tạo Boss GameObject:**
-   ```
-   Create Empty → Đặt tên "Boss"
-   Position: (0, 1, 10) hoặc vị trí mong muốn
-   ```
-
-2. **Add Components:**
-   ```csharp
-   - BossController (script chính)
-   - NavMeshAgent (cho di chuyển)
-   - Animator (cho animations)
-   - AudioSource (cho âm thanh)
-   - Collider (BoxCollider hoặc CapsuleCollider)
-   ```
-
-3. **Configure Components:**
-   ```csharp
-   NavMeshAgent:
-   - Speed: 5
-   - Angular Speed: 90
-   - Stopping Distance: 0.1
-   - Auto Braking: true
-
-   Collider:
-   - Is Trigger: false (để player có thể tấn công)
-   - Size phù hợp với Boss model
-   ```
-
-4. **Assign References trong BossController:**
-   ```csharp
-   - Boss Config: Assign MainBossConfig đã tạo
-   - Player: Assign Player GameObject
-   - Nav Mesh Center: Tạo empty GameObject làm center cho Phase 2
-   ```
-
-### **Step 3: Setup Animation System**
-
-1. **Tạo Animator Controller:**
-   ```
-   Right-click → Create → Animator Controller → "BossAnimator"
-   Assign vào Boss GameObject
-   ```
-
-2. **Tạo Animation States:**
-   ```csharp
-   // Phase 1 Animations
-   - Idle (bool: isIdle)
-   - Lure (trigger: lureStart)
-   - Mock (trigger: mockStart)
-   - DecoyCast (trigger: decoyCast)
-   - DecoyActive (trigger: decoyActive)
-   - SoulCast (trigger: soulCast)
-   - SoulActive (trigger: soulActive)
-
-   // Phase 2 Animations  
-   - Angry (bool: isAngry)
-   - FearZoneCast (trigger: fearZoneCast)
-   - FearZoneActive (trigger: fearZoneActive)
-   - ScreamCast (trigger: screamCast)
-   - ScreamActive (trigger: screamActive)
-   - Cook (trigger: cook)
-
-   // Transition
-   - PhaseChange (trigger: phaseChange)
-   ```
-
-3. **Setup Animation Triggers:**
-   ```csharp
-   // Trong BossController.cs, uncomment animation code:
-   public void PlayAnimation(string animationName)
-   {
-       Debug.Log($"[Boss Animation] Playing animation: {animationName}");
-       
-       // Enable khi có animations:
-       if (animator != null)
-       {
-           animator.SetTrigger(animationName);
-       }
-   }
-   ```
-
-4. **Animation Parameters:**
-   ```csharp
-   // Thêm parameters trong Animator:
-   - isIdle (Bool)
-   - isAngry (Bool)
-   - lureStart (Trigger)
-   - mockStart (Trigger)
-   - decoyCast (Trigger)
-   - decoyActive (Trigger)
-   - soulCast (Trigger)
-   - soulActive (Trigger)
-   - fearZoneCast (Trigger)
-   - fearZoneActive (Trigger)
-   - screamCast (Trigger)
-   - screamActive (Trigger)
-   - cook (Trigger)
-   - phaseChange (Trigger)
-   ```
-
-### **Step 4: Setup Audio System**
-
-1. **Chuẩn bị Audio Clips:**
-   ```csharp
-   Phase 1 Audio:
-   - mockLaughSound (tiếng cười méo mó)
-   - decoySpawnSound (âm thanh spawn decoy)
-   - soulSpawnSound (âm thanh spawn soul)
-
-   Phase 2 Audio:
-   - screamSound (tiếng chê trách)
-   - fearZoneSound (âm thanh vùng tối)
-   - heartbeatSound (nhịp tim)
-
-   General Audio:
-   - phaseChangeSound (chuyển phase)
-   - damageSound (nhận damage)
-   - defeatSound (bị đánh bại)
-   ```
-
-2. **Assign Audio trong BossConfig:**
-   ```csharp
-   Audio Config section:
-   - Assign tất cả audio clips
-   - Set volume levels:
-     * Master Volume: 1.0
-     * SFX Volume: 0.8
-     * Ambient Volume: 0.6
-   ```
-
-### **Step 5: Setup NavMesh**
-
-1. **Bake NavMesh:**
-   ```
-   Window → AI → Navigation
-   Select tất cả ground objects → Navigation Static ✓
-   Bake tab → Bake
-   ```
-
-2. **Tạo NavMesh Center:**
-   ```
-   Create Empty → "NavMeshCenter"
-   Position ở trung tâm khu vực boss di chuyển
-   Assign vào BossController
-   ```
-
-### **Step 6: Setup UI System**
-
-1. **Tạo UI Canvas:**
-   ```
-   Right-click → UI → Canvas
-   Canvas Scaler → Scale With Screen Size
-   Reference Resolution: 1920x1080
-   ```
-
-2. **Tạo Boss Health Bar:**
-   ```
-   Create → UI → Slider → "BossHealthBar"
-   Position: Top center screen
-   Assign BossHealthBar component
-   ```
-
-3. **Tạo Player Health Bar:**
-   ```
-   Create → UI → Slider → "PlayerHealthBar"  
-   Position: Bottom center screen
-   Assign PlayerHealthBar component
-   ```
-
-4. **Tạo Skill Cast Bar:**
-   ```
-   Create → UI → Slider → "SkillCastBar"
-   Position: Below boss health bar
-   Assign BossSkillCastBar component
-   Hidden by default
-   ```
-
-### **Step 7: Setup BossManager**
-
-1. **Tạo BossManager GameObject:**
-   ```
-   Create Empty → "BossManager"
-   Add BossManager component
-   ```
-
-2. **Assign References:**
-   ```csharp
-   - Boss Controller: Boss GameObject
-   - Boss Health Bar Prefab: UI prefab
-   - Skill Cast Bar Prefab: UI prefab  
-   - Player Health Bar Prefab: UI prefab
-   - Player Max Health: 3
-   ```
-
----
-
-## 🔗 Fa Skills Integration
-
-### **Step 1: Setup Fa Events**
-
-1. **Trong Fa system, thêm integration:**
-   ```csharp
-   using Code.Boss;
-
-   // Listen for boss requests
-   private void Start()
-   {
-       FaBossIntegration.OnRequestFaSkill += HandleBossSkillRequest;
-       FaBossIntegration.OnSoulCountChanged += HandleSoulCountChanged;
-       FaBossIntegration.OnBossVulnerable += HandleBossVulnerability;
-   }
-
-   private void HandleBossSkillRequest(string skillName)
-   {
-       if (skillName == "Radar" && CanUseRadarSkill())
-       {
-           UseRadarSkill();
-           FaBossIntegration.NotifyFaSkillUsed("Radar", true);
-       }
-   }
-
-   private void HandleSoulCountChanged(int soulCount)
-   {
-       if (soulCount >= 2)
-       {
-           ShowRadarSkillSuggestion();
-       }
-   }
-
-   private void HandleBossVulnerability(bool isVulnerable)
-   {
-       if (isVulnerable)
-       {
-           ShowAttackOpportunity();
-       }
-   }
-   ```
-
-### **Step 2: Fa Skills Implementation**
-
-1. **Radar Skill (Destroy Souls):**
-   ```csharp
-   public void UseRadarSkill()
-   {
-       // Fa skill logic here
-       // ...
-
-       // Notify boss system
-       FaBossIntegration.NotifyFaSkillUsed("Radar", true);
-   }
-   ```
-
-2. **Protection Skill:**
-   ```csharp
-   public void UseProtectionSkill()
-   {
-       // Fa protection logic
-       // ...
-
-       FaBossIntegration.NotifyFaSkillUsed("Protection", true);
-   }
-   ```
-
-3. **Reveal Skill:**
-   ```csharp
-   public void UseRevealSkill()
-   {
-       // Fa reveal logic
-       // ...
-
-       FaBossIntegration.NotifyFaSkillUsed("Reveal", true);
-   }
-   ```
-
-### **Step 3: Player Integration**
-
-1. **Player Attack System:**
-   ```csharp
-   // Trong player controller
-   private void PerformAttack()
-   {
-       Collider[] hits = Physics.OverlapSphere(transform.position, attackRange);
-       
-       foreach (var hit in hits)
-       {
-           var boss = hit.GetComponent<BossController>();
-           if (boss != null)
-           {
-               BossManager.Instance.PlayerAttackBoss();
-               return;
-           }
-           
-           var decoy = hit.GetComponent<DecoyBehavior>();
-           if (decoy != null)
-           {
-               BossManager.Instance.PlayerAttackDecoy(hit.gameObject, decoy.IsReal);
-               return;
-           }
-       }
-   }
-   ```
-
----
-
-## 🎨 Visual Effects Setup
-
-### **Decoy Effects:**
-```csharp
-// Trong DecoyBehavior.cs
-private void CreateDecoyEffect()
-{
-    // Real decoy: Normal appearance
-    // Fake decoy: Slightly transparent
-    if (!isReal)
-    {
-        var renderer = GetComponent<Renderer>();
-        var material = renderer.material;
-        var color = material.color;
-        color.a = 0.8f;
-        material.color = color;
-    }
-}
+   - Phase Transition Duration: 2f
+   - Defeat Animation Duration: 3f
+   - Skill Cast Times, Movement Speeds, etc.
 ```
 
-### **Soul Effects:**
-```csharp
-// Trong SoulBehavior.cs  
-private void CreateSoulEffect()
-{
-    // Floating animation
-    // Glowing material
-    // Particle effects
-}
+### 5. Setup NavMesh
+```
+1. Tạo Plane làm ground
+2. Window > AI > Navigation
+3. Chọn ground object > Mark as Navigation Static
+4. Bake NavMesh
+5. Assign NavMesh Center cho Boss (Empty GameObject ở giữa area)
 ```
 
-### **Fear Zone Effects:**
-```csharp
-// Trong FearZoneBehavior.cs
-private void CreateFearZoneEffect()
-{
-    // Dark cylinder on ground
-    // Post-processing effects
-    // Audio changes
-}
+### 6. Setup Boss Manager (Optional)
+```
+1. Tạo Empty GameObject, đặt tên "BossManager"
+2. Add BossManager script (từ Integration/)
+3. Assign Boss reference trong Inspector
 ```
 
----
+## 🎮 UI Components được tách riêng
 
-## 🧪 Testing & Debug
+### BossHealthBar.cs
+- Boss HP slider ở top center
+- Đổi màu theo phase (đỏ→tím)
+- Smooth transitions
 
-### **Debug Features:**
-```csharp
-// Console logs for state changes
-[Boss State] Entered IdleState - Boss đứng yên tại chỗ
-[Boss Animation] Playing animation: Idle
-[Boss Event] Phase changed to 2
+### PlayerHealthBar.cs  
+- Player HP slider ở bottom center
+- Text hiển thị "3/3"
+- Damage effects
 
-// Visual debug
-- Gizmos show spawn radiuses
-- Attack range visualization
-- NavMesh path display
+### BossSkillCastBar.cs
+- Progress bar cho skill casting
+- Countdown timer
+- Auto show/hide
+
+## 🎯 Controls cho testing
+
+### PlayerTestController.cs
+- **WASD**: Di chuyển
+- **Space/LMB**: Tấn công
+- **Mouse**: Camera control
+
+### FaSkillSimulator.cs
+- **Q**: Fa Radar Skill (Xóa Soul)
+- **E**: Fa Second Skill  
+- **R**: Fa Third Skill
+
+## 🔧 Cấu hình Boss Behavior
+
+### Phase 1 States Flow
+```
+IdleState → LureState → MockState → DecoyState (Skill)
+↑                                        ↓
+└── Hit Real Boss ←────── SoulState ←── Hit Fake Boss
 ```
 
-### **Test Controls:**
-```csharp
-// Development shortcuts
-F1 - Reset boss
-F2 - Force next phase  
-F3 - Spawn test soul
-F4 - Damage boss
-F5 - Heal player
+### Phase 2 States Flow  
+```
+AngryState → FearZoneState (Skill) → ScreamState (Skill) → CookState
+    ↑              ↓                      ↓
+    └─── SoulState ←──────────────────────┘
 ```
 
----
+### Skills với Cast Time
+- **DecoyState**: Spawn 2 bóng ảo (1 thật 1 giả)
+- **FearZoneState**: Tạo vùng tối dưới chân player
+- **ScreamState**: Cơ hội duy nhất để damage boss trong Phase 2
+- **SoulState**: Teleport + spawn souls
 
-## ⚙️ Performance Optimization
+## 🎭 Behavior Systems
 
-### **Recommended Settings:**
+### DecoyBehavior.cs
+- AI cho bóng ảo trong DecoyState
+- Slow chase behavior
+- Visual differences (real vs fake)
+
+### SoulBehavior.cs
+- AI cho soul entities
+- Follow player behavior
+- Floating animation
+
+### FearBehaviour.cs
+- Quản lý vùng fear zone
+- Visual effects cho darkness
+- Player detection
+
+### MemoryFragmentBehavior.cs
+- Behavior cho memory fragment
+- Collection mechanics
+
+## 📱 Integration với Fa Skills
+
+### FaBossIntegration.cs
 ```csharp
-// Update frequencies
-Boss FSM Update: Every frame
-Soul tracking: Every 0.1s
-UI updates: Every 0.2s
-
-// Object pooling
-Souls: Pool 5 objects
-Decoys: Pool 3 objects
-Effects: Pool 10 objects
-
-// LOD (nếu cần)
-Boss model: 3 LOD levels
-Soul effects: 2 LOD levels
+// Liên kết với hệ thống Fa
+public void OnFaRadarUsed() // Skill 1 - Xóa souls
+public void OnFaSecondSkill() // Skill 2 - TBD
+public void OnFaThirdSkill() // Skill 3 - TBD
 ```
 
----
+### Event System
+```csharp
+// BossEventSystem.cs handles:
+- Player attack events
+- Fa skill usage events
+- Phase change events
+- Boss state transitions
+```
+
+## 🎨 Animation Setup (Khi có assets)
+
+### Animation Parameters cần thiết
+```
+Phase 1:
+- IdleAnimation (Trigger)
+- LureAnimation (Trigger)  
+- MockAnimation (Trigger)
+- DecoyAnimation (Trigger)
+
+Phase 2:
+- AngryAnimation (Trigger)
+- FearZoneAnimation (Trigger)
+- ScreamAnimation (Trigger)
+- CookAnimation (Trigger)
+
+Shared:
+- SoulAnimation (Trigger)
+- PhaseChangeAnimation (Trigger)
+```
+
+### Integration trong States
+```csharp
+// Trong mỗi state Enter() method:
+bossController.BossAnimator?.SetTrigger("StateName");
+```
 
 ## 🐛 Troubleshooting
 
-### **Common Issues:**
+### UI không hiển thị
+1. Check UI components được assign đúng
+2. Ensure Canvas có proper sorting order
+3. Verify script references
 
-1. **Boss không spawn:**
-   ```
-   ✓ Check BossManager có BossController reference
-   ✓ Check BossConfig đã assign
-   ✓ Check NavMesh đã bake
-   ```
+### Boss không di chuyển  
+1. NavMesh đã bake chưa
+2. NavMeshAgent enabled
+3. NavMesh Center assigned
 
-2. **Animation không chạy:**
-   ```
-   ✓ Check Animator Controller assigned
-   ✓ Check animation triggers đúng tên
-   ✓ Check PlayAnimation() uncommented
-   ```
+### States không transition
+1. Check BossStateMachine initialization
+2. Verify state conditions
+3. Look at Debug.Log outputs
 
-3. **Fa skills không work:**
-   ```
-   ✓ Check FaBossIntegration trong scene
-   ✓ Check event subscriptions
-   ✓ Check NotifyFaSkillUsed() calls
-   ```
+### Events không fire
+1. BossEventSystem initialized
+2. Event subscriptions correct
+3. Unsubscribe in OnDestroy
 
-4. **UI không hiện:**
-   ```
-   ✓ Check Canvas trong scene
-   ✓ Check UI prefabs assigned
-   ✓ Check BossManager references
-   ```
+## 🚀 Performance & Architecture
 
-5. **NavMesh issues:**
-   ```
-   ✓ Check ground objects Navigation Static
-   ✓ Check NavMesh baked
-   ✓ Check NavMeshAgent settings
-   ```
+### Modular Design
+- Mỗi system có thể test độc lập
+- UI components tách biệt
+- Behaviors có thể reuse
 
----
+### Memory Management
+- Auto cleanup decoys, souls
+- Proper event unsubscription
+- Efficient state transitions
 
-## 🎯 Production Checklist
+### Extensibility
+- Easy to add new states
+- New behaviors can be plugged in
+- UI system scalable
 
-### **Before Release:**
-- [ ] Tất cả animations đã implement
-- [ ] Audio clips đã assign đầy đủ
-- [ ] UI responsive trên các resolution
-- [ ] Performance test trên target device
-- [ ] Boss balance testing
-- [ ] Fa skills integration hoàn chỉnh
-- [ ] Error handling robust
-- [ ] Debug logs removed/disabled
-- [ ] Documentation update
+## 📝 Mở rộng hệ thống
 
-### **Optional Enhancements:**
-- [ ] Boss intro cutscene
-- [ ] Death animations
-- [ ] Particle effects
-- [ ] Screen shake
-- [ ] Post-processing effects
-- [ ] Dynamic music
-- [ ] Achievement system
-- [ ] Boss variants
+### Thêm State mới
+1. Tạo class trong States/Phase1 hoặc Phase2
+2. Inherit từ BossState
+3. Implement abstract methods
+4. Add transition logic
 
----
+### Thêm Behavior mới
+1. Tạo script trong Behaviors/
+2. Inherit từ MonoBehaviour
+3. Add Initialize() method
+4. Reference trong state tương ứng
 
-## 🎉 Congratulations!
+### Thêm UI component
+1. Tạo script trong UI/
+2. Handle specific UI logic
+3. Link với BossController events
 
-Bạn đã setup xong toàn bộ Boss FSM System! 
+## ✅ Testing Checklist
 
-**Hệ thống bao gồm:**
-- ✅ Complete FSM với 10 states
-- ✅ 2 phases với mechanics khác nhau  
-- ✅ Fa skills integration
-- ✅ UI system hoàn chỉnh
-- ✅ Audio & visual effects
-- ✅ Debug & testing tools
-- ✅ Performance optimized
-- ✅ Production ready
+### Core Functionality
+- [ ] Boss spawns correctly
+- [ ] UI displays proper health/phase
+- [ ] Player controls responsive
+- [ ] Attack hit detection works
 
-**Next Steps:**
-1. Test toàn bộ flow Phase 1 → Phase 2
-2. Balance thời gian và damage
-3. Polish animations và effects
-4. Integration testing với full game
-5. Performance optimization cuối
+### Phase 1 Testing
+- [ ] IdleState → random transitions
+- [ ] LureState approach/retreat
+- [ ] MockState visual/audio
+- [ ] DecoyState spawn/interaction
+- [ ] Hit real decoy → damage boss
+- [ ] Hit fake decoy → damage player + soul
 
-Good luck with your Boss fight! 🚀
+### Phase 2 Testing
+- [ ] Phase transition smooth
+- [ ] AngryState movement pattern
+- [ ] FearZoneState creates dark area
+- [ ] ScreamState damage window
+- [ ] Boss defeat → memory fragment
+
+### Integration Testing
+- [ ] Fa skills remove souls
+- [ ] Events fire correctly
+- [ ] UI updates properly
+- [ ] No memory leaks
+- [ ] Performance stable
+
+### Final Polish
+- [ ] All animations connected
+- [ ] Audio cues working
+- [ ] Visual effects polished
+- [ ] Debug logs cleaned up
