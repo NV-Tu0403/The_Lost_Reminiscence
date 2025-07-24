@@ -13,7 +13,7 @@ public class FaTask
     public TaskType Type;
     public Transform? TaskPosition;
     public string? SkillName;
-    public GameObject? TargetObject;
+    public bool? TargetObject;
     public FaTask(TaskType type)
     {
         Type = type;
