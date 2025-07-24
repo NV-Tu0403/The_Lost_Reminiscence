@@ -1,11 +1,16 @@
 ﻿#nullable enable
 using System.Collections.Generic;
+using TMPro;
 using Unity.Behavior;
 using UnityEngine;
 
 public class FaAgent : MonoBehaviour, FaInterface
 {
-    [Header("References")] public GameObject? playerObject;
+    [Header("Canvas")] 
+    [SerializeField] private TextMeshProUGUI? skill1Cooldown;
+    [SerializeField] private TextMeshProUGUI? skill2Cooldown;
+    [SerializeField] private TextMeshProUGUI? skill3Cooldown;
+    
     private Transform? _targetPositionHelper;
     private readonly Dictionary<string, float> _cooldownTimers = new Dictionary<string, float>();
     // Bổ sung TaskQueue quản lý task cho Fa
@@ -75,7 +80,7 @@ public class FaAgent : MonoBehaviour, FaInterface
             // Check cooldown
             if (!IsSkillAvailable(skillName))
             {
-                Debug.Log($"[FaAgent] Skill '{skillName}' chưa hồi chiêu.");
+                Debug.Log($"[FaAgent] Skill '{skillName}' đang hồi được {_cooldownTimers[skillName]}.");
                 return;
             }
 
@@ -87,18 +92,13 @@ public class FaAgent : MonoBehaviour, FaInterface
             if (parts.Length > 2)
             {
                 var targetKeyword = parts[2].ToLower();
-                if (targetKeyword == "player")
-                {
-                    task.TargetObject = playerObject;
-                }
-                else
-                {
-                    task.TargetObject = this.gameObject;
-                }
-                
-                AddTask(task);
-                Debug.Log($"Đã thêm task UseSkill: {task.SkillName} trên mục tiêu: {task.TargetObject?.name}");
+                if (targetKeyword == "player") task.TargetObject = false;
+                else task.TargetObject = true;
+                Debug.Log($"Đã thêm task UseSkill: {task.SkillName} trên mục tiêu self: {task.TargetObject}");
             }
+            
+                            
+            AddTask(task);
         }
         else
         {
@@ -112,8 +112,6 @@ public class FaAgent : MonoBehaviour, FaInterface
         faBha = GetComponent<BehaviorGraphAgent>();
         var go = new GameObject("FaTargetPositionHelper");
         _targetPositionHelper = go.transform;
-
-        if (playerObject == null) playerObject = GameObject.Find("Player");
     }
 
     void Update()
@@ -125,6 +123,8 @@ public class FaAgent : MonoBehaviour, FaInterface
             _cooldownTimers[key] = Mathf.Max(0, _cooldownTimers[key] - Time.deltaTime);
         }
 
+        UpdateCooldownToCanvas();
+        
         if (faBha == null) return;
         
         // 2. Đồng bộ hóa trạng thái cooldown LÊN Blackboard
@@ -134,12 +134,8 @@ public class FaAgent : MonoBehaviour, FaInterface
         faBha.BlackboardReference.SetVariableValue("IsTinHieuDanLoiAvailable", IsSkillAvailable("GuideSignal"));
         faBha.BlackboardReference.SetVariableValue("IsAnhSangTriThucAvailable", IsSkillAvailable("KnowledgeLight"));
         
-        // 3. Xử lý giao task (như đã sửa ở lần trước)
-        bool isGraphBusy;
-        faBha.BlackboardReference.GetVariableValue("IsTaskRunning", out isGraphBusy);
-        
         // Chỉ xử lý task mới khi Graph rảnh và hàng đợi có task
-        if (!isGraphBusy && HasTask())
+        if (HasTask())
         {
             var task = GetNextTask();
             if (task != null)
@@ -156,13 +152,14 @@ public class FaAgent : MonoBehaviour, FaInterface
                     // Dựa vào SkillName (hiện là "1", "2", "3" từ input) để chọn đúng enum
                     switch (task.SkillName)
                     {
-                        case "1":
+                        case "GuideSignal":
                             playerTaskType = PlayerTaskType.TinHieuDanLoi;
+                            UseGuideSignal();
                             break;
-                        case "2":
+                        case "KnowledgeLight":
                             playerTaskType = PlayerTaskType.AnhSangTriThuc;
                             break;
-                        case "3":
+                        case "ProtectiveAura":
                             playerTaskType = PlayerTaskType.VangSangBaoHo;
                             break;
                         default:
@@ -177,14 +174,47 @@ public class FaAgent : MonoBehaviour, FaInterface
 
                 // Đẩy dữ liệu vào Blackboard
                 faBha.BlackboardReference.SetVariableValue("TaskFromPlayer", playerTaskType);
-                
                 if (task.TaskPosition != null)
                     faBha.BlackboardReference.SetVariableValue("TaskPosition", task.TaskPosition);
                 if (task.TargetObject != null)
-                    faBha.BlackboardReference.SetVariableValue("TargetObject", task.TargetObject);
+                    faBha.BlackboardReference.SetVariableValue("Self_VanSangBaoHo", task.TargetObject);
                 // Bật chế độ PlayerControl để Graph nhận task
                 faBha.BlackboardReference.SetVariableValue("PlayerControl", true);
             }
+        }
+    }
+
+    
+    private void UpdateCooldownToCanvas()
+    {
+        float cooldownValue; // Biến tạm để lưu giá trị cooldown
+
+        if (skill1Cooldown != null)
+        {
+            // Thử lấy giá trị, nếu không có thì cooldownValue sẽ là 0
+            _cooldownTimers.TryGetValue("GuideSignal", out cooldownValue);
+            if (cooldownValue > 0)
+                skill1Cooldown.text = Mathf.CeilToInt(cooldownValue).ToString();
+            else
+                skill1Cooldown.text = "Ready";
+        }
+
+        if (skill2Cooldown != null)
+        {
+            _cooldownTimers.TryGetValue("KnowledgeLight", out cooldownValue);
+            if (cooldownValue > 0)
+                skill2Cooldown.text = Mathf.CeilToInt(cooldownValue).ToString();
+            else
+                skill2Cooldown.text = "Ready";
+        }
+    
+        if (skill3Cooldown != null)
+        {
+            _cooldownTimers.TryGetValue("ProtectiveAura", out cooldownValue);
+            if (cooldownValue > 0)
+                skill3Cooldown.text = Mathf.CeilToInt(cooldownValue).ToString();
+            else
+                skill3Cooldown.text = "Ready";
         }
     }
 
