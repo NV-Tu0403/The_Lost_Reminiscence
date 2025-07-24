@@ -10,7 +10,6 @@ namespace Code.Boss
     public class BossHealthBar : MonoBehaviour
     {
         [Header("UI Components")]
-        [SerializeField] private Canvas canvas;
         [SerializeField] private Slider healthSlider;
         [SerializeField] private TextMeshProUGUI healthText;
         [SerializeField] private TextMeshProUGUI phaseText;
@@ -29,19 +28,6 @@ namespace Code.Boss
 
         private void SetupUI()
         {
-            // Create canvas if not assigned
-            if (canvas == null)
-            {
-                CreateCanvas();
-            }
-            
-            // Position at top center of screen
-            RectTransform rectTransform = GetComponent<RectTransform>();
-            rectTransform.anchorMin = new Vector2(0.5f, 1f);
-            rectTransform.anchorMax = new Vector2(0.5f, 1f);
-            rectTransform.anchoredPosition = new Vector2(0, -50); // 50 pixels from top
-            rectTransform.sizeDelta = uiConfig.healthBarSize;
-            
             // Setup health slider
             if (healthSlider != null)
             {
@@ -57,16 +43,6 @@ namespace Code.Boss
             }
         }
 
-        private void CreateCanvas()
-        {
-            GameObject canvasGO = new GameObject("BossHealthCanvas");
-            canvas = canvasGO.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 100;
-            
-            canvasGO.AddComponent<CanvasScaler>();
-            canvasGO.AddComponent<GraphicRaycaster>();
-        }
 
         private void RegisterEvents()
         {

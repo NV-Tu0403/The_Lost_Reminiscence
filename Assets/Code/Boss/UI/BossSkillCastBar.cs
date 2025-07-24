@@ -30,13 +30,6 @@ namespace Code.Boss
 
         private void SetupUI()
         {
-            // Position below boss health bar
-            RectTransform rectTransform = GetComponent<RectTransform>();
-            rectTransform.anchorMin = new Vector2(0.5f, 1f);
-            rectTransform.anchorMax = new Vector2(0.5f, 1f);
-            rectTransform.anchoredPosition = new Vector2(0, -100); // Below health bar
-            rectTransform.sizeDelta = uiConfig.skillCastBarSize;
-            
             // Setup cast slider
             if (castSlider != null)
             {

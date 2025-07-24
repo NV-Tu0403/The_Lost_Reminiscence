@@ -27,12 +27,6 @@ namespace Code.Boss
 
         private void SetupUI()
         {
-            // Position at bottom center of screen
-            RectTransform rectTransform = GetComponent<RectTransform>();
-            rectTransform.anchorMin = new Vector2(0.5f, 0f);
-            rectTransform.anchorMax = new Vector2(0.5f, 0f);
-            rectTransform.anchoredPosition = new Vector2(0, 50); // 50 pixels from bottom
-            
             // Setup health slider
             if (healthSlider != null)
             {
