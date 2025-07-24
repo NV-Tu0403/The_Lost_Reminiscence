@@ -49,6 +49,13 @@ public class CoreEvent : MonoBehaviour
     public event Action TurnOnMenu;
     public event Action TurnOffMenu;
 
+    public event Action OnLogin;
+    public event Action OnRegister;
+    public event Action OnLogout;
+    public event Action OnConnectToServer;
+    public event Action OnConnectingToServer;
+    public event Action OnSyncFileSave;
+
     #endregion
 
     #region sự kiện A4
@@ -88,6 +95,13 @@ public class CoreEvent : MonoBehaviour
     public void triggerSelectSaveItem(string path) => OnSelectSaveItem?.Invoke(path);
     public void triggerTurnOnMenu() => TurnOnMenu?.Invoke();
     public void triggerTurnOffMenu() => TurnOffMenu?.Invoke();
+
+    public void triggerLogin() => OnLogin?.Invoke();
+    public void triggerRegister() => OnRegister?.Invoke();
+    public void triggerLogout() => OnLogout?.Invoke();
+    public void triggerConnectToServer() => OnConnectToServer?.Invoke();
+    public void triggerConnectingToServer() => OnConnectingToServer?.Invoke();
+    public void triggerSyncFileSave() => OnSyncFileSave?.Invoke();
 
     #endregion
 

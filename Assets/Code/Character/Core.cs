@@ -1,6 +1,9 @@
 ﻿using System.Linq;
 using UnityEngine;
 using System.Collections;
+using TMPro;
+using Loc_Backend.Scripts;
+using System;
 
 /// <summary>
 /// Trung tâm điều phối toàn bộ các State của Core game.
@@ -16,6 +19,7 @@ public class Core : CoreEventListenerBase
     public StateMachine _accountStateMachine;
     public UserAccountManager _userAccountManager;
     private CameraZoomController _cameraZoomController;
+    public BackendSync backendSync;
 
     #region biến cần thiết
 
@@ -30,8 +34,9 @@ public class Core : CoreEventListenerBase
     public bool IsDebugMode = false;
 
     [Header("State")]
-    public string CurrentCoreState;
+    public string CurrentAccountName;
     public string CurrentAccountState;
+    public string CurrentCoreState;
 
     [Header("Menu")]
     public GameObject MainMenu;
@@ -79,11 +84,13 @@ public class Core : CoreEventListenerBase
     {
         SetUpCamera();
         StartCoroutine(ActiveObjMenu(true));
+        StartCoroutine(RetryUpdateAccountState());
     }
 
     private void Update()
     {
         UpdateStateFix();
+        CheckCurrentAccount();
         TryInitializeCamera();
 
         if (IsDebugMode)
@@ -184,10 +191,23 @@ public class Core : CoreEventListenerBase
         CurrentCoreState = stateType.ToString();
         //Debug.Log($"[Core] CurrentCoreState updated to: {CurrentCoreState}");
     }
+
     private void UpdateAccountState(AccountStateType accountStateType)
     {
         CurrentAccountState = accountStateType.ToString();
-        //Debug.Log($"[Core] Current Account State updated to: {accountStateType}");
+        UiPage06_C.Instance.UpdateTextFields(accountStateType);
+
+        StartCoroutine(RetryUpdateAccountState());
+
+    }
+
+    private IEnumerator RetryUpdateAccountState()
+    {
+        yield return new WaitForSeconds(0.1f);
+        if (_accountStateMachine.CurrentStateType != null)
+        {
+            UiPage06_C.Instance.UpdateInfo(CurrentAccountName, PlayTimeManager.Instance.SessionPlayTime.ToString(), CurrentAccountState);
+        }
     }
 
     private void UpdateStateFix()
@@ -251,7 +271,7 @@ public class Core : CoreEventListenerBase
     /// False: Tắt.
     /// </summary>
     /// <param name="oke"></param>
-    public void ActiveMouseCursor(bool oke) // Lộc chuyển thành public để có thể gọi từ các class khác
+    public void ActiveMouseCursor(bool oke)
     {
         //bool ShowCursor = CurrentCoreState != CoreStateType.InSessionState.ToString() || IsDebugMode;
 
@@ -272,6 +292,176 @@ public class Core : CoreEventListenerBase
             Cursor.visible = !oke;
         }
     }
+
+    #region B1
+
+    private void CheckCurrentAccount()
+    {
+        if (_userAccountManager.currentUserBaseName != null)
+        {
+            CurrentAccountName = _userAccountManager.currentUserBaseName;
+            //Debug.Log($"Current Account: {CurrentAccountName}");
+        }
+        else
+        {
+            CurrentAccountName = null;
+            Debug.LogWarning("No current account found.");
+        }
+    }
+
+    /// <summary>
+    /// đăng ký tài khoản mới.
+    /// </summary>
+    public void RegisterAccount(string userName, string passWord)
+    {
+        try
+        {
+            if (_userAccountManager.CreateAccount(userName, passWord, out string errorMessage))
+            {
+                UiPage06_C.Instance.ShowLogMessage($"Ac '{userName}' tạo thành công.");
+                if (!_userAccountManager.IsSynced(userName))
+                {
+                    LoginAccount(userName, passWord); // tự đăng nhập ngay sau khi đăng ký thành công
+                    _accountStateMachine.SetState(new NoConnectToServerState(_accountStateMachine, _coreEvent));
+                }
+            }
+            UiPage06_C.Instance.ShowLogMessage(errorMessage);
+        }
+        catch (Exception e)
+        {
+            UiPage06_C.Instance.ShowLogMessage($"Lỗi đăng ký tài khoản: {e.Message}");
+            throw new Exception($"[RegisterAccount] Error during account registration: {e.Message}", e);
+        }
+    }
+
+    /// <summary>
+    /// đăng nhập thủ công
+    /// </summary>
+    public void LoginAccount(string userName, string passWord)
+    {
+        try
+        {
+            if (_userAccountManager.Login(userName, passWord, out string errorMessage))
+            {
+                UiPage06_C.Instance.ShowLogMessage(errorMessage);
+                if (!_userAccountManager.IsSynced(userName))
+                {
+                    _accountStateMachine.SetState(new NoConnectToServerState(_accountStateMachine, _coreEvent));
+                }
+                else
+                {
+                    _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
+                }
+            }
+            UiPage06_C.Instance.ShowLogMessage(errorMessage);
+        }
+        catch (Exception e)
+        {
+            UiPage06_C.Instance.ShowLogMessage($"Lỗi đăng nhập: {e.Message}");
+            throw new Exception($"[LoginAccount] Error during login: {e.Message}", e);
+        }
+    }
+
+    public bool LogoutAccount()
+    {
+        if (_userAccountManager.Logout(out string errorMessage))
+        {
+            UiPage06_C.Instance.ShowLogMessage(errorMessage);
+            _accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
+            return true;
+        }
+        else
+        {
+            Debug.LogError($"[LogoutAccount] Failed to logout: {errorMessage}");
+            return false;
+        }
+    }
+
+    public void SyncToServer(string userName, string passWord, string email)
+    {
+        try
+        {
+            // yêu cầu đăng nhập lại trước khi đồng bộ
+            if (!_userAccountManager.Login(userName, passWord, out string errorMessage))
+            {
+                UiPage06_C.Instance.ShowLogMessage($"Đăng nhập thất bại: {errorMessage}");
+                Debug.LogWarning($"Cloud register login check failed: {errorMessage}");
+                return;
+            }
+
+            // kiểm tra email format (cơ bản) (không phải iem dành việc đâu nah chỉ là iem không muống server phải bỏ thêm băng thông để xử lí mấy lỗi vặt thôi)
+            if (string.IsNullOrEmpty(email) || !email.Contains("@"))
+            {
+                Debug.LogWarning("Invalid email for cloud register");
+                return;
+            }
+
+            // yêu cầu đăng ký OTP để đồng bộ Account to Server
+            StartCoroutine(backendSync.RequestCloudRegister(userName, passWord, email, (success, message) =>
+            {
+                if (success)
+                {
+                    _accountStateMachine.SetState(new ConectingServer(_accountStateMachine, _coreEvent));
+                    //Debug.Log("Cloud register OTP sent");
+                    UiPage06_C.Instance.ShowLogMessage($"Đăng ký OTP thành công. Vui lòng kiểm tra email: {email}");
+                }
+                else
+                {
+                    UiPage06_C.Instance.ShowLogMessage($"Đăng ký OTP thất bại: {message}");
+                    //Debug.LogWarning($"Cloud register failed: {message}");
+                }
+            }));
+        }
+        catch (Exception e)
+        {
+            UiPage06_C.Instance.ShowLogMessage($"Lỗi đăng ký tài khoản trên máy chủ: {e.Message}");
+            throw new Exception($"[YsncToServer] Error during cloud registration: {e.Message}", e);
+        }
+    }
+
+    public void VerifyOTPAccount(string otp, string userName)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(otp))
+            {
+                UiPage06_C.Instance.ShowLogMessage("OTP không được để trống.");
+                //Debug.LogWarning("OTP is null or empty");
+                return;
+            }
+
+            StartCoroutine(backendSync.VerifyOtp(userName, otp, (success, message) =>
+            {
+                if (success)
+                {
+                    UiPage06_C.Instance.ShowLogMessage("Xác thực OTP thành công. Tài khoản đã được đồng bộ với máy chủ.");
+                    if (_userAccountManager.MarkAsSynced(userName))
+                    {
+                        _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
+                    }
+                    else
+                    {
+                        UiPage06_C.Instance.ShowLogMessage("Không thể đánh dấu tài khoản đã đồng bộ sau khi xác thực OTP.");
+                        //Debug.LogWarning("Failed to mark user as synced after OTP verification");
+                    }
+                }
+                else
+                {
+                    UiPage06_C.Instance.ShowLogMessage($"Xác thực OTP thất bại: {message}");
+                    Debug.LogWarning($"OTP verification failed: {message}");
+                }
+            }));
+        }
+        catch (Exception e)
+        {
+            UiPage06_C.Instance.ShowLogMessage($"Lỗi xác thực OTP: {e.Message}");
+            throw new Exception($"[OnOtp] Error during OTP verification: {e.Message}", e);
+        }
+    }
+
+    #endregion
+
+    #region B2
 
     private void NewSession()
     {
@@ -326,16 +516,7 @@ public class Core : CoreEventListenerBase
 #endif
     }
 
-    private void CheckCurrentAccount()
-    {
-        if (UserAccountManager.Instance.currentUserBaseName != null)
-        {
-        }
-        else
-        {
-            Debug.LogWarning("CoreEvent Instance is null, cannot invoke OnAccountChangeState.");
-        }
-    }
+    #endregion
 }
 
 /// <summary>

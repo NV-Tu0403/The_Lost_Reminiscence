@@ -289,6 +289,7 @@
 
             DeTectedMainMenu(item);
             DeTectedSave(item);
+            DetectedAccoutFuntion(item);
             DetectedPauseSession(item);
         }
 
@@ -359,7 +360,62 @@
                 case UIActionType.DeleteSaveItem:
                     UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.DeleteSaveItem);
                     break;
-                case UIActionType.DuplicateSaveItem:
+                case UIActionType.SyncFileSave:
+                    CoreEvent.Instance.triggerSyncFileSave();
+                    break;
+            }
+        }
+
+        private bool isLogin = default;   //(cách này hơi tà đạo nhưng giờ iem làm biếng quá)
+        private void DetectedAccoutFuntion(UIItem item)
+        {
+            string accountState = Core.Instance.CurrentAccountState;
+            switch (item.uIActionType)
+            {
+                case UIActionType.Confim:           // thực hiện Login/ Register/ ConnectToServer tùy AccountStateType
+                    if (accountState == AccountStateType.NoCurrentAccount.ToString())
+                    {
+                        if (isLogin) CoreEvent.Instance.triggerLogin(); // đăng nhập
+                        else CoreEvent.Instance.triggerRegister();      // đăng ký
+                    }
+
+                    if (accountState == AccountStateType.NoConnectToServer.ToString())
+                    {
+                        CoreEvent.Instance.triggerConnectToServer();    // kết nối đến server
+                    }
+
+                    isLogin = false;
+                    UiPage06_C.Instance.ActiveObj(true, false, false);
+                    break;
+
+                case UIActionType.Cancel:           // xóa data input và tắt panel Input
+                    UiPage06_C.Instance.ActiveObj(true, false, false);
+                    break;
+
+                case UIActionType.Logout:           // bật panel Input, tắt bt này tùy vào AccountStateType
+                    if (accountState == AccountStateType.NoConnectToServer.ToString() || accountState == AccountStateType.HaveConnectToServer.ToString())
+                    {
+                        CoreEvent.Instance.triggerLogout();
+                        UiPage06_C.Instance.ActiveObj(true, false, false);
+                    }
+
+                    if (accountState == AccountStateType.NoCurrentAccount.ToString())
+                    {
+                        isLogin = !isLogin; // đánh dấu là login
+                        UiPage06_C.Instance.ActiveObj(false, true, false);
+                    }
+
+                    break;
+                case UIActionType.ConnectToServer:  // bật panel Input, tắt bt này tùy vào AccountStateType
+                    if (accountState == AccountStateType.NoConnectToServer.ToString())
+                    {
+                        UiPage06_C.Instance.ActiveObj(false, true, true);
+                    }
+                    if (accountState == AccountStateType.NoCurrentAccount.ToString())
+                    {
+                        UiPage06_C.Instance.ActiveObj(false, true, false);
+                    }
+
                     break;
             }
         }
