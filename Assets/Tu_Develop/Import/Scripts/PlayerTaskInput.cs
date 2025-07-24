@@ -60,20 +60,20 @@ public class PlayerTaskInput : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 Debug.Log("[PlayerInput] Combo skill 3 -> Target: FA");
-                faAgent.OnPlayerCommand("useskill 3");
+                faAgent.OnPlayerCommand("useskill ProtectiveAura");
                 _isWaitingForSkill3Target = false;
             }
             else if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 Debug.Log("[PlayerInput] Combo skill 2 -> Target: PLAYER");
-                faAgent.OnPlayerCommand("useskill 3 player");
+                faAgent.OnPlayerCommand("useskill ProtectiveAura player");
                 _isWaitingForSkill3Target = false;
             }
 
             if (Input.GetKey(KeyCode.Alpha3) && Time.time - _skill3PressTime > SKILL3_HOLD_DURATION)
             {
                 Debug.Log("[PlayerInput] Giữ Skill 3 -> Target: FA");
-                faAgent.OnPlayerCommand("useskill 3");
+                faAgent.OnPlayerCommand("useskill ProtectiveAura");
                 _isWaitingForSkill3Target = false; // Kết thúc combo
             }
         }
@@ -90,11 +90,11 @@ public class PlayerTaskInput : MonoBehaviour
             // Lệnh skill 1, 2
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
-                faAgent.OnPlayerCommand("useskill 1");
+                faAgent.OnPlayerCommand("useskill GuideSignal");
             }
             if (Input.GetKeyDown(KeyCode.Alpha2))
             {
-                faAgent.OnPlayerCommand("useskill 2");
+                faAgent.OnPlayerCommand("useskill KnowledgeLight");
             }
 
             // Khi nhấn phím 3 lần đầu -> Bắt đầu trạng thái chờ combo
@@ -110,20 +110,6 @@ public class PlayerTaskInput : MonoBehaviour
         {
             Vector3 pos = characterInput.ReturnPointInput(); // Trả ra toạ độ mun đến
             faAgent.OnPlayerCommand($"move {pos.x} {pos.y} {pos.z}");
-        }
-
-        // Lệnh dùng skill bằng phím số
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            faAgent.OnPlayerCommand("useskill 1");
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            faAgent.OnPlayerCommand("useskill 2");
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            faAgent.OnPlayerCommand("useskill 3");
         }
     }
 }
