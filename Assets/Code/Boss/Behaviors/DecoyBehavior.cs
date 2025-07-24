@@ -69,9 +69,20 @@ namespace Code.Boss
         {
             if (isReal)
             {
-                // Player hit real decoy - boss takes damage
+                // Player hit real decoy - boss takes damage and end decoy state
                 BossEventSystem.Trigger(BossEventType.RealDecoyHit);
+                
+                // End DecoyState immediately when real decoy is hit
+                Debug.Log("[DecoyBehavior] Real decoy hit! Ending DecoyState...");
+                
+                // Clean up all decoys and return boss to normal
+                bossController.ClearDecoys();
+                bossController.gameObject.SetActive(true);
+                
+                // Damage boss AFTER cleanup - let boss decide next state based on HP
                 bossController.TakeDamage(1);
+                
+                // Don't force state change - let BossController handle phase transition naturally
             }
             else
             {
@@ -80,7 +91,7 @@ namespace Code.Boss
                 BossEventSystem.Trigger(BossEventType.PlayerTakeDamage, new BossEventData(1));
                 
                 // Transition to Soul State
-                bossController.ChangeState(new SoulState());
+                bossController.ChangeState(new Code.Boss.States.Shared.SoulState());
             }
             
             // Remove this decoy

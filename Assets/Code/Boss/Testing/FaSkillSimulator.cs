@@ -214,20 +214,49 @@ namespace Code.Boss.Testing
             {
                 if (decoy.IsReal)
                 {
-                    // Highlight real decoy
+                    // 1. Ánh sáng xanh trên đầu
                     GameObject highlight = new GameObject("RevealHighlight");
                     highlight.transform.position = decoy.transform.position + Vector3.up * 2;
                     highlight.transform.parent = decoy.transform;
                     
-                    // Add glowing effect
                     var light = highlight.AddComponent<Light>();
                     light.color = Color.green;
-                    light.intensity = 2f;
-                    light.range = 5f;
+                    light.intensity = 3f; // Tăng intensity
+                    light.range = 8f; // Tăng range
                     
-                    Destroy(highlight, 3f);
+                    // 2. Tạo Particle System để rõ hơn
+                    GameObject particles = new GameObject("RevealParticles");
+                    particles.transform.position = decoy.transform.position + Vector3.up * 1.5f;
+                    particles.transform.parent = decoy.transform;
                     
-                    Debug.Log("[Fa Simulator] Real decoy revealed!");
+                    var particleSystem = particles.AddComponent<ParticleSystem>();
+                    var main = particleSystem.main;
+                    main.startColor = Color.green;
+                    main.startSize = 0.2f;
+                    main.startLifetime = 2f;
+                    main.maxParticles = 50;
+                    
+                    var emission = particleSystem.emission;
+                    emission.rateOverTime = 20;
+                    
+                    var shape = particleSystem.shape;
+                    shape.shapeType = ParticleSystemShapeType.Circle;
+                    shape.radius = 1f;
+                    
+                    // 3. Thay đổi màu của decoy
+                    var renderer = decoy.GetComponent<Renderer>();
+                    if (renderer != null)
+                    {
+                        var material = renderer.material;
+                        material.color = Color.Lerp(material.color, Color.green, 0.3f);
+                        material.EnableKeyword("_EMISSION");
+                        material.SetColor("_EmissionColor", Color.green * 0.5f);
+                    }
+                    
+                    // 4. Console log rõ ràng
+                    Debug.Log("[Fa Simulator] ===== REAL DECOY REVEALED! =====");
+                    Debug.Log($"[Fa Simulator] Real decoy is at position: {decoy.transform.position}");
+                    
                     break;
                 }
             }

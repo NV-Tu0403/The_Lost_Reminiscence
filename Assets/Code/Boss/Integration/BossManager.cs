@@ -11,18 +11,6 @@ namespace Code.Boss
         [SerializeField] private BossController bossController;
         [SerializeField] private BossConfig bossConfig;
         
-        [Header("UI Setup")]
-        [SerializeField] private GameObject bossHealthBarPrefab;
-        [SerializeField] private GameObject skillCastBarPrefab;
-        [SerializeField] private GameObject playerHealthBarPrefab;
-        
-        [Header("Player Settings")]
-        [SerializeField] private int playerMaxHealth = 3;
-        
-        private BossHealthBar bossHealthBar;
-        private BossSkillCastBar skillCastBar;
-        private PlayerHealthBar playerHealthBar;
-        
         public static BossManager Instance { get; private set; }
         
         // Events for external systems
@@ -60,9 +48,6 @@ namespace Code.Boss
                 return;
             }
             
-            // Initialize UI components
-            InitializeUI();
-            
             // Register for boss events
             RegisterBossEvents();
             
@@ -72,42 +57,7 @@ namespace Code.Boss
             Debug.Log("Boss System initialized successfully!");
         }
 
-        private void InitializeUI()
-        {
-            // Create Boss Health Bar
-            if (bossHealthBarPrefab != null)
-            {
-                GameObject healthBarGO = Instantiate(bossHealthBarPrefab);
-                bossHealthBar = healthBarGO.GetComponent<BossHealthBar>();
-                if (bossHealthBar == null)
-                    bossHealthBar = healthBarGO.AddComponent<BossHealthBar>();
-                
-                bossHealthBar.Initialize(bossController);
-            }
-            
-            // Create Skill Cast Bar
-            if (skillCastBarPrefab != null)
-            {
-                GameObject castBarGO = Instantiate(skillCastBarPrefab);
-                skillCastBar = castBarGO.GetComponent<BossSkillCastBar>();
-                if (skillCastBar == null)
-                    skillCastBar = castBarGO.AddComponent<BossSkillCastBar>();
-                
-                skillCastBar.Initialize(bossController);
-            }
-            
-            // Create Player Health Bar
-            if (playerHealthBarPrefab != null)
-            {
-                GameObject playerBarGO = Instantiate(playerHealthBarPrefab);
-                playerHealthBar = playerBarGO.GetComponent<PlayerHealthBar>();
-                if (playerHealthBar == null)
-                    playerHealthBar = playerBarGO.AddComponent<PlayerHealthBar>();
-                
-                playerHealthBar.Initialize(playerMaxHealth);
-            }
-        }
-
+       
         private void RegisterBossEvents()
         {
             BossEventSystem.Subscribe(BossEventType.PhaseChanged, OnPhaseChanged);
@@ -225,15 +175,7 @@ namespace Code.Boss
                 bossController.InterruptCurrentSkill();
             }
         }
-
-        // Heal player (for testing or power-ups)
-        public void HealPlayer(int amount)
-        {
-            if (playerHealthBar != null)
-            {
-                playerHealthBar.HealPlayer(amount);
-            }
-        }
+        
 
         // Get current boss state for external systems
         public string GetCurrentBossState()

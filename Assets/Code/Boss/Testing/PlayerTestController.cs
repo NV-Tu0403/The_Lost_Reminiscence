@@ -23,6 +23,7 @@ namespace Code.Boss.Testing
         private float lastAttackTime;
         private BossManager bossManager;
         private Vector3 moveDirection;
+        private Vector3 velocity; // Thêm velocity riêng cho gravity
         
         // Input tracking
         private bool isMoving;
@@ -64,16 +65,7 @@ namespace Code.Boss.Testing
             inputDirection = new Vector3(horizontal, 0, vertical).normalized;
             isMoving = inputDirection.magnitude > 0.1f;
             
-            if (isMoving)
-            {
-                // Rotate player to face movement direction
-                Vector3 lookDirection = inputDirection;
-                if (lookDirection != Vector3.zero)
-                {
-                    Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-                }
-            }
+            // Bỏ phần rotation tự động - chỉ di chuyển bình thường
         }
 
         private void HandleAttackInput()
@@ -101,36 +93,52 @@ namespace Code.Boss.Testing
                 FaBossIntegration.NotifyFaSkillUsed("SecondSkill", true);
             }
             
-            // R - Third Skill (example)
+            // R - Reveal Skill 
             if (Input.GetKeyDown(KeyCode.R))
             {
-                Debug.Log("[Player Test] Using Fa Third Skill");
-                FaBossIntegration.NotifyFaSkillUsed("ThirdSkill", true);
+                Debug.Log("[Player Test] Using Fa Reveal Skill");
+                // Gọi trực tiếp FaSkillSimulator thay vì thông qua integration
+                var faSimulator = FindObjectOfType<FaSkillSimulator>();
+                if (faSimulator != null)
+                {
+                    faSimulator.UseThirdSkill();
+                }
+                else
+                {
+                    Debug.LogWarning("[Player Test] FaSkillSimulator not found in scene!");
+                }
             }
         }
 
         private void MovePlayer()
         {
+            // Handle horizontal movement
+            Vector3 horizontalMove = Vector3.zero;
             if (isMoving)
             {
-                moveDirection = inputDirection * moveSpeed;
-            }
-            else
-            {
-                moveDirection = Vector3.zero;
+                horizontalMove = inputDirection * moveSpeed;
             }
             
-            // Apply gravity
-            moveDirection.y -= 9.81f * Time.deltaTime;
-            
-            // Move the character
+            // Handle gravity properly for CharacterController
             if (characterController != null)
             {
-                characterController.Move(moveDirection * Time.deltaTime);
+                if (characterController.isGrounded)
+                {
+                    velocity.y = -2f; // Small downward force to keep grounded
+                }
+                else
+                {
+                    velocity.y -= 9.81f * Time.deltaTime; // Apply gravity when not grounded
+                }
+                
+                // Combine horizontal movement with vertical velocity
+                Vector3 finalMovement = horizontalMove + velocity;
+                characterController.Move(finalMovement * Time.deltaTime);
             }
             else
             {
-                transform.Translate(moveDirection * Time.deltaTime, Space.World);
+                // Fallback for transform-based movement (without CharacterController)
+                transform.Translate(horizontalMove * Time.deltaTime, Space.World);
             }
         }
 

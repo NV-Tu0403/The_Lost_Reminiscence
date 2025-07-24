@@ -55,6 +55,7 @@ namespace Code.Boss
         public float decoyMoveSpeed = 2f;
         public int decoyCount = 2; // 1 thật, 1 giả
         public float decoySpawnRadius = 8f;
+        public GameObject decoyPrefab; // Prefab cho decoy
         
         [Header("State Randomization")]
         public bool enableRandomStates = true;

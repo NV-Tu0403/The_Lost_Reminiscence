@@ -60,6 +60,9 @@ namespace Code.Boss
         {
             // Boss bắt đầu cast Decoy - đây là thời điểm boss có thể bị tấn công
             OnBossVulnerable?.Invoke(true);
+            
+            // Suggest Fa to use Reveal skill when decoys are active
+            SuggestRevealSkill();
         }
 
         private void OnScreamStarted(BossEventData data)
@@ -79,6 +82,14 @@ namespace Code.Boss
             OnRequestFaSkill?.Invoke("Radar");
             
             Debug.Log("Suggesting Fa to use Radar skill to clear souls");
+        }
+
+        private void SuggestRevealSkill()
+        {
+            // Gửi signal cho Fa system để suggest sử dụng Reveal skill
+            OnRequestFaSkill?.Invoke("Reveal");
+            
+            Debug.Log("Suggesting Fa to use Reveal skill to counter Decoy");
         }
 
         // Method để Fa system gọi khi skill được sử dụng

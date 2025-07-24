@@ -92,12 +92,40 @@ namespace Code.Boss.States.Phase1
 
         private GameObject CreateDecoy(Vector3 position, bool isReal)
         {
-            // Create decoy GameObject (assuming we have a prefab)
-            GameObject decoy = new GameObject(isReal ? "RealDecoy" : "FakeDecoy");
-            decoy.transform.position = position;
+            // Check if decoy prefab is assigned
+            if (config.phase1.decoyPrefab == null)
+            {
+                Debug.LogError("[DecoyState] Decoy prefab is not assigned in BossConfig! Please assign a decoy prefab in Phase1Config.");
+                return null;
+            }
+            
+            // Instantiate decoy from prefab
+            GameObject decoy = GameObject.Instantiate(config.phase1.decoyPrefab, position, Quaternion.identity);
+            decoy.name = isReal ? "RealDecoy" : "FakeDecoy";
+            
+            // Ensure decoy has a collider for attacks
+            Collider decoyCollider = decoy.GetComponent<Collider>();
+            if (decoyCollider == null)
+            {
+                // Add a default collider if none exists
+                decoyCollider = decoy.AddComponent<CapsuleCollider>();
+                if (decoyCollider is CapsuleCollider capsule)
+                {
+                    capsule.height = 2f;
+                    capsule.radius = 0.5f;
+                    capsule.center = new Vector3(0, 1, 0);
+                }
+                Debug.Log($"[DecoyState] Added Collider to {decoy.name}");
+            }
+            
+            // Ensure collider is not a trigger for attack detection
+            decoyCollider.isTrigger = false;
             
             // Add decoy behavior
-            var decoyBehavior = decoy.AddComponent<DecoyBehavior>();
+            var decoyBehavior = decoy.GetComponent<DecoyBehavior>();
+            if (decoyBehavior == null)
+                decoyBehavior = decoy.AddComponent<DecoyBehavior>();
+                
             decoyBehavior.Initialize(bossController, isReal, config.phase1.decoyMoveSpeed);
             
             bossController.AddDecoy(decoy);
