@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1016c87441e64061965782ec09223da2, type: 3}
+  m_Name: BossConfig
+  m_EditorClassIdentifier: 
+  maxHealthPerPhase: 3
+  moveSpeed: 5
+  rotationSpeed: 90
+  phase1:
+    idleDuration: 3
+    lureDuration: 6
+    mockDuration: 2
+    decoyCastTime: 5
+    decoyDuration: 10
+    soulStateCastTime: 2
+    lureDistance: 1.5
+    lureApproachSpeed: 10
+    lureRetreatSpeed: 8
+    decoyMoveSpeed: 1
+    decoyCount: 2
+    decoySpawnRadius: 8
+    decoyPrefab: {fileID: 8248419940883197096, guid: a76d847d1c2cf65489a5419da1a710b6, type: 3}
+    enableRandomStates: 0
+    stateWeights:
+    - 1
+    - 1
+    - 1
+    - 1
+  phase2:
+    angryMoveDuration: 5
+    fearZoneCastTime: 5
+    fearZoneDuration: 10
+    fearZoneActivationTime: 3
+    screamCastTime: 5
+    screamDuration: 10
+    cookStateDuration: 3
+    angryMoveSpeed: 3
+    circleRadius: 10
+    fearZoneRadius: 5
+    visionBlurIntensity: 0.7
+    screenShakeIntensity: 3
+    visionShrinkAmount: 0.5
+  soulConfig:
+    maxSouls: 2
+    soulMoveSpeed: 4
+    soulSpawnRadius: 15
+    soulFollowDistance: 1
+    soulPrefab: {fileID: 5829457037273810398, guid: f075cb8a9f5e4dd449276637c38d11ed, type: 3}
+  uiConfig:
+    bossHealthPosition: {x: 0, y: 0.8}
+    playerHealthPosition: {x: 0, y: -0.8}
+    healthBarSize: {x: 300, y: 30}
+    skillCastBarOffset: {x: 0, y: -50}
+    skillCastBarSize: {x: 200, y: 20}
+    bossHealthColor: {r: 1, g: 0, b: 0, a: 1}
+    playerHealthColor: {r: 0, g: 1, b: 0, a: 1}
+    skillCastColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    uiAnimationSpeed: 1
+    uiAnimationCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  audioConfig:
+    mockLaughSound: {fileID: 8300000, guid: c3628c0ff6c97c54d9d6933731417f46, type: 3}
+    decoySpawnSound: {fileID: 8300000, guid: c0624300f5222c248818b32e128c2c8a, type: 3}
+    soulSpawnSound: {fileID: 8300000, guid: 7cc78cceb499ca14a9b780dc387b4f37, type: 3}
+    screamSound: {fileID: 8300000, guid: d28cff1848444fb4995c3f44d4235576, type: 3}
+    fearZoneSound: {fileID: 8300000, guid: 7051f3e715e53484cbdb4d4fbc6c723f, type: 3}
+    heartbeatSound: {fileID: 8300000, guid: 07533406d64caed44bf43550e60e0831, type: 3}
+    phaseChangeSound: {fileID: 8300000, guid: c3628c0ff6c97c54d9d6933731417f46, type: 3}
+    damageSound: {fileID: 8300000, guid: c747e62359494344e953ac4bbf8e5f51, type: 3}
+    defeatSound: {fileID: 8300000, guid: 90d9c1c9179d3694eaf57804f467a19a, type: 3}
+    masterVolume: 1
+    sfxVolume: 0.8
+    ambientVolume: 0.6
