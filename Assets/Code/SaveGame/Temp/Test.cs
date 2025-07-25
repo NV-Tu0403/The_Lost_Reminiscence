@@ -122,7 +122,7 @@ public class Test : MonoBehaviour
         QuitGame_Bt.onClick.AddListener(OnQuitGameClicked);
         SaveSession_Bt.onClick.AddListener(OnSaveSessionClicked);
         Menu_Bt.onClick.AddListener(OnMenuClicked);
-        QuitSession_Bt.onClick.AddListener(OnQuitSessionClicked);
+        //QuitSession_Bt.onClick.AddListener( OnQuitSessionClicked);
         logoutButton.onClick.AddListener(OnLogoutClicked);
         createAccountButton.onClick.AddListener(OnCreateAccountButtonClicked);
         createButton.onClick.AddListener(OnCreateButtonClicked);
@@ -442,13 +442,13 @@ public class Test : MonoBehaviour
         GamePlayUI.SetActive(false);
     }
 
-    private void OnQuitSessionClicked()
+    private async Task OnQuitSessionClicked()
     {
         try
         {
             Loading(true);
             Core.Instance.menuCameraObj.SetActive(true);
-            ProfessionalSkilMenu.Instance.OnQuitSession(lastSelectedSaveFolder);
+            await ProfessionalSkilMenu.Instance.OnQuitSession(lastSelectedSaveFolder);
             lastSelectedSaveFolder = null;
             ContinueGame_Bt.interactable = false;
             RefreshSaveList();

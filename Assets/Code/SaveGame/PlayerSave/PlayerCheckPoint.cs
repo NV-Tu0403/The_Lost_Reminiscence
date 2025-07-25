@@ -34,7 +34,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         }
     }
 
-    private void Update()
+    private void LateUpdate()
     {
 
         if (characterCameraTransform == null)

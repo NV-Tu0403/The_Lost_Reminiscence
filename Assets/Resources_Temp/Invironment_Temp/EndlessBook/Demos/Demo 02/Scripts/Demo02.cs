@@ -352,16 +352,16 @@
                     }
                     break;
                 case UIActionType.RefreshSaveList:
-                    UIPage05.Instance.RefreshSaveSlots();
+                    await UIPage05.Instance.RefreshSaveSlots();
                     break;
                 case UIActionType.SelectSaveItem:
-                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.SelectSaveItem);
+                    await UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.SelectSaveItem);
                     break;
                 case UIActionType.DeleteSaveItem:
-                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.DeleteSaveItem);
+                    await UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.DeleteSaveItem);
                     break;
                 case UIActionType.SyncFileSave:
-                    CoreEvent.Instance.triggerSyncFileSave();
+                    CoreEvent.Instance.triggerSyncFileSave(ProfessionalSkilMenu.Instance.selectedSaveFolder);
                     break;
             }
         }

@@ -54,7 +54,7 @@ public class CoreEvent : MonoBehaviour
     public event Action OnLogout;
     public event Action OnConnectToServer;
     public event Action OnConnectingToServer;
-    public event Action OnSyncFileSave;
+    public event Action<string> OnSyncFileSave;
 
     #endregion
 
@@ -101,7 +101,7 @@ public class CoreEvent : MonoBehaviour
     public void triggerLogout() => OnLogout?.Invoke();
     public void triggerConnectToServer() => OnConnectToServer?.Invoke();
     public void triggerConnectingToServer() => OnConnectingToServer?.Invoke();
-    public void triggerSyncFileSave() => OnSyncFileSave?.Invoke();
+    public void triggerSyncFileSave(string path) => OnSyncFileSave?.Invoke(path);
 
     #endregion
 
