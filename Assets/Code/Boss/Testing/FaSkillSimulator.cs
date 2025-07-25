@@ -353,29 +353,29 @@ namespace Code.Boss.Testing
 
         #endregion
 
-        private void OnGUI()
-        {
-            GUILayout.BeginArea(new Rect(320, 10, 300, 150));
-            GUILayout.Label("=== FA SKILLS DEBUG ===");
-            
-            // Radar skill
-            string radarStatus = CanUseRadar ? "READY" : $"CD: {(radarCooldown - (Time.time - lastRadarUse)):F1}s";
-            GUILayout.Label($"Q - Radar: {radarStatus}");
-            
-            // Second skill
-            string secondStatus = CanUseSecondSkill ? "READY" : $"CD: {(secondSkillCooldown - (Time.time - lastSecondSkillUse)):F1}s";
-            GUILayout.Label($"E - Protection: {secondStatus}");
-            
-            // Third skill
-            string thirdStatus = CanUseThirdSkill ? "READY" : $"CD: {(thirdSkillCooldown - (Time.time - lastThirdSkillUse)):F1}s";
-            GUILayout.Label($"R - Reveal: {thirdStatus}");
-            
-            GUILayout.Space(10);
-            GUILayout.Label($"Active Souls: {FaBossIntegration.GetCurrentSoulCount()}");
-            GUILayout.Label($"Boss Phase: {FaBossIntegration.GetCurrentBossPhase()}");
-            
-            GUILayout.EndArea();
-        }
+        // private void OnGUI()
+        // {
+        //     GUILayout.BeginArea(new Rect(320, 10, 300, 150));
+        //     GUILayout.Label("=== FA SKILLS DEBUG ===");
+        //     
+        //     // Radar skill
+        //     string radarStatus = CanUseRadar ? "READY" : $"CD: {(radarCooldown - (Time.time - lastRadarUse)):F1}s";
+        //     GUILayout.Label($"Q - Radar: {radarStatus}");
+        //     
+        //     // Second skill
+        //     string secondStatus = CanUseSecondSkill ? "READY" : $"CD: {(secondSkillCooldown - (Time.time - lastSecondSkillUse)):F1}s";
+        //     GUILayout.Label($"E - Protection: {secondStatus}");
+        //     
+        //     // Third skill
+        //     string thirdStatus = CanUseThirdSkill ? "READY" : $"CD: {(thirdSkillCooldown - (Time.time - lastThirdSkillUse)):F1}s";
+        //     GUILayout.Label($"R - Reveal: {thirdStatus}");
+        //     
+        //     GUILayout.Space(10);
+        //     GUILayout.Label($"Active Souls: {FaBossIntegration.GetCurrentSoulCount()}");
+        //     GUILayout.Label($"Boss Phase: {FaBossIntegration.GetCurrentBossPhase()}");
+        //     
+        //     GUILayout.EndArea();
+        // }
 
         private void OnDestroy()
         {

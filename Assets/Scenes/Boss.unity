@@ -493,6 +493,7 @@ GameObject:
   - component: {fileID: 480415758}
   - component: {fileID: 480415760}
   - component: {fileID: 480415759}
+  - component: {fileID: 480415761}
   m_Layer: 0
   m_Name: Boss
   m_TagString: Boss
@@ -557,6 +558,29 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!136 &480415761
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480415757}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2.4465811
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.7232903, z: -0}
 --- !u!1 &575492134
 GameObject:
   m_ObjectHideFlags: 0
@@ -1289,8 +1313,8 @@ MonoBehaviour:
   firePoint: {fileID: 205063881}
   bulletSpeed: 20
   bulletLifetime: 5
-  attackCooldown: 1
-  showDebugUI: 1
+  attackCooldown: 0.5
+  showDebugUI: 0
 --- !u!114 &1199219467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4621,7 +4645,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6806874347444472802}
   - component: {fileID: 7862381602249121416}
-  - component: {fileID: 7862381602249121417}
   m_Layer: 0
   m_Name: BossModel
   m_TagString: Untagged
@@ -5141,29 +5164,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!136 &7862381602249121417
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6142118840572957016}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2.3021476
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.6510738, z: -0}
 --- !u!137 &7910399737985522090
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
