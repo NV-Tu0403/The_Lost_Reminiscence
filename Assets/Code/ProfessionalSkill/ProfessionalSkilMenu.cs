@@ -595,8 +595,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (inputs.Length < 3)
         {
-            //Debug.LogError("Không đủ input field cho login (cần ít nhất 3).");
-            UiPage06_C.Instance.ShowLogMessage("Không đủ input field cho đăng ký (cần ít nhất 3).");
+            
+            UiPage06_C.Instance.ShowLogMessage($"Không đủ input field cho đăng ký (cần ít nhất 3).{inputs.Length}");
             return;
         }
 
@@ -731,7 +731,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 return (false, null, null);
             });
         }
-        catch (Exception e)
+        catch (Exception )
         {
             //mess = $"Lỗi khi kiểm tra bản backup: {e.Message}";
             return (false, null, null);
