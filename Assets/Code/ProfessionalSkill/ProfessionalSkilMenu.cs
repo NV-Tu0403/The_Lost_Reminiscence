@@ -771,6 +771,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             await Task.Run(() =>
             {
                 CopyDirectory(folderPath, backupTargetPath);
+                Debug.Log($"-----------");
 
             });
 

@@ -101,11 +101,14 @@ namespace Loc_Backend.Scripts
             string transferFolder = GetTransferFolder();
             if (!CheckFolderExists(transferFolder))
                 Debug.Log($"-----------{transferFolder.ToString()}");
+
             yield break;
 
          
 
             var jsonFiles = GetAllJsonFilesInFirstSubFolder(transferFolder);
+            Debug.LogError($"-----------{transferFolder.ToString()}");
+
             if (jsonFiles == null || jsonFiles.Length == 0)
             {
                 yield break;
