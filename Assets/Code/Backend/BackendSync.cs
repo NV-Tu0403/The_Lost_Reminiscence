@@ -20,11 +20,19 @@ namespace Loc_Backend.Scripts
         string GetTransferFolder()
         {
 #if UNITY_EDITOR
-            return Path.Combine(Application.dataPath, "Loc_Backend/SavePath");
+            string folderName = "User_DataGame/GetBackUpTray";
+            string localLowPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Roaming", "LocalLow"),
+                "DefaultCompany",
+                "The_Lost_Reminiscence",
+                folderName
+            );
+            return localLowPath;
 #else
-            return Path.Combine(Application.persistentDataPath, "SavePath");
+    return Path.Combine(Application.persistentDataPath, "SavePath");
 #endif
         }
+
 
         
         public IEnumerator RequestCloudRegister(string userName, string password, string email, Action<bool, string> callback)
