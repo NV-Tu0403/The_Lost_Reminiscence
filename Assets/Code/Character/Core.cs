@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using UnityEngine;
 using System.Collections;
-using TMPro;
 using Loc_Backend.Scripts;
 using System;
 
@@ -30,7 +29,7 @@ public class Core : CoreEventListenerBase
 
     #endregion
 
-    public bool IsOffline { get; private set; } = true;     // Mặc định là online khi khởi động
+    public bool IsOffline { get; private set; } = true;
     public bool IsDebugMode = false;
 
     [Header("State")]
@@ -66,25 +65,27 @@ public class Core : CoreEventListenerBase
             DontDestroyOnLoad(gameObject);
         }
 
+        base.Awake();
+
         if (_userAccountManager == null)
         {
             _userAccountManager = UserAccountManager.Instance;
         }
 
-        base.Awake();
         _stateMachine = new StateMachine();
         _accountStateMachine = new StateMachine();
         _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
         _accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
-        TryInitializeCamera();
+        //TryInitializeCamera();
         _cameraZoomController = CameraZoomController.Instance;
     }
 
     private void Start()
     {
+        //TryInitializeCamera();
         SetUpCamera();
         StartCoroutine(ActiveObjMenu(true));
-        StartCoroutine(RetryUpdateAccountState());
+        //StartCoroutine(RetryUpdateAccountState());
     }
 
     private void Update()
@@ -148,24 +149,33 @@ public class Core : CoreEventListenerBase
     /// </summary>
     private void TryInitializeCamera()
     {
-        if (menuCameraObj == null)
-        {
-            GameObject[] all = Resources.FindObjectsOfTypeAll<GameObject>();
-            menuCameraObj = all.FirstOrDefault(obj => obj.name == "MenuCameras");
-            //Debug.Log("MenuCamera found!");
-        }
+
         if (characterCameraObj == null)
         {
-            characterCameraObj = FindObjectsByType<CharacterCamera>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                .Select(cam => cam.gameObject)
+            var characterCamera = FindObjectsByType<CharacterCamera>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                    .Select(cam => cam.gameObject)
                 .FirstOrDefault();
-            if (characterCameraObj != null)
+            if (characterCamera != null)
             {
-                //_characterCamera = characterCameraObj.GetComponent<CharacterCamera>();
-                _characterCamera = characterCameraObj.GetComponent<Camera>();
+                characterCameraObj = characterCamera.gameObject;
+                _characterCamera = characterCamera.GetComponent<Camera>();
+            }
+            else
+            {
+                Debug.LogWarning("CharacterCamera not found!");
             }
         }
+
+        if (menuCameraObj == null)
+        {
+            menuCameraObj = Resources.FindObjectsOfTypeAll<GameObject>()
+                .FirstOrDefault(obj => obj.name == "MenuCameras");
+            if (menuCameraObj == null)
+                Debug.LogWarning("MenuCamera not found!");
+        }
+
     }
+
 
     /// <summary>
     /// Thiết lập mặc định của camera (menu/Player).
@@ -192,21 +202,26 @@ public class Core : CoreEventListenerBase
         //Debug.Log($"[Core] CurrentCoreState updated to: {CurrentCoreState}");
     }
 
-    private void UpdateAccountState(AccountStateType accountStateType)
+    private void UpdateAccountState(AccountStateType accountStateType) 
     {
-        CurrentAccountState = accountStateType.ToString();
-        UiPage06_C.Instance.UpdateTextFields(accountStateType);
-
-        StartCoroutine(RetryUpdateAccountState());
-
+        try
+        {
+            CurrentAccountState = accountStateType.ToString();
+            StartCoroutine(RetryUpdateAccountState(accountStateType));
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"{e.Message}", e);
+        }
     }
 
-    private IEnumerator RetryUpdateAccountState()
+    private IEnumerator RetryUpdateAccountState(AccountStateType Type)
     {
         yield return new WaitForSeconds(0.1f);
         if (_accountStateMachine.CurrentStateType != null)
         {
-            UiPage06_C.Instance.UpdateInfo(CurrentAccountName, PlayTimeManager.Instance.SessionPlayTime.ToString(), CurrentAccountState);
+            UiPage06_C.Instance.UpdateInfo(CurrentAccountName, PlayTimeManager.Instance.SessionPlayTime.ToString(), Type);
+            UiPage06_C.Instance.UpdateTextFields(Type);
         }
     }
 

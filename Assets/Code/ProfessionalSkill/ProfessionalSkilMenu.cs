@@ -7,7 +7,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using Code.Procession;
 using Loc_Backend.Scripts;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -28,7 +27,14 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public string selectedSaveFolder;
     public string SelectedSaveImagePath;
 
+    [Header("BackUp")]
+    public string CurrentbackupSavePath;
+    public string CurrentOriginalSavePath;
+    public bool CurrentbackupOke;
+
     public string SceneDefault = "Phong_scene";
+
+    private string mess = null;
 
     protected override void Awake()
     {
@@ -56,13 +62,14 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnNewSession += () => OnNewGame();
         e.OnContinueSession += () => OnContinueGame(selectedSaveFolder);
         e.OnSaveSession += () => OnSaveSession(lastSelectedSaveFolder);
-        e.OnQuitSession += () => OnQuitSession(lastSelectedSaveFolder);
+        e.OnQuitSession += async () => await OnQuitSession(lastSelectedSaveFolder);
 
         e.OnSelectSaveItem += (path) => OnSelectSave(path);
+        e.OnSyncFileSave += async (path) => await BackUpSaveItemAsync(path);
 
         e.OnLogin += () => Login();
         e.OnRegister += () => Register();
-        e.OnLogout += () => Logout();
+        e.OnLogout += async () => await Logout();
         e.OnConnectToServer += () => ConnectToServer();
         e.OnConnectingToServer += () => OnOtp();
     }
@@ -72,9 +79,16 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnNewSession -= () => OnNewGame();
         e.OnContinueSession -= () => OnContinueGame(selectedSaveFolder);
         e.OnSaveSession -= () => OnSaveSession(lastSelectedSaveFolder);
-        e.OnQuitSession -= () => OnQuitSession(lastSelectedSaveFolder);
+        e.OnQuitSession -= async () => await OnQuitSession(lastSelectedSaveFolder);
 
         e.OnSelectSaveItem -= (path) => OnSelectSave(path);
+        e.OnSyncFileSave -= async (path) => await BackUpSaveItemAsync(path);
+
+        e.OnLogin -= () => Login();
+        e.OnRegister -= () => Register();
+        e.OnLogout -= async () => await Logout();
+        e.OnConnectToServer -= () => ConnectToServer();
+        e.OnConnectingToServer -= () => OnOtp();
     }
 
     #region nghiệp vụ 1
@@ -131,7 +145,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
 
             UiPage06_C.Instance.ActiveObj(true, false, false);
-           
+
         }
         else
         {
@@ -192,7 +206,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         return new SaveListContext
         {
             UserName = UserAccountManager.Instance.currentUserBaseName,
-            Saves = saves.Select(s => new SaveFolder { FolderPath = s.FolderPath, ImagePath = s.ImagePath }).ToList(),
+            Saves = saves.Select(s => new SaveFolder { FolderPath = s.FolderPath, ImagePath = s.ImagePath }).ToList(), // Chỉ lấy đường dẫn thư mục và ảnh
             IsContinueEnabled = isContinueEnabled
         };
     }
@@ -342,7 +356,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// Xử lý khi người dùng nhấn xóa một thư mục lưu trữ.
     /// </summary>
     /// <param name="folderPath"></param>
-    public void OnDeleteSave(string folderPath)
+    public async Task OnDeleteSave(string folderPath)
     {
         if (SaveGameManager.Instance.DeleteSaveFolder(folderPath))
         {
@@ -350,7 +364,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             {
                 lastSelectedSaveFolder = null;
                 selectedSaveFolder = null;
-                UIPage05.Instance.RefreshSaveSlots();
+                await UIPage05.Instance.RefreshSaveSlots();
             }
         }
         else
@@ -395,7 +409,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     }
 
-    public void OnQuitSession(string currentSaveFolder)
+    public async Task OnQuitSession(string currentSaveFolder)
     {
         if (!string.IsNullOrEmpty(currentSaveFolder))
         {
@@ -433,7 +447,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
         }
 
-        UIPage05.Instance.RefreshSaveSlots();
+        await UIPage05.Instance.RefreshSaveSlots();
 
     }
 
@@ -523,7 +537,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord))
         {
             //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
-            UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass ní.");   
+            UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass ní.");
             return;
         }
         _core.RegisterAccount(userName, passWord);
@@ -567,12 +581,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
     }
 
-    private void Logout()
+    private async Task Logout()
     {
         _core.LogoutAccount();
         lastSelectedSaveFolder = null;
         selectedSaveFolder = null;
-        UIPage05.Instance.RefreshSaveSlots();
+        await UIPage05.Instance.RefreshSaveSlots();
     }
 
     private void ConnectToServer()
@@ -604,7 +618,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             input.text = string.Empty;
         }
     }
-    
+
     private void OnOtp()
     {
         string userName = _core._userAccountManager.currentUserBaseName;
@@ -634,42 +648,146 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
     }
 
-    public async Task<bool> BackUpSaveItemAsync(string folderPath)
-    {
-        if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
-        {
-            Debug.LogError($"[BackUpSaveItem] Invalid folder path: {folderPath}");
-            return false;
-        }
+    #endregion
 
+    /// <summary>
+    /// ghi đè file save gốc bằng file backup với path được trả về bởi CheckBackupSaveAsync
+    /// </summary>
+    /// <param name="pathSelectSaveFolder"></param>
+    /// <returns></returns>
+    public async Task<bool> SetBackUpSaveItemAsync()
+    {
         try
         {
+            bool found = CurrentbackupOke;
+            string backupPath = CurrentbackupSavePath;
+            string originalPath = CurrentOriginalSavePath;
+
+            return await Task.Run(() =>
+            {
+                if (!found || string.IsNullOrEmpty(backupPath) || string.IsNullOrEmpty(originalPath))
+                    return false;
+
+                if (Directory.Exists(originalPath))
+                    Directory.Delete(originalPath, true); // Xóa bản cũ
+
+                CopyDirectory(backupPath, originalPath); // Sao chép bản backup
+
+                mess = "Đã khôi phục thành công bản backup.";
+                return true;
+            });
+        }
+        catch (Exception e)
+        {
+            mess = $"Lỗi khi khôi phục backup: {e.Message}";
+            return false;
+        }
+        finally
+        {
+            UiPage06_C.Instance.ShowLogMessage(mess);
+#if UNITY_EDITOR
+            Debug.Log(mess);
+            UiPage06_C.Instance.ShowLogMessage(mess);
+#endif
+        }
+    }
+
+    /// <summary>
+    /// trả về 2 path là đường dẫn đến thư mục backup và đường dẫn đến thư mục có tên gốc của bản backup.
+    /// </summary>
+    /// <param name="pathSelectSaveFolder"></param>
+    /// <returns></returns>
+    public async Task<(bool found, string backupFolderPath, string originalSaveFolderPath)> CheckBackupSaveAsync(SaveListContext Context)
+    {
+        mess = "";
+        try
+        {
+            string rootBackupDir = Path.Combine(Application.persistentDataPath, "User_DataGame", "GetBackUpTray");
+            Directory.CreateDirectory(rootBackupDir);
+            return await Task.Run(() =>
+            {
+                var saveContext = RefreshSaveList();
+
+                foreach (var save in saveContext.Saves)
+                {
+                    // Tên thư mục gốc để đối chiếu
+                    string originalFolderName = Path.GetFileName(save.FolderPath);
+
+                    // Kiểm tra toàn bộ thư mục backup
+                    var backupDirs = Directory.GetDirectories(rootBackupDir);
+
+                    foreach (var backupPath in backupDirs)
+                    {
+                        var parsed = ParseBackupFolderName(Path.GetFileName(backupPath));
+                        if (parsed.originalName == originalFolderName)
+                        {
+                            mess = $"Tìm thấy bản backup cho:\n\n - {parsed.originalName} \n- {parsed.backupTimestamp}";
+                            return (true, save.FolderPath, backupPath);
+                        }
+                    }
+                }
+
+                //mess = "Không tìm thấy bản backup nào khớp với các bản save.";
+                return (false, null, null);
+            });
+        }
+        catch (Exception e)
+        {
+            //mess = $"Lỗi khi kiểm tra bản backup: {e.Message}";
+            return (false, null, null);
+        }
+        finally
+        {
+            Debug.Log(mess);
+            UiPage06_C.Instance.ShowLogMessage(mess);
+        }
+    }
+
+    public async Task<bool> BackUpSaveItemAsync(string folderPath)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
+            {
+                mess = "WTF :( Chọn bản save đi ní.";
+                return false;
+            }
+
             string rootBackupDir = Path.Combine(Application.persistentDataPath, "User_DataGame", "BackUpTray");
             Directory.CreateDirectory(rootBackupDir);
+
+            // đảm bảo BackUpTray rổng
+            if (Directory.GetFiles(rootBackupDir).Length > 0 || Directory.GetDirectories(rootBackupDir).Length > 0)
+            {
+                await ClearBackupTrayAsync();
+            }
 
             // Tên thư mục backup có timestamp
             string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             string folderName = Path.GetFileName(folderPath);
             string backupTargetPath = Path.Combine(rootBackupDir, $"{folderName}_backup_{timestamp}");
 
-            // Xoá nếu đã tồn tại
-            if (Directory.Exists(backupTargetPath))
-            {
-                Directory.Delete(backupTargetPath, true);
-            }
-
             await Task.Run(() =>
             {
                 CopyDirectory(folderPath, backupTargetPath);
             });
 
-            Debug.Log($"[BackUpSaveItem] Backup thành công: {backupTargetPath}");
+            mess = $"Item save đã được chuyển vào thư mục Backup: {backupTargetPath}";
             return true;
         }
         catch (Exception e)
         {
-            Debug.LogError($"[BackUpSaveItem] Lỗi khi backup: {e.Message}");
+            mess = $"Lỗi khi backup: {e.Message}";
             return false;
+        }
+        finally
+        {
+#if UNITY_EDITOR
+            Debug.Log(mess);
+            UiPage06_C.Instance.ShowLogMessage(mess);
+#else
+            UiPage06_C.Instance.ShowLogMessage(mess);
+#endif
         }
     }
 
@@ -715,7 +833,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             {
                 // Xoá toàn bộ
                 Directory.Delete(rootBackupDir, true);
-                // Tạo lại trống
+                // Tạo lại folder trống
                 Directory.CreateDirectory(rootBackupDir);
             });
 
@@ -734,30 +852,39 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     /// <param name="folderName"></param>
     /// <returns></returns>
-    public static (string originalName, string backupTimestamp) ParseBackupFolderName(string folderName)
+    public (string originalName, string backupTimestamp) ParseBackupFolderName(string folderName)
     {
-        // Regex: match _backup_yyyyMMdd_HHmmss ở cuối
-        var match = Regex.Match(folderName, @"^(.*)(_backup_\d{8}_\d{6})$");
+        try
+        {
+            // Regex: match _backup_yyyyMMdd_HHmmss ở cuối
+            var match = Regex.Match(folderName, @"^(.*)(_backup_\d{8}_\d{6})$");
 
-        if (match.Success)
-        {
-            string originalName = match.Groups[1].Value;
-            string backupTimestamp = match.Groups[2].Value;
-            return (originalName, backupTimestamp);
+            if (match.Success)
+            {
+                string originalName = match.Groups[1].Value;
+                string backupTimestamp = match.Groups[2].Value;
+                return (originalName, backupTimestamp);
+            }
+            else
+            {
+                return (folderName, string.Empty);
+            }
         }
-        else
+        catch (Exception e)
         {
-            // Không match, trả lại nguyên tên
+            mess = $"[ParseBackupFolderName] Regex error: {e.Message}";
             return (folderName, string.Empty);
         }
+        finally
+        {
+            UiPage06_C.Instance.ShowLogMessage(mess);
+        }
 
-
-        //string folder = "MySave_backup_20250720_160001";
         //var result = ParseBackupFolderName(folder);
 
         //Debug.Log($"Original name: {result.originalName}");       // "MySave"
         //Debug.Log($"Backup timestamp: {result.backupTimestamp}"); // "_backup_20250720_160001"
     }
 
-    #endregion
+
 }
