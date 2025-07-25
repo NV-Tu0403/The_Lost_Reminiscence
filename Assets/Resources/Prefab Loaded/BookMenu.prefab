@@ -4120,7 +4120,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.70710677, z: 0.70710677, w: 0}
   m_LocalPosition: {x: 0, y: -5.11, z: -1}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.5162, y: 1.5162, z: 1.5162}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1977057762681147935}
@@ -4156,7 +4156,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9bdbb6b61fad5004f96b4dbe70dda2b1, type: 2}
+  - {fileID: 2100000, guid: 080d0fb0823160444acce8f9deb91e76, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -11625,6 +11625,7 @@ MonoBehaviour:
   obiOfPages:
   - Obj:
     - {fileID: 3722450177726604412}
+    - {fileID: 3222250954542034672}
 --- !u!1 &2483745721215997868
 GameObject:
   m_ObjectHideFlags: 0
@@ -12618,7 +12619,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &9157404615461666567
 Transform:
   m_ObjectHideFlags: 0
@@ -14688,7 +14689,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 24c1e94b37aab0040a5e5db843dcbf1f, type: 2}
+  - {fileID: 2100000, guid: 3b90bccd164610940a2e429ebcc99024, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -25938,14 +25939,18 @@ MonoBehaviour:
     - {fileID: 5951459763011689084}
     - {fileID: 1527325288608783071}
     - {fileID: 2013170913153771742}
-  updateObjBt:
+  - uIActionType: 21
+    inputField:
+    - {fileID: 1527325288608783071}
+  UpdateTextByState:
   - logout_login: {fileID: 387078021037191338}
     connect_register: {fileID: 7110777866693293762}
-    Confim: {fileID: 3703207244322478202}
+    Confim: {fileID: 5995797486007775953}
+    Pass_text: {fileID: 2118125575155398947}
   updateObjInfos:
   - CurrentUserName: {fileID: 6083042944859676643}
     PlayTime: {fileID: 5869351202371869375}
-    ConnectState: {fileID: 8868603512653165912}
+    ConnectStateMesh: {fileID: 8868603512653165912}
     falseColor: {r: 0.5018867, g: 0, b: 0, a: 1}
     trueColor: {r: 0, g: 1, b: 0, a: 1}
   updateActiveObj:
@@ -25954,8 +25959,10 @@ MonoBehaviour:
     PanelFuntionObj:
     - {fileID: 4452507058495568278}
     - {fileID: 1457682080968267842}
-    ConnectObj:
+    emailObj:
     - {fileID: 2253731213757028818}
+    nameObj:
+    - {fileID: 4614037459325525100}
   updateAccountLogPage:
   - Message:
     - {fileID: 7369149395357044496}
