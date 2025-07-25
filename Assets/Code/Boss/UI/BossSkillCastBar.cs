@@ -102,9 +102,9 @@ namespace Code.Boss
         private void OnStateChanged(BossEventData data)
         {
             Debug.Log($"[BossSkillCastBar] OnStateChanged called - current state: {data?.stringValue}, isVisible: {isVisible}");
-            // Chỉ hide cast bar khi chuyển sang state khác (không phải DecoyState)
+            // Chỉ hide cast bar khi chuyển sang state khác (không phải ScreamState hoặc FearZoneState)
             // và không phải khi skill vừa được activate
-            if (isVisible && data?.stringValue != "DecoyState")
+            if (isVisible && data?.stringValue != "ScreamState" && data?.stringValue != "FearZoneState" && data?.stringValue != "DecoyState")
             {
                 Debug.Log("[BossSkillCastBar] Hiding cast bar due to state change");
                 SetVisible(false);

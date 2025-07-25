@@ -27,6 +27,7 @@ namespace Code.Boss.States.Phase2
             BossEventSystem.Trigger(BossEventType.ScreamStarted);
             
             // Trigger skill cast với skill name để UI hiển thị
+            Debug.Log("[ScreamState] Triggering SkillCasted event with 'Scream'");
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Scream" });
         }
 
@@ -48,6 +49,7 @@ namespace Code.Boss.States.Phase2
             
             // Update skill cast progress for UI
             float progress = castTimer / config.phase2.screamCastTime;
+            Debug.Log($"[ScreamState] Progress updated: {progress:F2}");
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
             
             if (castTimer >= config.phase2.screamCastTime)
@@ -60,6 +62,10 @@ namespace Code.Boss.States.Phase2
         {
             isCasting = false;
             skillActivated = true;
+            
+            // Trigger event để ẩn UI cast bar khi skill hoàn thành
+            Debug.Log("[ScreamState] Skill casting completed - triggering skill complete event");
+            BossEventSystem.Trigger(BossEventType.SkillInterrupted); // Ẩn UI cast bar
             
             Debug.Log("[Boss State] ScreamState - Scream activated with effects");
             
@@ -85,16 +91,19 @@ namespace Code.Boss.States.Phase2
         private void ApplyScreenShake()
         {
             // This would integrate with a camera shake system
-            // For now, trigger event for external system to handle
-            BossEventSystem.Trigger(BossEventType.SkillCasted, 
-                new BossEventData { stringValue = "ScreenShake", floatValue = config.phase2.screenShakeIntensity });
+            // Sửa: không trigger SkillCasted để tránh hiện lại UI cast bar
+            Debug.Log($"[ScreamState] Applying screen shake with intensity: {config.phase2.screenShakeIntensity}");
+            // Có thể trigger event khác cho camera shake system
+            // BossEventSystem.Trigger(BossEventType.CameraShake, new BossEventData(config.phase2.screenShakeIntensity));
         }
 
         private void ApplyVisionShrink()
         {
             // This would integrate with a camera/UI system
-            BossEventSystem.Trigger(BossEventType.SkillCasted, 
-                new BossEventData { stringValue = "VisionShrink", floatValue = config.phase2.visionShrinkAmount });
+            // Sửa: không trigger SkillCasted để tránh hiện lại UI cast bar
+            Debug.Log($"[ScreamState] Applying vision shrink with amount: {config.phase2.visionShrinkAmount}");
+            // Có thể trigger event khác cho vision system
+            // BossEventSystem.Trigger(BossEventType.VisionShrink, new BossEventData(config.phase2.visionShrinkAmount));
         }
 
         private void HandleSkillActive()
