@@ -160,6 +160,29 @@ public class UserAccountManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Kiểm tra theo baseName xem tài khoản có đồng bộ với server chưa.
+    /// </summary>
+    public bool IsBaseNameSynced(string baseName)
+    {
+        if (string.IsNullOrWhiteSpace(baseName))
+            return false;
+
+        var user = userData.Users
+            .Where(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(u => u.TimeCheckIn)
+            .FirstOrDefault();
+
+        if (user == null)
+        {
+            Debug.LogWarning($"[IsBaseNameSynced] Không tìm thấy tài khoản với baseName: {baseName}");
+            return false;
+        }
+
+        return user.SyncToServer;
+    }
+
+
     private void SaveUserData()
     {
         try
@@ -300,7 +323,7 @@ public class UserAccountManager : MonoBehaviour
             Debug.LogWarning("CurrentUserName is null or empty.");
             return false;
         }
-        var user = userData.Users.FirstOrDefault(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+        var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(userName, StringComparison.OrdinalIgnoreCase));
         if (user == null)
         {
             Debug.LogWarning($"User '{userName}' not found.");
@@ -315,19 +338,29 @@ public class UserAccountManager : MonoBehaviour
     /// <param name="userName"></param>
     public bool MarkAsSynced(string userName)
     {
-        if (string.IsNullOrEmpty(userName))
+        if (string.IsNullOrWhiteSpace(userName))
         {
             Debug.LogWarning("UserName is null or empty.");
             return false;
         }
-        var user = userData.Users.FirstOrDefault(u => u.UserName == userName);
+
+        userName = userName.Trim(); // Xử lý dấu cách vô tình
+        var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+
         if (user != null)
         {
+            Debug.Log($"[MarkAsSynced] User cần đánh dấu đã đồng bộ là : {user.UserName}");
             user.SyncToServer = true;
             SaveUserData();
+            return true;
         }
-        return user.SyncToServer;
+        else
+        {
+            Debug.LogWarning($"[MarkAsSynced] Không tìm thấy user với UserName = '{userName}'");
+            return false;
+        }
     }
+
 
     public void UpdateLastSession(string lastFileSave, double playTime)
     {

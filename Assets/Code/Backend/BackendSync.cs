@@ -20,11 +20,19 @@ namespace Loc_Backend.Scripts
         string GetTransferFolder()
         {
 #if UNITY_EDITOR
-            return Path.Combine(Application.dataPath, "Loc_Backend/SavePath");
+            string folderName = "User_DataGame/BackUpTray";
+            string localLowPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Roaming", "LocalLow"),
+                "DefaultCompany",
+                "The_Lost_Reminiscence",
+                folderName
+            );
+            return localLowPath;
 #else
-            return Path.Combine(Application.persistentDataPath, "SavePath");
+    return Path.Combine(Application.persistentDataPath, "SavePath");
 #endif
         }
+
 
         
         public IEnumerator RequestCloudRegister(string userName, string password, string email, Action<bool, string> callback)
@@ -87,12 +95,15 @@ namespace Loc_Backend.Scripts
 
         IEnumerator UploadAllJsonFilesAsBatch()
         {
-            if (!IsAuthenticated())
-                yield break;
+            //if (!IsAuthenticated())
+            //    yield break;
 
             string transferFolder = GetTransferFolder();
             if (!CheckFolderExists(transferFolder))
-                yield break;
+                Debug.Log($"-----------{transferFolder.ToString()}");
+            yield break;
+
+         
 
             var jsonFiles = GetAllJsonFilesInFirstSubFolder(transferFolder);
             if (jsonFiles == null || jsonFiles.Length == 0)

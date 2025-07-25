@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class FaAgent : MonoBehaviour, FaInterface
 {
+    [Header("Event Channels")] [SerializeField]
+    private OnFaAgentUseSkill? useSkillEventChannel;
     [Header("Canvas")] 
     [SerializeField] private TextMeshProUGUI? skill1Cooldown;
     [SerializeField] private TextMeshProUGUI? skill2Cooldown;
@@ -16,6 +18,23 @@ public class FaAgent : MonoBehaviour, FaInterface
     // Bổ sung TaskQueue quản lý task cho Fa
     private readonly TaskQueue _taskQueue = new TaskQueue();
     // Hàm thêm task vào queue
+
+    private void OnEnable()
+    {
+        if (useSkillEventChannel != null)
+        {
+            //useSkillEventChannel.OnEventPushlished += StartSkillCooldown;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (useSkillEventChannel != null)
+        {
+            //useSkillEventChannel.
+        }
+    }
+    
     public void AddTask(FaTask task)
     {
         _taskQueue.AddTask(task);

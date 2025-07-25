@@ -55,6 +55,8 @@ public class Core : CoreEventListenerBase
     public GameObject characterCameraObj;
     public Camera _characterCamera;
 
+    private string mess = null;
+
     #endregion
 
     protected override void Awake()
@@ -75,7 +77,8 @@ public class Core : CoreEventListenerBase
         _stateMachine = new StateMachine();
         _accountStateMachine = new StateMachine();
         _stateMachine.SetState(new InMainMenuState(_stateMachine, _coreEvent));
-        _accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
+        InitAccountState();
+        //_accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
         //TryInitializeCamera();
         _cameraZoomController = CameraZoomController.Instance;
     }
@@ -83,6 +86,7 @@ public class Core : CoreEventListenerBase
     private void Start()
     {
         //TryInitializeCamera();
+        InitAccountState();
         SetUpCamera();
         StartCoroutine(ActiveObjMenu(true));
         //StartCoroutine(RetryUpdateAccountState());
@@ -143,6 +147,36 @@ public class Core : CoreEventListenerBase
 
         e.OnQuitGame -= QuitGame;
     }
+
+    /// <summary>
+    /// Khởi tạo trạng thái tài khoản khi game bắt đầu dựa theo baseName hiện tại.
+    /// </summary>
+    public void InitAccountState()
+    {
+        string baseName = _userAccountManager.currentUserBaseName;
+
+        if (!string.IsNullOrEmpty(baseName))
+        {
+            bool isSynced = _userAccountManager.IsBaseNameSynced(baseName);
+
+            if (isSynced)
+            {
+                _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
+                Debug.Log($"[InitAccountState] Tài khoản '{baseName}' đã đồng bộ → HaveConnectToServer");
+            }
+            else
+            {
+                _accountStateMachine.SetState(new NoConnectToServerState(_accountStateMachine, _coreEvent));
+                Debug.Log($"[InitAccountState] Tài khoản '{baseName}' chưa đồng bộ → NoConnectToServerState");
+            }
+        }
+        else
+        {
+            _accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
+            Debug.Log($"[InitAccountState] Không có baseName → NoCurrentAccountState");
+        }
+    }
+
 
     /// <summary>
     /// đảm bảo rằng MenuCamera đã được khởi tạo và kích hoạt.
@@ -208,6 +242,7 @@ public class Core : CoreEventListenerBase
         {
             CurrentAccountState = accountStateType.ToString();
             StartCoroutine(RetryUpdateAccountState(accountStateType));
+            mess = "đã cập nhật trạng thái tài khoản: " + CurrentAccountState;
         }
         catch (Exception e)
         {
@@ -394,6 +429,7 @@ public class Core : CoreEventListenerBase
 
     public void SyncToServer(string userName, string passWord, string email)
     {
+        //mess = null;
         try
         {
             // yêu cầu đăng nhập lại trước khi đồng bộ
@@ -417,13 +453,13 @@ public class Core : CoreEventListenerBase
                 if (success)
                 {
                     _accountStateMachine.SetState(new ConectingServer(_accountStateMachine, _coreEvent));
-                    //Debug.Log("Cloud register OTP sent");
+                    mess = message;
                     UiPage06_C.Instance.ShowLogMessage($"Đăng ký OTP thành công. Vui lòng kiểm tra email: {email}");
                 }
                 else
                 {
-                    UiPage06_C.Instance.ShowLogMessage($"Đăng ký OTP thất bại: {message}");
-                    //Debug.LogWarning($"Cloud register failed: {message}");
+                    mess = message;
+                    Debug.LogWarning($"Cloud register failed: {message}");
                 }
             }));
         }
@@ -431,6 +467,13 @@ public class Core : CoreEventListenerBase
         {
             UiPage06_C.Instance.ShowLogMessage($"Lỗi đăng ký tài khoản trên máy chủ: {e.Message}");
             throw new Exception($"[YsncToServer] Error during cloud registration: {e.Message}", e);
+        }
+        finally
+        {
+            if (mess != null)
+            {
+                UiPage06_C.Instance.ShowLogMessage(mess);
+            }
         }
     }
 
