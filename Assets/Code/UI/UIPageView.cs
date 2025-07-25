@@ -21,6 +21,12 @@ public struct UIItem
     public float turnTime;
 }
 
+[Serializable]
+public struct ObiOfPage
+{
+   public GameObject[] Obj;
+}
+
 /// <summary>
 /// Trang main menu tương tác: chứa New Game, Continue, Quit.
 /// Xử lý hover màu và click hành động.
@@ -44,6 +50,8 @@ public class UIPageView : MonoBehaviour
     [Header ("Item UI")]
     [SerializeField] private UIItem[] menuItems;
 
+    [Header("Obi of Page")]
+    [SerializeField] private ObiOfPage[] obiOfPages; // Mảng các Obi của trang
 
     private EndlessBook book;
     private UIItem? currentHovered;
@@ -98,6 +106,7 @@ public class UIPageView : MonoBehaviour
 
     public void Activate()
     {
+        ActiveObjOfPage(true);
         gameObject.SetActive(true);
         currentHovered = null;
         lastCheckTime = 0f;
@@ -110,10 +119,25 @@ public class UIPageView : MonoBehaviour
     public void Deactivate()
     {
         ClearHighlight();
+        ActiveObjOfPage(false);
         gameObject.SetActive(false);
         if (debugMode)
         {
             //Debug.Log($"[UIPageView] Deactivated on {gameObject.name}");
+        }
+    }
+
+    private void ActiveObjOfPage(bool oke)
+    {
+        foreach (var obiPage in obiOfPages)
+        {
+            foreach (var obj in obiPage.Obj)
+            {
+                if (obj != null)
+                {
+                    obj.SetActive(oke);
+                }
+            }
         }
     }
 
