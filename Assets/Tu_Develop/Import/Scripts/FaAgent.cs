@@ -23,7 +23,7 @@ public class FaAgent : MonoBehaviour, FaInterface
     {
         if (useSkillEventChannel != null)
         {
-            useSkillEventChannel.OnEventPushlished += StartSkillCooldown;
+            //useSkillEventChannel.OnEventPushlished += StartSkillCooldown;
         }
     }
 

@@ -20,7 +20,7 @@ namespace Loc_Backend.Scripts
         string GetTransferFolder()
         {
 #if UNITY_EDITOR
-            string folderName = "User_DataGame/GetBackUpTray";
+            string folderName = "User_DataGame/BackUpTray";
             string localLowPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Roaming", "LocalLow"),
                 "DefaultCompany",
@@ -95,12 +95,15 @@ namespace Loc_Backend.Scripts
 
         IEnumerator UploadAllJsonFilesAsBatch()
         {
-            if (!IsAuthenticated())
-                yield break;
+            //if (!IsAuthenticated())
+            //    yield break;
 
             string transferFolder = GetTransferFolder();
             if (!CheckFolderExists(transferFolder))
-                yield break;
+                Debug.Log($"-----------{transferFolder.ToString()}");
+            yield break;
+
+         
 
             var jsonFiles = GetAllJsonFilesInFirstSubFolder(transferFolder);
             if (jsonFiles == null || jsonFiles.Length == 0)
