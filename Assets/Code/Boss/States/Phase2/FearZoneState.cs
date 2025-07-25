@@ -27,7 +27,10 @@ namespace Code.Boss.States.Phase2
             
             Debug.Log("[Boss State] Entered FearZoneState - Casting Fear Zone");
             BossEventSystem.Trigger(BossEventType.FearZoneCreated);
-            BossEventSystem.Trigger(BossEventType.SkillCasted);
+            
+            // Trigger skill cast với skill name để UI hiển thị
+            Debug.Log("[FearZoneState] Triggering SkillCasted event with 'Fear Zone'");
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Fear Zone" });
             
             // Record player position for fear zone
             fearZonePosition = bossController.Player.position;
@@ -69,6 +72,10 @@ namespace Code.Boss.States.Phase2
         {
             isCasting = false;
             skillActivated = true;
+            
+            // Trigger event để ẩn UI cast bar khi skill hoàn thành
+            Debug.Log("[FearZoneState] Skill casting completed - triggering skill complete event");
+            BossEventSystem.Trigger(BossEventType.SkillInterrupted); // Ẩn UI cast bar
             
             CreateFearZone();
             Debug.Log("[Boss State] FearZoneState - Fear zone activated");
@@ -168,7 +175,8 @@ namespace Code.Boss.States.Phase2
             }
             
             StopHeartbeatSound();
-            bossController.ChangeState(new AngryState());
+            // Chuyển sang ScreamState thay vì AngryState theo design
+            bossController.ChangeState(new ScreamState());
         }
 
         public override void Exit()
@@ -182,16 +190,23 @@ namespace Code.Boss.States.Phase2
 
         public override void OnTakeDamage()
         {
+            // Boss không thể bị tấn công trong Fear Zone state (trừ khi đang casting)
             if (isCasting && CanBeInterrupted())
             {
+                // Chỉ có thể interrupt khi đang casting
                 BossEventSystem.Trigger(BossEventType.SkillInterrupted);
                 bossController.ChangeState(new AngryState());
+            }
+            else
+            {
+                // Boss bất khả xâm phạm khi Fear Zone đã active
+                Debug.Log("[FearZoneState] Boss is invulnerable during Fear Zone!");
             }
         }
 
         public override bool CanBeInterrupted()
         {
-            return isCasting;
+            return isCasting; // Chỉ có thể interrupt khi đang casting, không thể khi skill đã active
         }
     }
 }

@@ -72,7 +72,8 @@ namespace Code.Boss.States.Phase1
 
         public override void OnTakeDamage()
         {
-            // Boss cannot take damage in Idle state (only in Decoy state)
+            // Boss bất khả xâm phạm trong Phase 1 - chỉ có thể damage qua decoys
+            Debug.Log("[IdleState] Boss is invulnerable in Phase 1! Can only damage through decoys.");
         }
 
         public override bool CanBeInterrupted()

@@ -45,7 +45,8 @@ namespace Code.Boss.States.Phase1
 
         public override void OnTakeDamage()
         {
-            // Boss cannot take damage in Mock state
+            // Boss bất khả xâm phạm trong Phase 1 - chỉ có thể damage qua decoys
+            Debug.Log("[MockState] Boss is invulnerable in Phase 1! Can only damage through decoys.");
         }
 
         public override bool CanBeInterrupted()

@@ -25,6 +25,7 @@ namespace Code.Boss.States.Phase1
             BossEventSystem.Trigger(BossEventType.DecoyStarted);
             
             // Trigger skill cast với skill name để UI hiển thị
+            Debug.Log("[DecoyState] Triggering SkillCasted event with 'Decoy'");
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Decoy" });
             
             // Play decoy spawn sound
@@ -64,6 +65,10 @@ namespace Code.Boss.States.Phase1
         {
             isCasting = false;
             skillActivated = true;
+            
+            // Trigger event để ẩn UI cast bar khi skill hoàn thành
+            Debug.Log("[DecoyState] Skill casting completed - triggering skill complete event");
+            BossEventSystem.Trigger(BossEventType.SkillInterrupted); // Tạm dùng event này để ẩn UI
             
             SpawnDecoys();
             Debug.Log("[Boss State] DecoyState - Skill activated, decoys spawned");
@@ -170,9 +175,15 @@ namespace Code.Boss.States.Phase1
         {
             if (isCasting && CanBeInterrupted())
             {
-                // Skill interrupted
+                // Chỉ có thể interrupt khi đang casting
                 BossEventSystem.Trigger(BossEventType.SkillInterrupted);
                 bossController.ChangeState(new IdleState());
+            }
+            else
+            {
+                // Boss bất khả xâm phạm trong Phase 1, ngay cả khi có decoys
+                // Damage phải thông qua việc tấn công decoys, không phải boss chính
+                Debug.Log("[DecoyState] Boss is invulnerable! Must attack decoys to damage boss.");
             }
         }
 

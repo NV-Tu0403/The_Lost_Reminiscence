@@ -165,8 +165,39 @@ namespace Code.Boss
 
         public void TakeDamage(int damage = 1)
         {
+            Debug.Log($"[BossController] TakeDamage called - checking CanTakeDamage()...");
+            
+            // Kiểm tra state có cho phép nhận damage không TRƯỚC KHI trừ máu
+            if (stateMachine.CanTakeDamage())
+            {
+                Debug.Log($"[BossController] CanTakeDamage = TRUE - Boss will take {damage} damage");
+                healthSystem.TakeDamage(damage);
+                stateMachine.OnTakeDamage();
+                
+                BossEventSystem.Trigger(BossEventType.BossTakeDamage, new BossEventData(damage));
+                
+                // Play damage sound
+                if (audioSource && bossConfig.audioConfig.damageSound)
+                {
+                    audioSource.PlayOneShot(bossConfig.audioConfig.damageSound, 
+                        bossConfig.audioConfig.sfxVolume);
+                }
+            }
+            else
+            {
+                // State không cho phép nhận damage
+                Debug.Log($"[BossController] CanTakeDamage = FALSE - Boss is invulnerable! Current Phase: {currentPhase}");
+                stateMachine.OnTakeDamage(); // Vẫn thông báo cho state để xử lý (ví dụ: interrupt casting)
+            }
+        }
+
+        // Method riêng cho damage từ decoys - bypass CanTakeDamage() check
+        public void TakeDamageFromDecoy(int damage = 1)
+        {
+            Debug.Log($"[BossController] TakeDamageFromDecoy called - bypassing CanTakeDamage() check");
+            
+            // Trực tiếp gây damage mà không kiểm tra CanTakeDamage()
             healthSystem.TakeDamage(damage);
-            stateMachine.OnTakeDamage();
             
             BossEventSystem.Trigger(BossEventType.BossTakeDamage, new BossEventData(damage));
             
@@ -176,6 +207,8 @@ namespace Code.Boss
                 audioSource.PlayOneShot(bossConfig.audioConfig.damageSound, 
                     bossConfig.audioConfig.sfxVolume);
             }
+            
+            // Không gọi stateMachine.OnTakeDamage() vì decoy đã xử lý state change
         }
 
         public void ChangeState(BossState newState)

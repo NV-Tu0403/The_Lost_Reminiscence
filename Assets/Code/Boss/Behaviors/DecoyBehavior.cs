@@ -78,8 +78,9 @@ namespace Code.Boss
                 bossController.ClearDecoys();
                 bossController.gameObject.SetActive(true);
                 
-                // Damage boss AFTER cleanup - let boss decide next state based on HP
-                bossController.TakeDamage(1);
+                // Damage boss AFTER cleanup - use special method to bypass CanTakeDamage() check
+                Debug.Log("[DecoyBehavior] Calling TakeDamageFromDecoy to bypass invulnerability");
+                bossController.TakeDamageFromDecoy(1);
                 
                 // Don't force state change - let BossController handle phase transition naturally
             }
