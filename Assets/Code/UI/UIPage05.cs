@@ -68,6 +68,7 @@ public class UIPage05 : MonoBehaviour
         try
         {
             // Xóa các Save Item cũ
+           //Core.Instance.InitAccountState();
             ClearSaveSlots();
 
             // Lấy danh sách SaveFolder từ SaveGameManager thông qua ProfessionalSkilMenu

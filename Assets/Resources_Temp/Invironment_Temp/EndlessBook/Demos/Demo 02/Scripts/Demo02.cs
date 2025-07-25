@@ -377,43 +377,50 @@
                     {
                         if (isLogin) CoreEvent.Instance.triggerLogin(); // đăng nhập
                         else CoreEvent.Instance.triggerRegister();      // đăng ký
+                        UiPage06_C.Instance.ActiveObj(true, false, false, false);
                     }
+                    isLogin = false;
 
                     if (accountState == AccountStateType.NoConnectToServer.ToString())
                     {
                         CoreEvent.Instance.triggerConnectToServer();    // kết nối đến server
+                        UiPage06_C.Instance.ActiveObj(true, true, false, false);
                     }
 
-                    isLogin = false;
-                    UiPage06_C.Instance.ActiveObj(true, false, false);
+                    if (accountState == AccountStateType.ConectingServer.ToString())
+                    {
+                        CoreEvent.Instance.triggerConnectingToServer();
+                        UiPage06_C.Instance.ActiveObj(true, false, false, false);
+                    }
+         
                     break;
 
                 case UIActionType.Cancel:           // xóa data input và tắt panel Input
-                    UiPage06_C.Instance.ActiveObj(true, false, false);
+                    UiPage06_C.Instance.ActiveObj(true, false, false, false);
                     break;
 
                 case UIActionType.Logout:           // bật panel Input, tắt bt này tùy vào AccountStateType
                     if (accountState == AccountStateType.NoConnectToServer.ToString() || accountState == AccountStateType.HaveConnectToServer.ToString())
                     {
-                        CoreEvent.Instance.triggerLogout();
-                        UiPage06_C.Instance.ActiveObj(true, false, false);
+                        CoreEvent.Instance.triggerLogout(); // logout
+                        UiPage06_C.Instance.ActiveObj(true, false, false, false);
                     }
 
                     if (accountState == AccountStateType.NoCurrentAccount.ToString())
                     {
                         isLogin = !isLogin; // đánh dấu là login
-                        UiPage06_C.Instance.ActiveObj(false, true, false);
+                        UiPage06_C.Instance.ActiveObj(false, true, false, true);
                     }
 
                     break;
                 case UIActionType.ConnectToServer:  // bật panel Input, tắt bt này tùy vào AccountStateType
-                    if (accountState == AccountStateType.NoConnectToServer.ToString())
+                    if (accountState == AccountStateType.NoConnectToServer.ToString()) // connect to server
                     {
-                        UiPage06_C.Instance.ActiveObj(false, true, true);
+                        UiPage06_C.Instance.ActiveObj(false, true, true, true);
                     }
-                    if (accountState == AccountStateType.NoCurrentAccount.ToString())
+                    if (accountState == AccountStateType.NoCurrentAccount.ToString()) // register
                     {
-                        UiPage06_C.Instance.ActiveObj(false, true, false);
+                        UiPage06_C.Instance.ActiveObj(false, true, false, true);
                     }
 
                     break;

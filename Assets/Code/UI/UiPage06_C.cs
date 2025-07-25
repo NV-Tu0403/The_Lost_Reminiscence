@@ -10,21 +10,24 @@ public struct UIInputItem
 }
 
 [Serializable]
-public struct UIUpdateObjInfo
+public struct UpdateObjInfo
 {
     public TMP_Text CurrentUserName;
     public TMP_Text PlayTime;
-    public Renderer ConnectState;
+    public Renderer ConnectStateMesh;
     public Color falseColor;
     public Color trueColor;
 }
 
 [Serializable]
-public struct UIUpdateObjBt
+public struct UIUpdateTextByState
 {
     public TMP_Text logout_login;
     public TMP_Text connect_register;
     public TMP_Text Confim;
+
+
+    public TMP_Text Pass_text;
 }
 
 [Serializable]
@@ -33,7 +36,8 @@ public struct UpdateActiveObj
     public GameObject[] PanelInfoObj;
     public GameObject[] PanelFuntionObj;
 
-    public GameObject[] ConnectObj;
+    public GameObject[] emailObj;
+    public GameObject[] nameObj;
 }
 
 [Serializable]
@@ -63,9 +67,9 @@ public class UiPage06_C : MonoBehaviour
 
     [SerializeField] private UIInputItem[] inputItems;
 
-    [SerializeField] private UIUpdateObjBt[] updateObjBt;
+    [SerializeField] private UIUpdateTextByState[] UpdateTextByState;
 
-    [SerializeField] private UIUpdateObjInfo[] updateObjInfos;
+    [SerializeField] private UpdateObjInfo[] updateObjInfos;
 
     [SerializeField] private UpdateActiveObj[] updateActiveObj;
 
@@ -98,7 +102,7 @@ public class UiPage06_C : MonoBehaviour
     {
         try
         {
-            foreach (var obj in updateObjBt)
+            foreach (var obj in UpdateTextByState)
             {
                 if (type == AccountStateType.NoCurrentAccount)
                 {
@@ -113,7 +117,11 @@ public class UiPage06_C : MonoBehaviour
                 if (type == AccountStateType.HaveConnectToServer)
                 {
                     obj.logout_login.text = "Logout";
-                    obj.connect_register.text = "Register";
+                    obj.connect_register.text = "Override save";
+                }
+                if (type == AccountStateType.ConectingServer)
+                {
+                    obj.Pass_text.text = "Enter OTP";
                 }
             }
         }
@@ -127,36 +135,43 @@ public class UiPage06_C : MonoBehaviour
 
     public void UpdateInfo(string userName, string playTime, AccountStateType accountStateType)
     {
-        bool isConnected = accountStateType == AccountStateType.HaveConnectToServer; // đã đăng nhập và kết nối thành công
-        bool isLoggedIn = accountStateType == AccountStateType.NoConnectToServer;    // đã đăng nhập nhưng chưa kết nối
+        Debug.Log($"UpdateInfo called with userName: {userName}, playTime: {playTime}, accountStateType: {accountStateType}");
+        bool isConnected = accountStateType == AccountStateType.HaveConnectToServer;
+        bool hasAccount = accountStateType != AccountStateType.NoCurrentAccount;
 
         foreach (var info in updateObjInfos)
         {
+            // Cập nhật tên người dùng & thời gian chơi
             if (info.CurrentUserName != null)
-                info.CurrentUserName.text = isLoggedIn ? userName : "None";
+                info.CurrentUserName.text = hasAccount ? userName : "None";
 
             if (info.PlayTime != null)
-                info.PlayTime.text = isLoggedIn ? playTime : "None";
+                info.PlayTime.text = hasAccount ? playTime : "None";
 
-            if (info.ConnectState != null)
+            // Cập nhật màu trạng thái kết nối
+            if (info.ConnectStateMesh != null)
             {
-                var text = info.ConnectState.GetComponent<TMP_Text>();
+                var text = info.ConnectStateMesh.GetComponent<TMP_Text>();
                 if (text != null)
                 {
                     text.color = isConnected ? info.trueColor : info.falseColor;
                 }
                 else
                 {
-                    var mat = info.ConnectState.material;
-                    if (!mat.name.EndsWith("(Instance)"))
+                    var mat = info.ConnectStateMesh.material;
+                    if (mat != null)
                     {
-                        mat = new Material(mat);
-                        info.ConnectState.material = mat;
-                    }
+                        // Tạo instance mới nếu cần
+                        if (ReferenceEquals(mat, info.ConnectStateMesh.sharedMaterial))
+                        {
+                            mat = new Material(mat);
+                            info.ConnectStateMesh.material = mat;
+                        }
 
-                    if (mat.HasProperty("_Color"))
-                    {
-                        mat.color = isConnected ? info.trueColor : info.falseColor;
+                        if (mat.HasProperty("_Color"))
+                        {
+                            mat.color = isConnected ? info.trueColor : info.falseColor;
+                        }
                     }
                 }
             }
@@ -168,7 +183,7 @@ public class UiPage06_C : MonoBehaviour
     /// </summary>
     /// <param name="PanelInfoObj"></param>
     /// <param name="PanelFuntionObj"></param>
-    public void ActiveObj(bool PanelInfoObj, bool PanelFuntionObj, bool connectObj)
+    public void ActiveObj(bool PanelInfoObj, bool PanelFuntionObj, bool email, bool name)
     {
         foreach (var obj in updateActiveObj)
         {
@@ -192,13 +207,23 @@ public class UiPage06_C : MonoBehaviour
                     }
                 }
             }
-            if (obj.ConnectObj != null)
+            if (obj.emailObj != null)
             {
-                foreach (var connect in obj.ConnectObj)
+                foreach (var connect in obj.emailObj)
                 {
                     if (connect != null)
                     {
-                        connect.SetActive(connectObj);
+                        connect.SetActive(email);
+                    }
+                }
+            }
+            if (obj.nameObj != null)
+            {
+                foreach (var otp in obj.nameObj)
+                {
+                    if (otp != null)
+                    {
+                        otp.SetActive(name);
                     }
                 }
             }
