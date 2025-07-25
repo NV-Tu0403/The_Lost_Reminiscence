@@ -4,7 +4,6 @@ using UnityEngine;
 public class ProtectiveAura : MonoBehaviour
 {
     private float duration = 3f;
-
     void OnEnable()
     {
         // Bắt đầu coroutine để đếm giờ và tự hủy
