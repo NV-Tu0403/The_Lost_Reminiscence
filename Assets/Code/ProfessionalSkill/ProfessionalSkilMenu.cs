@@ -771,8 +771,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             await Task.Run(() =>
             {
                 CopyDirectory(folderPath, backupTargetPath);
+
             });
 
+            await Task.Delay(300);
+
+            Core.Instance.backendSync.OnUploadAllJsonFilesToCloud();
             mess = $"Item save đã được chuyển vào thư mục Backup: {backupTargetPath}";
             return true;
         }
