@@ -17,6 +17,11 @@ namespace Code.Boss.States.Phase2
             
             Debug.Log("[Boss State] Entered CookState - Boss bị đánh bại và đang biến mất");
             
+            // Ẩn UI máu boss và UI cast skill khi boss bị đánh bại
+            Debug.Log("[CookState] Hiding boss health UI and cast skill UI");
+            BossEventSystem.Trigger(BossEventType.SkillInterrupted); // Ẩn UI cast skill
+            BossEventSystem.Trigger(BossEventType.BossDefeated); // Có thể trigger event để ẩn UI máu boss
+            
             // Stop all movement
             if (bossController.NavAgent != null)
             {
@@ -49,11 +54,7 @@ namespace Code.Boss.States.Phase2
 
         private void FadeBoss()
         {
-            float fadeProgress = cookTimer / config.phase2.cookStateDuration;
-            
-            // This would integrate with a material/shader system to fade the boss
-            BossEventSystem.Trigger(BossEventType.SkillCasted, 
-                new BossEventData { stringValue = "FadeBoss", floatValue = 1f - fadeProgress });
+            Debug.Log("[FadeBoss] Fading out boss over time");
         }
 
         private void DropMemoryFragment()
