@@ -96,30 +96,39 @@ public class UiPage06_C : MonoBehaviour
     /// <param name="type"></param>
     public void UpdateTextFields(AccountStateType type)
     {
-        foreach (var obj in updateObjBt)
+        try
         {
-            if (type == AccountStateType.NoCurrentAccount)
+            foreach (var obj in updateObjBt)
             {
-                obj.logout_login.text = "Login";
-                obj.connect_register.text = "Register";
-            }
-            else if (type == AccountStateType.NoConnectToServer || type == AccountStateType.ConectingServer)
-            {
-                obj.logout_login.text = "Logout";
-                obj.connect_register.text = "Connect";
-            }
-            else if (type == AccountStateType.HaveConnectToServer)
-            {
-                obj.logout_login.text = "Logout";
-                obj.connect_register.text = "Register";
+                if (type == AccountStateType.NoCurrentAccount)
+                {
+                    obj.logout_login.text = "Login";
+                    obj.connect_register.text = "Register";
+                }
+                if (type == AccountStateType.NoConnectToServer || type == AccountStateType.ConectingServer)
+                {
+                    obj.logout_login.text = "Logout";
+                    obj.connect_register.text = "Connect";
+                }
+                if (type == AccountStateType.HaveConnectToServer)
+                {
+                    obj.logout_login.text = "Logout";
+                    obj.connect_register.text = "Register";
+                }
             }
         }
+        catch (Exception e)
+        {
+
+            throw new Exception($"{e.Message}", e);
+        }
+        
     }
 
-    public void UpdateInfo(string userName, string playTime, string accountState)
+    public void UpdateInfo(string userName, string playTime, AccountStateType accountStateType)
     {
-        bool isConnected = accountState == AccountStateType.HaveConnectToServer.ToString(); // đã đăng nhập và kết nối thành công
-        bool isLoggedIn = accountState == AccountStateType.NoConnectToServer.ToString();    // đã đăng nhập nhưng chưa kết nối
+        bool isConnected = accountStateType == AccountStateType.HaveConnectToServer; // đã đăng nhập và kết nối thành công
+        bool isLoggedIn = accountStateType == AccountStateType.NoConnectToServer;    // đã đăng nhập nhưng chưa kết nối
 
         foreach (var info in updateObjInfos)
         {
