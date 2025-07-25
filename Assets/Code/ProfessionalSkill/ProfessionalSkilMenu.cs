@@ -144,7 +144,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
             }
 
-            UiPage06_C.Instance.ActiveObj(true, false, false);
+            UiPage06_C.Instance.ActiveObj(true, false, false, false);
 
         }
         else
@@ -627,7 +627,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (inputs.Length < 1)
         {
-            Debug.LogError("Không đủ input field cho login (cần ít nhất 2).");
+            Debug.LogError("Không đủ input field cho login (cần ít nhất 1).");
             return;
         }
 
@@ -641,6 +641,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
 
         _core.VerifyOTPAccount(otp, userName);
+        //UiPage06_C.Instance.ActiveObj(false, false, false, true); // chỉ bật trường pass để nhấp OTP
 
         foreach (var input in inputs)
         {
@@ -738,7 +739,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
         finally
         {
-            Debug.Log(mess);
+            //Debug.Log(mess);
             UiPage06_C.Instance.ShowLogMessage(mess);
         }
     }
