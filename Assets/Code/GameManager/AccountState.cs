@@ -1,6 +1,4 @@
 ﻿
-using UnityEditor.Localization.Plugins.XLIFF.V20;
-
 /// <summary>
 /// lúc không tự đăng nhập được hoặc không có tài khoản hiện tại
 /// </summary>
