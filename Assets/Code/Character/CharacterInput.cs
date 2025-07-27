@@ -50,7 +50,7 @@ namespace DuckLe
             GetUseResourceInput();
             InteractInput();
 
-            //_pc.PerformMoveInput(moveType, dir);
+            _pc.PerformMoveInput(moveType, dir);
         }
 
         private void InitializeCharacterCamera()
