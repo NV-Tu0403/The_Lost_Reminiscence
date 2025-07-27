@@ -1,4 +1,3 @@
-using Code.Boss.States.Shared;
 using UnityEngine;
 
 namespace Code.Boss
@@ -81,8 +80,6 @@ namespace Code.Boss
                 // Damage boss AFTER cleanup - use special method to bypass CanTakeDamage() check
                 Debug.Log("[DecoyBehavior] Calling TakeDamageFromDecoy to bypass invulnerability");
                 bossController.TakeDamageFromDecoy(1);
-                
-                // Don't force state change - let BossController handle phase transition naturally
             }
             else
             {

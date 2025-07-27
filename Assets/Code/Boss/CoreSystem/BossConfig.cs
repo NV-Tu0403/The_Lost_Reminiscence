@@ -100,14 +100,14 @@ namespace Code.Boss
     [Serializable]
     public class UIConfig
     {
-        [Header("Health Bar")]
-        public Vector2 bossHealthPosition = new Vector2(0f, 0.8f); // Screen space
-        public Vector2 playerHealthPosition = new Vector2(0f, -0.8f);
-        public Vector2 healthBarSize = new Vector2(300f, 30f);
-        
-        [Header("Skill Cast Bar")]
-        public Vector2 skillCastBarOffset = new Vector2(0f, -50f); // Offset from boss health
-        public Vector2 skillCastBarSize = new Vector2(200f, 20f);
+        // [Header("Health Bar")]
+        // public Vector2 bossHealthPosition = new Vector2(0f, 0.8f); // Screen space
+        // public Vector2 playerHealthPosition = new Vector2(0f, -0.8f);
+        // public Vector2 healthBarSize = new Vector2(300f, 30f);
+        //
+        // [Header("Skill Cast Bar")]
+        // public Vector2 skillCastBarOffset = new Vector2(0f, -50f); // Offset from boss health
+        // public Vector2 skillCastBarSize = new Vector2(200f, 20f);
         
         [Header("Colors")]
         public Color bossHealthColor = Color.red;
