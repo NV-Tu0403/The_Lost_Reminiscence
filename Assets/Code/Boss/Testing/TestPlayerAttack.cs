@@ -73,7 +73,7 @@ namespace Code.Boss.Testing
             {
                 Debug.Log("[Player Test] Using Fa Reveal Skill");
                 // Gọi trực tiếp FaSkillSimulator thay vì thông qua integration
-                var faSimulator = FindObjectOfType<FaSkillSimulator>();
+                var faSimulator = FindFirstObjectByType<FaSkillSimulator>();
                 if (faSimulator != null)
                 {
                     faSimulator.UseThirdSkill();

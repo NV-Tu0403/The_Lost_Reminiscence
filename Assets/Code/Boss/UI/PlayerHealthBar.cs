@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 namespace Code.Boss
 {
@@ -81,6 +82,8 @@ namespace Code.Boss
             // Handle player defeat
             Debug.Log("Player Defeated!");
             // This could trigger game over screen, respawn, etc.
+            // Reload Scene
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         public void HealPlayer(int amount)

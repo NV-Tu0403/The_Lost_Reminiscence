@@ -1,7 +1,6 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 namespace Code.Boss
 {
@@ -83,53 +82,29 @@ namespace Code.Boss
 
         private void OnSkillCastProgress(BossEventData data)
         {
-            if (castSlider != null && isVisible)
-            {
-                // Trực tiếp set giá trị thay vì animation phức tạp
-                castSlider.value = data.floatValue;
-                
-                // Debug để xem progress có được nhận không
-                Debug.Log($"[BossSkillCastBar] Progress updated: {data.floatValue:F2}");
-            }
+            if (castSlider != null && isVisible) castSlider.value = data.floatValue;
         }
 
         private void OnSkillInterrupted(BossEventData data)
         {
-            Debug.Log("[BossSkillCastBar] OnSkillInterrupted called - hiding cast bar");
             SetVisible(false);
         }
 
         private void OnStateChanged(BossEventData data)
         {
-            Debug.Log($"[BossSkillCastBar] OnStateChanged called - current state: {data?.stringValue}, isVisible: {isVisible}");
-            // Chỉ hide cast bar khi chuyển sang state khác (không phải ScreamState hoặc FearZoneState)
-            // và không phải khi skill vừa được activate
-            if (isVisible && data?.stringValue != "ScreamState" && data?.stringValue != "FearZoneState" && data?.stringValue != "DecoyState")
+            if (isVisible && data?.stringValue != "ScreamState" 
+                          && data?.stringValue != "FearZoneState" 
+                          && data?.stringValue != "DecoyState")
             {
-                Debug.Log("[BossSkillCastBar] Hiding cast bar due to state change");
                 SetVisible(false);
             }
         }
 
         private void SetVisible(bool visible)
         {
-            Debug.Log($"[BossSkillCastBar] SetVisible called with: {visible}");
             isVisible = visible;
-            
-            if (castBarContainer != null)
-            {
-                Debug.Log($"[BossSkillCastBar] Using castBarContainer, setting active to: {visible}");
-                castBarContainer.SetActive(visible);
-            }
-            else if (gameObject != null)
-            {
-                Debug.Log($"[BossSkillCastBar] castBarContainer is null, using gameObject, setting active to: {visible}");
-                gameObject.SetActive(visible);
-            }
-            else
-            {
-                Debug.LogError("[BossSkillCastBar] Both castBarContainer and gameObject are null!");
-            }
+            if (castBarContainer == null) return;
+            castBarContainer.SetActive(visible);
         }
 
         private void OnDestroy()
