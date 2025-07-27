@@ -12,9 +12,8 @@ namespace Code.Boss.States.Phase1
 
         public override void Enter()
         {
-            idleTimer = 0f;
             Debug.Log("[Boss State] Entered IdleState - Boss đứng yên tại chỗ");
-            
+            idleTimer = 0f;
             // Stop movement
             if (bossController.NavAgent != null)
             {
@@ -48,11 +47,10 @@ namespace Code.Boss.States.Phase1
 
         private BossState GetRandomNextState()
         {
-            float[] weights = config.phase1.stateWeights;
-            float totalWeight = weights[1] + weights[2] + weights[3]; // Exclude Idle weight
-            float randomValue = Random.Range(0f, totalWeight);
-            
-            float currentWeight = 0f;
+            var weights = config.phase1.stateWeights;
+            var totalWeight = weights[1] + weights[2] + weights[3]; // Exclude Idle weight
+            var randomValue = Random.Range(0f, totalWeight);
+            var currentWeight = 0f;
             
             currentWeight += weights[1]; // Lure
             if (randomValue <= currentWeight)
@@ -65,20 +63,13 @@ namespace Code.Boss.States.Phase1
             return new DecoyState(); // Decoy
         }
 
-        public override void Exit()
-        {
-            // No special cleanup needed
-        }
+        public override void Exit() {}
 
-        public override void OnTakeDamage()
-        {
-            // Boss bất khả xâm phạm trong Phase 1 - chỉ có thể damage qua decoys
-            Debug.Log("[IdleState] Boss is invulnerable in Phase 1! Can only damage through decoys.");
-        }
-
+        public override void OnTakeDamage() {}
+        
         public override bool CanBeInterrupted()
         {
-            return false; // Idle state cannot be interrupted
+            return false; 
         }
     }
 }

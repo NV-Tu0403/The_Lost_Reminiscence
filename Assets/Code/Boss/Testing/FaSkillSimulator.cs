@@ -91,7 +91,7 @@ namespace Code.Boss.Testing
         /// <summary>
         /// Kỹ năng 1: Radar - Phá hủy tất cả Soul
         /// </summary>
-        public void UseRadarSkill()
+        private void UseRadarSkill()
         {
             if (!CanUseRadar)
             {
@@ -114,7 +114,7 @@ namespace Code.Boss.Testing
         /// <summary>
         /// Kỹ năng 2: Shield/Protection - Bảo vệ player khỏi damage
         /// </summary>
-        public void UseSecondSkill()
+        private void UseShieldSkill()
         {
             if (!CanUseSecondSkill)
             {
@@ -137,17 +137,14 @@ namespace Code.Boss.Testing
         /// <summary>
         /// Kỹ năng 3: Reveal - Hiện thị bóng thật trong Decoy state
         /// </summary>
-        public void UseThirdSkill()
+        public void UseRevealSkill()
         {
             if (!CanUseThirdSkill)
             {
                 Debug.Log("[Fa Simulator] Third skill is on cooldown!");
                 return;
             }
-            
             lastThirdSkillUse = Time.time;
-            Debug.Log("[Fa Simulator] === REVEAL SKILL ACTIVATED ===");
-            
             // Create reveal effect
             CreateThirdSkillEffect();
             
@@ -342,41 +339,17 @@ namespace Code.Boss.Testing
         [System.Obsolete("Use for testing only")]
         public void TestSecondSkill()
         {
-            UseSecondSkill();
+            UseShieldSkill();
         }
 
         [System.Obsolete("Use for testing only")]
         public void TestThirdSkill()
         {
-            UseThirdSkill();
+            UseRevealSkill();
         }
 
         #endregion
-
-        // private void OnGUI()
-        // {
-        //     GUILayout.BeginArea(new Rect(320, 10, 300, 150));
-        //     GUILayout.Label("=== FA SKILLS DEBUG ===");
-        //     
-        //     // Radar skill
-        //     string radarStatus = CanUseRadar ? "READY" : $"CD: {(radarCooldown - (Time.time - lastRadarUse)):F1}s";
-        //     GUILayout.Label($"Q - Radar: {radarStatus}");
-        //     
-        //     // Second skill
-        //     string secondStatus = CanUseSecondSkill ? "READY" : $"CD: {(secondSkillCooldown - (Time.time - lastSecondSkillUse)):F1}s";
-        //     GUILayout.Label($"E - Protection: {secondStatus}");
-        //     
-        //     // Third skill
-        //     string thirdStatus = CanUseThirdSkill ? "READY" : $"CD: {(thirdSkillCooldown - (Time.time - lastThirdSkillUse)):F1}s";
-        //     GUILayout.Label($"R - Reveal: {thirdStatus}");
-        //     
-        //     GUILayout.Space(10);
-        //     GUILayout.Label($"Active Souls: {FaBossIntegration.GetCurrentSoulCount()}");
-        //     GUILayout.Label($"Boss Phase: {FaBossIntegration.GetCurrentBossPhase()}");
-        //     
-        //     GUILayout.EndArea();
-        // }
-
+        
         private void OnDestroy()
         {
             // Cleanup event subscriptions

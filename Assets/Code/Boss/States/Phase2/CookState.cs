@@ -14,9 +14,6 @@ namespace Code.Boss.States.Phase2
         {
             cookTimer = 0f;
             memoryFragmentDropped = false;
-            
-            Debug.Log("[Boss State] Entered CookState - Boss bị đánh bại và đang biến mất");
-            
             // Ẩn UI máu boss và UI cast skill khi boss bị đánh bại
             Debug.Log("[CookState] Hiding boss health UI and cast skill UI");
             BossEventSystem.Trigger(BossEventType.SkillInterrupted); // Ẩn UI cast skill
@@ -36,10 +33,6 @@ namespace Code.Boss.States.Phase2
         public override void Update()
         {
             cookTimer += Time.deltaTime;
-            
-            // Gradually fade boss
-            FadeBoss();
-            
             if (cookTimer >= config.phase2.cookStateDuration && !memoryFragmentDropped)
             {
                 DropMemoryFragment();
@@ -51,12 +44,7 @@ namespace Code.Boss.States.Phase2
                 CompleteBossDefeat();
             }
         }
-
-        private void FadeBoss()
-        {
-            Debug.Log("[FadeBoss] Fading out boss over time");
-        }
-
+        
         private void DropMemoryFragment()
         {
             // Create memory fragment at boss position

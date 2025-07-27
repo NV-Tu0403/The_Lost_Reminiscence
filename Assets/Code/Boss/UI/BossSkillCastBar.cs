@@ -52,6 +52,7 @@ namespace Code.Boss
             BossEventSystem.Subscribe(BossEventType.SkillCastProgress, OnSkillCastProgress);
             BossEventSystem.Subscribe(BossEventType.SkillInterrupted, OnSkillInterrupted);
             BossEventSystem.Subscribe(BossEventType.StateChanged, OnStateChanged);
+            BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeated);
         }
 
         private void OnSkillCasted(BossEventData data)
@@ -100,6 +101,12 @@ namespace Code.Boss
             }
         }
 
+        private void OnBossDefeated(BossEventData data)
+        {
+            // Hide boss skill cast bar UI
+            SetVisible(false);
+        }
+
         private void SetVisible(bool visible)
         {
             isVisible = visible;
@@ -113,6 +120,7 @@ namespace Code.Boss
             BossEventSystem.Unsubscribe(BossEventType.SkillCastProgress, OnSkillCastProgress);
             BossEventSystem.Unsubscribe(BossEventType.SkillInterrupted, OnSkillInterrupted);
             BossEventSystem.Unsubscribe(BossEventType.StateChanged, OnStateChanged);
+            BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeated);
         }
     }
 }
