@@ -14,7 +14,7 @@ namespace Tu_Develop.Import.Scripts
     {
         [Header("Event Channels")] [SerializeField]
         private OnFaAgentUseSkill? useSkillEventChannel;
-
+        
         [Header("Canvas")] [SerializeField] private TextMeshProUGUI? skill1Cooldown;
         [SerializeField] private TextMeshProUGUI? skill2Cooldown;
         [SerializeField] private TextMeshProUGUI? skill3Cooldown;
@@ -116,13 +116,13 @@ namespace Tu_Develop.Import.Scripts
         }
 
         // Hàm lấy task tiếp theo
-        public FaTask? GetNextTask()
+        private FaTask? GetNextTask()
         {
             return _taskQueue.GetNextTask();
         }
 
         // Kiểm tra còn task không
-        public bool HasTask()
+        private bool HasTask()
         {
             return _taskQueue.HasTask();
         }
@@ -133,7 +133,7 @@ namespace Tu_Develop.Import.Scripts
         }
 
         // Hàm này sẽ được gọi từ Behavior Graph để bắt đầu đếm ngược
-        public void StartSkillCooldown(string skillName, float duration)
+        private void StartSkillCooldown(string skillName, float duration)
         {
             if (_cooldownTimers.ContainsKey(skillName))
                 _cooldownTimers[skillName] = duration;
@@ -184,8 +184,7 @@ namespace Tu_Develop.Import.Scripts
                 if (parts.Length > 2)
                 {
                     var targetKeyword = parts[2].ToLower();
-                    if (targetKeyword == "player") task.TargetObject = false;
-                    else task.TargetObject = true;
+                    task.TargetObject = targetKeyword != "player";
                     Debug.Log($"Đã thêm task UseSkill: {task.SkillName} trên mục tiêu self: {task.TargetObject}");
                 }
 
@@ -250,7 +249,6 @@ namespace Tu_Develop.Import.Scripts
 
                     // Nếu không có task nào hợp lệ thì không làm gì cả
                     if (playerTaskType == PlayerTaskType.None) return;
-
                     // Đẩy dữ liệu vào Blackboard
                     faBha.BlackboardReference.SetVariableValue("TaskFromPlayer", playerTaskType);
                     if (task.TaskPosition != null)
@@ -280,33 +278,24 @@ namespace Tu_Develop.Import.Scripts
         private void UpdateCooldownToCanvas()
         {
             float cooldownValue; // Biến tạm để lưu giá trị cooldown
-
+            
             if (skill1Cooldown != null)
             {
                 // Thử lấy giá trị, nếu không có thì cooldownValue sẽ là 0
                 _cooldownTimers.TryGetValue("GuideSignal", out cooldownValue);
-                if (cooldownValue > 0)
-                    skill1Cooldown.text = Mathf.CeilToInt(cooldownValue).ToString();
-                else
-                    skill1Cooldown.text = "Ready";
+                skill1Cooldown.text = cooldownValue > 0 ? Mathf.CeilToInt(cooldownValue).ToString() : "Ready";
             }
 
             if (skill2Cooldown != null)
             {
                 _cooldownTimers.TryGetValue("KnowledgeLight", out cooldownValue);
-                if (cooldownValue > 0)
-                    skill2Cooldown.text = Mathf.CeilToInt(cooldownValue).ToString();
-                else
-                    skill2Cooldown.text = "Ready";
+                skill2Cooldown.text = cooldownValue > 0 ? Mathf.CeilToInt(cooldownValue).ToString() : "Ready";
             }
 
             if (skill3Cooldown != null)
             {
                 _cooldownTimers.TryGetValue("ProtectiveAura", out cooldownValue);
-                if (cooldownValue > 0)
-                    skill3Cooldown.text = Mathf.CeilToInt(cooldownValue).ToString();
-                else
-                    skill3Cooldown.text = "Ready";
+                skill3Cooldown.text = cooldownValue > 0 ? Mathf.CeilToInt(cooldownValue).ToString() : "Ready";
             }
         }
 
@@ -329,9 +318,8 @@ namespace Tu_Develop.Import.Scripts
             // Kiểm tra an toàn, phòng trường hợp BHA chưa được gán
             if (faBha == null) return false;
 
-            bool isControlled;
             // Dùng GetVariableValue để đọc giá trị từ Blackboard
-            if (faBha.BlackboardReference.GetVariableValue("PlayerControl", out isControlled))
+            if (faBha.BlackboardReference.GetVariableValue("PlayerControl", out bool isControlled))
                 // Nếu tìm thấy biến, trả về giá trị của nó
                 return isControlled;
 
@@ -339,7 +327,7 @@ namespace Tu_Develop.Import.Scripts
             Debug.LogWarning("Không tìm thấy biến 'PlayerControl' trên Blackboard!");
             return false;
         }
-
+        
         #region FaInterface
 
         // Hàm này cần được sửa lại cho đúng tên và tham số như trong Interface
@@ -349,14 +337,14 @@ namespace Tu_Develop.Import.Scripts
             // ... logic tạo lá chắn ...
             StartSkillCooldown("ProtectiveAura", 20f);
         }
-
+        
         public void UseGuideSignal()
         {
             if (!IsSkillAvailable("GuideSignal")) return;
             Debug.Log("Thực thi kỹ năng TinHieuDanLoi (GuideSignal)!");
             StartSkillCooldown("GuideSignal", 10f);
         }
-
+        
         public void UseKnowledgeLight()
         {
             if (!IsSkillAvailable("KnowledgeLight")) return;
