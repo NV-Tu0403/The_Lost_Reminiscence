@@ -8,13 +8,20 @@ public class FaAgent : MonoBehaviour, FaInterface
 {
     [Header("Event Channels")] [SerializeField]
     private OnFaAgentUseSkill? useSkillEventChannel;
-    [Header("Canvas")] 
-    [SerializeField] private TextMeshProUGUI? skill1Cooldown;
+
+    [Header("Canvas")] [SerializeField] private TextMeshProUGUI? skill1Cooldown;
     [SerializeField] private TextMeshProUGUI? skill2Cooldown;
     [SerializeField] private TextMeshProUGUI? skill3Cooldown;
-    
+
+    [Header("Player Conponents")] [SerializeField]
+    private BlackboardReference playerConfig;
+    // Giả lập máu
+    [SerializeField] private int playerHealth = 3;
+
     private Transform? _targetPositionHelper;
+
     private readonly Dictionary<string, float> _cooldownTimers = new Dictionary<string, float>();
+
     // Bổ sung TaskQueue quản lý task cho Fa
     private readonly TaskQueue _taskQueue = new TaskQueue();
     // Hàm thêm task vào queue
@@ -25,9 +32,21 @@ public class FaAgent : MonoBehaviour, FaInterface
         {
             //useSkillEventChannel.OnEventPushlished += StartSkillCooldown;
         }
+
+        if (playerConfig != null)
+        {
+            InitializePlayerConfig();
+        }
     }
 
-    private void OnDisable()
+    void InitializePlayerConfig()
+    {
+        
+    }
+
+
+
+private void OnDisable()
     {
         if (useSkillEventChannel != null)
         {

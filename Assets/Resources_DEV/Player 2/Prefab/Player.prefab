@@ -2801,7 +2801,7 @@ GameObject:
   - component: {fileID: 6382068261606587567}
   - component: {fileID: 6502655266509829974}
   - component: {fileID: 7263561286736380587}
-  - component: {fileID: 2239689218682564567}
+  - component: {fileID: 9175049569714972424}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -2818,7 +2818,7 @@ Transform:
   m_GameObject: {fileID: 6990992609683028925}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.00005596876, y: 0.8895792, z: 0.0068916082}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2896,7 +2896,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: cbd1db45c75e5b948a5befe9ecb80421, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 1
@@ -2988,7 +2988,7 @@ NavMeshAgent:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6990992609683028925}
   m_Enabled: 1
-  m_AgentTypeID: 0
+  m_AgentTypeID: -1372625422
   m_Radius: 0.5
   m_Speed: 3.5
   m_Acceleration: 8
@@ -3002,7 +3002,7 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &2239689218682564567
+--- !u!114 &9175049569714972424
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3011,10 +3011,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 6990992609683028925}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ba66b2df26213164f984c806b326282f, type: 3}
+  m_Script: {fileID: 11500000, guid: 43e7d46c3de795d41a042923226ed368, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
+  characterInput: {fileID: 6549350996224488703}
+  faAgent: {fileID: 0}
 --- !u!1 &7054814478908262134
 GameObject:
   m_ObjectHideFlags: 0
@@ -3310,7 +3311,7 @@ Transform:
   m_GameObject: {fileID: 8115902684360144383}
   serializedVersion: 2
   m_LocalRotation: {x: -0.0000006446759, y: -0.000009596998, z: 0.0003028944, w: 0.99999994}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
