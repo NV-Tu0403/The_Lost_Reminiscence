@@ -101,26 +101,26 @@ namespace Code.Boss
             }
         }
 
-        // Method để Fa system kiểm tra trạng thái boss
-        public static bool IsBossVulnerable()
-        {
-            if (BossManager.Instance == null) return false;
-            
-            string currentState = BossManager.Instance.GetCurrentBossState();
-            return currentState == "DecoyState" || currentState == "ScreamState";
-        }
-
-        // Method để Fa system kiểm tra số lượng soul
-        public static int GetCurrentSoulCount()
-        {
-            return FindObjectsOfType<SoulBehavior>().Length;
-        }
-
-        // Method để Fa system kiểm tra phase hiện tại
-        public static int GetCurrentBossPhase()
-        {
-            return BossManager.Instance?.GetCurrentBossPhase() ?? 0;
-        }
+        // // Method để Fa system kiểm tra trạng thái boss
+        // public static bool IsBossVulnerable()
+        // {
+        //     if (BossManager.Instance == null) return false;
+        //     
+        //     string currentState = BossManager.Instance.GetCurrentBossState();
+        //     return currentState == "DecoyState" || currentState == "ScreamState";
+        // }
+        //
+        // // Method để Fa system kiểm tra số lượng soul
+        // public static int GetCurrentSoulCount()
+        // {
+        //     return FindObjectsOfType<SoulBehavior>().Length;
+        // }
+        //
+        // // Method để Fa system kiểm tra phase hiện tại
+        // public static int GetCurrentBossPhase()
+        // {
+        //     return BossManager.Instance?.GetCurrentBossPhase() ?? 0;
+        // }
 
         private void OnDestroy()
         {
@@ -132,58 +132,58 @@ namespace Code.Boss
         }
     }
 
-    /// <summary>
-    /// Example integration với Fa skill system
-    /// </summary>
-    public static class FaSkillIntegrationExample
-    {
-        // Ví dụ cách Fa system có thể tích hợp
-        public static void InitializeFaIntegration()
-        {
-            // Đăng ký lắng nghe boss events
-            FaBossIntegration.OnRequestFaSkill += HandleFaSkillRequest;
-            FaBossIntegration.OnSoulCountChanged += HandleSoulCountChanged;
-            FaBossIntegration.OnBossVulnerable += HandleBossVulnerabilityChanged;
-        }
-
-        private static void HandleFaSkillRequest(string skillName)
-        {
-            Debug.Log($"Boss system is requesting Fa to use skill: {skillName}");
-            
-            // Fa system logic here
-            // Example:
-            // if (FaSkillManager.CanUseSkill(skillName))
-            // {
-            //     FaSkillManager.UseSkill(skillName, OnFaSkillComplete);
-            // }
-        }
-
-        private static void HandleSoulCountChanged(int soulCount)
-        {
-            Debug.Log($"Soul count changed to: {soulCount}");
-            
-            // Fa system có thể update UI hoặc AI logic dựa trên số soul
-        }
-
-        private static void HandleBossVulnerabilityChanged(bool isVulnerable)
-        {
-            Debug.Log($"Boss vulnerability changed to: {isVulnerable}");
-            
-            // Fa system có thể update UI để hiển thị cơ hội tấn công
-        }
-
-        // Callback khi Fa skill hoàn thành
-        private static void OnFaSkillComplete(string skillName, bool success)
-        {
-            // Thông báo lại cho boss system
-            FaBossIntegration.NotifyFaSkillUsed(skillName, success);
-        }
-
-        public static void CleanupFaIntegration()
-        {
-            FaBossIntegration.OnRequestFaSkill -= HandleFaSkillRequest;
-            FaBossIntegration.OnSoulCountChanged -= HandleSoulCountChanged;
-            FaBossIntegration.OnBossVulnerable -= HandleBossVulnerabilityChanged;
-        }
-    }
+    // <summary>
+    // Example integration với Fa skill system
+    // </summary>
+    // public static class FaSkillIntegrationExample
+    // {
+    //     // Ví dụ cách Fa system có thể tích hợp
+    //     public static void InitializeFaIntegration()
+    //     {
+    //         // Đăng ký lắng nghe boss events
+    //         FaBossIntegration.OnRequestFaSkill += HandleFaSkillRequest;
+    //         FaBossIntegration.OnSoulCountChanged += HandleSoulCountChanged;
+    //         FaBossIntegration.OnBossVulnerable += HandleBossVulnerabilityChanged;
+    //     }
+    //
+    //     private static void HandleFaSkillRequest(string skillName)
+    //     {
+    //         Debug.Log($"Boss system is requesting Fa to use skill: {skillName}");
+    //         
+    //         // Fa system logic here
+    //         // Example:
+    //         // if (FaSkillManager.CanUseSkill(skillName))
+    //         // {
+    //         //     FaSkillManager.UseSkill(skillName, OnFaSkillComplete);
+    //         // }
+    //     }
+    //
+    //     private static void HandleSoulCountChanged(int soulCount)
+    //     {
+    //         Debug.Log($"Soul count changed to: {soulCount}");
+    //         
+    //         // Fa system có thể update UI hoặc AI logic dựa trên số soul
+    //     }
+    //
+    //     private static void HandleBossVulnerabilityChanged(bool isVulnerable)
+    //     {
+    //         Debug.Log($"Boss vulnerability changed to: {isVulnerable}");
+    //         
+    //         // Fa system có thể update UI để hiển thị cơ hội tấn công
+    //     }
+    //
+    //     // Callback khi Fa skill hoàn thành
+    //     private static void OnFaSkillComplete(string skillName, bool success)
+    //     {
+    //         // Thông báo lại cho boss system
+    //         FaBossIntegration.NotifyFaSkillUsed(skillName, success);
+    //     }
+    //
+    //     public static void CleanupFaIntegration()
+    //     {
+    //         FaBossIntegration.OnRequestFaSkill -= HandleFaSkillRequest;
+    //         FaBossIntegration.OnSoulCountChanged -= HandleSoulCountChanged;
+    //         FaBossIntegration.OnBossVulnerable -= HandleBossVulnerabilityChanged;
+    //     }
+    //}
 }

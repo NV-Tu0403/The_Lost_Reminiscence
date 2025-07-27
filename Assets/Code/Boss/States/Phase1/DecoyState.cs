@@ -16,16 +16,12 @@ namespace Code.Boss.States.Phase1
 
         public override void Enter()
         {
+            Debug.Log("[Boss State] Entered DecoyState - Spawn 2 bóng ảo (1 thật 1 giả) truy đuổi người chơi");
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;
             skillActivated = false;
-            
-            Debug.Log("[Boss State] Entered DecoyState - Casting Decoy skill");
             BossEventSystem.Trigger(BossEventType.DecoyStarted);
-            
-            // Trigger skill cast với skill name để UI hiển thị
-            Debug.Log("[DecoyState] Triggering SkillCasted event with 'Decoy'");
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Decoy" });
             
             // Play decoy spawn sound
@@ -37,63 +33,47 @@ namespace Code.Boss.States.Phase1
 
         public override void Update()
         {
-            if (isCasting)
-            {
-                HandleCasting();
-            }
-            else
-            {
-                HandleSkillActive();
-            }
+            if (isCasting) HandleCasting();
+            else HandleSkillActive();
         }
 
         private void HandleCasting()
         {
             castTimer += Time.deltaTime;
-            
             // Update skill cast progress for UI
-            float progress = castTimer / config.phase1.decoyCastTime;
+            var progress = castTimer / config.phase1.decoyCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
-            
-            if (castTimer >= config.phase1.decoyCastTime)
-            {
-                ActivateSkill();
-            }
+            if (castTimer >= config.phase1.decoyCastTime) ActivateSkill();
         }
 
         private void ActivateSkill()
         {
             isCasting = false;
             skillActivated = true;
-            
-            // Trigger event để ẩn UI cast bar khi skill hoàn thành
-            Debug.Log("[DecoyState] Skill casting completed - triggering skill complete event");
-            BossEventSystem.Trigger(BossEventType.SkillInterrupted); // Tạm dùng event này để ẩn UI
-            
+            BossEventSystem.Trigger(BossEventType.SkillInterrupted);
             SpawnDecoys();
-            Debug.Log("[Boss State] DecoyState - Skill activated, decoys spawned");
         }
 
         private void SpawnDecoys()
         {
-            Vector3 spawnCenter = bossController.Player.position;
-            float spawnRadius = config.phase1.decoySpawnRadius;
+            var spawnCenter = bossController.Player.position;
+            var spawnRadius = config.phase1.decoySpawnRadius;
             
             // Spawn real decoy (this is actually the boss)
-            Vector3 realPos = GetRandomSpawnPosition(spawnCenter, spawnRadius);
+            var realPos = GetRandomSpawnPosition(spawnCenter, spawnRadius);
             realDecoy = CreateDecoy(realPos, true);
             
             // Spawn fake decoy
-            Vector3 fakePos = GetRandomSpawnPosition(spawnCenter, spawnRadius);
+            var fakePos = GetRandomSpawnPosition(spawnCenter, spawnRadius);
             fakeDecoy = CreateDecoy(fakePos, false);
             
             // Hide original boss
             bossController.gameObject.SetActive(false);
         }
 
-        private Vector3 GetRandomSpawnPosition(Vector3 center, float radius)
+        private static Vector3 GetRandomSpawnPosition(Vector3 center, float radius)
         {
-            Vector2 randomCircle = Random.insideUnitCircle.normalized * radius;
+            var randomCircle = Random.insideUnitCircle.normalized * radius;
             return center + new Vector3(randomCircle.x, 0, randomCircle.y);
         }
 
@@ -107,10 +87,11 @@ namespace Code.Boss.States.Phase1
             }
             
             // Instantiate decoy from prefab
-            GameObject decoy = GameObject.Instantiate(config.phase1.decoyPrefab, position, Quaternion.identity);
+            var decoy = Object.Instantiate(config.phase1.decoyPrefab, position, Quaternion.identity);
             decoy.name = isReal ? "RealDecoy" : "FakeDecoy";
             
-            // Ensure decoy has a collider for attacks
+            // TODO: Delete after
+            // Ensure decoy has a collider for attacks 
             Collider decoyCollider = decoy.GetComponent<Collider>();
             if (decoyCollider == null)
             {
@@ -126,8 +107,8 @@ namespace Code.Boss.States.Phase1
             }
             
             // Ensure collider is not a trigger for attack detection
-            decoyCollider.isTrigger = false;
-            
+            if (decoyCollider != null) decoyCollider.isTrigger = false;
+
             // Add decoy behavior
             var decoyBehavior = decoy.GetComponent<DecoyBehavior>();
             if (decoyBehavior == null)
@@ -142,54 +123,28 @@ namespace Code.Boss.States.Phase1
         private void HandleSkillActive()
         {
             skillTimer += Time.deltaTime;
-            
-            if (skillTimer >= config.phase1.decoyDuration)
-            {
-                EndDecoyState();
-            }
+            if (skillTimer >= config.phase1.decoyDuration) EndDecoyState();
         }
 
         private void EndDecoyState()
         {
-            // Clean up decoys
-            bossController.ClearDecoys();
-            
-            // Show original boss
-            bossController.gameObject.SetActive(true);
-            
-            // Return to idle
-            bossController.ChangeState(new IdleState());
+            bossController.ClearDecoys();                               // Clean up decoys
+            bossController.gameObject.SetActive(true);                  // Show original boss
+            bossController.ChangeState(new IdleState());                // Return to idle
         }
 
         public override void Exit()
         {
-            // Ensure cleanup
-            if (skillActivated)
-            {
-                bossController.ClearDecoys();
-                bossController.gameObject.SetActive(true);
-            }
+            if (!skillActivated) return;
+            bossController.ClearDecoys();
+            bossController.gameObject.SetActive(true);
         }
 
-        public override void OnTakeDamage()
-        {
-            if (isCasting && CanBeInterrupted())
-            {
-                // Chỉ có thể interrupt khi đang casting
-                BossEventSystem.Trigger(BossEventType.SkillInterrupted);
-                bossController.ChangeState(new IdleState());
-            }
-            else
-            {
-                // Boss bất khả xâm phạm trong Phase 1, ngay cả khi có decoys
-                // Damage phải thông qua việc tấn công decoys, không phải boss chính
-                Debug.Log("[DecoyState] Boss is invulnerable! Must attack decoys to damage boss.");
-            }
-        }
-
+        public override void OnTakeDamage() {}
+        
         public override bool CanBeInterrupted()
         {
-            return isCasting; // Can only be interrupted during casting
+            return isCasting; 
         }
     }
 }

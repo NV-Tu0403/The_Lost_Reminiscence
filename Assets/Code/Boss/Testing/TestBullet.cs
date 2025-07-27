@@ -120,59 +120,15 @@ namespace Code.Boss.Testing
             
             // Check for decoy
             var decoy = hitCollider.GetComponent<DecoyBehavior>();
-            if (decoy != null)
-            {
-                decoy.OnAttacked();
-                DestroyBullet();
-                return;
-            }
-            
-            // Check for soul
-            var soul = hitCollider.GetComponent<SoulBehavior>();
-            if (soul != null)
-            {
-                DestroyBullet();
-                return;
-            }
-            
-            // Check for ground/obstacles
-            if (hitCollider.gameObject.layer == LayerMask.NameToLayer("Ground"))
-            {
-                DestroyBullet();
-            }
+            if (decoy == null) return;
+            decoy.OnAttacked();
+            DestroyBullet();
         }
 
         private void DestroyBullet()
         {
-            // Có thể thêm hiệu ứng nổ ở đây
-            CreateHitEffect();
             Destroy(gameObject);
         }
-
-        private void CreateHitEffect()
-        {
-            // Tạo hiệu ứng đơn giản khi đạn nổ
-            GameObject effect = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            effect.name = "BulletHitEffect";
-            effect.transform.position = transform.position;
-            effect.transform.localScale = Vector3.one * 0.5f;
-            
-            // Màu đỏ cho hiệu ứng
-            var renderer = effect.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                renderer.material.color = Color.red;
-            }
-            
-            // Remove collider để không ảnh hưởng gameplay
-            var collider = effect.GetComponent<Collider>();
-            if (collider != null)
-            {
-                Destroy(collider);
-            }
-            
-            // Tự hủy sau 0.2 giây
-            Destroy(effect, 0.2f);
-        }
+        
     }
 }
