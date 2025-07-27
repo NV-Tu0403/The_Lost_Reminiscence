@@ -15,6 +15,7 @@ namespace Code.Boss.States.Phase1
 
         public override void Enter()
         {
+            Debug.Log("[Boss State] Entered LureState - Boss tiến lại gần người chơi rồi rút lui");
             originalPosition = bossController.transform.position;
             currentPhase = LurePhase.Approaching;
             stateTimer = 0f;

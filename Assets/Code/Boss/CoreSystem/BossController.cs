@@ -115,10 +115,7 @@ namespace Code.Boss
 
         private void StartBoss()
         {
-            // Trigger boss spawned event
             BossEventSystem.Trigger(BossEventType.BossSpawned);
-            
-            // Start with Phase 1
             ChangeToPhase(1);
         }
 
@@ -130,13 +127,14 @@ namespace Code.Boss
 
         private void OnPhaseCompleted()
         {
-            if (currentPhase == 1)
+            switch (currentPhase)
             {
-                ChangeToPhase(2);
-            }
-            else if (currentPhase == 2)
-            {
-                DefeatBoss();
+                case 1:
+                    ChangeToPhase(2);
+                    break;
+                case 2:
+                    DefeatBoss();
+                    break;
             }
         }
 
@@ -151,22 +149,21 @@ namespace Code.Boss
             // Trigger phase change event
             BossEventSystem.Trigger(BossEventType.PhaseChanged, new BossEventData(newPhase));
             OnPhaseChanged?.Invoke(newPhase);
-            
-            // Change to appropriate starting state
-            if (newPhase == 1)
+
+            switch (newPhase)
             {
-                stateMachine.ChangeState(new IdleState());
-            }
-            else if (newPhase == 2)
-            {
-                stateMachine.ChangeState(new AngryState());
+                case 1:
+                    stateMachine.ChangeState(new IdleState());
+                    break;
+                case 2:
+                    stateMachine.ChangeState(new AngryState());
+                    break;
             }
         }
 
         public void TakeDamage(int damage = 1)
         {
             Debug.Log($"[BossController] TakeDamage called - checking CanTakeDamage()...");
-            
             // Kiểm tra state có cho phép nhận damage không TRƯỚC KHI trừ máu
             if (stateMachine.CanTakeDamage())
             {
@@ -185,7 +182,6 @@ namespace Code.Boss
             }
             else
             {
-                // State không cho phép nhận damage
                 stateMachine.OnTakeDamage();
             }
         }
@@ -296,50 +292,6 @@ namespace Code.Boss
             
             ClearDecoys();
             BossEventSystem.ClearAllListeners();
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            if (bossConfig != null)
-            {
-                // Draw decoy spawn radius
-                Gizmos.color = Color.yellow;
-                DrawWireCircle(transform.position, bossConfig.phase1.decoySpawnRadius);
-                
-                // Draw soul spawn radius
-                Gizmos.color = Color.magenta;
-                DrawWireCircle(transform.position, bossConfig.soulConfig.soulSpawnRadius);
-                
-                // Draw phase 2 circle radius
-                if (navMeshCenter != null)
-                {
-                    Gizmos.color = Color.red;
-                    DrawWireCircle(navMeshCenter.position, bossConfig.phase2.circleRadius);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Helper method to draw wire circle in XZ plane
-        /// </summary>
-        private void DrawWireCircle(Vector3 center, float radius)
-        {
-            int segments = 32;
-            float angleStep = 360f / segments;
-            Vector3 prevPoint = center + new Vector3(radius, 0, 0);
-            
-            for (int i = 1; i <= segments; i++)
-            {
-                float angle = angleStep * i * Mathf.Deg2Rad;
-                Vector3 newPoint = center + new Vector3(
-                    Mathf.Cos(angle) * radius, 
-                    0, 
-                    Mathf.Sin(angle) * radius
-                );
-                
-                Gizmos.DrawLine(prevPoint, newPoint);
-                prevPoint = newPoint;
-            }
         }
     }
 }

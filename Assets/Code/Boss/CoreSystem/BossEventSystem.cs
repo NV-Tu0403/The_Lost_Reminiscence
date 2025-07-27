@@ -84,7 +84,6 @@ namespace Code.Boss
         // Combat Events
         BossTakeDamage,
         PlayerTakeDamage,
-        DecoyHit,
         RealDecoyHit,
         FakeDecoyHit,
         
@@ -99,6 +98,10 @@ namespace Code.Boss
         SoulStateStarted,
         FearZoneCreated,
         ScreamStarted,
+        
+        // Physics Events
+        CameraShake,
+        VisionShrink,
         
         // UI Events
         HealthChanged,
@@ -121,7 +124,7 @@ namespace Code.Boss
         public string stringValue;
         public Vector3 position;
         public GameObject gameObject;
-        public object customData;
+        public object CustomData;
 
         public BossEventData() { }
 

@@ -12,6 +12,7 @@ namespace Code.Boss.States.Phase1
 
         public override void Enter()
         {
+            Debug.Log("[Boss State] Entered IdleState - Boss đứng yên tại chỗ");
             idleTimer = 0f;
             // Stop movement
             if (bossController.NavAgent != null)

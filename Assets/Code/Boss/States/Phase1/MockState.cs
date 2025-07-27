@@ -11,8 +11,9 @@ namespace Code.Boss.States.Phase1
 
         public override void Enter()
         {
-            mockTimer = 0f;
             Debug.Log("[Boss State] Entered MockState - Boss phát tư thế vặn vẹo và tiếng cười méo mó");
+
+            mockTimer = 0f;
             BossEventSystem.Trigger(BossEventType.MockStarted);
             
             // Play mock laugh sound
