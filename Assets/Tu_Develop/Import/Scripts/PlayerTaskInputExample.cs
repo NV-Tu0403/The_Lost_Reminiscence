@@ -1,4 +1,3 @@
-using Tu_Develop.Import.Scripts;
 using UnityEngine;
 
 public class PlayerTaskInputExample : MonoBehaviour
