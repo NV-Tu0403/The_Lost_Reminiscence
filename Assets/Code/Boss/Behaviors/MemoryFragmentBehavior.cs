@@ -1,5 +1,4 @@
 using UnityEngine;
-using Code.Boss.States.Shared;
 
 namespace Code.Boss
 {
