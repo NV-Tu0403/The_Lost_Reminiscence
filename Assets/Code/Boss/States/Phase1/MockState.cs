@@ -38,16 +38,9 @@ namespace Code.Boss.States.Phase1
             }
         }
 
-        public override void Exit()
-        {
-            // No special cleanup needed
-        }
+        public override void Exit() { }
 
-        public override void OnTakeDamage()
-        {
-            // Boss bất khả xâm phạm trong Phase 1 - chỉ có thể damage qua decoys
-            Debug.Log("[MockState] Boss is invulnerable in Phase 1! Can only damage through decoys.");
-        }
+        public override void OnTakeDamage() { }
 
         public override bool CanBeInterrupted()
         {

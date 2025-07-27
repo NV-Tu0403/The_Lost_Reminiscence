@@ -50,6 +50,7 @@ namespace Code.Boss
         {
             BossEventSystem.Subscribe(BossEventType.HealthChanged, OnHealthChanged);
             BossEventSystem.Subscribe(BossEventType.PhaseChanged, OnPhaseChanged);
+            BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeated);
         }
 
         private void OnHealthChanged(BossEventData data)
@@ -103,6 +104,12 @@ namespace Code.Boss
             {
                 phaseText.text = $"Phase {newPhase}";
             }
+        }
+
+        private void OnBossDefeated(BossEventData data)
+        {
+            // Hide boss health bar and phase name UI
+            gameObject.SetActive(false);
         }
 
         private void OnDestroy()

@@ -41,9 +41,9 @@ namespace Code.Boss
         /// </summary>
         public static void Trigger(BossEventType eventType, BossEventData data = null)
         {
-            if (eventListeners.ContainsKey(eventType))
+            if (eventListeners.TryGetValue(eventType, out var eventListener))
             {
-                foreach (var listener in eventListeners[eventType])
+                foreach (var listener in eventListener)
                 {
                     try
                     {

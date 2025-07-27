@@ -19,16 +19,14 @@ namespace Code.Boss.States.Phase1
             currentPhase = LurePhase.Approaching;
             stateTimer = 0f;
             
-            Debug.Log("[Boss State] Entered LureState - Boss tiến lại gần người chơi rồi rút lui");
             BossEventSystem.Trigger(BossEventType.LureStarted);
-            
             CalculateTargetPosition();
         }
 
         public override void Update()
         {
             stateTimer += Time.deltaTime;
-            
+
             switch (currentPhase)
             {
                 case LurePhase.Approaching:
@@ -37,8 +35,8 @@ namespace Code.Boss.States.Phase1
                 case LurePhase.Retreating:
                     HandleRetreating();
                     break;
+                // Transition to next state
                 case LurePhase.Completed:
-                    // Transition to next state
                     bossController.ChangeState(new MockState());
                     break;
             }
@@ -46,7 +44,7 @@ namespace Code.Boss.States.Phase1
 
         private void CalculateTargetPosition()
         {
-            Vector3 directionToPlayer = (bossController.Player.position - bossController.transform.position).normalized;
+            var directionToPlayer = (bossController.Player.position - bossController.transform.position).normalized;
             targetPosition = bossController.Player.position - directionToPlayer * config.phase1.lureDistance;
         }
 
@@ -54,7 +52,7 @@ namespace Code.Boss.States.Phase1
         {
             MoveTowards(targetPosition, config.phase1.lureApproachSpeed);
             
-            float distanceToTarget = Vector3.Distance(bossController.transform.position, targetPosition);
+            var distanceToTarget = Vector3.Distance(bossController.transform.position, targetPosition);
             if (distanceToTarget < 0.5f || stateTimer > config.phase1.lureDuration * 0.6f)
             {
                 currentPhase = LurePhase.Retreating;
@@ -65,7 +63,7 @@ namespace Code.Boss.States.Phase1
         {
             MoveTowards(originalPosition, config.phase1.lureRetreatSpeed);
             
-            float distanceToOriginal = Vector3.Distance(bossController.transform.position, originalPosition);
+            var distanceToOriginal = Vector3.Distance(bossController.transform.position, originalPosition);
             if (distanceToOriginal < 0.5f || stateTimer > config.phase1.lureDuration)
             {
                 currentPhase = LurePhase.Completed;
@@ -90,11 +88,7 @@ namespace Code.Boss.States.Phase1
             }
         }
 
-        public override void OnTakeDamage()
-        {
-            // Boss bất khả xâm phạm trong Phase 1 - chỉ có thể damage qua decoys
-            Debug.Log("[LureState] Boss is invulnerable in Phase 1! Can only damage through decoys.");
-        }
+        public override void OnTakeDamage() { }
 
         public override bool CanBeInterrupted()
         {

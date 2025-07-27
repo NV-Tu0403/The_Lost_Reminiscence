@@ -186,19 +186,14 @@ namespace Code.Boss
             else
             {
                 // State không cho phép nhận damage
-                Debug.Log($"[BossController] CanTakeDamage = FALSE - Boss is invulnerable! Current Phase: {currentPhase}");
-                stateMachine.OnTakeDamage(); // Vẫn thông báo cho state để xử lý (ví dụ: interrupt casting)
+                stateMachine.OnTakeDamage();
             }
         }
 
         // Method riêng cho damage từ decoys - bypass CanTakeDamage() check
         public void TakeDamageFromDecoy(int damage = 1)
         {
-            Debug.Log($"[BossController] TakeDamageFromDecoy called - bypassing CanTakeDamage() check");
-            
-            // Trực tiếp gây damage mà không kiểm tra CanTakeDamage()
             healthSystem.TakeDamage(damage);
-            
             BossEventSystem.Trigger(BossEventType.BossTakeDamage, new BossEventData(damage));
             
             // Play damage sound
@@ -207,8 +202,6 @@ namespace Code.Boss
                 audioSource.PlayOneShot(bossConfig.audioConfig.damageSound, 
                     bossConfig.audioConfig.sfxVolume);
             }
-            
-            // Không gọi stateMachine.OnTakeDamage() vì decoy đã xử lý state change
         }
 
         public void ChangeState(BossState newState)
