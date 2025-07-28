@@ -18,14 +18,14 @@ namespace Code.Boss.States.Shared
             Debug.Log("[Boss State] Entered PhaseChangeState - Chuyển đổi từ Phase 1 sang Phase 2");
             
             // Play phase change sound
-            if (config.audioConfig.phaseChangeSound != null)
+            if (Config.audioConfig.phaseChangeSound != null)
             {
-                bossController.PlaySound(config.audioConfig.phaseChangeSound, config.audioConfig.sfxVolume);
+                BossController.PlaySound(Config.audioConfig.phaseChangeSound, Config.audioConfig.sfxVolume);
             }
             
             // Clear any remaining decoys and souls
-            bossController.ClearDecoys();
-            bossController.SoulManager.DestroyAllSouls();
+            BossController.ClearDecoys();
+            BossController.SoulManager.DestroyAllSouls();
         }
 
         public override void Update()
@@ -35,7 +35,7 @@ namespace Code.Boss.States.Shared
             if (transitionTimer >= 2f && !transitionCompleted) // 2 second transition
             {
                 transitionCompleted = true;
-                bossController.ChangeToPhase(2);
+                BossController.ChangeToPhase(2);
             }
         }
 

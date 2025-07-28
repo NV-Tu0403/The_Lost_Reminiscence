@@ -14,32 +14,31 @@ namespace Code.Boss.States.Phase2
         {
             cookTimer = 0f;
             memoryFragmentDropped = false;
-            // Ẩn UI máu boss và UI cast skill khi boss bị đánh bại
-            Debug.Log("[CookState] Hiding boss health UI and cast skill UI");
-            BossEventSystem.Trigger(BossEventType.SkillInterrupted); // Ẩn UI cast skill
-            BossEventSystem.Trigger(BossEventType.BossDefeated); // Có thể trigger event để ẩn UI máu boss
+            
+            BossEventSystem.Trigger(BossEventType.SkillInterrupted); 
+            BossEventSystem.Trigger(BossEventType.BossDefeated); 
             
             // Stop all movement
-            if (bossController.NavAgent != null)
+            if (BossController.NavAgent != null)
             {
-                bossController.NavAgent.SetDestination(bossController.transform.position);
-                bossController.NavAgent.enabled = false;
+                BossController.NavAgent.SetDestination(BossController.transform.position);
+                BossController.NavAgent.enabled = false;
             }
             
             // Clear all souls
-            bossController.SoulManager.DestroyAllSouls();
+            BossController.SoulManager.DestroyAllSouls();
         }
 
         public override void Update()
         {
             cookTimer += Time.deltaTime;
-            if (cookTimer >= config.phase2.cookStateDuration && !memoryFragmentDropped)
+            if (cookTimer >= Config.phase2.cookStateDuration && !memoryFragmentDropped)
             {
                 DropMemoryFragment();
                 memoryFragmentDropped = true;
             }
             
-            if (cookTimer >= config.phase2.cookStateDuration + 1f)
+            if (cookTimer >= Config.phase2.cookStateDuration + 1f)
             {
                 CompleteBossDefeat();
             }
@@ -48,8 +47,8 @@ namespace Code.Boss.States.Phase2
         private void DropMemoryFragment()
         {
             // Create memory fragment at boss position
-            GameObject memoryFragment = new GameObject("MemoryFragment");
-            memoryFragment.transform.position = bossController.transform.position;
+            var memoryFragment = new GameObject("MemoryFragment");
+            memoryFragment.transform.position = BossController.transform.position;
             
             // Add memory fragment behavior
             var fragmentBehavior = memoryFragment.AddComponent<MemoryFragmentBehavior>();
@@ -59,25 +58,16 @@ namespace Code.Boss.States.Phase2
 
         private void CompleteBossDefeat()
         {
-            // Boss completely defeated
-            bossController.gameObject.SetActive(false);
-            // Or destroy the boss GameObject
-            // Object.Destroy(bossController.gameObject);
+            Object.Destroy(BossController.gameObject);
         }
 
-        public override void Exit()
-        {
-            // No special cleanup needed - boss is defeated
-        }
+        public override void Exit() { }
 
-        public override void OnTakeDamage()
-        {
-            // Boss cannot take damage when cooking/defeated
-        }
+        public override void OnTakeDamage() { }
 
-        public override bool CanBeInterrupted()
-        {
-            return false;
-        }
+        public override bool CanTakeDamage() => false;
+
+        public override bool CanBeInterrupted() => false;
+
     }
 }

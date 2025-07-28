@@ -226,24 +226,6 @@ namespace Code.Boss
             currentDecoys.Clear();
         }
 
-        public void InterruptCurrentSkill()
-        {
-            if (stateMachine.CanInterruptCurrentState())
-            {
-                BossEventSystem.Trigger(BossEventType.SkillInterrupted);
-                
-                // Return to appropriate state based on phase
-                if (currentPhase == 1)
-                {
-                    ChangeState(new IdleState());
-                }
-                else
-                {
-                    ChangeState(new AngryState());
-                }
-            }
-        }
-
         private void DefeatBoss()
         {
             // Trigger defeat events

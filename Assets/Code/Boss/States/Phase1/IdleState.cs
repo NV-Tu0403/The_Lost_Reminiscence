@@ -15,9 +15,9 @@ namespace Code.Boss.States.Phase1
             Debug.Log("[Boss State] Entered IdleState - Boss đứng yên tại chỗ");
             idleTimer = 0f;
             // Stop movement
-            if (bossController.NavAgent != null)
+            if (BossController.NavAgent != null)
             {
-                bossController.NavAgent.SetDestination(bossController.transform.position);
+                BossController.NavAgent.SetDestination(BossController.transform.position);
             }
         }
 
@@ -25,7 +25,7 @@ namespace Code.Boss.States.Phase1
         {
             idleTimer += Time.deltaTime;
             
-            if (idleTimer >= config.phase1.idleDuration && canTransition)
+            if (idleTimer >= Config.phase1.idleDuration && canTransition)
             {
                 TransitionToNextState();
             }
@@ -33,21 +33,21 @@ namespace Code.Boss.States.Phase1
 
         private void TransitionToNextState()
         {
-            if (config.phase1.enableRandomStates)
+            if (Config.phase1.enableRandomStates)
             {
                 BossState nextState = GetRandomNextState();
-                bossController.ChangeState(nextState);
+                BossController.ChangeState(nextState);
             }
             else
             {
                 // Default sequence: Idle -> Lure -> Mock -> Decoy
-                bossController.ChangeState(new LureState());
+                BossController.ChangeState(new LureState());
             }
         }
 
         private BossState GetRandomNextState()
         {
-            var weights = config.phase1.stateWeights;
+            var weights = Config.phase1.stateWeights;
             var totalWeight = weights[1] + weights[2] + weights[3]; // Exclude Idle weight
             var randomValue = Random.Range(0f, totalWeight);
             var currentWeight = 0f;
@@ -67,9 +67,7 @@ namespace Code.Boss.States.Phase1
 
         public override void OnTakeDamage() {}
         
-        public override bool CanBeInterrupted()
-        {
-            return false; 
-        }
+        public override bool CanBeInterrupted() => false;
+
     }
 }

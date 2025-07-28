@@ -17,15 +17,15 @@ namespace Code.Boss.States.Phase1
             BossEventSystem.Trigger(BossEventType.MockStarted);
             
             // Play mock laugh sound
-            if (config.audioConfig.mockLaughSound != null)
+            if (Config.audioConfig.mockLaughSound != null)
             {
-                bossController.PlaySound(config.audioConfig.mockLaughSound, config.audioConfig.sfxVolume);
+                BossController.PlaySound(Config.audioConfig.mockLaughSound, Config.audioConfig.sfxVolume);
             }
             
             // Stop movement
-            if (bossController.NavAgent != null)
+            if (BossController.NavAgent != null)
             {
-                bossController.NavAgent.SetDestination(bossController.transform.position);
+                BossController.NavAgent.SetDestination(BossController.transform.position);
             }
         }
 
@@ -33,9 +33,9 @@ namespace Code.Boss.States.Phase1
         {
             mockTimer += Time.deltaTime;
             
-            if (mockTimer >= config.phase1.mockDuration)
+            if (mockTimer >= Config.phase1.mockDuration)
             {
-                bossController.ChangeState(new DecoyState());
+                BossController.ChangeState(new DecoyState());
             }
         }
 

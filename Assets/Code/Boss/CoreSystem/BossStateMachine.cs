@@ -10,8 +10,8 @@ namespace Code.Boss
     /// </summary>
     public abstract class BossState
     {
-        protected BossController bossController;
-        protected BossConfig config;
+        protected BossController BossController;
+        protected BossConfig Config;
         
         public abstract void Enter();
         public abstract void Update();
@@ -19,17 +19,15 @@ namespace Code.Boss
         public abstract void OnTakeDamage();
         public abstract bool CanBeInterrupted();
         
-        // Thêm method để kiểm tra state có cho phép boss nhận damage không
         public virtual bool CanTakeDamage()
         {
-            // Mặc định: Phase 1 không thể damage trực tiếp, Phase 2 có thể
-            return bossController != null && bossController.CurrentPhase >= 2;
+            return BossController != null && BossController.CurrentPhase >= 2;
         }
 
         public virtual void Initialize(BossController controller, BossConfig bossConfig)
         {
-            bossController = controller;
-            config = bossConfig;
+            BossController = controller;
+            Config = bossConfig;
         }
     }
 
@@ -40,8 +38,6 @@ namespace Code.Boss
     {
         private BossState currentState;
         private BossController bossController;
-        
-        public BossState CurrentState => currentState;
 
         public void Initialize(BossController controller)
         {
@@ -52,7 +48,7 @@ namespace Code.Boss
         {
             currentState?.Exit();
             
-            BossState previousState = currentState;
+            var previousState = currentState;
             currentState = newState;
             if (currentState != null)
             {
@@ -75,15 +71,14 @@ namespace Code.Boss
             currentState?.OnTakeDamage();
         }
 
-        public bool CanInterruptCurrentState()
-        {
-            return currentState?.CanBeInterrupted() ?? false;
-        }
-        
-        // Thêm method để kiểm tra state hiện tại có cho phép boss nhận damage không
         public bool CanTakeDamage()
         {
             return currentState?.CanTakeDamage() ?? false;
+        }
+        
+        public bool CanBeInterrupted()
+        {
+            return currentState?.CanBeInterrupted() ?? true; 
         }
     }
 }

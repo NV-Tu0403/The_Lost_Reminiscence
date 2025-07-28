@@ -25,9 +25,9 @@ namespace Code.Boss.States.Phase1
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Decoy" });
             
             // Play decoy spawn sound
-            if (config.audioConfig.decoySpawnSound != null)
+            if (Config.audioConfig.decoySpawnSound != null)
             {
-                bossController.PlaySound(config.audioConfig.decoySpawnSound, config.audioConfig.sfxVolume);
+                BossController.PlaySound(Config.audioConfig.decoySpawnSound, Config.audioConfig.sfxVolume);
             }
         }
 
@@ -41,9 +41,9 @@ namespace Code.Boss.States.Phase1
         {
             castTimer += Time.deltaTime;
             // Update skill cast progress for UI
-            var progress = castTimer / config.phase1.decoyCastTime;
+            var progress = castTimer / Config.phase1.decoyCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
-            if (castTimer >= config.phase1.decoyCastTime) ActivateSkill();
+            if (castTimer >= Config.phase1.decoyCastTime) ActivateSkill();
         }
 
         private void ActivateSkill()
@@ -56,8 +56,8 @@ namespace Code.Boss.States.Phase1
 
         private void SpawnDecoys()
         {
-            var spawnCenter = bossController.Player.position;
-            var spawnRadius = config.phase1.decoySpawnRadius;
+            var spawnCenter = BossController.Player.position;
+            var spawnRadius = Config.phase1.decoySpawnRadius;
             
             // Spawn real decoy (this is actually the boss)
             var realPos = GetRandomSpawnPosition(spawnCenter, spawnRadius);
@@ -68,7 +68,7 @@ namespace Code.Boss.States.Phase1
             fakeDecoy = CreateDecoy(fakePos, false);
             
             // Hide original boss
-            bossController.gameObject.SetActive(false);
+            BossController.gameObject.SetActive(false);
         }
 
         private static Vector3 GetRandomSpawnPosition(Vector3 center, float radius)
@@ -80,19 +80,19 @@ namespace Code.Boss.States.Phase1
         private GameObject CreateDecoy(Vector3 position, bool isReal)
         {
             // Check if decoy prefab is assigned
-            if (config.phase1.decoyPrefab == null)
+            if (Config.phase1.decoyPrefab == null)
             {
                 Debug.LogError("[DecoyState] Decoy prefab is not assigned in BossConfig! Please assign a decoy prefab in Phase1Config.");
                 return null;
             }
             
             // Instantiate decoy from prefab
-            var decoy = Object.Instantiate(config.phase1.decoyPrefab, position, Quaternion.identity);
+            var decoy = Object.Instantiate(Config.phase1.decoyPrefab, position, Quaternion.identity);
             decoy.name = isReal ? "RealDecoy" : "FakeDecoy";
             
             // TODO: Delete after
             // Ensure decoy has a collider for attacks 
-            Collider decoyCollider = decoy.GetComponent<Collider>();
+            var decoyCollider = decoy.GetComponent<Collider>();
             if (decoyCollider == null)
             {
                 // Add a default collider if none exists
@@ -114,37 +114,34 @@ namespace Code.Boss.States.Phase1
             if (decoyBehavior == null)
                 decoyBehavior = decoy.AddComponent<DecoyBehavior>();
                 
-            decoyBehavior.Initialize(bossController, isReal, config.phase1.decoyMoveSpeed);
+            decoyBehavior.Initialize(BossController, isReal, Config.phase1.decoyMoveSpeed);
             
-            bossController.AddDecoy(decoy);
+            BossController.AddDecoy(decoy);
             return decoy;
         }
 
         private void HandleSkillActive()
         {
             skillTimer += Time.deltaTime;
-            if (skillTimer >= config.phase1.decoyDuration) EndDecoyState();
+            if (skillTimer >= Config.phase1.decoyDuration) EndDecoyState();
         }
 
         private void EndDecoyState()
         {
-            bossController.ClearDecoys();                               // Clean up decoys
-            bossController.gameObject.SetActive(true);                  // Show original boss
-            bossController.ChangeState(new IdleState());                // Return to idle
+            BossController.ClearDecoys();                               // Clean up decoys
+            BossController.gameObject.SetActive(true);                  // Show original boss
+            BossController.ChangeState(new IdleState());                // Return to idle
         }
 
         public override void Exit()
         {
             if (!skillActivated) return;
-            bossController.ClearDecoys();
-            bossController.gameObject.SetActive(true);
+            BossController.ClearDecoys();
+            BossController.gameObject.SetActive(true);
         }
 
         public override void OnTakeDamage() {}
-        
-        public override bool CanBeInterrupted()
-        {
-            return isCasting; 
-        }
+        public override bool CanTakeDamage() => false;
+        public override bool CanBeInterrupted() => isCasting;
     }
 }
