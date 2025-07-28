@@ -21,7 +21,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         if (Instance == null)
         {
             Instance = this;
-        } 
+        }
 
         if (playerTransform == null)
         {
