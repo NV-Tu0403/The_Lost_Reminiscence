@@ -14,8 +14,8 @@ public class PlayerTaskInput : MonoBehaviour
     [Header("Skills Settings")]
     private bool _isWaitingForSkill3Target; // Cờ báo cho biết hệ thống đang chờ phím 1 hoặc 2
     private float _skill3PressTime; // Mốc thời gian khi người chơi nhấn phím 3
-    private const float SKILL3_COMBO_TIMEOUT = 1.5f; // Thời gian tối đa để nhấn 1 hoặc 2 (1.5 giây)
-    private const float SKILL3_HOLD_DURATION = 0.5f; // Thời gian cần giữ phím 3 để kích hoạt (0.5 giây)
+    private const float Skill3ComboTimeout = 1.5f; // Thời gian tối đa để nhấn 1 hoặc 2 (1.5 giây)
+    private const float Skill3HoldDuration = 0.5f; // Thời gian cần giữ phím 3 để kích hoạt (0.5 giây)
 
     private void Start()
     {
@@ -33,7 +33,7 @@ public class PlayerTaskInput : MonoBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
         // Thêm điều kiện để tránh bật tắt khi trong trạng thái đặt biệt
         // if (cutscene hay gi do) return;
@@ -71,7 +71,7 @@ public class PlayerTaskInput : MonoBehaviour
                 _isWaitingForSkill3Target = false;
             }
 
-            if (Input.GetKey(KeyCode.Alpha3) && Time.time - _skill3PressTime > SKILL3_HOLD_DURATION)
+            if (Input.GetKey(KeyCode.Alpha3) && Time.time - _skill3PressTime > Skill3HoldDuration)
             {
                 Debug.Log("[PlayerInput] Giữ Skill 3 -> Target: FA");
                 faAgent.OnPlayerCommand("useskill ProtectiveAura");
