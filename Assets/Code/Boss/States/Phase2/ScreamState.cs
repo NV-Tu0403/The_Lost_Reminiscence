@@ -13,7 +13,6 @@ namespace Code.Boss.States.Phase2
         private float skillTimer;
         private bool isCasting = true;
         private bool skillActivated = false;
-        private bool playerAttacked = false;
         private bool playerHitBoss = false;
 
         public override void Enter()
@@ -22,7 +21,6 @@ namespace Code.Boss.States.Phase2
             skillTimer = 0f;
             isCasting = true;
             skillActivated = false;
-            playerAttacked = false;
             playerHitBoss = false;
             
             Debug.Log("[Boss State] Entered ScreamState - Casting Scream skill");
@@ -41,9 +39,9 @@ namespace Code.Boss.States.Phase2
             castTimer += Time.deltaTime;
             
             // Update skill cast progress for UI
-            var progress = castTimer / config.phase2.screamCastTime;
+            var progress = castTimer / Config.phase2.screamCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
-            if (castTimer >= config.phase2.screamCastTime) ActivateSkill();
+            if (castTimer >= Config.phase2.screamCastTime) ActivateSkill();
         }
 
         private void ActivateSkill()
@@ -58,9 +56,9 @@ namespace Code.Boss.States.Phase2
             ApplyScreamEffects();
             
             // Play scream sound
-            if (config.audioConfig.screamSound != null)
+            if (Config.audioConfig.screamSound != null)
             {
-                bossController.PlaySound(config.audioConfig.screamSound, config.audioConfig.sfxVolume);
+                BossController.PlaySound(Config.audioConfig.screamSound, Config.audioConfig.sfxVolume);
             }
         }
 
@@ -76,7 +74,7 @@ namespace Code.Boss.States.Phase2
             var cam = Camera.main;
             if (cam != null)
             {
-                bossController.StartCoroutine(ScreenShakeCoroutine(cam, config.phase2.screenShakeIntensity, 0.5f));
+                BossController.StartCoroutine(ScreenShakeCoroutine(cam, Config.phase2.screenShakeIntensity, 0.5f));
             }
         }
 
@@ -97,7 +95,7 @@ namespace Code.Boss.States.Phase2
 
         private void ApplyVisionShrink()
         {
-            bossController.StartCoroutine(VisionShrinkOverlayCoroutine(1f));
+            BossController.StartCoroutine(VisionShrinkOverlayCoroutine(1f));
         }
 
         private IEnumerator VisionShrinkOverlayCoroutine(float duration)
@@ -147,7 +145,7 @@ namespace Code.Boss.States.Phase2
         {
             skillTimer += Time.deltaTime;
             
-            if (skillTimer >= config.phase2.screamDuration)
+            if (skillTimer >= Config.phase2.screamDuration)
             {
                 EndScreamState();
             }
@@ -157,13 +155,13 @@ namespace Code.Boss.States.Phase2
         {
             if (playerHitBoss)
             {
-                bossController.TakeDamage(1);
-                bossController.ChangeState(new AngryState());
+                BossController.TakeDamage(1);
+                BossController.ChangeState(new AngryState());
             }
             else
             {
                 BossEventSystem.Trigger(BossEventType.PlayerTakeDamage, new BossEventData(1));
-                bossController.ChangeState(new SoulState());
+                BossController.ChangeState(new SoulState());
             }
         }
 
@@ -178,18 +176,15 @@ namespace Code.Boss.States.Phase2
             if (isCasting && CanBeInterrupted())
             {
                 BossEventSystem.Trigger(BossEventType.SkillInterrupted);
-                bossController.ChangeState(new AngryState());
+                BossController.ChangeState(new AngryState());
             }
             else if (skillActivated)
             {
                 playerHitBoss = true;
-                playerAttacked = true;
             }
         }
 
-        public override bool CanBeInterrupted()
-        {
-            return isCasting;
-        }
+        public override bool CanBeInterrupted() => true;
+        public override bool CanTakeDamage() => isCasting;
     }
 }
