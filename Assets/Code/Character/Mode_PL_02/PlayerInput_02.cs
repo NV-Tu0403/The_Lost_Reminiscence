@@ -8,7 +8,7 @@ public class PlayerInput_02 : MonoBehaviour
 
     [Header("reference")]
     public CharacterCamera _characterCamera;
-    public Camera _camera; 
+    public Camera _camera;
     public PlayerController_02 _playerController;
 
     public bool isInputLocked = false;
@@ -32,7 +32,7 @@ public class PlayerInput_02 : MonoBehaviour
         _camera = _characterCamera.mainCamera;
         Vector3 dir = GetMoveInput();
         CharacterActionType actionType = GetSpecialActionsInput();
-        if (!isInputLocked)
+        //if (!isInputLocked)
         {
             _playerController.PerformMoveInput(actionType, dir);
         }
@@ -96,32 +96,47 @@ public class PlayerInput_02 : MonoBehaviour
     /// <returns></returns>
     public CharacterActionType GetSpecialActionsInput()
     {
-
-        CharacterActionType moveType = CharacterActionType.Walk; // Mặc định
+        CharacterActionType moveType = CharacterActionType.Walk; // mặc định
         bool isShiftHeld = Input.GetKey(KeyCode.LeftShift);
         bool isSpacePressed = Input.GetKeyDown(KeyCode.Space);
-        float doubleTapTimeWindow = 0.5f;
+        float doubleTapTimeWindow = 0.5f; // thời gian double tap dash (0.3-0.4s là hợp lý)
 
-        if (isSpacePressed) // nhảy
-        {    
-            mess = "Space key pressed";
-            return CharacterActionType.Jump; // ưu tiên jump
-        
+        // Xử lý double tap Space cho Dash
+        if (isSpacePressed)
+        {
+            // Nếu lần nhấn thứ hai trong khoảng thời gian cho phép
+            if (Time.time - _lastSpacePressTime <= doubleTapTimeWindow && _spacePressCount == 1)
+            {
+                _spacePressCount = 0; // reset
+                mess = "Dash triggered (double Space)";
+                Debug.LogWarning(mess);
+                return CharacterActionType.Dash;
+            }
+            else
+            {
+                // Lần nhấn đầu tiên
+                _spacePressCount = 1;
+                _lastSpacePressTime = Time.time;
+                mess = "Space key pressed (Jump)";
+                return CharacterActionType.Jump; // ưu tiên jump khi nhấn lần đầu
+            }
         }
 
-        if (isShiftHeld) // chạy nhanh
+        // Reset nếu quá thời gian double tap
+        if (Time.time - _lastSpacePressTime > doubleTapTimeWindow)
+        {
+            _spacePressCount = 0;
+        }
+
+        // Ưu tiên Sprint nếu giữ Shift
+        if (isShiftHeld)
         {
             moveType = CharacterActionType.Sprint;
         }
 
-        if (_spacePressCount >= 2 && Time.time - _lastSpacePressTime <= doubleTapTimeWindow)
-        {
-            moveType = CharacterActionType.Dash;
-            _spacePressCount = 0;
-        } // dash
-
         return moveType;
     }
+
 
     //private void GetAttackInput()
     //{

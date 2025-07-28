@@ -138,29 +138,9 @@ public class DashState : StatePlayer
     {
         switch (type)
         {
-            case CharacterActionType.Idle:
-                // _stateMachine.SetState(new IdleState(_stateMachine, _coreEvent));
-                _stateMachine.SetState(new IdleState_1(_stateMachine, _playerEvent));
-                break;
-            case CharacterActionType.Walk:
-                // Thực hiện hành động đi bộ
-                _stateMachine.SetState(new WalkState(_stateMachine, _playerEvent));
-                break;
-            case CharacterActionType.Run:
-                // Thực hiện hành động chạy
-                _stateMachine.SetState(new RunState(_stateMachine, _playerEvent));
-                break;
             case CharacterActionType.Jump:
                 // Thực hiện hành động nhảy
                 _stateMachine.SetState(new JumpState(_stateMachine, _playerEvent));
-                break;
-            case CharacterActionType.Sprint:
-                // Thực hiện hành động chạy nhanh
-                _stateMachine.SetState(new SprintState(_stateMachine, _playerEvent));
-                break;
-            case CharacterActionType.Crouch:
-                // Thực hiện hành động cúi người
-                _stateMachine.SetState(new CrouchState(_stateMachine, _playerEvent));
                 break;
         }
     }

@@ -2,6 +2,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public class PlayerController_02 : PlayerEventListenerBase
 {
@@ -24,6 +25,10 @@ public class PlayerController_02 : PlayerEventListenerBase
     [SerializeField] private float airDrag = 0.97f;
     [SerializeField] private float extraGravity = 20f;
     [SerializeField] private bool isGrounded = true;
+    [SerializeField] private float JumpMomentumBoost = 4f;
+    [SerializeField] private float dashForce = 15f;   // lực dash
+    [SerializeField] private float dashDuration = 0.3f; // thời gian dash
+    [SerializeField] private float dashMomentumBoost = 10f; // nhân vận tốc ngang
     #endregion
 
     protected override void Awake()
@@ -154,22 +159,25 @@ public class PlayerController_02 : PlayerEventListenerBase
             case CharacterActionType.Sprint:
                 moveSpeed = config.sprintSpeed;
                 break;
-            case CharacterActionType.Dash:
-                moveSpeed = config.dashSpeed;
-                break;
             case CharacterActionType.Jump:
                 Jump(config.jumpImpulse);
                 break;
+            case CharacterActionType.Dash:
+                Dash();
+                return;
         }
+        if (isGrounded) // chỉ di chuyển khi đang trên mặt đất
+        {
+            // Chọn phương thức di chuyển
+            if (useNavMesh && _navMeshAgent != null)
+            {
+                MoveNavMesh(direction, moveSpeed, actionType);
+            }
+            else
+            {
 
-        // Chọn phương thức di chuyển
-        if (useNavMesh && _navMeshAgent != null)
-        {
-            MoveNavMesh(direction, moveSpeed, actionType);
-        }
-        else
-        {
-            Move(direction * moveSpeed, actionType);
+                Move(direction * moveSpeed, actionType);
+            }
         }
     }
 
@@ -220,6 +228,7 @@ public class PlayerController_02 : PlayerEventListenerBase
             return;
         }
 
+        _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
         float deltaTime = Time.fixedDeltaTime;
         Vector3 currentVelocity = this._rigidbody.linearVelocity;
 
@@ -308,6 +317,7 @@ public class PlayerController_02 : PlayerEventListenerBase
             _core_02._stateMachine.SetState(new IdleState_1(_core_02._stateMachine, _playerEvent));
             return;
         }
+        _rigidbody.interpolation = RigidbodyInterpolation.None;
 
         // Cập nhật tốc độ của NavMeshAgent
         _navMeshAgent.speed = moveSpeed * speed_n;
@@ -361,9 +371,7 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
     }
 
-    #endregion
 
-    #region Jump
     private bool Jump(float jumpForce)
     {
         if (!isGrounded) return false;
@@ -381,7 +389,7 @@ public class PlayerController_02 : PlayerEventListenerBase
         if (horizontalVel.sqrMagnitude < 0.01f && _playerInput != null)
             horizontalVel = _playerInput.GetMoveInput().normalized * config.runSpeed;
 
-        float momentumBoost = 15f; // boost
+        float momentumBoost = JumpMomentumBoost; // boost
         Vector3 jumpVelocity = (horizontalVel * momentumBoost) + Vector3.up * jumpForce;
 
         _rigidbody.linearVelocity = jumpVelocity;
@@ -391,12 +399,73 @@ public class PlayerController_02 : PlayerEventListenerBase
         return true;
     }
 
+
+    private bool Dash()
+    {
+        try
+        {
+            if (isGrounded)
+            {
+                Debug.Log("Cannot dash: Player is grounded.");
+                return false;
+            }
+
+            if (_animator != null) _animator.SetTrigger("Dash");
+            if (useNavMesh && _navMeshAgent != null)
+            {
+                _navMeshAgent.enabled = false;
+                _rigidbody.isKinematic = false;
+            }
+
+            // Giữ vận tốc ngang hiện tại và tăng cường
+            Vector3 horizontalVel = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
+            if (horizontalVel.sqrMagnitude < 0.01f && _playerInput != null)
+            {
+                Vector3 inputDir = _playerInput.GetMoveInput();
+                if (inputDir.sqrMagnitude > 0.01f)
+                    horizontalVel = inputDir.normalized * config.runSpeed;
+            }
+
+            // Tạo vận tốc dash
+            Vector3 dashVelocity = horizontalVel.normalized * (horizontalVel.magnitude * dashMomentumBoost + dashForce);
+            dashVelocity.y = _rigidbody.linearVelocity.y; // giữ Y (đang rơi)
+
+            // Gán velocity ngay lập tức
+            _rigidbody.linearVelocity = dashVelocity;
+
+            Debug.Log($"Dashing with velocity: {dashVelocity}");
+
+            // Chuyển state Dash
+            _core_02._stateMachine.SetState(new DashState(_core_02._stateMachine, _playerEvent));
+
+            // Dừng dash sau dashDuration
+            StartCoroutine(EndDashAfterTime(dashDuration));
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            mess = e.Message;
+            return false;
+        }
+    }
+
+    private IEnumerator EndDashAfterTime(float time)
+    {
+        yield return new WaitForSeconds(time);
+
+        // Sau khi dash, trở về JumpState (vì vẫn đang trên không)
+        if (!isGrounded)
+        {
+            _core_02._stateMachine.SetState(new JumpState(_core_02._stateMachine, _playerEvent));
+        }
+    }
+
     private void EnableNavMeshAgent()
     {
         if (_navMeshAgent != null)
         {
             _navMeshAgent.enabled = true;
-            _rigidbody.interpolation = RigidbodyInterpolation.None;
 
         }
     }
