@@ -25,18 +25,20 @@ namespace Code.Boss.States.Phase2
             playerInZone = false;
             playerInZoneTime = 0f;
             
+            //BossController.PlayAnimation("FearZone");
+            
             Debug.Log("[Boss State] Entered FearZoneState - Casting Fear Zone");
             BossEventSystem.Trigger(BossEventType.FearZoneCreated);
             BossEventSystem.Trigger(BossEventType.SkillCasted, 
                 new BossEventData { stringValue = "Fear Zone" });
             
             // Record player position for fear zone
-            fearZonePosition = bossController.Player.position;
+            fearZonePosition = BossController.Player.position;
             
             // Play fear zone sound
-            if (config.audioConfig.fearZoneSound != null)
+            if (Config.audioConfig.fearZoneSound != null)
             {
-                bossController.PlaySound(config.audioConfig.fearZoneSound, config.audioConfig.ambientVolume);
+                BossController.PlaySound(Config.audioConfig.fearZoneSound, Config.audioConfig.ambientVolume);
             }
         }
 
@@ -51,9 +53,9 @@ namespace Code.Boss.States.Phase2
             castTimer += Time.deltaTime;
             
             // Update skill cast progress for UI
-            var progress = castTimer / config.phase2.fearZoneCastTime;
+            var progress = castTimer / Config.phase2.fearZoneCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
-            if (castTimer >= config.phase2.fearZoneCastTime) ActivateSkill();
+            if (castTimer >= Config.phase2.fearZoneCastTime) ActivateSkill();
         }
 
         private void ActivateSkill()
@@ -80,12 +82,12 @@ namespace Code.Boss.States.Phase2
 
             // Add fear zone behavior
             var fearZoneBehavior = fearZone.AddComponent<FearZoneBehavior>();
-            fearZoneBehavior.Initialize(config.phase2.fearZoneRadius, config.phase2.visionBlurIntensity);
+            fearZoneBehavior.Initialize(Config.phase2.fearZoneRadius, Config.phase2.visionBlurIntensity);
             
             // Add trigger collider
             var collider = fearZone.AddComponent<SphereCollider>();
             collider.isTrigger = true;
-            collider.radius = config.phase2.fearZoneRadius;
+            collider.radius = Config.phase2.fearZoneRadius;
         }
 
         private void HandleSkillActive()
@@ -93,15 +95,15 @@ namespace Code.Boss.States.Phase2
             skillTimer += Time.deltaTime;
             // Check if player is in fear zone
             CheckPlayerInZone();
-            if (skillTimer >= config.phase2.fearZoneDuration) EndFearZoneState();
+            if (skillTimer >= Config.phase2.fearZoneDuration) EndFearZoneState();
         }
 
         private void CheckPlayerInZone()
         {
             if (fearZone == null) return;
             
-            var distanceToPlayer = Vector3.Distance(fearZonePosition, bossController.Player.position);
-            var currentlyInZone = distanceToPlayer <= config.phase2.fearZoneRadius;
+            var distanceToPlayer = Vector3.Distance(fearZonePosition, BossController.Player.position);
+            var currentlyInZone = distanceToPlayer <= Config.phase2.fearZoneRadius;
             
             if (currentlyInZone)
             {
@@ -114,7 +116,7 @@ namespace Code.Boss.States.Phase2
                 
                 playerInZoneTime += Time.deltaTime;
                 
-                if (playerInZoneTime >= config.phase2.fearZoneActivationTime)
+                if (playerInZoneTime >= Config.phase2.fearZoneActivationTime)
                 {
                     ApplyFearEffects();
                 }
@@ -130,25 +132,25 @@ namespace Code.Boss.States.Phase2
 
         private void StartHeartbeatSound()
         {
-            if (config.audioConfig.heartbeatSound != null)
+            if (Config.audioConfig.heartbeatSound != null)
             {
-                bossController.AudioSource.clip = config.audioConfig.heartbeatSound;
-                bossController.AudioSource.loop = true;
-                bossController.AudioSource.Play();
+                BossController.AudioSource.clip = Config.audioConfig.heartbeatSound;
+                BossController.AudioSource.loop = true;
+                BossController.AudioSource.Play();
             }
         }
 
         private void StopHeartbeatSound()
         {
-            bossController.AudioSource.Stop();
-            bossController.AudioSource.loop = false;
+            BossController.AudioSource.Stop();
+            BossController.AudioSource.loop = false;
         }
 
         private void ApplyFearEffects()
         {
             // Apply vision blur and other fear effects
             // This would integrate with a camera effects system
-            BossEventSystem.Trigger(BossEventType.PlayerTakeDamage, new BossEventData(0)); // Psychological damage
+            Debug.Log("[Boss State] FearZoneState - Player is in fear zone, applying effects");
         }
 
         private void EndFearZoneState()
@@ -156,7 +158,7 @@ namespace Code.Boss.States.Phase2
             if (fearZone != null)  Object.Destroy(fearZone);
             
             StopHeartbeatSound();
-            bossController.ChangeState(new ScreamState());
+            BossController.ChangeState(new ScreamState());
         }
 
         public override void Exit()
@@ -166,10 +168,7 @@ namespace Code.Boss.States.Phase2
         }
 
         public override void OnTakeDamage() {}
-        
-        public override bool CanBeInterrupted()
-        {
-            return false;
-        }
+        public override bool CanTakeDamage() => false;
+        public override bool CanBeInterrupted() => false;
     }
 }
