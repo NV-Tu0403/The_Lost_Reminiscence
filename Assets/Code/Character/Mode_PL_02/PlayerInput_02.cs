@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using DuckLe;
+using UnityEngine;
 
 public class PlayerInput_02 : MonoBehaviour
 {
@@ -30,9 +31,11 @@ public class PlayerInput_02 : MonoBehaviour
     {
         _camera = _characterCamera.mainCamera;
         Vector3 dir = GetMoveInput();
-        CharacterActionType moveType = GetSpecialActionsInput();
-
-        _playerController.PerformMoveInput(moveType, dir);
+        CharacterActionType actionType = GetSpecialActionsInput();
+        if (!isInputLocked)
+        {
+            _playerController.PerformMoveInput(actionType, dir);
+        }
     }
 
     private void InitializeCamera()
@@ -83,7 +86,7 @@ public class PlayerInput_02 : MonoBehaviour
             Debug.LogWarning("Không tìm thấy camera trong CharacterCamera, dùng input thô!");
         }
 
-        Debug.Log($"dir la: {dir}");
+        //Debug.Log($"dir la: {dir}");
         return dir;
     }
 
@@ -100,9 +103,10 @@ public class PlayerInput_02 : MonoBehaviour
         float doubleTapTimeWindow = 0.5f;
 
         if (isSpacePressed) // nhảy
-        {
-            moveType = CharacterActionType.Jump;
+        {    
             mess = "Space key pressed";
+            return CharacterActionType.Jump; // ưu tiên jump
+        
         }
 
         if (isShiftHeld) // chạy nhanh

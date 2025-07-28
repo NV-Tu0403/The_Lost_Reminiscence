@@ -7,7 +7,7 @@ public class Core_02 : PlayerEventListenerBase
     public CharStateMachine _stateMachine;
 
     #region biến cần thiết
-    string _currentPlayerState = null;
+    public string _currentPlayerState = null;
 
 
     #endregion
