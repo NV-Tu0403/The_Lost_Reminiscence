@@ -27,10 +27,8 @@ namespace Code.Boss.States.Phase2
             
             Debug.Log("[Boss State] Entered FearZoneState - Casting Fear Zone");
             BossEventSystem.Trigger(BossEventType.FearZoneCreated);
-            
-            // Trigger skill cast với skill name để UI hiển thị
-            Debug.Log("[FearZoneState] Triggering SkillCasted event with 'Fear Zone'");
-            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Fear Zone" });
+            BossEventSystem.Trigger(BossEventType.SkillCasted, 
+                new BossEventData { stringValue = "Fear Zone" });
             
             // Record player position for fear zone
             fearZonePosition = bossController.Player.position;
@@ -44,14 +42,8 @@ namespace Code.Boss.States.Phase2
 
         public override void Update()
         {
-            if (isCasting)
-            {
-                HandleCasting();
-            }
-            else
-            {
-                HandleSkillActive();
-            }
+            if (isCasting) HandleCasting();
+            else HandleSkillActive();
         }
 
         private void HandleCasting()
@@ -59,13 +51,9 @@ namespace Code.Boss.States.Phase2
             castTimer += Time.deltaTime;
             
             // Update skill cast progress for UI
-            float progress = castTimer / config.phase2.fearZoneCastTime;
+            var progress = castTimer / config.phase2.fearZoneCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
-            
-            if (castTimer >= config.phase2.fearZoneCastTime)
-            {
-                ActivateSkill();
-            }
+            if (castTimer >= config.phase2.fearZoneCastTime) ActivateSkill();
         }
 
         private void ActivateSkill()
@@ -74,9 +62,7 @@ namespace Code.Boss.States.Phase2
             skillActivated = true;
             
             // Trigger event để ẩn UI cast bar khi skill hoàn thành
-            Debug.Log("[FearZoneState] Skill casting completed - triggering skill complete event");
             BossEventSystem.Trigger(BossEventType.SkillInterrupted); // Ẩn UI cast bar
-            
             CreateFearZone();
             Debug.Log("[Boss State] FearZoneState - Fear zone activated");
         }
@@ -84,9 +70,14 @@ namespace Code.Boss.States.Phase2
         private void CreateFearZone()
         {
             // Create fear zone GameObject
-            fearZone = new GameObject("FearZone");
-            fearZone.transform.position = fearZonePosition;
-            
+            fearZone = new GameObject("FearZone")
+            {
+                transform =
+                {
+                    position = fearZonePosition
+                }
+            };
+
             // Add fear zone behavior
             var fearZoneBehavior = fearZone.AddComponent<FearZoneBehavior>();
             fearZoneBehavior.Initialize(config.phase2.fearZoneRadius, config.phase2.visionBlurIntensity);
@@ -100,22 +91,17 @@ namespace Code.Boss.States.Phase2
         private void HandleSkillActive()
         {
             skillTimer += Time.deltaTime;
-            
             // Check if player is in fear zone
             CheckPlayerInZone();
-            
-            if (skillTimer >= config.phase2.fearZoneDuration)
-            {
-                EndFearZoneState();
-            }
+            if (skillTimer >= config.phase2.fearZoneDuration) EndFearZoneState();
         }
 
         private void CheckPlayerInZone()
         {
             if (fearZone == null) return;
             
-            float distanceToPlayer = Vector3.Distance(fearZonePosition, bossController.Player.position);
-            bool currentlyInZone = distanceToPlayer <= config.phase2.fearZoneRadius;
+            var distanceToPlayer = Vector3.Distance(fearZonePosition, bossController.Player.position);
+            var currentlyInZone = distanceToPlayer <= config.phase2.fearZoneRadius;
             
             if (currentlyInZone)
             {
@@ -135,12 +121,10 @@ namespace Code.Boss.States.Phase2
             }
             else
             {
-                if (playerInZone)
-                {
-                    playerInZone = false;
-                    playerInZoneTime = 0f;
-                    StopHeartbeatSound();
-                }
+                if (!playerInZone) return;
+                playerInZone = false;
+                playerInZoneTime = 0f;
+                StopHeartbeatSound();
             }
         }
 
@@ -169,44 +153,23 @@ namespace Code.Boss.States.Phase2
 
         private void EndFearZoneState()
         {
-            if (fearZone != null)
-            {
-                Object.Destroy(fearZone);
-            }
+            if (fearZone != null)  Object.Destroy(fearZone);
             
             StopHeartbeatSound();
-            // Chuyển sang ScreamState thay vì AngryState theo design
             bossController.ChangeState(new ScreamState());
         }
 
         public override void Exit()
-        {
-            if (fearZone != null)
-            {
-                Object.Destroy(fearZone);
-            }
+        { 
+            if (fearZone != null) Object.Destroy(fearZone);
             StopHeartbeatSound();
         }
 
-        public override void OnTakeDamage()
-        {
-            // Boss không thể bị tấn công trong Fear Zone state (trừ khi đang casting)
-            if (isCasting && CanBeInterrupted())
-            {
-                // Chỉ có thể interrupt khi đang casting
-                BossEventSystem.Trigger(BossEventType.SkillInterrupted);
-                bossController.ChangeState(new AngryState());
-            }
-            else
-            {
-                // Boss bất khả xâm phạm khi Fear Zone đã active
-                Debug.Log("[FearZoneState] Boss is invulnerable during Fear Zone!");
-            }
-        }
-
+        public override void OnTakeDamage() {}
+        
         public override bool CanBeInterrupted()
         {
-            return isCasting; // Chỉ có thể interrupt khi đang casting, không thể khi skill đã active
+            return false;
         }
     }
 }

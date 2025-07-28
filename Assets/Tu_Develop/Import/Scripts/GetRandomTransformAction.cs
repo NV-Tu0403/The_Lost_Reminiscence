@@ -6,10 +6,10 @@ using Action = Unity.Behavior.Action;
 using Unity.Properties;
 
 [Serializable, GeneratePropertyBag]
-[NodeDescription(name: "Get Random POS", story: "Return [POS] In [Radius] Around [Self]", category: "Action", id: "737949d13f60cee4adca0e2c615e5249")]
+[NodeDescription(name: "Get Random Position", story: "Return [Position] In [Radius] Around [Self]", category: "Action", id: "737949d13f60cee4adca0e2c615e5249")]
 public partial class GetRandomTransformAction : Action
 {
-    [SerializeReference] public BlackboardVariable<Transform> POS;
+    [SerializeReference] public BlackboardVariable<Vector3> Position;
     [SerializeReference] public BlackboardVariable<float> Radius;
     [SerializeReference] public BlackboardVariable<GameObject> Self;
 
@@ -18,7 +18,6 @@ public partial class GetRandomTransformAction : Action
         // 1. Lấy giá trị thực từ các biến trên Blackboard
         var selfGo = Self.Value;
         var radiusValue = Radius.Value;
-        var posTransform = POS.Value;
         
         // 2. Kiểm tra xem các giá trị đầu vào có hợp lệ không
         if (selfGo == null)
@@ -27,13 +26,6 @@ public partial class GetRandomTransformAction : Action
             return Status.Failure; // Báo thất bại để Behavior Tree biết
         }
         
-        if (posTransform == null)
-        {
-            Debug.LogError("GetRandomTransformAction: Input 'POS' is null. This usually means the 'RandomPosition' variable on the Blackboard hasn't been assigned a helper Transform from FaAgent.cs.");
-            return Status.Failure; 
-        }
-        
-        
         Vector3 randomDirection = UnityEngine.Random.insideUnitSphere * radiusValue;
         randomDirection += selfGo.transform.position;
         
@@ -41,11 +33,7 @@ public partial class GetRandomTransformAction : Action
         NavMeshHit navHit;
         if (NavMesh.SamplePosition(randomDirection, out navHit, radiusValue, NavMesh.AllAreas))
         {
-            // Nếu tìm thấy một điểm hợp lệ...
-            // 5. Cập nhật vị trí của Transform 'POS'
-            POS.Value.position = navHit.position;
-            
-            // 6. Báo hiệu hành động đã hoàn thành thành công
+            Position.Value = navHit.position;
             return Status.Success;
         }
         else

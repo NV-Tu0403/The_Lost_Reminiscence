@@ -27,7 +27,7 @@ namespace Code.Boss
         private void FindAndInitializeUIComponents()
         {
             // Tìm BossHealthBar trong scene
-            bossHealthBar = UnityEngine.Object.FindObjectOfType<BossHealthBar>();
+            bossHealthBar = Object.FindFirstObjectByType<BossHealthBar>();
             if (bossHealthBar != null)
             {
                 bossHealthBar.Initialize(bossController);
@@ -39,7 +39,7 @@ namespace Code.Boss
             }
 
             // Tìm BossSkillCastBar trong scene
-            skillCastBar = UnityEngine.Object.FindObjectOfType<BossSkillCastBar>();
+            skillCastBar = Object.FindFirstObjectByType<BossSkillCastBar>();
             if (skillCastBar != null)
             {
                 skillCastBar.Initialize(bossController);
@@ -51,7 +51,7 @@ namespace Code.Boss
             }
 
             // Tìm PlayerHealthBar trong scene
-            playerHealthBar = UnityEngine.Object.FindObjectOfType<PlayerHealthBar>();
+            playerHealthBar = Object.FindFirstObjectByType<PlayerHealthBar>();
             if (playerHealthBar != null)
             {
                 playerHealthBar.Initialize(3); // Default player health
@@ -64,22 +64,22 @@ namespace Code.Boss
         }
 
         // Methods để show/hide UI
-        public void ShowBossHealthBar(bool show)
-        {
-            if (bossHealthBar != null)
-                bossHealthBar.gameObject.SetActive(show);
-        }
-
-        public void ShowSkillCastBar(bool show)
-        {
-            if (skillCastBar != null)
-                skillCastBar.gameObject.SetActive(show);
-        }
-
-        public void ShowPlayerHealthBar(bool show)
-        {
-            if (playerHealthBar != null)
-                playerHealthBar.gameObject.SetActive(show);
-        }
+        // public void ShowBossHealthBar(bool show)
+        // {
+        //     if (bossHealthBar != null)
+        //         bossHealthBar.gameObject.SetActive(show);
+        // }
+        //
+        // public void ShowSkillCastBar(bool show)
+        // {
+        //     if (skillCastBar != null)
+        //         skillCastBar.gameObject.SetActive(show);
+        // }
+        //
+        // public void ShowPlayerHealthBar(bool show)
+        // {
+        //     if (playerHealthBar != null)
+        //         playerHealthBar.gameObject.SetActive(show);
+        // }
     }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 namespace Code.Boss
 {
@@ -47,6 +48,7 @@ namespace Code.Boss
         private void RegisterEvents()
         {
             BossEventSystem.Subscribe(BossEventType.PlayerTakeDamage, OnPlayerTakeDamage);
+            BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeated);
         }
 
         private void OnPlayerTakeDamage(BossEventData data)
@@ -81,23 +83,20 @@ namespace Code.Boss
             // Handle player defeat
             Debug.Log("Player Defeated!");
             // This could trigger game over screen, respawn, etc.
+            // Reload Scene
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
-        public void HealPlayer(int amount)
+        private void OnBossDefeated(BossEventData data)
         {
-            currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
-            
-            if (healthSlider != null)
-            {
-                healthSlider.value = currentHealth;
-            }
-            
-            UpdateHealthText();
+            // Hide player health bar UI
+            gameObject.SetActive(false);
         }
 
         private void OnDestroy()
         {
             BossEventSystem.Unsubscribe(BossEventType.PlayerTakeDamage, OnPlayerTakeDamage);
+            BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeated);
         }
     }
 }

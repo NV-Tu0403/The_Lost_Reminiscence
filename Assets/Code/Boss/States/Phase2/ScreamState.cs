@@ -1,3 +1,5 @@
+using System.Collections;
+using Code.Boss.States.Shared;
 using UnityEngine;
 
 namespace Code.Boss.States.Phase2
@@ -25,22 +27,13 @@ namespace Code.Boss.States.Phase2
             
             Debug.Log("[Boss State] Entered ScreamState - Casting Scream skill");
             BossEventSystem.Trigger(BossEventType.ScreamStarted);
-            
-            // Trigger skill cast với skill name để UI hiển thị
-            Debug.Log("[ScreamState] Triggering SkillCasted event with 'Scream'");
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Scream" });
         }
 
         public override void Update()
         {
-            if (isCasting)
-            {
-                HandleCasting();
-            }
-            else
-            {
-                HandleSkillActive();
-            }
+            if (isCasting) HandleCasting();
+            else HandleSkillActive();
         }
 
         private void HandleCasting()
@@ -48,14 +41,9 @@ namespace Code.Boss.States.Phase2
             castTimer += Time.deltaTime;
             
             // Update skill cast progress for UI
-            float progress = castTimer / config.phase2.screamCastTime;
-            Debug.Log($"[ScreamState] Progress updated: {progress:F2}");
+            var progress = castTimer / config.phase2.screamCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
-            
-            if (castTimer >= config.phase2.screamCastTime)
-            {
-                ActivateSkill();
-            }
+            if (castTimer >= config.phase2.screamCastTime) ActivateSkill();
         }
 
         private void ActivateSkill()
@@ -63,10 +51,7 @@ namespace Code.Boss.States.Phase2
             isCasting = false;
             skillActivated = true;
             
-            // Trigger event để ẩn UI cast bar khi skill hoàn thành
-            Debug.Log("[ScreamState] Skill casting completed - triggering skill complete event");
             BossEventSystem.Trigger(BossEventType.SkillInterrupted); // Ẩn UI cast bar
-            
             Debug.Log("[Boss State] ScreamState - Scream activated with effects");
             
             // Apply scream effects
@@ -81,29 +66,81 @@ namespace Code.Boss.States.Phase2
 
         private void ApplyScreamEffects()
         {
-            // Apply screen shake
-            ApplyScreenShake();
-            
-            // Apply vision shrink
-            ApplyVisionShrink();
+            ApplyScreenShake();     
+            ApplyVisionShrink();  
         }
 
         private void ApplyScreenShake()
         {
-            // This would integrate with a camera shake system
-            // Sửa: không trigger SkillCasted để tránh hiện lại UI cast bar
-            Debug.Log($"[ScreamState] Applying screen shake with intensity: {config.phase2.screenShakeIntensity}");
-            // Có thể trigger event khác cho camera shake system
-            // BossEventSystem.Trigger(BossEventType.CameraShake, new BossEventData(config.phase2.screenShakeIntensity));
+            // Demo: Shake main camera for 0.5s
+            var cam = Camera.main;
+            if (cam != null)
+            {
+                bossController.StartCoroutine(ScreenShakeCoroutine(cam, config.phase2.screenShakeIntensity, 0.5f));
+            }
+        }
+
+        private IEnumerator ScreenShakeCoroutine(Camera cam, float intensity, float duration)
+        {
+            Vector3 originalPos = cam.transform.localPosition;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                float x = Random.Range(-1f, 1f) * intensity;
+                float y = Random.Range(-1f, 1f) * intensity;
+                cam.transform.localPosition = originalPos + new Vector3(x, y, 0);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            cam.transform.localPosition = originalPos;
         }
 
         private void ApplyVisionShrink()
         {
-            // This would integrate with a camera/UI system
-            // Sửa: không trigger SkillCasted để tránh hiện lại UI cast bar
-            Debug.Log($"[ScreamState] Applying vision shrink with amount: {config.phase2.visionShrinkAmount}");
-            // Có thể trigger event khác cho vision system
-            // BossEventSystem.Trigger(BossEventType.VisionShrink, new BossEventData(config.phase2.visionShrinkAmount));
+            bossController.StartCoroutine(VisionShrinkOverlayCoroutine(1f));
+        }
+
+        private IEnumerator VisionShrinkOverlayCoroutine(float duration)
+        {
+            // Create overlay canvas and image
+            var cam = Camera.main;
+            if (cam == null) yield break;
+            var canvasGO = new GameObject("VisionShrinkCanvas");
+            var canvas = canvasGO.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 999;
+            var imgGO = new GameObject("VisionShrinkImage");
+            imgGO.transform.SetParent(canvasGO.transform);
+            var img = imgGO.AddComponent<UnityEngine.UI.Image>();
+            img.color = Color.black;
+            img.rectTransform.anchorMin = Vector2.zero;
+            img.rectTransform.anchorMax = Vector2.one;
+            img.rectTransform.offsetMin = Vector2.zero;
+            img.rectTransform.offsetMax = Vector2.zero;
+            img.material = null;
+            // Animate alpha mask inward
+            float elapsed = 0f;
+            while (elapsed < duration * 0.5f)
+            {
+                float t = elapsed / (duration * 0.5f);
+                img.color = new Color(0, 0, 0, Mathf.Lerp(0f, 1f, t));
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            img.color = new Color(0, 0, 0, 1f);
+            // Hold for a moment
+            yield return new WaitForSeconds(duration * 0.2f);
+            // Animate alpha mask outward
+            elapsed = 0f;
+            while (elapsed < duration * 0.3f)
+            {
+                float t = elapsed / (duration * 0.3f);
+                img.color = new Color(0, 0, 0, Mathf.Lerp(1f, 0f, t));
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            img.color = new Color(0, 0, 0, 0f);
+            Object.Destroy(canvasGO);
         }
 
         private void HandleSkillActive()
@@ -120,21 +157,18 @@ namespace Code.Boss.States.Phase2
         {
             if (playerHitBoss)
             {
-                // Player hit boss successfully - boss takes damage
                 bossController.TakeDamage(1);
                 bossController.ChangeState(new AngryState());
             }
             else
             {
-                // Player missed or didn't attack - player takes damage and spawn soul
                 BossEventSystem.Trigger(BossEventType.PlayerTakeDamage, new BossEventData(1));
-                bossController.ChangeState(new Code.Boss.States.Shared.SoulState());
+                bossController.ChangeState(new SoulState());
             }
         }
 
         public override void Exit()
         {
-            // Remove scream effects
             BossEventSystem.Trigger(BossEventType.SkillCasted, 
                 new BossEventData { stringValue = "RemoveEffects" });
         }
@@ -148,7 +182,6 @@ namespace Code.Boss.States.Phase2
             }
             else if (skillActivated)
             {
-                // Player hit boss during scream
                 playerHitBoss = true;
                 playerAttacked = true;
             }
@@ -157,16 +190,6 @@ namespace Code.Boss.States.Phase2
         public override bool CanBeInterrupted()
         {
             return isCasting;
-        }
-
-        // Method to be called when player attacks (hit or miss)
-        public void OnPlayerAttack(bool hitBoss)
-        {
-            if (skillActivated)
-            {
-                playerAttacked = true;
-                playerHitBoss = hitBoss;
-            }
         }
     }
 }
