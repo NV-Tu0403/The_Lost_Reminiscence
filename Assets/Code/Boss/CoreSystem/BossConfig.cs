@@ -100,23 +100,14 @@ namespace Code.Boss
     [Serializable]
     public class UIConfig
     {
-        // [Header("Health Bar")]
-        // public Vector2 bossHealthPosition = new Vector2(0f, 0.8f); // Screen space
-        // public Vector2 playerHealthPosition = new Vector2(0f, -0.8f);
-        // public Vector2 healthBarSize = new Vector2(300f, 30f);
-        //
-        // [Header("Skill Cast Bar")]
-        // public Vector2 skillCastBarOffset = new Vector2(0f, -50f); // Offset from boss health
-        // public Vector2 skillCastBarSize = new Vector2(200f, 20f);
-        
         [Header("Colors")]
         public Color bossHealthColor = Color.red;
         public Color playerHealthColor = Color.green;
         public Color skillCastColor = Color.yellow;
         
         [Header("Animation Settings")]
-        public float uiAnimationSpeed = 1f; // Tốc độ animation chung cho UI
-        public AnimationCurve uiAnimationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1); // Curve cho smooth animation
+        public float uiAnimationSpeed = 1f;                                                                     // Tốc độ animation chung cho UI
+        public AnimationCurve uiAnimationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);          // Curve cho smooth animation
     }
 
     [Serializable]

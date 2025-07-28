@@ -150,48 +150,48 @@ namespace Code.Boss
             }
         }
 
-        public void PlayerAttackDecoy(GameObject decoy, bool hitReal)
-        {
-            var decoyBehavior = decoy.GetComponent<DecoyBehavior>();
-            if (decoyBehavior != null)
-            {
-                if (hitReal)
-                {
-                    BossEventSystem.Trigger(BossEventType.RealDecoyHit);
-                    bossController.TakeDamage(1);
-                }
-                else
-                {
-                    BossEventSystem.Trigger(BossEventType.FakeDecoyHit);
-                    BossEventSystem.Trigger(BossEventType.PlayerTakeDamage, new BossEventData(1));
-                }
-            }
-        }
-
-        public void InterruptBossSkill()
-        {
-            if (bossController != null)
-            {
-                bossController.InterruptCurrentSkill();
-            }
-        }
+        // public void PlayerAttackDecoy(GameObject decoy, bool hitReal)
+        // {
+        //     var decoyBehavior = decoy.GetComponent<DecoyBehavior>();
+        //     if (decoyBehavior != null)
+        //     {
+        //         if (hitReal)
+        //         {
+        //             BossEventSystem.Trigger(BossEventType.RealDecoyHit);
+        //             bossController.TakeDamage(1);
+        //         }
+        //         else
+        //         {
+        //             BossEventSystem.Trigger(BossEventType.FakeDecoyHit);
+        //             BossEventSystem.Trigger(BossEventType.PlayerTakeDamage, new BossEventData(1));
+        //         }
+        //     }
+        // }
+        //
+        // public void InterruptBossSkill()
+        // {
+        //     if (bossController != null)
+        //     {
+        //         bossController.InterruptCurrentSkill();
+        //     }
+        // }
         
 
         // Get current boss state for external systems
-        public string GetCurrentBossState()
-        {
-            if (bossController != null && bossController.GetComponent<BossStateMachine>() != null)
-            {
-                return bossController.GetComponent<BossStateMachine>().CurrentState?.GetType().Name ?? "Unknown";
-            }
-            return "No Boss";
-        }
+        // public string GetCurrentBossState()
+        // {
+        //     if (bossController != null && bossController.GetComponent<BossStateMachine>() != null)
+        //     {
+        //         return bossController.GetComponent<BossStateMachine>().CurrentState?.GetType().Name ?? "Unknown";
+        //     }
+        //     return "No Boss";
+        // }
 
         // Get current boss phase
-        public int GetCurrentBossPhase()
-        {
-            return bossController != null ? bossController.CurrentPhase : 0;
-        }
+        // public int GetCurrentBossPhase()
+        // {
+        //     return bossController != null ? bossController.CurrentPhase : 0;
+        // }
 
         private void OnDestroy()
         {

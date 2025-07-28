@@ -37,16 +37,16 @@ namespace Code.Boss.States.Phase2
             
             if (stateTimer >= config.phase2.angryMoveDuration && canTransition)
             {
-                TransitionToNextState();
+                bossController.ChangeState(new FearZoneState());
             }
         }
 
         private void MoveInCircle()
         {
-            float radius = config.phase2.circleRadius;
+            var radius = config.phase2.circleRadius;
             currentAngle += (config.phase2.angryMoveSpeed / radius) * Time.deltaTime;
             
-            Vector3 targetPosition = centerPosition + new Vector3(
+            var targetPosition = centerPosition + new Vector3(
                 Mathf.Cos(currentAngle) * radius,
                 0,
                 Mathf.Sin(currentAngle) * radius
@@ -57,20 +57,7 @@ namespace Code.Boss.States.Phase2
                 bossController.NavAgent.SetDestination(targetPosition);
             }
         }
-
-        private void TransitionToNextState()
-        {
-            // Random between FearZone and Scream states
-            if (Random.Range(0f, 1f) < 0.5f)
-            {
-                bossController.ChangeState(new FearZoneState());
-            }
-            else
-            {
-                bossController.ChangeState(new ScreamState());
-            }
-        }
-
+        
         public override void Exit()
         {
             // Reset movement speed
@@ -80,10 +67,7 @@ namespace Code.Boss.States.Phase2
             }
         }
 
-        public override void OnTakeDamage()
-        {
-            // Boss cannot take damage in Angry state
-        }
+        public override void OnTakeDamage() { }
 
         public override bool CanBeInterrupted()
         {

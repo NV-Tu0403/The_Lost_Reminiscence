@@ -41,9 +41,9 @@ namespace Code.Boss
         /// </summary>
         public static void Trigger(BossEventType eventType, BossEventData data = null)
         {
-            if (eventListeners.ContainsKey(eventType))
+            if (eventListeners.TryGetValue(eventType, out var eventListener))
             {
-                foreach (var listener in eventListeners[eventType])
+                foreach (var listener in eventListener)
                 {
                     try
                     {
@@ -84,7 +84,6 @@ namespace Code.Boss
         // Combat Events
         BossTakeDamage,
         PlayerTakeDamage,
-        DecoyHit,
         RealDecoyHit,
         FakeDecoyHit,
         
@@ -99,6 +98,10 @@ namespace Code.Boss
         SoulStateStarted,
         FearZoneCreated,
         ScreamStarted,
+        
+        // Physics Events
+        CameraShake,
+        VisionShrink,
         
         // UI Events
         HealthChanged,
@@ -121,7 +124,7 @@ namespace Code.Boss
         public string stringValue;
         public Vector3 position;
         public GameObject gameObject;
-        public object customData;
+        public object CustomData;
 
         public BossEventData() { }
 
