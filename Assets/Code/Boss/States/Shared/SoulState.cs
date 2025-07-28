@@ -17,6 +17,7 @@ namespace Code.Boss.States.Shared
             isCasting = true;
             
             Debug.Log("[Boss State] Entered SoulState - Teleporting and spawning soul");
+            // BossController.PlayAnimation("Soul");
             BossEventSystem.Trigger(BossEventType.SoulStateStarted);
             
             // Trigger skill cast với skill name để UI hiển thị
@@ -89,11 +90,11 @@ namespace Code.Boss.States.Shared
             // Transition based on current phase
             if (BossController.CurrentPhase == 1)
             {
-                BossController.ChangeState(new Code.Boss.States.Phase1.IdleState());
+                BossController.ChangeState(new Phase1.IdleState());
             }
             else // Phase 2
             {
-                BossController.ChangeState(new Code.Boss.States.Phase2.AngryState());
+                BossController.ChangeState(new Phase2.AngryState());
             }
         }
 

@@ -13,6 +13,8 @@ namespace Code.Boss.States.Phase1
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered IdleState - Boss đứng yên tại chỗ");
+            // BossController.PlayAnimation("Idle");
+            
             idleTimer = 0f;
             // Stop movement
             if (BossController.NavAgent != null)
@@ -27,47 +29,15 @@ namespace Code.Boss.States.Phase1
             
             if (idleTimer >= Config.phase1.idleDuration && canTransition)
             {
-                TransitionToNextState();
-            }
-        }
-
-        private void TransitionToNextState()
-        {
-            if (Config.phase1.enableRandomStates)
-            {
-                BossState nextState = GetRandomNextState();
-                BossController.ChangeState(nextState);
-            }
-            else
-            {
-                // Default sequence: Idle -> Lure -> Mock -> Decoy
                 BossController.ChangeState(new LureState());
             }
         }
 
-        private BossState GetRandomNextState()
-        {
-            var weights = Config.phase1.stateWeights;
-            var totalWeight = weights[1] + weights[2] + weights[3]; // Exclude Idle weight
-            var randomValue = Random.Range(0f, totalWeight);
-            var currentWeight = 0f;
-            
-            currentWeight += weights[1]; // Lure
-            if (randomValue <= currentWeight)
-                return new LureState();
-                
-            currentWeight += weights[2]; // Mock
-            if (randomValue <= currentWeight)
-                return new MockState();
-                
-            return new DecoyState(); // Decoy
-        }
 
         public override void Exit() {}
 
         public override void OnTakeDamage() {}
         
         public override bool CanBeInterrupted() => false;
-
     }
 }

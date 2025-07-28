@@ -13,7 +13,6 @@ namespace Code.Boss.States.Phase2
         private float skillTimer;
         private bool isCasting = true;
         private bool skillActivated = false;
-        private bool playerAttacked = false;
         private bool playerHitBoss = false;
 
         public override void Enter()
@@ -22,7 +21,6 @@ namespace Code.Boss.States.Phase2
             skillTimer = 0f;
             isCasting = true;
             skillActivated = false;
-            playerAttacked = false;
             playerHitBoss = false;
             
             Debug.Log("[Boss State] Entered ScreamState - Casting Scream skill");
@@ -183,7 +181,6 @@ namespace Code.Boss.States.Phase2
             else if (skillActivated)
             {
                 playerHitBoss = true;
-                playerAttacked = true;
             }
         }
 

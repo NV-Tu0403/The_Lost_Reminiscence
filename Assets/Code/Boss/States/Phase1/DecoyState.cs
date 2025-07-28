@@ -17,6 +17,8 @@ namespace Code.Boss.States.Phase1
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered DecoyState - Spawn 2 bóng ảo (1 thật 1 giả) truy đuổi người chơi");
+            // BossController.PlayAnimation("Decoy");
+            
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;
@@ -90,25 +92,6 @@ namespace Code.Boss.States.Phase1
             var decoy = Object.Instantiate(Config.phase1.decoyPrefab, position, Quaternion.identity);
             decoy.name = isReal ? "RealDecoy" : "FakeDecoy";
             
-            // TODO: Delete after
-            // Ensure decoy has a collider for attacks 
-            var decoyCollider = decoy.GetComponent<Collider>();
-            if (decoyCollider == null)
-            {
-                // Add a default collider if none exists
-                decoyCollider = decoy.AddComponent<CapsuleCollider>();
-                if (decoyCollider is CapsuleCollider capsule)
-                {
-                    capsule.height = 2f;
-                    capsule.radius = 0.5f;
-                    capsule.center = new Vector3(0, 1, 0);
-                }
-                Debug.Log($"[DecoyState] Added Collider to {decoy.name}");
-            }
-            
-            // Ensure collider is a trigger for bullet detection
-            if (decoyCollider != null) decoyCollider.isTrigger = true;
-
             // Add decoy behavior
             var decoyBehavior = decoy.GetComponent<DecoyBehavior>();
             if (decoyBehavior == null)

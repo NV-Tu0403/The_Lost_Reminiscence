@@ -20,6 +20,8 @@ namespace Code.Boss.States.Phase2
                            BossController.transform.position;
             
             Debug.Log("[Boss State] Entered AngryState - Boss di chuyển xoay quanh trung tâm NavMesh");
+            // animation
+           // BossController.PlayAnimation("Angry");
             
             // Set movement speed for angry state
             if (BossController.NavAgent != null)

@@ -25,6 +25,8 @@ namespace Code.Boss.States.Phase2
             playerInZone = false;
             playerInZoneTime = 0f;
             
+            //BossController.PlayAnimation("FearZone");
+            
             Debug.Log("[Boss State] Entered FearZoneState - Casting Fear Zone");
             BossEventSystem.Trigger(BossEventType.FearZoneCreated);
             BossEventSystem.Trigger(BossEventType.SkillCasted, 

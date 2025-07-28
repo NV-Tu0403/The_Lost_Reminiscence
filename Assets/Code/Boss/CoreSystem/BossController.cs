@@ -245,14 +245,12 @@ namespace Code.Boss
 
         public void PlayAnimation(string animationName)
         {
-            // Replace animation calls with debug logs since no assets are available
             Debug.Log($"[Boss Animation] Playing animation: {animationName}");
-            
-            // Uncomment when animation assets are available:
-            // if (animator != null)
-            // {
-            //     animator.SetTrigger(animationName);
-            // }
+
+            if (animator != null)
+            {
+                animator.SetTrigger(animationName);
+            }
         }
 
         public void PlaySound(AudioClip clip, float volume = 1f)

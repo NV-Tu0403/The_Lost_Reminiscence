@@ -13,6 +13,9 @@ namespace Code.Boss.States.Phase1
         {
             Debug.Log("[Boss State] Entered MockState - Boss phát tư thế vặn vẹo và tiếng cười méo mó");
 
+            // Set boss animation to mock
+            // BossController.PlayAnimation("Mock");
+            
             mockTimer = 0f;
             BossEventSystem.Trigger(BossEventType.MockStarted);
             

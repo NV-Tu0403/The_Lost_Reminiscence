@@ -16,6 +16,7 @@ namespace Code.Boss.States.Shared
             transitionCompleted = false;
             
             Debug.Log("[Boss State] Entered PhaseChangeState - Chuyển đổi từ Phase 1 sang Phase 2");
+            //BossController.PlayAnimation("PhaseChange");
             
             // Play phase change sound
             if (Config.audioConfig.phaseChangeSound != null)
@@ -31,12 +32,10 @@ namespace Code.Boss.States.Shared
         public override void Update()
         {
             transitionTimer += Time.deltaTime;
-            
-            if (transitionTimer >= 2f && !transitionCompleted) // 2 second transition
-            {
-                transitionCompleted = true;
-                BossController.ChangeToPhase(2);
-            }
+
+            if (!(transitionTimer >= 2f) || transitionCompleted) return; // 2 second transition
+            transitionCompleted = true;
+            BossController.ChangeToPhase(2);
         }
 
         public override void Exit()
