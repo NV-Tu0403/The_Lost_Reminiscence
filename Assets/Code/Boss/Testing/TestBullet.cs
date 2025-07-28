@@ -43,9 +43,6 @@ namespace Code.Boss.Testing
         {
             timeAlive += Time.deltaTime;
             
-            // Manual collision check as fallback
-            CheckManualCollision();
-            
             // Tự hủy sau lifetime
             if (timeAlive >= lifetime)
             {
@@ -59,76 +56,10 @@ namespace Code.Boss.Testing
                 transform.Translate(direction * speed * Time.deltaTime, Space.World);
             }
         }
-
-        private void CheckManualCollision()
-        {
-            // Manual collision check as backup when Unity's physics fails
-            float checkRadius = 1f; // Radius to check around bullet
-            
-            // Check for boss
-            var boss = FindObjectOfType<BossController>();
-            if (boss != null && boss.gameObject.activeInHierarchy)
-            {
-                float distance = Vector3.Distance(transform.position, boss.transform.position);
-                if (distance <= checkRadius)
-                {
-                    HandleCollision(boss.GetComponent<Collider>());
-                    return;
-                }
-            }
-            
-            // Check for decoys
-            var decoys = FindObjectsOfType<DecoyBehavior>();
-            foreach (var decoy in decoys)
-            {
-                if (decoy.gameObject.activeInHierarchy)
-                {
-                    float distance = Vector3.Distance(transform.position, decoy.transform.position);
-                    if (distance <= checkRadius)
-                    {
-                        HandleCollision(decoy.GetComponent<Collider>());
-                        return;
-                    }
-                }
-            }
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            HandleCollision(other);
-        }
-
-        private void OnCollisionEnter(Collision collision)
-        {
-            HandleCollision(collision.collider);
-        }
-
-        private void HandleCollision(Collider hitCollider)
-        {
-            // Check for boss
-            var boss = hitCollider.GetComponent<BossController>();
-            if (boss != null)
-            {
-                var bossManager = BossManager.Instance;
-                if (bossManager != null)
-                {
-                    bossManager.PlayerAttackBoss();
-                }
-                DestroyBullet();
-                return;
-            }
-            
-            // Check for decoy
-            var decoy = hitCollider.GetComponent<DecoyBehavior>();
-            if (decoy == null) return;
-            decoy.OnAttacked();
-            DestroyBullet();
-        }
-
+        
         private void DestroyBullet()
         {
             Destroy(gameObject);
         }
-        
     }
 }

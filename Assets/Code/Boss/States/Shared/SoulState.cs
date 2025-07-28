@@ -17,6 +17,7 @@ namespace Code.Boss.States.Shared
             isCasting = true;
             
             Debug.Log("[Boss State] Entered SoulState - Teleporting and spawning soul");
+            // BossController.PlayAnimation("Soul");
             BossEventSystem.Trigger(BossEventType.SoulStateStarted);
             
             // Trigger skill cast với skill name để UI hiển thị
@@ -26,9 +27,9 @@ namespace Code.Boss.States.Shared
             CalculateTeleportPosition();
             
             // Play soul spawn sound
-            if (config.audioConfig.soulSpawnSound != null)
+            if (Config.audioConfig.soulSpawnSound != null)
             {
-                bossController.PlaySound(config.audioConfig.soulSpawnSound, config.audioConfig.sfxVolume);
+                BossController.PlaySound(Config.audioConfig.soulSpawnSound, Config.audioConfig.sfxVolume);
             }
         }
 
@@ -50,10 +51,10 @@ namespace Code.Boss.States.Shared
             castTimer += Time.deltaTime;
             
             // Update skill cast progress for UI
-            float progress = castTimer / config.phase1.soulStateCastTime;
+            float progress = castTimer / Config.phase1.soulStateCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
             
-            if (castTimer >= config.phase1.soulStateCastTime)
+            if (castTimer >= Config.phase1.soulStateCastTime)
             {
                 ExecuteTeleportAndSpawnSoul();
             }
@@ -62,9 +63,9 @@ namespace Code.Boss.States.Shared
         private void CalculateTeleportPosition()
         {
             // Teleport to a random position away from player
-            Vector3 playerPos = bossController.Player.position;
+            Vector3 playerPos = BossController.Player.position;
             Vector2 randomDirection = Random.insideUnitCircle.normalized;
-            float teleportDistance = config.soulConfig.soulSpawnRadius * 0.8f;
+            float teleportDistance = Config.soulConfig.soulSpawnRadius * 0.8f;
             
             teleportPosition = playerPos + new Vector3(randomDirection.x, 0, randomDirection.y) * teleportDistance;
         }
@@ -74,26 +75,26 @@ namespace Code.Boss.States.Shared
             isCasting = false;
             
             // Teleport boss
-            bossController.transform.position = teleportPosition;
+            BossController.transform.position = teleportPosition;
             Debug.Log("[Boss State] SoulState - Boss teleported and soul activated");
             
             // Spawn soul if under limit
-            if (bossController.SoulManager.ActiveSoulCount < bossController.SoulManager.MaxSouls)
+            if (BossController.SoulManager.ActiveSoulCount < BossController.SoulManager.MaxSouls)
             {
-                bossController.SoulManager.SpawnSoul();
+                BossController.SoulManager.SpawnSoul();
             }
         }
 
         private void TransitionToNextState()
         {
             // Transition based on current phase
-            if (bossController.CurrentPhase == 1)
+            if (BossController.CurrentPhase == 1)
             {
-                bossController.ChangeState(new Code.Boss.States.Phase1.IdleState());
+                BossController.ChangeState(new Phase1.IdleState());
             }
             else // Phase 2
             {
-                bossController.ChangeState(new Code.Boss.States.Phase2.AngryState());
+                BossController.ChangeState(new Phase2.AngryState());
             }
         }
 
