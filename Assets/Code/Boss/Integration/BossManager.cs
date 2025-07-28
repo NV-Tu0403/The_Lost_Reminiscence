@@ -75,7 +75,7 @@ namespace Code.Boss
 
         private void OnPhaseChanged(BossEventData data)
         {
-            int newPhase = data.intValue;
+            var newPhase = data.intValue;
             OnBossPhaseChanged?.Invoke(newPhase);
             
             Debug.Log($"Boss entered Phase {newPhase}");
@@ -89,7 +89,7 @@ namespace Code.Boss
 
         private void OnPlayerTakeDamageEvent(BossEventData data)
         {
-            int damage = data.intValue;
+            var damage = data.intValue;
             OnPlayerHealthChanged?.Invoke(damage);
         }
 
@@ -110,7 +110,7 @@ namespace Code.Boss
 
         private void OnRequestOtherSkill(BossEventData data)
         {
-            string skillName = data.stringValue ?? "Unknown";
+            var skillName = data.stringValue ?? "Unknown";
             Debug.Log($"Requesting Fa to use skill: {skillName}");
             
             RequestFaSkill(skillName);
@@ -140,59 +140,7 @@ namespace Code.Boss
                 Debug.Log($"Fa failed to use skill: {skillName}");
             }
         }
-
-        // Public methods for external interaction
-        public void PlayerAttackBoss()
-        {
-            if (bossController != null)
-            {
-                bossController.TakeDamage(1);
-            }
-        }
-
-        // public void PlayerAttackDecoy(GameObject decoy, bool hitReal)
-        // {
-        //     var decoyBehavior = decoy.GetComponent<DecoyBehavior>();
-        //     if (decoyBehavior != null)
-        //     {
-        //         if (hitReal)
-        //         {
-        //             BossEventSystem.Trigger(BossEventType.RealDecoyHit);
-        //             bossController.TakeDamage(1);
-        //         }
-        //         else
-        //         {
-        //             BossEventSystem.Trigger(BossEventType.FakeDecoyHit);
-        //             BossEventSystem.Trigger(BossEventType.PlayerTakeDamage, new BossEventData(1));
-        //         }
-        //     }
-        // }
-        //
-        // public void InterruptBossSkill()
-        // {
-        //     if (bossController != null)
-        //     {
-        //         bossController.InterruptCurrentSkill();
-        //     }
-        // }
         
-
-        // Get current boss state for external systems
-        // public string GetCurrentBossState()
-        // {
-        //     if (bossController != null && bossController.GetComponent<BossStateMachine>() != null)
-        //     {
-        //         return bossController.GetComponent<BossStateMachine>().CurrentState?.GetType().Name ?? "Unknown";
-        //     }
-        //     return "No Boss";
-        // }
-
-        // Get current boss phase
-        // public int GetCurrentBossPhase()
-        // {
-        //     return bossController != null ? bossController.CurrentPhase : 0;
-        // }
-
         private void OnDestroy()
         {
             // Cleanup events
