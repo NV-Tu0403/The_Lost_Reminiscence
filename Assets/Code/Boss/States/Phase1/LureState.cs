@@ -16,7 +16,10 @@ namespace Code.Boss.States.Phase1
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered LureState - Boss tiến lại gần người chơi rồi rút lui");
-            originalPosition = bossController.transform.position;
+            //Player animation
+            // BossController.PlayAnimation("Lure");
+            
+            originalPosition = BossController.transform.position;
             currentPhase = LurePhase.Approaching;
             stateTimer = 0f;
             
@@ -38,23 +41,23 @@ namespace Code.Boss.States.Phase1
                     break;
                 // Transition to next state
                 case LurePhase.Completed:
-                    bossController.ChangeState(new MockState());
+                    BossController.ChangeState(new MockState());
                     break;
             }
         }
 
         private void CalculateTargetPosition()
         {
-            var directionToPlayer = (bossController.Player.position - bossController.transform.position).normalized;
-            targetPosition = bossController.Player.position - directionToPlayer * config.phase1.lureDistance;
+            var directionToPlayer = (BossController.Player.position - BossController.transform.position).normalized;
+            targetPosition = BossController.Player.position - directionToPlayer * Config.phase1.lureDistance;
         }
 
         private void HandleApproaching()
         {
-            MoveTowards(targetPosition, config.phase1.lureApproachSpeed);
+            MoveTowards(targetPosition, Config.phase1.lureApproachSpeed);
             
-            var distanceToTarget = Vector3.Distance(bossController.transform.position, targetPosition);
-            if (distanceToTarget < 0.5f || stateTimer > config.phase1.lureDuration * 0.6f)
+            var distanceToTarget = Vector3.Distance(BossController.transform.position, targetPosition);
+            if (distanceToTarget < 0.5f || stateTimer > Config.phase1.lureDuration * 0.6f)
             {
                 currentPhase = LurePhase.Retreating;
             }
@@ -62,10 +65,10 @@ namespace Code.Boss.States.Phase1
 
         private void HandleRetreating()
         {
-            MoveTowards(originalPosition, config.phase1.lureRetreatSpeed);
+            MoveTowards(originalPosition, Config.phase1.lureRetreatSpeed);
             
-            var distanceToOriginal = Vector3.Distance(bossController.transform.position, originalPosition);
-            if (distanceToOriginal < 0.5f || stateTimer > config.phase1.lureDuration)
+            var distanceToOriginal = Vector3.Distance(BossController.transform.position, originalPosition);
+            if (distanceToOriginal < 0.5f || stateTimer > Config.phase1.lureDuration)
             {
                 currentPhase = LurePhase.Completed;
             }
@@ -73,27 +76,24 @@ namespace Code.Boss.States.Phase1
 
         private void MoveTowards(Vector3 target, float speed)
         {
-            if (bossController.NavAgent != null)
+            if (BossController.NavAgent != null)
             {
-                bossController.NavAgent.speed = speed;
-                bossController.NavAgent.SetDestination(target);
+                BossController.NavAgent.speed = speed;
+                BossController.NavAgent.SetDestination(target);
             }
         }
 
         public override void Exit()
         {
             // Reset movement speed
-            if (bossController.NavAgent != null)
+            if (BossController.NavAgent != null)
             {
-                bossController.NavAgent.speed = config.moveSpeed;
+                BossController.NavAgent.speed = Config.moveSpeed;
             }
         }
 
         public override void OnTakeDamage() { }
-
-        public override bool CanBeInterrupted()
-        {
-            return false;
-        }
+        public override bool CanTakeDamage() => false;
+        public override bool CanBeInterrupted() => false;
     }
 }

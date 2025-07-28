@@ -15,16 +15,18 @@ namespace Code.Boss.States.Phase2
         public override void Enter()
         {
             stateTimer = 0f;
-            centerPosition = bossController.NavMeshCenter != null ? 
-                           bossController.NavMeshCenter.position : 
-                           bossController.transform.position;
+            centerPosition = BossController.NavMeshCenter != null ? 
+                           BossController.NavMeshCenter.position : 
+                           BossController.transform.position;
             
             Debug.Log("[Boss State] Entered AngryState - Boss di chuyển xoay quanh trung tâm NavMesh");
+            // animation
+           // BossController.PlayAnimation("Angry");
             
             // Set movement speed for angry state
-            if (bossController.NavAgent != null)
+            if (BossController.NavAgent != null)
             {
-                bossController.NavAgent.speed = config.phase2.angryMoveSpeed;
+                BossController.NavAgent.speed = Config.phase2.angryMoveSpeed;
             }
         }
 
@@ -35,16 +37,16 @@ namespace Code.Boss.States.Phase2
             // Move in circle around center
             MoveInCircle();
             
-            if (stateTimer >= config.phase2.angryMoveDuration && canTransition)
+            if (stateTimer >= Config.phase2.angryMoveDuration && canTransition)
             {
-                bossController.ChangeState(new FearZoneState());
+                BossController.ChangeState(new FearZoneState());
             }
         }
 
         private void MoveInCircle()
         {
-            var radius = config.phase2.circleRadius;
-            currentAngle += (config.phase2.angryMoveSpeed / radius) * Time.deltaTime;
+            var radius = Config.phase2.circleRadius;
+            currentAngle += (Config.phase2.angryMoveSpeed / radius) * Time.deltaTime;
             
             var targetPosition = centerPosition + new Vector3(
                 Mathf.Cos(currentAngle) * radius,
@@ -52,26 +54,23 @@ namespace Code.Boss.States.Phase2
                 Mathf.Sin(currentAngle) * radius
             );
             
-            if (bossController.NavAgent != null)
+            if (BossController.NavAgent != null)
             {
-                bossController.NavAgent.SetDestination(targetPosition);
+                BossController.NavAgent.SetDestination(targetPosition);
             }
         }
         
         public override void Exit()
         {
             // Reset movement speed
-            if (bossController.NavAgent != null)
+            if (BossController.NavAgent != null)
             {
-                bossController.NavAgent.speed = config.moveSpeed;
+                BossController.NavAgent.speed = Config.moveSpeed;
             }
         }
 
         public override void OnTakeDamage() { }
-
-        public override bool CanBeInterrupted()
-        {
-            return false;
-        }
+        public override bool CanTakeDamage() => false;
+        public override bool CanBeInterrupted() => false;
     }
 }

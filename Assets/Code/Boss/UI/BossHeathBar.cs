@@ -55,8 +55,8 @@ namespace Code.Boss
 
         private void OnHealthChanged(BossEventData data)
         {
-            int currentHealth = data.intValue;
-            int maxHealth = (int)data.floatValue;
+            var currentHealth = data.intValue;
+            var maxHealth = (int)data.floatValue;
             
             // Update text immediately
             if (healthText != null)
@@ -76,10 +76,10 @@ namespace Code.Boss
         {
             if (healthSlider == null || uiConfig == null) yield break;
             
-            float startValue = healthSlider.value;
+            var startValue = healthSlider.value;
             float targetValue = currentHealth;
-            float elapsed = 0f;
-            float duration = uiConfig.uiAnimationSpeed;
+            var elapsed = 0f;
+            var duration = uiConfig.uiAnimationSpeed;
 
             while (elapsed < duration)
             {
