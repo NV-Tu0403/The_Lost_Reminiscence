@@ -263,6 +263,16 @@ namespace Code.Boss
             }
         }
 
+        // Xử lý va chạm với Bullet
+        private void OnTriggerEnter(Collider other)
+        {
+            if (!enabled) return;
+            if (other.CompareTag("Bullet"))
+            {
+                TakeDamage();
+            }
+        }
+
         private void OnDestroy()
         {
             // Cleanup

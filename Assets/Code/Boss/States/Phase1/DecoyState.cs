@@ -106,8 +106,8 @@ namespace Code.Boss.States.Phase1
                 Debug.Log($"[DecoyState] Added Collider to {decoy.name}");
             }
             
-            // Ensure collider is not a trigger for attack detection
-            if (decoyCollider != null) decoyCollider.isTrigger = false;
+            // Ensure collider is a trigger for bullet detection
+            if (decoyCollider != null) decoyCollider.isTrigger = true;
 
             // Add decoy behavior
             var decoyBehavior = decoy.GetComponent<DecoyBehavior>();

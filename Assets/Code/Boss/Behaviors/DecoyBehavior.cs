@@ -38,13 +38,6 @@ namespace Code.Boss
             // Rotate to face target 
             if (direction != Vector3.zero) transform.rotation = Quaternion.LookRotation(direction);
         }
-        
-
-        // Method này sẽ được gọi từ PlayerTestController thông qua BossManager
-        public void OnAttacked()
-        {
-            HandlePlayerContact();
-        }
 
         private void HandlePlayerContact()
         {
@@ -65,6 +58,16 @@ namespace Code.Boss
             // Remove this decoy
             bossController.RemoveDecoy(gameObject);
             Destroy(gameObject);
+        }
+
+        // Xử lý va chạm với Bullet
+        private void OnTriggerEnter(Collider other)
+        {
+            if (!enabled) return;
+            if (other.CompareTag("Bullet"))
+            {
+                HandlePlayerContact();
+            }
         }
     }
 }
