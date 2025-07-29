@@ -3,6 +3,8 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using UnityEditorInternal;
+using System.Collections.Generic;
 
 public class PlayerController_02 : PlayerEventListenerBase
 {
@@ -14,10 +16,21 @@ public class PlayerController_02 : PlayerEventListenerBase
     public NavMeshAgent _navMeshAgent { get; private set; }
     [SerializeField] private Animator _animator; // set animator
     public IUsable CurrentUsable { get; set; }
+    public Timer throwTimer = new Timer();
 
     public CharacterStateType CurrentPlayerState;
 
     #region Dictionary Type Action
+
+    [Header("Weapon Settings")]
+    [SerializeField] private List<Transform> ListBody; //   Danh sách các slot vũ khí
+    [SerializeField] private GameObject _Object;
+
+    [Header("Slot Settings")]
+    public GameObject FacePlayer; // mặt người chơi (tạm thời)
+    [SerializeField] private LayerMask lookAtLayerMask;
+    public GameObject ListSlot; // Danh sách Slot (tạm thời)
+
     private string mess = null;
 
     private Vector3 lastRotationDirection = Vector3.forward;
@@ -29,6 +42,27 @@ public class PlayerController_02 : PlayerEventListenerBase
     [SerializeField] private float dashForce = 15f;   // lực dash
     [SerializeField] private float dashDuration = 0.3f; // thời gian dash
     [SerializeField] private float dashMomentumBoost = 10f; // nhân vận tốc ngang
+
+    public int previousIndex = -1; // -1 = chưa có gì
+    public GameObject currentEquippedItem;
+    public Coroutine deactivateCoroutine;
+
+    [SerializeField] private GameObject markerPrefab; // Prefab dùng để đánh dấu (test)
+    [SerializeField] private Material laserMaterial; // Material cho laser line (test)
+    [SerializeField] private float laserWidth = 0.02f; // Độ rộng của laser line (test)
+
+    private GameObject currentMarker;
+    private LineRenderer laserLine;
+
+    private float savedDistance = 0f;
+    private float savedHeight = 0f;
+    private bool isCameraSettingsSaved = false;
+
+    [SerializeField] private float checkInterval = 0.1f;
+    private float lastCheckTime;
+
+    public GameObject CurrentSourcesLookAt { get; set; } // Đối tượng mà người chơi đang nhìn vào
+    public Vector3 CurrentLookAtHitPoint { get; private set; } // tọa độ điểm va chạm của tia nhìn
     #endregion
 
     protected override void Awake()
@@ -181,25 +215,59 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
     }
 
-    public void PerformAttackInput(CharacterActionType actionType, Vector3 direction)
+    public void PerformAttackInput(CharacterActionType actionType)
     {
         _core_02._stateMachine.HandleAction(actionType);
+
         if (actionType == CharacterActionType.Attack)
         {
             Attack(config.attackRange, config.attackDuration, config.attackDamage, config.attackCooldown);
         }
     }
-
-    public void PerformSpecialInput(CharacterActionType actionType, Vector3 direction)
+    public void PerformThrowInput(ThrowType throwType, float force)
     {
-        _core_02._stateMachine.HandleAction(actionType);
-
-        switch (actionType)
+        GameObject thrownObject = currentEquippedItem?.gameObject;
+        if (thrownObject != null)
         {
-            case CharacterActionType.Jump:
-                Jump(config.jumpImpulse);
-                break;
+            thrownObject.SetActive(true);
+            currentEquippedItem.gameObject.transform.SetParent(null);
+            currentEquippedItem = null;
         }
+        if (thrownObject == null)
+        {
+            GameObject DefaulObjThrow = Resources.Load<GameObject>(config.prefabPath);
+            if (DefaulObjThrow == null)
+            {
+                Debug.LogError($"Prefab not found at path: {config.prefabPath}");
+                return;
+            }
+            thrownObject = Instantiate(DefaulObjThrow);
+        }
+
+        Ray camRay = GetCameraRayCenter();
+        Vector3 forward = camRay.direction.normalized;
+
+        Vector3 spawnPosition = /*camRay.origin*/FacePlayer.transform.position + forward * 1.5f;
+        thrownObject.transform.position = spawnPosition;
+
+        if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
+        {
+            rb.linearVelocity = forward * force;
+        }
+        if (thrownObject.TryGetComponent<ThrowableObject>(out var throwable))
+        {
+            throwable.SetThrower_02(this);
+            if (CurrentUsable != null) throwable.SetUsableData(CurrentUsable.Name, CurrentUsable.GetEffectValue());
+        }
+
+        //CurrentUsable?.OnUse(this);
+        //controller._stateMachine.AddSecondaryState(new ThrowingState(cooldown));
+    }
+
+    public void PerformInteractInput(InteractType interactType, GameObject currentSources)
+    {
+        //interactAction[interactType].Perform();
+        //_stateMachine.AddSecondaryState(new InteractingState(0.5f, interactType));
     }
 
     #endregion
@@ -557,5 +625,255 @@ public class PlayerController_02 : PlayerEventListenerBase
 
         return (outDamaged);
     }
+    #endregion
+
+    #region Actions & logic Action
+
+    /// <summary>
+    /// Trả về hướng nhìn hiện tại của camera từ trung tâm màn hình.
+    /// </summary>
+    public Ray GetCameraRayCenter()
+    {
+        Camera cam = Camera.main;
+        return cam != null
+            ? cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f))
+            : new Ray(Vector3.zero, Vector3.forward);
+    }
+
+    public void MarkHitPoint(Vector3 point)
+    {
+        // Tạo marker
+        if (currentMarker == null && markerPrefab != null)
+        {
+            currentMarker = Instantiate(markerPrefab);
+        }
+
+        if (currentMarker != null)
+        {
+            currentMarker.transform.position = point;
+        }
+
+        // Tạo laser
+        if (laserLine == null)
+        {
+            GameObject laserObj = new GameObject("LaserLine");
+            laserLine = laserObj.AddComponent<LineRenderer>();
+            laserLine.material = laserMaterial;
+            laserLine.positionCount = 2;
+            laserLine.startWidth = laserWidth;
+            laserLine.endWidth = laserWidth;
+            laserLine.useWorldSpace = true;
+        }
+
+        // 3. Cập nhật line
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            laserLine.SetPosition(0, FacePlayer.transform.position);
+            laserLine.SetPosition(1, point);
+        }
+    }
+
+    public Vector3 ReturnPoinHit()
+    {
+        if (CurrentLookAtHitPoint != null)
+        {
+            return CurrentLookAtHitPoint;
+        }
+        else
+        {
+            Debug.LogWarning("CurrentLookAtHitPoint is null. Returning Vector3.zero.");
+            return Vector3.zero;
+        }
+    }
+
+    /// <summary>
+    /// chiếu tia từ camera để kiểm tra đối tượng người chơi đang nhìn vào.
+    /// </summary>
+    public void CheckItemByLooking()
+    {
+        try
+        {
+            if (Time.time - lastCheckTime < checkInterval) return;
+            lastCheckTime = Time.time;
+
+            Ray ray = GetCameraRayCenter();
+            Debug.DrawRay(ray.origin, ray.direction * 15f, Color.red, 0.1f, true);
+
+            if (Physics.Raycast(ray, out RaycastHit hit, 50f, lookAtLayerMask))
+            {
+                CurrentSourcesLookAt = hit.collider.gameObject;
+                CurrentLookAtHitPoint = hit.point; // Lưu tọa độ điểm va chạm
+                MarkHitPoint(hit.point); // Gọi hàm đánh dấu
+                                         //Debug.Log($"Looking at: {CurrentSourcesLookAt.name}");
+            }
+        }
+        catch (System.Exception)
+        {
+            Debug.Log("[PlayerController] lỗi con me no roi, ngu vai lon");
+        }
+
+    }
+
+    public void PickUp()
+    {
+        if (CurrentSourcesLookAt == null) return;
+
+        if (CurrentSourcesLookAt.layer == LayerMask.NameToLayer("Item"))
+        {
+            CurrentSourcesLookAt.transform.SetParent(ListSlot.transform);
+            CurrentSourcesLookAt.SetActive(false);
+            Debug.Log($"Added {CurrentSourcesLookAt.name} to ListSlot.");
+        }
+        else
+        {
+            Debug.LogWarning("The object is not an item and cannot be added to ListSlot.");
+        }
+    }
+
+    public float CalculateThrowForce()
+    {
+        float holdTime = throwTimer.UpdateTimer(false);
+        if (holdTime <= 0f) return config.throwForceMin;
+        float force = Mathf.Lerp(config.throwForceMin, config.throwForceMax, holdTime / config.maxHoldTime);
+        return Mathf.Clamp(force, config.throwForceMin, config.throwForceMax);
+    }
+
+    /// <summary>
+    /// Thay đổi góc nhìn của camera khi nhấn nút Aim.
+    /// </summary>
+    /// <param name="Input_M"></param>
+    public void Aim(bool Input_M)
+    {
+        if (_playerInput._characterCamera == null)
+        {
+            Debug.LogWarning("CharacterCamera is null in Aim!");
+            return;
+        }
+
+        // Lưu trạng thái camera hiện tại nếu chưa lưu
+        if (!isCameraSettingsSaved)
+        {
+            savedDistance = _playerInput._characterCamera.maxDistance;
+            savedHeight = _playerInput._characterCamera.height;
+            isCameraSettingsSaved = true;
+            //Debug.Log($"Aim: Saved camera state - Distance={savedDistance}, Height={savedHeight}");
+        }
+
+        if (Input_M)
+        {
+
+            _playerInput._characterCamera.transform.SetParent(transform);
+            _playerInput._characterCamera.SetTargetValues(config.targetMaxDistance, config.targetHeight, config.rightOffset, config.isAiming);
+            _playerInput._characterCamera.useInterpolation = false;
+            //Debug.Log("Aim: Entered aiming mode");
+        }
+        else
+        {
+            _playerInput._characterCamera.transform.SetParent(null);
+            _playerInput._characterCamera.useInterpolation = true;
+            _playerInput._characterCamera.SetTargetValues(savedDistance, savedHeight, _playerInput._characterCamera.rightOffset, false);
+            //Debug.Log($"Aim: Exited aiming mode, Restored - Distance={savedDistance}, Height={savedHeight}");
+            isCameraSettingsSaved = false;
+        }
+    }
+
+    /// <summary>
+    /// Thay đổi tài nguyên giữa các slot trong ListBody.
+    /// </summary>
+    /// <param name="SLotBody"></param>
+    public void ChangeResource(int SLotBody)
+    {
+        if (ListBody[SLotBody].childCount > 0)
+        {
+            if (ListBody[SLotBody].childCount > 0 && ListBody[1].childCount > 0)
+            {
+                Transform childFromSlot3 = ListBody[SLotBody].GetChild(0);
+                Transform childFromSlot1 = ListBody[1].GetChild(0);
+
+                childFromSlot3.SetParent(ListBody[1], false);
+                childFromSlot1.SetParent(ListBody[SLotBody], false);
+
+                Debug.Log("Successfully swapped first children between ListBody[3] and ListBody[1]");
+            }
+            else if (ListBody[SLotBody].childCount > 0)
+            {
+                Transform childFromSlot3 = ListBody[SLotBody].GetChild(0);
+                childFromSlot3.SetParent(ListBody[1], false);
+                Debug.Log("Moved child from ListBody[3] to ListBody[1]");
+            }
+            else if (ListBody[1].childCount > 0)
+            {
+                Transform childFromSlot1 = ListBody[1].GetChild(0);
+                childFromSlot1.SetParent(ListBody[SLotBody], false);
+                Debug.Log("Moved child from ListBody[1] to ListBody[3]");
+            }
+            else
+            {
+                Debug.LogWarning("No children to swap in ListBody[3] or ListBody[1]!");
+            }
+        }
+    }
+
+    /// <summary>
+    /// lấy GameObject từ list Slot và thay đổi chỉ mục của nó vào ListBody[2] 
+    /// </summary>
+    /// <param name="Index"></param>
+    /// <returns></returns>
+    /// <summary>
+    /// lấy GameObject từ list Slot và thay đổi chỉ mục của nó vào ListBody[2] 
+    /// </summary>
+    /// <param name="Index"></param>
+    /// <returns></returns>
+    public GameObject ChangeSlotIndex(int index)
+    {
+        if (ListSlot == null || ListSlot.transform.childCount == 0)
+        {
+            Debug.LogWarning("[PlayerController] ListSlot is null or empty.");
+            return null;
+        }
+
+        if (index < 0 || index >= ListSlot.transform.childCount)
+        {
+            Debug.LogWarning($"[PlayerController] Index {index} is out of bounds.");
+            return null;
+        }
+
+        // Trả item cũ về slot nếu có
+        if (previousIndex >= 0 && currentEquippedItem != null)
+        {
+            currentEquippedItem.transform.SetParent(ListSlot.transform, false);
+            currentEquippedItem.SetActive(false);
+        }
+
+        // Lấy item mới từ index
+        Transform itemTransform = ListSlot.transform.GetChild(index);
+        GameObject newItem = itemTransform.gameObject;
+
+        newItem.transform.SetParent(ListBody[1].transform, false);
+        newItem.transform.localPosition = new Vector3(1f, 2f, 0f);
+        newItem.transform.localRotation = Quaternion.identity;
+        newItem.SetActive(true);
+
+        currentEquippedItem = newItem;
+        previousIndex = index;
+
+        if (deactivateCoroutine != null)
+            StopCoroutine(deactivateCoroutine);
+        deactivateCoroutine = StartCoroutine(DeactivateAfterDelay(newItem, 0.6f));
+
+        Debug.Log($"[PlayerController] Equipped item '{newItem.name}' from ListSlot[{index}]");
+        return newItem;
+    }
+
+    private IEnumerator DeactivateAfterDelay(GameObject obj, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (obj != null)
+        {
+            obj.SetActive(false);
+        }
+    }
+
     #endregion
 }

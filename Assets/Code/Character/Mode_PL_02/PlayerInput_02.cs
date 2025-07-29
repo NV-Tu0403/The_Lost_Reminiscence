@@ -16,6 +16,10 @@ public class PlayerInput_02 : MonoBehaviour
     private float _lastSpacePressTime;
     private int _spacePressCount;
 
+    private int currentIndex = 0;
+    private float aimCooldown = 0.5f;         // Thời gian cooldown giữa 2 lần bật aim
+    private float nextAvailableAimTime = 0f;  // Thời điểm tiếp theo được phép aim
+
     private void Awake()
     {
         if (_core == null) _core = Core_02.Instance;
@@ -138,39 +142,39 @@ public class PlayerInput_02 : MonoBehaviour
     }
 
 
-    //private void GetAttackInput()
-    //{
-    //    //if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
+    private void GetAttackInput()
+    {
+        //if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
 
-    //    // Sử dụng script PlayerTaskInput để thực hiện đẩy task cho Fa rồi.
-    //    // if (Input.GetMouseButtonDown(0))
-    //    // {
-    //    //     var PointLookAt = _pc.ReturnPoinHit();
-    //    //     Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
-    //    // }
+        // Sử dụng script PlayerTaskInput để thực hiện đẩy task cho Fa rồi.
+        // if (Input.GetMouseButtonDown(0))
+        // {
+        //     var PointLookAt = _pc.ReturnPoinHit();
+        //     Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
+        // }
 
-    //    if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(Duckle.ThrowType.ThrowItem, 2f);
+        if (Input.GetKeyDown(KeyCode.Q)) _playerController.PerformThrowInput(ThrowType.ThrowItem, 2f);
 
-    //    //if (Time.time >= nextAvailableAimTime) // Kiểm tra cooldown
-    //    //{
-    //    if (Input.GetMouseButtonDown(1))
-    //    {
-    //        _pc.throwTimer.UpdateTimer(true);
-    //        if (_characterCamera != null)
-    //        {
-    //            _pc.Aim(true);
-    //        }
-    //    }
-    //    else if (Input.GetMouseButtonUp(1))
-    //    {
-    //        _pc.Aim(false);
-    //        _pc.config.throwForce = _pc.CalculateThrowForce();
-    //        _pc.PerformThrowInput(Duckle.ThrowType.ThrowWeapon, _pc.config.throwForce);
-    //        // Đặt lại cooldown
-    //        nextAvailableAimTime = Time.time + aimCooldown;
-    //    }
-    //    //}
-    //}
+        //if (Time.time >= nextAvailableAimTime) // Kiểm tra cooldown
+        //{
+        if (Input.GetMouseButtonDown(1))
+        {
+            _playerController.throwTimer.UpdateTimer(true);
+            if (_characterCamera != null)
+            {
+                _playerController.Aim(true);
+            }
+        }
+        else if (Input.GetMouseButtonUp(1))
+        {
+            _playerController.Aim(false);
+            _playerController.config.throwForce = _playerController.CalculateThrowForce();
+            _playerController.PerformThrowInput(ThrowType.ThrowWeapon, _playerController.config.throwForce);
+            // Đặt lại cooldown
+            nextAvailableAimTime = Time.time + aimCooldown;
+        }
+        //}
+    }
 
     //private void GetUseResourceInput()
     //{
