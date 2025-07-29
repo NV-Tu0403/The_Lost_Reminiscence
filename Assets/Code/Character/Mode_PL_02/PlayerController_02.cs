@@ -120,6 +120,9 @@ public class PlayerController_02 : PlayerEventListenerBase
 
         // cập nhật _playerInput.isInputLocked theo !isGrounded
         _playerInput.isInputLocked = !isGrounded;
+
+        UsingResource();
+        CheckItemByLooking();
     }
 
     private void LateUpdate()
@@ -146,6 +149,8 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
     }
 
+    #region base Event/state
+
     public override void RegisterEvent(PlayerEvent e)
     {
         e.OnChangePlayerState += UpdateCurrentPlayerState;
@@ -160,8 +165,10 @@ public class PlayerController_02 : PlayerEventListenerBase
     {
         CurrentPlayerState = stateType;
     }
+    #endregion
 
     #region get input
+
     public void PerformMoveInput(CharacterActionType actionType, Vector3 direction)
     {
         if (_core_02 == null)
@@ -219,57 +226,105 @@ public class PlayerController_02 : PlayerEventListenerBase
     {
         _core_02._stateMachine.HandleAction(actionType);
 
-        if (actionType == CharacterActionType.Attack)
+        switch (actionType)
         {
-            Attack(config.attackRange, config.attackDuration, config.attackDamage, config.attackCooldown);
+            case CharacterActionType.Attack:
+                Attack(config.attackRange, config.attackDuration, config.attackDamage, config.attackCooldown);
+                break;
+            case CharacterActionType.ThrowItem:
+                Thrown(2f); // tạm thời
+                break;
+            case CharacterActionType.ThrowWeapon:
+                Thrown(config.throwForce);
+                break;
         }
     }
-    public void PerformThrowInput(ThrowType throwType, float force)
+
+    public void PerformInteractInput(CharacterActionType actionType, GameObject currentSources)
     {
-        GameObject thrownObject = currentEquippedItem?.gameObject;
-        if (thrownObject != null)
+        _core_02._stateMachine.HandleAction(actionType);
+
+        switch (actionType)
         {
-            thrownObject.SetActive(true);
-            currentEquippedItem.gameObject.transform.SetParent(null);
-            currentEquippedItem = null;
+            case CharacterActionType.PickUp:
+                PickUp();
+                break;
+            case CharacterActionType.Drop:
+
+                break;
+            case CharacterActionType.Active:
+
+                break;
         }
-        if (thrownObject == null)
+    }
+
+    #endregion
+
+    #region Action Resource
+    public void EquipUsable(IUsable usable)
+    {
+        if (usable == null)
         {
-            GameObject DefaulObjThrow = Resources.Load<GameObject>(config.prefabPath);
-            if (DefaulObjThrow == null)
+            Debug.LogError("Attempted to equip null usable");
+            return;
+        }
+        CurrentUsable = usable;
+        Debug.Log($"Equipped usable: {CurrentUsable.Name}");
+    }
+
+    public void UsingResource()
+    {
+        if (ListBody == null)
+        {
+            Debug.LogError("ListBody is null! Please initialize it in the Inspector or code.");
+            return;
+        }
+
+        if (ListBody.Count > 2 && ListBody[1] != null && ListBody[1].childCount > 0)
+        {
+            Transform childTransform = ListBody[1].transform.GetChild(0);
+            if (childTransform != null)
             {
-                Debug.LogError($"Prefab not found at path: {config.prefabPath}");
-                return;
+                GameObject childObject = childTransform.gameObject;
+                _Object = childObject;
+                Component component = null;
+
+                Component[] components = _Object.GetComponents<Component>();
+                foreach (var c in components)
+                {
+                    if (c.GetType().Name == "Weapon")
+                    {
+                        component = c;
+                        break;
+                    }
+                    else if (c.GetType().Name == "Loot")
+                    {
+                        component = c;
+                        break;
+                    }
+                }
+
+                if (component is IUsable usable)
+                {
+                    CurrentUsable = usable;
+                    EquipUsable(CurrentUsable);
+                    Debug.Log($"Equipped usable: {CurrentUsable.Name}, Classify: {CurrentUsable.Classify}, Effect Value: {CurrentUsable.GetEffectValue()}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Weapons component not found on {_Object.name}!");
+                }
             }
-            thrownObject = Instantiate(DefaulObjThrow);
+            else
+            {
+                Debug.LogWarning("No GameObject found in the children of ListBody[1]!");
+            }
         }
-
-        Ray camRay = GetCameraRayCenter();
-        Vector3 forward = camRay.direction.normalized;
-
-        Vector3 spawnPosition = /*camRay.origin*/FacePlayer.transform.position + forward * 1.5f;
-        thrownObject.transform.position = spawnPosition;
-
-        if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
+        else
         {
-            rb.linearVelocity = forward * force;
+            //Debug.LogWarning("ListBody[1] is null or has no children!");
         }
-        if (thrownObject.TryGetComponent<ThrowableObject>(out var throwable))
-        {
-            throwable.SetThrower_02(this);
-            if (CurrentUsable != null) throwable.SetUsableData(CurrentUsable.Name, CurrentUsable.GetEffectValue());
-        }
-
-        //CurrentUsable?.OnUse(this);
-        //controller._stateMachine.AddSecondaryState(new ThrowingState(cooldown));
     }
-
-    public void PerformInteractInput(InteractType interactType, GameObject currentSources)
-    {
-        //interactAction[interactType].Perform();
-        //_stateMachine.AddSecondaryState(new InteractingState(0.5f, interactType));
-    }
-
     #endregion
 
     #region Move
@@ -439,7 +494,6 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
     }
 
-
     private bool Jump(float jumpForce)
     {
         if (!isGrounded) return false;
@@ -466,7 +520,6 @@ public class PlayerController_02 : PlayerEventListenerBase
         _core_02._stateMachine.SetState(new JumpState(_core_02._stateMachine, _playerEvent));
         return true;
     }
-
 
     private bool Dash()
     {
@@ -572,6 +625,57 @@ public class PlayerController_02 : PlayerEventListenerBase
     #endregion
 
     #region Attack
+
+    private bool Thrown(float force)
+    {
+        try
+        {
+            GameObject thrownObject = currentEquippedItem?.gameObject;
+            if (thrownObject != null)
+            {
+                thrownObject.SetActive(true);
+                currentEquippedItem.gameObject.transform.SetParent(null);
+                currentEquippedItem = null;
+            }
+            if (thrownObject == null)
+            {
+                // Tạo một đối tượng ném mặc định nếu không có item nào được trang bị
+                GameObject DefaulObjThrow = Resources.Load<GameObject>(config.prefabPath);
+                if (DefaulObjThrow == null)
+                {
+                    Debug.LogError($"Prefab not found at path: {config.prefabPath}");
+                    return false;
+                }
+                thrownObject = Instantiate(DefaulObjThrow);
+            }
+
+            _core_02._stateMachine.SetState(new ThrowWeaponState(_core_02._stateMachine, _playerEvent));
+
+            Ray camRay = GetCameraRayCenter();
+            Vector3 forward = camRay.direction.normalized;
+
+            Vector3 spawnPosition = /*camRay.origin*/FacePlayer.transform.position + forward * 1.5f;
+            thrownObject.transform.position = spawnPosition;
+
+            if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
+            {
+                rb.linearVelocity = forward * force;
+            }
+            if (thrownObject.TryGetComponent<ThrowableObject>(out var throwable))
+            {
+                throwable.SetThrower_02(this);
+                if (CurrentUsable != null) throwable.SetUsableData(CurrentUsable.Name, CurrentUsable.GetEffectValue());
+            }
+
+            CurrentUsable?.OnUse_2(this);
+            return true;
+        }
+        catch (Exception e)
+        {
+            mess = $"throw fuck; {e.Message}";
+            return false;
+        }
+    }
 
     /// <summary>
     /// gọi hàm này để để đánh
