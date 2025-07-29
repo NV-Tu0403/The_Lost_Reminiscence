@@ -13,6 +13,8 @@ public class PlayerInput_02 : MonoBehaviour
 
     public bool isInputLocked = false;
 
+    private Vector3 dir;
+
     private float _lastSpacePressTime;
     private int _spacePressCount;
 
@@ -34,12 +36,10 @@ public class PlayerInput_02 : MonoBehaviour
     void Update()
     {
         _camera = _characterCamera.mainCamera;
-        Vector3 dir = GetMoveInput();
+        dir = GetMoveInput();
         CharacterActionType actionType = GetSpecialActionsInput();
-        //if (!isInputLocked)
-        {
-            _playerController.PerformMoveInput(actionType, dir);
-        }
+
+        _playerController.PerformMoveInput(actionType, dir);
 
         GetAttackInput();
         GetObjInListSlot();
@@ -148,16 +148,9 @@ public class PlayerInput_02 : MonoBehaviour
 
     private void GetAttackInput()
     {
-        //if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
+        if (Input.GetMouseButtonDown(0)) _playerController.PerformAttackInput(CharacterActionType.Attack, dir);
 
-        // Sử dụng script PlayerTaskInput để thực hiện đẩy task cho Fa rồi.
-        // if (Input.GetMouseButtonDown(0))
-        // {
-        //     var PointLookAt = _pc.ReturnPoinHit();
-        //     Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
-        // }
-
-        if (Input.GetKeyDown(KeyCode.Q)) _playerController.PerformAttackInput( CharacterActionType.ThrowItem);
+        if (Input.GetKeyDown(KeyCode.Q)) _playerController.PerformAttackInput(CharacterActionType.ThrowItem, dir);
 
         //if (Time.time >= nextAvailableAimTime) // Kiểm tra cooldown
         //{
@@ -173,7 +166,7 @@ public class PlayerInput_02 : MonoBehaviour
         {
             _playerController.Aim(false);
             _playerController.config.throwForce = _playerController.CalculateThrowForce();
-            _playerController.PerformAttackInput(CharacterActionType.ThrowWeapon);
+            _playerController.PerformAttackInput(CharacterActionType.ThrowWeapon, dir);
             // Đặt lại cooldown
             nextAvailableAimTime = Time.time + aimCooldown;
         }
