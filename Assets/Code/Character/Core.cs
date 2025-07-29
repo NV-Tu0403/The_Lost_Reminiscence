@@ -255,8 +255,8 @@ public class Core : CoreEventListenerBase
         yield return new WaitForSeconds(0.1f);
         if (_accountStateMachine.CurrentStateType != null)
         {
-            UiPage06_C.Instance.UpdateInfo(CurrentAccountName, PlayTimeManager.Instance.SessionPlayTime.ToString(), Type);
-            UiPage06_C.Instance.UpdateTextFields(Type);
+            //UiPage06_C.Instance.UpdateInfo(CurrentAccountName, PlayTimeManager.Instance.SessionPlayTime.ToString(), Type);
+            //UiPage06_C.Instance.UpdateTextFields(Type);
         }
     }
 
