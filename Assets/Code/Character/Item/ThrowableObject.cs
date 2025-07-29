@@ -8,11 +8,13 @@ namespace Duckle
     public class ThrowableObject : MonoBehaviour
     {
         private PlayerController thrower;
+        private PlayerController_02 thrower_02;
         private string usableName;
         private float effectValue;
         [SerializeField] private float LifeTime = 5f;
 
         public void SetThrower(PlayerController thrower) => this.thrower = thrower;
+        public void SetThrower_02(PlayerController_02 thrower_02) => this.thrower_02 = thrower_02;
         public void SetUsableData(string name, float effectValue)
         {
             this.usableName = name;

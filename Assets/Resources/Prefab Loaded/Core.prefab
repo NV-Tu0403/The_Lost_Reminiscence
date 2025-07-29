@@ -153,10 +153,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca76caa9615dbd64fb71ff3d1be45745, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _userAccountManager: {fileID: 0}
+  backendSync: {fileID: 0}
+  IsDebugMode: 1
+  CurrentAccountName: 
+  CurrentAccountState: 
   CurrentCoreState: 
-  menuCamera: {fileID: 0}
-  characterCamera: {fileID: 0}
   MainMenu: {fileID: 0}
+  ObjOnMenu: []
+  ObjOffMenu: []
+  menuCameraObj: {fileID: 0}
+  characterCameraObj: {fileID: 0}
+  _characterCamera: {fileID: 0}
 --- !u!114 &7733529909620116901
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,6 +256,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerTransform: {fileID: 0}
+  characterCameraTransform: {fileID: 0}
+  characterCamera: {fileID: 0}
 --- !u!114 &3681557477360695298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -285,7 +295,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bba8423f3654d9b4a8ef517ce3388c9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  backendSync: {fileID: 0}
   selectedSaveFolder: 
+  SelectedSaveImagePath: 
+  CurrentbackupSavePath: 
+  CurrentOriginalSavePath: 
+  CurrentbackupOke: 0
+  SceneDefault: Phong_scene
 --- !u!114 &4089750698067897501
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -13,6 +13,7 @@ namespace Duckle
         string Classify { get; }
         float GetEffectValue();       // Giá trị hiệu ứng (Power cho Weapon, Heal cho Item, v.v.)
         void OnUse(PlayerController user); // Hành vi khi được sử dụng
+        void OnUse_2(PlayerController_02 user); // Hành vi khi được sử dụng (phiên bản 2, có thể khác với PlayerController)
     }
 
     /// <summary>
@@ -34,6 +35,7 @@ namespace Duckle
 
         public abstract float GetEffectValue(); // Trả về giá trị hiệu ứng của tài nguyên
         public virtual void OnUse(PlayerController user) { /* Có thể để trống hoặc thêm logic mặc định */ }
+        public virtual void OnUse_2(PlayerController_02 user) { /* Có thể để trống hoặc thêm logic mặc định */ }
     }
 
     /// <summary>
@@ -42,14 +44,13 @@ namespace Duckle
     /// </summary>
     public abstract class Item : Resource_M3, IUsable
     {
-        public override float GetEffectValue() => Power; // Trả về giá trị hiệu ứng của Item (sát thương hoặc hiệu ứng)
+        public override float GetEffectValue() => Power;
 
         /// <summary>
         /// Phương thức trừu tượng để áp dụng nâng cấp cho vũ khí.
         /// </summary>
         /// <param name="upgrade"></param>
         public abstract void ApplyUpgrade(Upgrade upgrade);
-
     }
 
     /// <summary>
