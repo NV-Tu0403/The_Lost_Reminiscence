@@ -1,47 +1,35 @@
-﻿using UnityEngine;
+﻿// File: InteractablePainting.cs
+using UnityEngine;
 
-public class InteractablePainting : MonoBehaviour
+// Implement "hợp đồng" IInteractable
+public class InteractablePainting : MonoBehaviour, IInteractable
 {
     [Tooltip("Đánh dấu nếu đây là bức tranh đúng")]
     public bool isCorrectAnswer = false;
 
-    // Hàm Interact không thay đổi, vẫn được gọi bởi người chơi
-    public void Interact(TestController player)
+    public void Interact(PlayerPuzzleInteractor interactor)
     {
+        if (interactor == null) return;
+
         if (isCorrectAnswer)
         {
             Debug.Log("CHÍNH XÁC! Bạn đã giải được câu đố!");
+            
+            if (PaintingPuzzleController.Instance != null)
+            {
+                PaintingPuzzleController.Instance.OnPaintingSolved();
+            }
+
+            // --- THAY ĐỔI Ở ĐÂY ---
+            // Tắt toàn bộ GameObject (bao gồm cả khung và tranh con)
+            // thay vì chỉ tắt MeshRenderer của khung.
             gameObject.SetActive(false);
+            // --------------------
         }
         else
         {
             Debug.Log("SAI RỒI! Hãy thử lại.");
-            player.TakeDamage();
-        }
-    }
-
-    // --- PHẦN MỚI ---
-    // Hàm này tự động được gọi khi có một Collider khác đi vào Trigger
-    private void OnTriggerEnter(Collider other)
-    {
-        // Kiểm tra xem đối tượng va chạm có phải là Player không
-        TestController player = other.GetComponent<TestController>();
-        if (player != null)
-        {
-            // Nếu đúng là Player, báo cho Player biết nó có thể tương tác với Bức tranh này
-            player.SetInteractable(this);
-        }
-    }
-
-    // Hàm này tự động được gọi khi Collider kia đi ra khỏi Trigger
-    private void OnTriggerExit(Collider other)
-    {
-        // Kiểm tra xem đối tượng va chạm có phải là Player không
-        TestController player = other.GetComponent<TestController>();
-        if (player != null)
-        {
-            // Báo cho Player biết nó đã ra khỏi vùng tương tác của Bức tranh này
-            player.ClearInteractable(this);
+            interactor.TakePuzzleDamage();
         }
     }
 }
