@@ -57,26 +57,22 @@ namespace Tu_Develop.Musical
 
         #region Basic Sound Playback
 
-        /// <summary>
-        /// Phát âm thanh OneShot tại vị trí 3D sử dụng string path.
-        /// </summary>
-        public void PlayOneShot(string eventPath, Vector3 position)
-        {
-            if (!IsEventPathValid(eventPath))
-            {
-                Debug.LogWarning($"Invalid FMOD event path: {eventPath}");
-                return;
-            }
-            RuntimeManager.PlayOneShot(eventPath, position);
-        }
+        // SỬA LỖI: Không cần hàm private PlayOneShot(string) nữa
 
         /// <summary>
         /// Phát âm thanh OneShot tại vị trí 3D sử dụng EventReference.
         /// </summary>
         public void PlayOneShot(EventReference eventReference, Vector3 position)
         {
-            string eventPath = eventReference.Path; // Convert EventReference to string
-            PlayOneShot(eventPath, position);
+            // SỬA LỖI: Gọi thẳng RuntimeManager với EventReference
+            if (IsEventPathValid(eventReference))
+            {
+                RuntimeManager.PlayOneShot(eventReference, position);
+            }
+            else
+            {
+                Debug.LogWarning($"Invalid FMOD event reference provided.");
+            }
         }
         
         /// <summary>
@@ -84,37 +80,31 @@ namespace Tu_Develop.Musical
         /// </summary>
         public void PlayOneShot(EventReference eventReference)
         {
-            var eventPath = eventReference.Path; // Convert EventReference to string
-            if (!IsEventPathValid(eventPath))
+            // SỬA LỖI: Gọi thẳng RuntimeManager với EventReference
+            if (IsEventPathValid(eventReference))
             {
-                Debug.LogWarning($"Invalid FMOD event path: {eventPath}");
-                return;
+                RuntimeManager.PlayOneShot(eventReference);
             }
-            RuntimeManager.PlayOneShot(eventPath);
+            else
+            {
+                Debug.LogWarning($"Invalid FMOD event reference provided.");
+            }
         }
         
-
-        /// <summary>
-        /// Tạo và phát một EventInstance sử dụng string path.
-        /// </summary>
-        public EventInstance PlayEventInstance(string eventPath)
-        {
-            if (!IsEventPathValid(eventPath))
-            {
-                Debug.LogWarning($"Invalid FMOD event path: {eventPath}");
-                return default;
-            }
-            var instance = RuntimeManager.CreateInstance(eventPath);
-            instance.start();
-            return instance;
-        }
-
         /// <summary>
         /// Tạo và phát một EventInstance sử dụng EventReference.
         /// </summary>
         public EventInstance PlayEventInstance(EventReference eventReference)
         {
-            return PlayEventInstance(eventReference.Path);
+            // SỬA LỖI: Gọi thẳng RuntimeManager với EventReference
+            if (!IsEventPathValid(eventReference))
+            {
+                Debug.LogWarning($"Invalid FMOD event reference provided.");
+                return default;
+            }
+            var instance = RuntimeManager.CreateInstance(eventReference);
+            instance.start();
+            return instance;
         }
 
         /// <summary>
@@ -137,27 +127,12 @@ namespace Tu_Develop.Musical
         }
 
         /// <summary>
-        /// Kiểm tra tính hợp lệ của event path.
-        /// </summary>
-        private bool IsEventPathValid(string eventPath)
-        {
-            try
-            {
-                var description = RuntimeManager.GetEventDescription(eventPath);
-                return description.isValid();
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Kiểm tra tính hợp lệ của EventReference.
         /// </summary>
         public bool IsEventPathValid(EventReference eventReference)
         {
-            return IsEventPathValid(eventReference.Path);
+            // TỐI ƯU: Dùng thuộc tính IsNull của EventReference, hiệu quả hơn nhiều
+            return !eventReference.IsNull;
         }
 
         #endregion
@@ -165,26 +140,20 @@ namespace Tu_Develop.Musical
         #region Snapshot Management
 
         /// <summary>
-        /// Bắt đầu phát một snapshot sử dụng string path.
+        /// Bắt đầu phát một snapshot sử dụng EventReference.
         /// </summary>
-        public void StartSnapshot(string tag, string path)
+        public void StartSnapshot(string tag, EventReference snapshotReference)
         {
             if (_snapshots.TryGetValue(tag, out var existing) && existing.isValid())
             {
                 existing.stop(STOP_MODE.ALLOWFADEOUT);
                 existing.release();
             }
-            var snapshot = RuntimeManager.CreateInstance(path);
+            
+            // SỬA LỖI: Gọi thẳng RuntimeManager với EventReference
+            var snapshot = RuntimeManager.CreateInstance(snapshotReference);
             snapshot.start();
             _snapshots[tag] = snapshot;
-        }
-
-        /// <summary>
-        /// Bắt đầu phát một snapshot sử dụng EventReference.
-        /// </summary>
-        public void StartSnapshot(string tag, EventReference snapshotReference)
-        {
-            StartSnapshot(tag, snapshotReference.Path);
         }
 
         /// <summary>
@@ -205,9 +174,9 @@ namespace Tu_Develop.Musical
         #region Event Pool Management
 
         /// <summary>
-        /// Phát một event và lưu lại trong pool với string path.
+        /// Phát một event và lưu lại trong pool với EventReference.
         /// </summary>
-        public void PlayAndCache(string tag, string eventPath)
+        public void PlayAndCache(string tag, EventReference eventReference)
         {
             if (_eventPool.TryGetValue(tag, out var existing) && existing.isValid())
             {
@@ -215,17 +184,10 @@ namespace Tu_Develop.Musical
                 existing.release();
             }
 
-            var instance = RuntimeManager.CreateInstance(eventPath);
+            // SỬA LỖI: Gọi thẳng RuntimeManager với EventReference
+            var instance = RuntimeManager.CreateInstance(eventReference);
             instance.start();
             _eventPool[tag] = instance;
-        }
-
-        /// <summary>
-        /// Phát một event và lưu lại trong pool với EventReference.
-        /// </summary>
-        public void PlayAndCache(string tag, EventReference eventReference)
-        {
-            PlayAndCache(tag, eventReference.Path);
         }
 
         /// <summary>

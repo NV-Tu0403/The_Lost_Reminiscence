@@ -3,6 +3,7 @@ using Code.Checkpoint;
 using Code.Cutscene;
 using Code.Dialogue;
 using Code.Puzzle;
+using Code.Timeline;
 using Duckle;
 using UnityEngine;
 
@@ -34,7 +35,8 @@ namespace Code.GameEventSystem
                 { EventType_Dl.Dialogue, new DialogueAction() },
                 { EventType_Dl.Cutscene, new CutsceneAction() },
                 { EventType_Dl.Puzzle, new PuzzleAction() },
-                { EventType_Dl.Checkpoint, new CheckpointAction() }
+                { EventType_Dl.Checkpoint, new CheckpointAction() },
+                { EventType_Dl.Timeline, new TimelineAction() },
             };
         }
 
