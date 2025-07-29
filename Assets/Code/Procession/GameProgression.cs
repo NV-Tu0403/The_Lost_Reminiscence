@@ -24,7 +24,7 @@ namespace Code.Procession
     public class MainProcess
     {
         //Enum
-        public enum ProcessType { Chapter, Quest, Dialogue, Cutscene, Puzzle, Checkpoint, Event }
+        public enum ProcessType { Chapter, Quest, Dialogue, Cutscene, Puzzle, Checkpoint, Event , Timeline}
         public enum ProcessStatus { Locked, InProgress, Completed }
         public enum TriggerType { Manual, Automatic }
     
