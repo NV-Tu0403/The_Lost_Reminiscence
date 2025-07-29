@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System.Collections.Generic;
 using TMPro;
+using Tu_Develop.Import.Scripts.EventConfig;
 using Unity.Behavior;
 using UnityEngine;
 
@@ -10,13 +11,12 @@ namespace Tu_Develop.Import.Scripts
     {
         [Header("Event Channels")] [SerializeField]
         private OnFaAgentUseSkill? useSkillEventChannel;
+        [SerializeField] private FaAgentEventChannel? onReadyEventChannel;
 
         [Header("Canvas")] [SerializeField] private TextMeshProUGUI? skill1Cooldown;
         [SerializeField] private TextMeshProUGUI? skill2Cooldown;
         [SerializeField] private TextMeshProUGUI? skill3Cooldown;
-
-        [Header("Player Conponents")] [SerializeField]
-        private BlackboardReference? playerConfig;
+        
         // Giả lập máu
         [SerializeField] private int playerHealth = 3;
         
@@ -105,8 +105,15 @@ namespace Tu_Develop.Import.Scripts
 
                 if (parts.Length > 2)
                 {
+                    // Trường hợp có mục tiêu rõ ràng (vd: "player")
                     var targetKeyword = parts[2].ToLower();
-                    task.TargetObject = targetKeyword != "player";
+                    task.TargetObject = (targetKeyword != "player"); // false nếu là player, true nếu khác
+                    Debug.Log($"Đã thêm task UseSkill: {task.SkillName} trên mục tiêu self: {task.TargetObject}");
+                }
+                else
+                {
+                    // Trường hợp không có mục tiêu -> Mặc định là "self"
+                    task.TargetObject = true;
                     Debug.Log($"Đã thêm task UseSkill: {task.SkillName} trên mục tiêu self: {task.TargetObject}");
                 }
             
@@ -139,19 +146,29 @@ namespace Tu_Develop.Import.Scripts
                 {
                     faBha.BlackboardReference.SetVariableValue("Player", player);
                 }
-                //faBha.BlackboardReference.SetVariableValue("PlayerHealth", playerHealth);
-                //faBha.BlackboardReference.SetVariableValue("PlayerControl", false);
+                
+
             }
             else
             {
                 Debug.LogError("Không tìm thấy BehaviorGraphAgent trên đối tượng này!");
+            }
+            
+            if (onReadyEventChannel != null)
+            {
+                onReadyEventChannel.RaiseEvent(this);
+                Debug.Log("[FaAgent] Đã sẵn sàng và phát tín hiệu.");
+            }
+            else
+            {
+                Debug.LogWarning("Chưa gán Event Channel cho FaAgent!");
             }
         }
 
         void Update()
         {
             // Giảm cooldown mỗi frame
-            List<string> keys = new List<string>(_cooldownTimers.Keys);
+            var keys = new List<string>(_cooldownTimers.Keys);
             foreach (string key in keys)
             {
                 _cooldownTimers[key] = Mathf.Max(0, _cooldownTimers[key] - Time.deltaTime);
@@ -191,9 +208,11 @@ namespace Tu_Develop.Import.Scripts
                                 break;
                             case "KnowledgeLight":
                                 playerTaskType = PlayerTaskType.KnowledgeLight;
+                                UseKnowledgeLight();
                                 break;
                             case "ProtectiveAura":
                                 playerTaskType = PlayerTaskType.ProtectiveAura;
+                                UseProtectiveAura();
                                 break;
                             default:
                                 Debug.LogWarning($"Skill name '{task.SkillName}' không hợp lệ!");
@@ -278,10 +297,9 @@ namespace Tu_Develop.Import.Scripts
 
         #region  FaInterface
         // Hàm này cần được sửa lại cho đúng tên và tham số như trong Interface
-        public void UseProtectiveAura(bool self) 
+        public void UseProtectiveAura() 
         {
             if (!IsSkillAvailable("ProtectiveAura")) return;
-            // ... logic tạo lá chắn ...
             StartSkillCooldown("ProtectiveAura", 20f);
         }
 
