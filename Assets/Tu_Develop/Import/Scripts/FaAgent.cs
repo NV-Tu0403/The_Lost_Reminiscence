@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Behavior;
 using UnityEngine;
+using UnityEngine.AI;
+using FMODUnity;
 
 namespace Tu_Develop.Import.Scripts
 {
@@ -10,6 +12,7 @@ namespace Tu_Develop.Import.Scripts
     {
         [Header("Event Channels")] [SerializeField]
         private OnFaAgentUseSkill? useSkillEventChannel;
+        [SerializeField] private FaAgentEventChannel? onReadyEventChannel; // Kéo file EVT_FaAgentReady vào đây
 
         [Header("Canvas")] [SerializeField] private TextMeshProUGUI? skill1Cooldown;
         [SerializeField] private TextMeshProUGUI? skill2Cooldown;
@@ -19,6 +22,11 @@ namespace Tu_Develop.Import.Scripts
         private BlackboardReference? playerConfig;
         // Giả lập máu
         [SerializeField] private int playerHealth = 3;
+        
+        [Header("Audio References")]
+        [SerializeField] private EventReference guideSignalAudio;
+        [SerializeField] private EventReference knowledgeLightAudio;
+        [SerializeField] private EventReference protectiveAuraAudio;
         
 
         private readonly Dictionary<string, float> _cooldownTimers = new Dictionary<string, float>();
@@ -119,10 +127,11 @@ namespace Tu_Develop.Import.Scripts
             }
         }
         public BehaviorGraphAgent? faBha;
-
+        private NavMeshAgent? _navMeshAgent;
         private void Start()
         {
             faBha = GetComponent<BehaviorGraphAgent>();
+            _navMeshAgent = GetComponent<NavMeshAgent>();
 
             if (faBha)
             {
@@ -139,8 +148,18 @@ namespace Tu_Develop.Import.Scripts
                 {
                     faBha.BlackboardReference.SetVariableValue("Player", player);
                 }
-                //faBha.BlackboardReference.SetVariableValue("PlayerHealth", playerHealth);
-                //faBha.BlackboardReference.SetVariableValue("PlayerControl", false);
+                // Sau khi đã khởi tạo xong
+                if (onReadyEventChannel != null)
+                {
+                    onReadyEventChannel.RaiseEvent(this);
+                    Debug.Log("[FaAgent] Đã sẵn sàng và phát tín hiệu.");
+                }
+                else
+                {
+                    Debug.LogWarning("Chưa gán Event Channel cho FaAgent!");
+                }
+
+                faBha.enabled = false;
             }
             else
             {
@@ -148,10 +167,22 @@ namespace Tu_Develop.Import.Scripts
             }
         }
 
-        void Update()
+        private void Update()
         {
+            if (faBha != null && !faBha.enabled)
+            {
+                if (_navMeshAgent != null && _navMeshAgent.isOnNavMesh)
+                {
+                    faBha.enabled = true;
+                    Debug.Log("[FaAgent] NavMeshAgent đã sẵn sàng. Kích hoạt Behavior Tree.");
+                }
+                else return;
+            }
+            
+            
+            
             // Giảm cooldown mỗi frame
-            List<string> keys = new List<string>(_cooldownTimers.Keys);
+            var keys = new List<string>(_cooldownTimers.Keys);
             foreach (string key in keys)
             {
                 _cooldownTimers[key] = Mathf.Max(0, _cooldownTimers[key] - Time.deltaTime);
