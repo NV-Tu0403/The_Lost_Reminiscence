@@ -19,8 +19,7 @@ namespace Tu_Develop.Import.Scripts
         private BlackboardReference? playerConfig;
         // Giả lập máu
         [SerializeField] private int playerHealth = 3;
-
-        private Transform? _targetPositionHelper;
+        
 
         private readonly Dictionary<string, float> _cooldownTimers = new Dictionary<string, float>();
 
@@ -35,7 +34,6 @@ namespace Tu_Develop.Import.Scripts
                 //useSkillEventChannel.OnEventPushlished += StartSkillCooldown;
             }
         }
-        
         private void OnDisable()
         {
             if (useSkillEventChannel != null)
@@ -43,18 +41,17 @@ namespace Tu_Develop.Import.Scripts
                 //useSkillEventChannel.
             }
         }
-    
-        public void AddTask(FaTask task)
+        private void AddTask(FaTask task)
         {
             _taskQueue.AddTask(task);
         }
         // Hàm lấy task tiếp theo
-        public FaTask? GetNextTask()
+        private FaTask? GetNextTask()
         {
             return _taskQueue.GetNextTask();
         }
         // Kiểm tra còn task không
-        public bool HasTask()
+        private bool HasTask()
         {
             return _taskQueue.HasTask();
         }
@@ -81,16 +78,12 @@ namespace Tu_Develop.Import.Scripts
                 // Lệnh: move x y z
                 if (float.TryParse(parts[1], out float x) && float.TryParse(parts[2], out float y) && float.TryParse(parts[3], out float z))
                 {
-                    if (_targetPositionHelper != null)
-                    {
-                        _targetPositionHelper.position = new Vector3(x, y, z);
+                        var targetPos = new Vector3(x, y, z);
                         var task = new FaTask(TaskType.MoveTo)
                         {
-                            TaskPosition = _targetPositionHelper
+                            TaskPosition = targetPos
                         };
                         AddTask(task);
-                        Debug.Log($"Đã thêm task MoveTo: {_targetPositionHelper.position}");
-                    }
                 }
             }
             // SKILL
@@ -113,8 +106,7 @@ namespace Tu_Develop.Import.Scripts
                 if (parts.Length > 2)
                 {
                     var targetKeyword = parts[2].ToLower();
-                    if (targetKeyword == "player") task.TargetObject = false;
-                    else task.TargetObject = true;
+                    task.TargetObject = targetKeyword != "player";
                     Debug.Log($"Đã thêm task UseSkill: {task.SkillName} trên mục tiêu self: {task.TargetObject}");
                 }
             
@@ -131,8 +123,29 @@ namespace Tu_Develop.Import.Scripts
         private void Start()
         {
             faBha = GetComponent<BehaviorGraphAgent>();
-            var go = new GameObject("FaTargetPositionHelper");
-            _targetPositionHelper = go.transform;
+
+            if (faBha)
+            {
+                // Kiểm tra BlackboardReference đã được gán chưa
+                if (faBha.BlackboardReference == null)
+                {
+                    Debug.LogError("BehaviorGraphAgent không có BlackboardReference!");
+                    return;
+                }
+
+                // Gán giá trị mặc định cho các biến trên Blackboard
+                var player = GameObject.Find("Player");
+                if (player != null)
+                {
+                    faBha.BlackboardReference.SetVariableValue("Player", player);
+                }
+                //faBha.BlackboardReference.SetVariableValue("PlayerHealth", playerHealth);
+                //faBha.BlackboardReference.SetVariableValue("PlayerControl", false);
+            }
+            else
+            {
+                Debug.LogError("Không tìm thấy BehaviorGraphAgent trên đối tượng này!");
+            }
         }
 
         void Update()
@@ -167,21 +180,20 @@ namespace Tu_Develop.Import.Scripts
                     {
                         playerTaskType = PlayerTaskType.Move;
                     }
-                    // *** PHẦN LOGIC BỊ THIẾU MÀ BẠN CẦN THÊM VÀO ***
                     else if (task.Type == TaskType.UseSkill)
                     {
                         // Dựa vào SkillName (hiện là "1", "2", "3" từ input) để chọn đúng enum
                         switch (task.SkillName)
                         {
                             case "GuideSignal":
-                                playerTaskType = PlayerTaskType.TinHieuDanLoi;
+                                playerTaskType = PlayerTaskType.GuideSignal;
                                 UseGuideSignal();
                                 break;
                             case "KnowledgeLight":
-                                playerTaskType = PlayerTaskType.AnhSangTriThuc;
+                                playerTaskType = PlayerTaskType.KnowledgeLight;
                                 break;
                             case "ProtectiveAura":
-                                playerTaskType = PlayerTaskType.VangSangBaoHo;
+                                playerTaskType = PlayerTaskType.ProtectiveAura;
                                 break;
                             default:
                                 Debug.LogWarning($"Skill name '{task.SkillName}' không hợp lệ!");
@@ -194,13 +206,13 @@ namespace Tu_Develop.Import.Scripts
                     if (playerTaskType == PlayerTaskType.None) return;
 
                     // Đẩy dữ liệu vào Blackboard
-                    faBha.BlackboardReference.SetVariableValue("TaskFromPlayer", playerTaskType);
                     if (task.TaskPosition != null)
                         faBha.BlackboardReference.SetVariableValue("TaskPosition", task.TaskPosition);
+                    faBha.BlackboardReference.SetVariableValue("TaskFromPlayer", playerTaskType);
                     if (task.TargetObject != null)
-                        faBha.BlackboardReference.SetVariableValue("Self_VanSangBaoHo", task.TargetObject);
+                        faBha.BlackboardReference.SetVariableValue("Self_ActiveProtectiveAura", task.TargetObject);
                     // Bật chế độ PlayerControl để Graph nhận task
-                    faBha.BlackboardReference.SetVariableValue("PlayerControl", true);
+                    //ActivePlayerControl(true);
                 }
             }
         }
@@ -214,28 +226,19 @@ namespace Tu_Develop.Import.Scripts
             {
                 // Thử lấy giá trị, nếu không có thì cooldownValue sẽ là 0
                 _cooldownTimers.TryGetValue("GuideSignal", out cooldownValue);
-                if (cooldownValue > 0)
-                    skill1Cooldown.text = Mathf.CeilToInt(cooldownValue).ToString();
-                else
-                    skill1Cooldown.text = "Ready";
+                skill1Cooldown.text = cooldownValue > 0 ? Mathf.CeilToInt(cooldownValue).ToString() : "Ready";
             }
 
             if (skill2Cooldown != null)
             {
                 _cooldownTimers.TryGetValue("KnowledgeLight", out cooldownValue);
-                if (cooldownValue > 0)
-                    skill2Cooldown.text = Mathf.CeilToInt(cooldownValue).ToString();
-                else
-                    skill2Cooldown.text = "Ready";
+                skill2Cooldown.text = cooldownValue > 0 ? Mathf.CeilToInt(cooldownValue).ToString() : "Ready";
             }
     
             if (skill3Cooldown != null)
             {
                 _cooldownTimers.TryGetValue("ProtectiveAura", out cooldownValue);
-                if (cooldownValue > 0)
-                    skill3Cooldown.text = Mathf.CeilToInt(cooldownValue).ToString();
-                else
-                    skill3Cooldown.text = "Ready";
+                skill3Cooldown.text = cooldownValue > 0 ? Mathf.CeilToInt(cooldownValue).ToString() : "Ready";
             }
         }
 
@@ -261,9 +264,8 @@ namespace Tu_Develop.Import.Scripts
                 return false;
             }
 
-            bool isControlled;
             // Dùng GetVariableValue để đọc giá trị từ Blackboard
-            if (faBha.BlackboardReference.GetVariableValue("PlayerControl", out isControlled))
+            if (faBha.BlackboardReference.GetVariableValue("PlayerControl", out bool isControlled))
             {
                 // Nếu tìm thấy biến, trả về giá trị của nó
                 return isControlled;

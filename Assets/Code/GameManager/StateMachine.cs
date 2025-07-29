@@ -7,11 +7,10 @@ public interface IState
 {
     void OnEnter();
     void OnExit();
+}
 
-    /// <summary>
-    /// Xử lý hành động từ giao diện người dùng.    
-    /// </summary>
-    /// <param name="action"></param>
+public interface IUIInteractiveState : IState
+{
     void HandleAction(UIActionType action);
 }
 
@@ -23,13 +22,13 @@ public class StateMachine
     /// <summary>
     /// Trạng thái hiện tại của StateMachine.
     /// </summary>
-    private IState currentState;
+    private IUIInteractiveState currentState;
 
     /// <summary>
     /// Khởi tạo StateMachine với trạng thái ban đầu.
     /// </summary>
     /// <param name="newState"></param>
-    public void SetState(IState newState)
+    public void SetState(IUIInteractiveState newState)
     {
         currentState?.OnExit();
         currentState = newState;
@@ -52,12 +51,12 @@ public class StateMachine
 }
 
 /// <summary>
-/// Lớp Cơ sở cho các trạng thái.
+/// bộ trạng thái base game
 /// Kế thừa lớp này để tạo các trạng thái cụ thể.
 /// 
 /// logic cụ thể của từng State được triển khai trong HandleAction.
 /// </summary>
-public abstract class StateBase : IState
+public abstract class StateBase : IUIInteractiveState
 {
     protected readonly StateMachine _stateMachine;
     protected CoreEvent _coreEvent; // vì iem không muống kế thừa CoreEvent nên iem lưu Reference CoreEvent để dùng
@@ -87,7 +86,10 @@ public abstract class StateBase : IState
     public abstract void HandleAction(UIActionType action);
 }
 
-public abstract class StateAccount : IState
+/// <summary>
+/// bộ trạng thái Account
+/// </summary>
+public abstract class StateAccount : IUIInteractiveState
 {
     protected readonly StateMachine _stateMachine;
     protected CoreEvent _coreEvent;
@@ -114,7 +116,98 @@ public abstract class StateAccount : IState
     public abstract void HandleAction(UIActionType action);
 }
 
+// ----------------------------------------------------------------------------
 
+
+public interface ICharacterState : IState
+{
+    void HandleAction(CharacterActionType type);
+}
+
+public class CharStateMachine
+{
+    /// <summary>
+    /// Trạng thái hiện tại của StateMachine.
+    /// </summary>
+    private ICharacterState currentState;
+
+    /// <summary>
+    /// Khởi tạo StateMachine với trạng thái ban đầu.
+    /// </summary>
+    /// <param name="newState"></param>
+    public void SetState(ICharacterState newState)
+    {
+        currentState?.OnExit();
+        currentState = newState;
+        currentState?.OnEnter();
+    }
+
+    /// <summary>
+    /// Xử lý hành động từ giao diện người dùng.
+    /// </summary>
+    /// <param name="action"></param>
+    public void HandleAction(CharacterActionType action)
+    {
+        currentState?.HandleAction(action);
+    }
+
+    /// <summary>
+    /// Lấy trạng thái hiện tại.
+    /// </summary>
+    public Type CurrentStateType => currentState?.GetType();
+}
+
+/// <summary>
+/// bộ trạng thái của Player.
+/// </summary>
+public abstract class StatePlayer : ICharacterState
+{
+    public readonly CharStateMachine _stateMachine;
+    public PlayerEvent _playerEvent;
+
+    public CharacterStateType StateType { get; protected set; }
+
+    public StatePlayer(CharStateMachine stateMachine, PlayerEvent playerEvent, CharacterStateType stateType)
+    {
+        _stateMachine = stateMachine;
+        _playerEvent = playerEvent;
+        StateType = stateType;
+    }
+    public virtual void OnEnter()
+    {
+        _playerEvent.TriggerChangePlayerState(StateType);
+    }
+    public virtual void OnExit()
+    {
+        _playerEvent.TriggerChangePlayerState(StateType);
+    }
+    public abstract void HandleAction(CharacterActionType type);
+}
+
+//public abstract class StateEnemy : ICharacterState
+//{
+//    protected readonly StateMachine _stateMachine;
+//    protected PlayerEvent _playerEvent;
+//    public StateEnemy(StateMachine stateMachine, PlayerEvent playerEvent)
+//    {
+//        _stateMachine = stateMachine;
+//        _playerEvent = playerEvent;
+//    }
+//    public virtual void OnEnter()
+//    {
+//        _playerEvent.TriggerChangePlayerState(StateType);
+//    }
+//    public virtual void OnExit()
+//    {
+//        _playerEvent.TriggerChangePlayerState(StateType);
+//    }
+
+//    public void HandleAction(CharacterActionType type)
+//    {
+//        throw new NotImplementedException();
+//    }
+
+//}
 
 
 
