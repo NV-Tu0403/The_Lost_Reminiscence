@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
-using UnityEditorInternal;
+//using UnityEditorInternal;
 using System.Collections.Generic;
 
 public class PlayerController_02 : PlayerEventListenerBase
