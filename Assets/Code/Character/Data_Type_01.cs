@@ -71,6 +71,13 @@ public enum CharacterStateType
     Die,
     Respawn,
 
+    ThrowWeapon,
+    ThrowItem,
+
+    PickUp,
+    Drop,
+    Active,
+
     Skill1,
     Skill2,
     Skill3,
@@ -96,6 +103,13 @@ public enum CharacterActionType
     Defend,
     Die,
     Respawn,
+
+    ThrowWeapon,
+    ThrowItem,
+
+    PickUp,
+    Drop,
+    Active,
 
     Skill1,
     Skill2,

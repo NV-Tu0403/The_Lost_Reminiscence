@@ -16,6 +16,10 @@ public class PlayerInput_02 : MonoBehaviour
     private float _lastSpacePressTime;
     private int _spacePressCount;
 
+    private int currentIndex = 0;
+    private float aimCooldown = 0.5f;         // Thời gian cooldown giữa 2 lần bật aim
+    private float nextAvailableAimTime = 0f;  // Thời điểm tiếp theo được phép aim
+
     private void Awake()
     {
         if (_core == null) _core = Core_02.Instance;
@@ -36,6 +40,11 @@ public class PlayerInput_02 : MonoBehaviour
         {
             _playerController.PerformMoveInput(actionType, dir);
         }
+
+        GetAttackInput();
+        GetObjInListSlot();
+        GetUseResourceInput();
+        InteractInput();
     }
 
     private void InitializeCamera()
@@ -109,7 +118,7 @@ public class PlayerInput_02 : MonoBehaviour
             {
                 _spacePressCount = 0; // reset
                 mess = "Dash triggered (double Space)";
-                Debug.LogWarning(mess);
+                //Debug.LogWarning(mess);
                 return CharacterActionType.Dash;
             }
             else
@@ -137,114 +146,112 @@ public class PlayerInput_02 : MonoBehaviour
         return moveType;
     }
 
+    private void GetAttackInput()
+    {
+        //if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
 
-    //private void GetAttackInput()
-    //{
-    //    //if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
+        // Sử dụng script PlayerTaskInput để thực hiện đẩy task cho Fa rồi.
+        // if (Input.GetMouseButtonDown(0))
+        // {
+        //     var PointLookAt = _pc.ReturnPoinHit();
+        //     Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
+        // }
 
-    //    // Sử dụng script PlayerTaskInput để thực hiện đẩy task cho Fa rồi.
-    //    // if (Input.GetMouseButtonDown(0))
-    //    // {
-    //    //     var PointLookAt = _pc.ReturnPoinHit();
-    //    //     Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
-    //    // }
+        if (Input.GetKeyDown(KeyCode.Q)) _playerController.PerformAttackInput( CharacterActionType.ThrowItem);
 
-    //    if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(Duckle.ThrowType.ThrowItem, 2f);
+        //if (Time.time >= nextAvailableAimTime) // Kiểm tra cooldown
+        //{
+        if (Input.GetMouseButtonDown(1))
+        {
+            _playerController.throwTimer.UpdateTimer(true);
+            if (_characterCamera != null)
+            {
+                _playerController.Aim(true);
+            }
+        }
+        else if (Input.GetMouseButtonUp(1))
+        {
+            _playerController.Aim(false);
+            _playerController.config.throwForce = _playerController.CalculateThrowForce();
+            _playerController.PerformAttackInput(CharacterActionType.ThrowWeapon);
+            // Đặt lại cooldown
+            nextAvailableAimTime = Time.time + aimCooldown;
+        }
+        //}
+    }
 
-    //    //if (Time.time >= nextAvailableAimTime) // Kiểm tra cooldown
-    //    //{
-    //    if (Input.GetMouseButtonDown(1))
-    //    {
-    //        _pc.throwTimer.UpdateTimer(true);
-    //        if (_characterCamera != null)
-    //        {
-    //            _pc.Aim(true);
-    //        }
-    //    }
-    //    else if (Input.GetMouseButtonUp(1))
-    //    {
-    //        _pc.Aim(false);
-    //        _pc.config.throwForce = _pc.CalculateThrowForce();
-    //        _pc.PerformThrowInput(Duckle.ThrowType.ThrowWeapon, _pc.config.throwForce);
-    //        // Đặt lại cooldown
-    //        nextAvailableAimTime = Time.time + aimCooldown;
-    //    }
-    //    //}
-    //}
+    private void GetUseResourceInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            _playerController.ChangeResource(2);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            _playerController.ChangeResource(3);
+        }
+    }
 
-    //private void GetUseResourceInput()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.Alpha1))
-    //    {
-    //        _pc.ChangeResource(2);
-    //    }
-    //    else if (Input.GetKeyDown(KeyCode.Alpha2))
-    //    {
-    //        _pc.ChangeResource(3);
-    //    }
-    //}
+    public void InteractInput()
+    {
+        if (Input.GetKeyDown(KeyCode.E)) // nhặt
+        {
+            _playerController.PerformInteractInput(CharacterActionType.PickUp, _playerController.CurrentSourcesLookAt);
+        }
+        if (Input.GetKeyDown(KeyCode.F)) // kích hoạt vật thể
+        {
+            Debug.Log("Chưa viết xong chức năng Kích hoạt vật thể!");
+        }
+    }
 
-    //public void InteractInput()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.E)) // nhặt
-    //    {
-    //        _pc.PerformInteractInput(InteractType.PickUp, _pc.CurrentSourcesLookAt);
-    //    }
-    //    if (Input.GetKeyDown(KeyCode.F)) // kích hoạt vật thể
-    //    {
+    public void GetObjInListSlot()
+    {
+        float scroll = Input.mouseScrollDelta.y;
+        int totalSlots = _playerController.ListSlot.transform.childCount;
 
-    //    }
-    //}
+        if (totalSlots == 0)
+        {
+            //Debug.Log("Không có Item nào trong ListSlot!");
+            return;
+        }
+        //if (isInputLocked) // Kiểm tra nếu input bị khóa
+        //{
+        //    Debug.Log("Input is locked, không thay đổi slot.");
+        //    return;
+        //}
+        if (totalSlots <= 0)
+        {
+            //Debug.Log("Không có Item nào để thay đổi.");
+            return;
+        }
+        if (currentIndex < 0 || currentIndex >= totalSlots)
+        {
+            currentIndex = 0; // Đặt lại về chỉ số hợp lệ
+        }
+        if (scroll == 0)
+        {
+            return; // Không làm gì nếu không có scroll
+        }
 
-    //public void GetObjInListSlot()
-    //{
-    //    float scroll = Input.mouseScrollDelta.y;
-    //    int totalSlots = _pc.ListSlot.transform.childCount;
+        if (scroll > 0)
+        {
+            currentIndex = (currentIndex + 1) % totalSlots;
+            _playerController.ChangeSlotIndex(currentIndex);
+        }
+        else if (scroll < 0)
+        {
+            currentIndex = (currentIndex - 1 + totalSlots) % totalSlots;
+            _playerController.ChangeSlotIndex(currentIndex);
+        }
+    }
 
-    //    if (totalSlots == 0)
-    //    {
-    //        //Debug.Log("Không có Item nào trong ListSlot!");
-    //        return;
-    //    }
-    //    //if (isInputLocked) // Kiểm tra nếu input bị khóa
-    //    //{
-    //    //    Debug.Log("Input is locked, không thay đổi slot.");
-    //    //    return;
-    //    //}
-    //    if (totalSlots <= 0)
-    //    {
-    //        //Debug.Log("Không có Item nào để thay đổi.");
-    //        return;
-    //    }
-    //    if (currentIndex < 0 || currentIndex >= totalSlots)
-    //    {
-    //        currentIndex = 0; // Đặt lại về chỉ số hợp lệ
-    //    }
-    //    if (scroll == 0)
-    //    {
-    //        return; // Không làm gì nếu không có scroll
-    //    }
+    #region  Methods
+    public Vector3 ReturnPointInput()
+    {
+        var pointLookAt = _playerController.ReturnPoinHit();
+        Debug.Log("[PlayerInput] PointLookAt: " + pointLookAt);
+        return pointLookAt;
+    }
 
-    //    if (scroll > 0)
-    //    {
-    //        currentIndex = (currentIndex + 1) % totalSlots;
-    //        _pc.ChangeSlotIndex(currentIndex);
-    //    }
-    //    else if (scroll < 0)
-    //    {
-    //        currentIndex = (currentIndex - 1 + totalSlots) % totalSlots;
-    //        _pc.ChangeSlotIndex(currentIndex);
-    //    }
-    //}
-
-
-    //#region  Methods
-    //public Vector3 ReturnPointInput()
-    //{
-    //    var pointLookAt = _pc.ReturnPoinHit();
-    //    Debug.Log("[PlayerInput] PointLookAt: " + pointLookAt);
-    //    return pointLookAt;
-    //}
-
-    //#endregion
+    #endregion
 }
