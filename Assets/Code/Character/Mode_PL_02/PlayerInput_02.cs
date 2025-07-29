@@ -63,6 +63,7 @@ public class PlayerInput_02 : MonoBehaviour
             Debug.LogError("CharacterCamera component không tìm thấy trên prefab!");
             return;
         }
+        Debug.Log(mess);
         _characterCamera.SetTarget(transform);
     }
 

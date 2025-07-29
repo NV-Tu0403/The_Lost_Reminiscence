@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 
 public class PlayerController_02 : PlayerEventListenerBase
 {
@@ -189,6 +190,20 @@ public class PlayerController_02 : PlayerEventListenerBase
         // Chuyển state
         _core_02._stateMachine.HandleAction(actionType);
 
+        // Set animation trigger cho Movement hoặc Idle
+        if (_animator != null)
+        {
+            string trigger = GetAnimationTrigger(actionType, direction);
+            _animator.SetTrigger(trigger);
+            Debug.Log($"Movement trigger: {trigger}");
+        }
+
+        //if (actionType == CharacterActionType.Jump)
+        //{
+        //    Jump();
+        //    return;
+        //}
+
         float moveSpeed = config.walkSpeed; // mặc định là walk
         // Chọn tốc độ dựa trên type action
         switch (actionType)
@@ -206,6 +221,7 @@ public class PlayerController_02 : PlayerEventListenerBase
                 Dash();
                 return;
         }
+
         if (isGrounded) // chỉ di chuyển khi đang trên mặt đất
         {
             // Chọn phương thức di chuyển
@@ -495,9 +511,19 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     private bool Jump(float jumpForce)
     {
-        if (!isGrounded) return false;
+        if (!isGrounded)
+        {
+            Debug.Log("Cannot jump: Player is not grounded.");
+            return false;
+        }
 
-        if (_animator != null) _animator.SetTrigger("Jump");
+        if (_animator != null)
+        {
+            string trigger = GetAnimationTrigger(CharacterActionType.Jump, Vector3.zero);
+            _animator.SetTrigger(trigger);
+            Debug.Log($"Jump trigger: {trigger}");
+        }
+
         if (useNavMesh && _navMeshAgent != null)
         {
             _navMeshAgent.enabled = false;
@@ -686,10 +712,17 @@ public class PlayerController_02 : PlayerEventListenerBase
     /// <returns></returns>
     private bool Attack(Vector3 attackDir, float attackRange, float attackDuration, float attackDamage, float attackCooldown)
     {
+        //if (Time.time - lastAttackTime < attackCooldown)
+        //{
+        //    Debug.Log("Attack on cooldown.");
+        //    return false;
+        //}
+        //lastAttackTime = Time.time;
+
         try
         {
             // Phân tích hướng tấn công và gán trigger tương ứng cho animator
-            string attackTrigger = GetAnimationTrigger(attackDir);
+            string trigger = GetAnimationTrigger(CharacterActionType.Attack, attackDir);
 
             if (_animator == null)
             {
@@ -697,10 +730,10 @@ public class PlayerController_02 : PlayerEventListenerBase
             }
             else
             {
-                _animator.SetTrigger(attackTrigger);
+                _animator.SetTrigger(trigger);
             }
 
-            Debug.Log($"Attack triggered: {attackTrigger}");
+            Debug.Log($"Attack triggered: {trigger}");
 
             _core_02._stateMachine.SetState(new AttackState(_core_02._stateMachine, _playerEvent));
 
@@ -739,7 +772,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
         return (outDamaged);
     }
-    #endregion 
+    #endregion
 
     #region animation
 
@@ -748,12 +781,28 @@ public class PlayerController_02 : PlayerEventListenerBase
     /// </summary>
     /// <param name="attackDir"></param>
     /// <returns></returns>
-    private string GetAnimationTrigger(/*CharacterActionType actionType, */Vector3 dir)
+    private string GetAnimationTrigger(CharacterActionType actionType, Vector3 dir)
     {
+        // Xử lý các action không cần hướng
+        switch (actionType)
+        {
+            case CharacterActionType.Jump:
+                return "Jump";
+            case CharacterActionType.ThrowItem:
+                return "ThrowItem";
+            case CharacterActionType.ThrowWeapon:
+                return "ThrowWeapon";
+        }
+
         // Nếu không có hướng di chuyển, sử dụng hướng nhân vật đang đối mặt
         if (dir.sqrMagnitude <= 0.001f)
         {
-            dir = lastRotationDirection;
+            if (actionType == CharacterActionType.Walk || actionType == CharacterActionType.Run ||
+                actionType == CharacterActionType.Sprint || actionType == CharacterActionType.Dash)
+            {
+                return "Idle"; // Không di chuyển -> Idle
+            }
+            dir = lastRotationDirection; // Dùng hướng cuối cho Attack
         }
 
         // Lấy hướng camera (nếu có) hoặc hướng nhân vật
@@ -769,28 +818,38 @@ public class PlayerController_02 : PlayerEventListenerBase
         float forwardDot = Vector3.Dot(dir.normalized, referenceForward);
         float rightDot = Vector3.Dot(dir.normalized, referenceRight);
 
+        // Chọn prefix trigger dựa trên actionType
+        string prefix = actionType switch
+        {
+            CharacterActionType.Walk => "Walk",
+            CharacterActionType.Run => "Run",
+            CharacterActionType.Sprint => "Sprint",
+            CharacterActionType.Dash => "Dash",
+            CharacterActionType.Attack => "Attack",
+            _ => "Idle"
+        };
+
         // Xác định hướng chính dựa trên Dot product
         if (forwardDot > 0.5f)
         {
-            return "AttackForward";
+            return $"{prefix}Forward";
         }
         else if (forwardDot < -0.5f)
         {
-            return "AttackBack";
+            return $"{prefix}Back";
         }
         else if (rightDot > 0.5f)
         {
-            return "AttackRight";
+            return $"{prefix}Right";
         }
         else if (rightDot < -0.5f)
         {
-            return "AttackLeft";
+            return $"{prefix}Left";
         }
 
         // Mặc định nếu không xác định được hướng
-        return "AttackForward";
+        return $"{prefix}Forward";
     }
-
     #endregion
 
     #region Actions & logic Action
