@@ -35,7 +35,7 @@ namespace Code.Character
         {
             if (_playerController != null && _playerController._stateMachine != null)
             {
-                _playerController._stateMachine.SetPrimaryState(new IdleState());
+                //_playerController._stateMachine.SetPrimaryState(new IdleState());
             }
             
             if (_playerInput != null) _playerInput.isInputLocked = true;

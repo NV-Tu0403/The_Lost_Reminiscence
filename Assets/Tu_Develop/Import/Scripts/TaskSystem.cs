@@ -11,7 +11,7 @@ public enum TaskType
 public class FaTask
 {
     public TaskType Type;
-    public Transform? TaskPosition;
+    public Vector3? TaskPosition;
     public string? SkillName;
     public bool? TargetObject;
     public FaTask(TaskType type)
