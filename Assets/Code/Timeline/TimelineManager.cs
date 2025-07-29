@@ -45,7 +45,7 @@ namespace Code.Timeline
             this.onFinished = onFinished;
             timelinePanel.SetActive(true);
             // Load timeline asset from Resources/Timeline folder
-            var timelineAsset = Resources.Load<PlayableAsset>($"TimeLines/{timelineId}");
+            var timelineAsset = Resources.Load<PlayableAsset>($"Timelines/{timelineId}");
             if (timelineAsset == null)
             {
                 Debug.LogError($"Timeline asset not found: {timelineId}");
