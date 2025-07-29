@@ -180,7 +180,6 @@ namespace Tu_Develop.Import.Scripts
                     {
                         playerTaskType = PlayerTaskType.Move;
                     }
-                    // *** PHẦN LOGIC BỊ THIẾU MÀ BẠN CẦN THÊM VÀO ***
                     else if (task.Type == TaskType.UseSkill)
                     {
                         // Dựa vào SkillName (hiện là "1", "2", "3" từ input) để chọn đúng enum
@@ -211,7 +210,7 @@ namespace Tu_Develop.Import.Scripts
                         faBha.BlackboardReference.SetVariableValue("TaskPosition", task.TaskPosition);
                     faBha.BlackboardReference.SetVariableValue("TaskFromPlayer", playerTaskType);
                     if (task.TargetObject != null)
-                        faBha.BlackboardReference.SetVariableValue("Self_VanSangBaoHo", task.TargetObject);
+                        faBha.BlackboardReference.SetVariableValue("Self_ActiveProtectiveAura", task.TargetObject);
                     // Bật chế độ PlayerControl để Graph nhận task
                     //ActivePlayerControl(true);
                 }
