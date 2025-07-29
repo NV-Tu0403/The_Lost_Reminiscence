@@ -145,7 +145,7 @@ namespace DuckLe
             //     Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
             // }
 
-            if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(Duckle.ThrowType.ThrowItem, 2f);
+            if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(ThrowType.ThrowItem, 2f);
 
             //if (Time.time >= nextAvailableAimTime) // Kiểm tra cooldown
             //{
@@ -161,7 +161,7 @@ namespace DuckLe
                 {
                     _pc.Aim(false);
                     _pc.config.throwForce = _pc.CalculateThrowForce();
-                    _pc.PerformThrowInput(Duckle.ThrowType.ThrowWeapon, _pc.config.throwForce);
+                    _pc.PerformThrowInput(ThrowType.ThrowWeapon, _pc.config.throwForce);
                     // Đặt lại cooldown
                     nextAvailableAimTime = Time.time + aimCooldown;
                 }
