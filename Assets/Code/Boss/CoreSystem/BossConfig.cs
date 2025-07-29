@@ -1,4 +1,5 @@
 using System;
+using FMODUnity;
 using UnityEngine;
 
 namespace Code.Boss
@@ -33,6 +34,10 @@ namespace Code.Boss
         [Header("Audio Settings")]
         [Space]
         public AudioConfig audioConfig;
+        
+        [Header("FMOD Studio Settings")]
+        [Space]
+        public FMODAudioConfig fmodAudioConfig;
     }
 
     [Serializable]
@@ -128,5 +133,22 @@ namespace Code.Boss
         [Range(0f, 1f)] public float masterVolume = 1f;
         [Range(0f, 1f)] public float sfxVolume = 0.8f;
         [Range(0f, 1f)] public float ambientVolume = 0.6f;
+    }
+    
+    [Serializable]
+    public class FMODAudioConfig
+    {
+        [Header("Phase 1 Audio")]
+        public EventReference mockLaughEvent;
+        public EventReference decoySpawnEvent;
+        public EventReference soulSpawnEvent;
+        [Header("Phase 2 Audio")]
+        public EventReference screamEvent;
+        public EventReference fearZoneEvent;
+        public EventReference heartbeatEvent;
+        [Header("General Audio")]
+        public EventReference phaseChangeEvent;
+        public EventReference damageEvent;
+        public EventReference defeatEvent;
     }
 }
