@@ -3,34 +3,34 @@ using System.Collections;
 
 public class DialogueChat : MonoBehaviour
 {
-    private Camera _mainCamera;
+    private Camera mainCamera;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
-    private void OnEnable()
+    void OnEnable()
     {
         StartCoroutine(Initialize());
     }
 
-    private IEnumerator Initialize()
+    IEnumerator Initialize()
     {
-        while (_mainCamera == null)
+        while (mainCamera == null)
         {
-            _mainCamera = Camera.main;
+            mainCamera = Camera.main;
             yield return null;
         }
     }
 
     // Update is called once per frame
-    private void Update()
+    void Update()
     {
-        if (_mainCamera != null)
+        if (mainCamera != null)
         {
-            Vector3 direction = this.gameObject.transform.position - _mainCamera.transform.position;
+            Vector3 direction = this.gameObject.transform.position - mainCamera.transform.position;
             this.gameObject.transform.rotation = Quaternion.LookRotation(direction);
         }
     }
 
-    private void OnDisable()
+    void OnDisable()
     {
         StopAllCoroutines();
     }

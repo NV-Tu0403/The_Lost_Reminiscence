@@ -22,7 +22,13 @@ public partial class SaySomethingAction : Action
             return Status.Failure;
         }
 
-        var textMeshPro = Self.Value;
+        // Get the TextMeshPro component from the Self GameObject
+        var textMeshPro = Self.Value.GetComponent<TextMeshPro>();
+        if (textMeshPro == null)
+        {
+            Debug.LogWarning("TextMeshPro component not found on Self GameObject.");
+            return Status.Failure;
+        }
 
         // Randomly select a string from Something
         var randomIndex = UnityEngine.Random.Range(0, Something.Value.Count);
