@@ -1,43 +1,50 @@
 using DuckLe;
 using Tu_Develop.Import.Scripts;
+using Tu_Develop.Import.Scripts.EventConfig;
 using UnityEngine;
 
 public class PlayerTaskInput : MonoBehaviour
 {
     [Header("Player Components")]
     [SerializeField] private CharacterInput characterInput;
-    
+    [SerializeField] private FaAgentEventChannel faAgentReadyChannel;
     [Header("Fa Components")]
-    public FaAgent faAgent; // Kéo FaAgent vào đây trong Inspector
+    public FaAgent faAgent;
     private bool _isCommandMode;
     
     [Header("Skills Settings")]
     private bool _isWaitingForSkill3Target; // Cờ báo cho biết hệ thống đang chờ phím 1 hoặc 2
     private float _skill3PressTime; // Mốc thời gian khi người chơi nhấn phím 3
-    private const float SKILL3_COMBO_TIMEOUT = 1.5f; // Thời gian tối đa để nhấn 1 hoặc 2 (1.5 giây)
-    private const float SKILL3_HOLD_DURATION = 0.5f; // Thời gian cần giữ phím 3 để kích hoạt (0.5 giây)
+    private const float Skill3ComboTimeout = 1.5f; // Thời gian tối đa để nhấn 1 hoặc 2 (1.5 giây)
+    private const float Skill3HoldDuration = 0.5f; // Thời gian cần giữ phím 3 để kích hoạt (0.5 giây)
 
-    private void Start()
+    // Dùng OnEnable và OnDisable để đăng ký và hủy đăng ký sự kiện
+    private void OnEnable()
     {
-        characterInput = GetComponent<CharacterInput>();
-        // nếu chưa có faAgent thì tìm nó gắn vào nha
-        if (faAgent == null)
+        if (faAgentReadyChannel != null)
         {
-            faAgent = FindAnyObjectByType<FaAgent>();
-            if (faAgent == null)
-            {
-                Debug.LogError("Không tìm thấy FaAgent trong scene. Vui lòng kéo FaAgent vào trường này trong Inspector.");
-            }
-
-            _isCommandMode = false;
+            faAgentReadyChannel.OnFaAgentReady += SetFaAgentReference;
         }
+        _isCommandMode = false;
     }
 
-    void Update()
+    private void OnDisable()
     {
-        // Thêm điều kiện để tránh bật tắt khi trong trạng thái đặt biệt
-        // if (cutscene hay gi do) return;
-        // Bật/tắt chế độ chỉ huy NPC
+        if (faAgentReadyChannel != null)
+        {
+            faAgentReadyChannel.OnFaAgentReady -= SetFaAgentReference;
+        }
+    }
+    
+    private void SetFaAgentReference(FaAgent agent)
+    {
+        faAgent = agent;
+        Debug.Log("[PlayerTaskInput] Đã nhận được tham chiếu đến FaAgent!");
+    }
+    
+    private void Update()
+    {
+        if (faAgent == null) return;
         
         if (Input.GetKeyDown(KeyCode.F))
         {
@@ -57,8 +64,13 @@ public class PlayerTaskInput : MonoBehaviour
         // ƯU TIÊN 1: Nếu đang chờ combo của skill 3
         if (_isWaitingForSkill3Target)
         {
-            // Nhấn phím 1 -> Target là Fa (Self)
-            if (Input.GetKeyDown(KeyCode.Alpha1))
+            // SỬA LỖI 1: Thêm kiểm tra timeout
+            if (Time.time - _skill3PressTime > Skill3ComboTimeout)
+            {
+                Debug.Log("[PlayerInput] Hết thời gian combo Skill 3.");
+                _isWaitingForSkill3Target = false;
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 Debug.Log("[PlayerInput] Combo skill 3 -> Target: FA");
                 faAgent.OnPlayerCommand("useskill ProtectiveAura");
@@ -70,12 +82,11 @@ public class PlayerTaskInput : MonoBehaviour
                 faAgent.OnPlayerCommand("useskill ProtectiveAura player");
                 _isWaitingForSkill3Target = false;
             }
-
-            if (Input.GetKey(KeyCode.Alpha3) && Time.time - _skill3PressTime > SKILL3_HOLD_DURATION)
+            else if (Input.GetKey(KeyCode.Alpha3) && Time.time - _skill3PressTime > Skill3HoldDuration)
             {
                 Debug.Log("[PlayerInput] Giữ Skill 3 -> Target: FA");
                 faAgent.OnPlayerCommand("useskill ProtectiveAura");
-                _isWaitingForSkill3Target = false; // Kết thúc combo
+                _isWaitingForSkill3Target = false; 
             }
         }
         // ƯU TIÊN 2: Nếu không có combo nào đang chờ, lắng nghe input mới
@@ -84,7 +95,7 @@ public class PlayerTaskInput : MonoBehaviour
             // Lệnh di chuyển
             if (Input.GetMouseButtonDown(0))
             {
-                Vector3 pos = characterInput.ReturnPointInput();
+                var pos = characterInput.ReturnPointInput();
                 faAgent.OnPlayerCommand($"move {pos.x} {pos.y} {pos.z}");
             }
 
@@ -103,14 +114,8 @@ public class PlayerTaskInput : MonoBehaviour
             {
                 Debug.Log("[PlayerInput] Bắt đầu combo Skill 3... Đang chờ phím 1 (Fa) hoặc 2 (Player)...");
                 _isWaitingForSkill3Target = true;
-                _skill3PressTime = Time.time; // Ghi lại thời điểm nhấn phím
+                _skill3PressTime = Time.time;
             }
-        }
-        
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector3 pos = characterInput.ReturnPointInput(); // Trả ra toạ độ mun đến
-            faAgent.OnPlayerCommand($"move {pos.x} {pos.y} {pos.z}");
         }
     }
 }
