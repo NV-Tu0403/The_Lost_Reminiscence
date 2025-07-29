@@ -9,15 +9,18 @@ namespace Code.Dialogue
     {
         public void Execute(BaseEventData data)
         {
-            //Debug.Log($"[DialogueAction] Starting dialogue for event: {data.eventId}");
-            // Đặt callback khi hội thoại kết thúc
-            Action finishCallback = () => {
-                EventBus.Publish(data.eventId, data);
-            };
-            data.OnFinish = finishCallback;
+            data.OnFinish = FinishCallback;
 
             // Gửi sự kiện bắt đầu hội thoại
             EventBus.Publish("StartDialogue", data);
+            return;
+
+            //Debug.Log($"[DialogueAction] Starting dialogue for event: {data.eventId}");
+            // Đặt callback khi hội thoại kết thúc
+            void FinishCallback()
+            {
+                EventBus.Publish(data.eventId, data);
+            }
         }
     }
 }

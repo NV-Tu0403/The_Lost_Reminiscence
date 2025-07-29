@@ -49,11 +49,12 @@ using UnityEngine;
     public enum EventType_Dl
     {
         Cutscene,
-        ChangeMap,
+        Timeline,
         Dialogue,
-        Trap,
         Puzzle,
         Checkpoint,
+        ChangeMap,
+        Trap,
         Custom // cho phép mở rộng sau này
     }
 
