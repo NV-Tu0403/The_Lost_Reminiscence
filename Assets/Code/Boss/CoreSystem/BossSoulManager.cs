@@ -22,35 +22,19 @@ namespace Code.Boss
             BossEventSystem.Subscribe(BossEventType.FaSkillUsed, OnFaSkillUsed);
         }
 
-        public void SpawnSoul()
+        public void SpawnSoul(Vector3 position)
         {
             if (activeSouls.Count >= MaxSouls) return;
-            
             var soulConfig = bossController.Config.soulConfig;
             if (soulConfig.soulPrefab == null) return;
             
-            // Find spawn position around boss
-            Vector3 spawnPos = GetRandomSpawnPosition();
-            GameObject soul = GameObject.Instantiate(soulConfig.soulPrefab, spawnPos, Quaternion.identity);
-            
-            // Setup soul behavior
+            var soul = Object.Instantiate(soulConfig.soulPrefab, position, Quaternion.identity);
             var soulBehavior = soul.GetComponent<SoulBehavior>();
+            
             if (soulBehavior == null)
                 soulBehavior = soul.AddComponent<SoulBehavior>();
-            
             soulBehavior.Initialize(bossController.Player, soulConfig);
-            
             activeSouls.Add(soul);
-            BossEventSystem.Trigger(BossEventType.SoulSpawned, new BossEventData(soul));
-        }
-
-        private Vector3 GetRandomSpawnPosition()
-        {
-            var config = bossController.Config.soulConfig;
-            Vector3 randomDirection = UnityEngine.Random.insideUnitCircle.normalized;
-            Vector3 spawnPos = bossController.transform.position + 
-                              new Vector3(randomDirection.x, 0, randomDirection.y) * config.soulSpawnRadius;
-            return spawnPos;
         }
 
         public void DestroyAllSouls()
@@ -60,7 +44,7 @@ namespace Code.Boss
                 if (soul != null)
                 {
                     BossEventSystem.Trigger(BossEventType.SoulDestroyed, new BossEventData(soul));
-                    GameObject.Destroy(soul);
+                    Object.Destroy(soul);
                 }
             }
             activeSouls.Clear();
@@ -73,11 +57,6 @@ namespace Code.Boss
             {
                 DestroyAllSouls();
             }
-        }
-
-        public void CleanupDestroyed()
-        {
-            activeSouls.RemoveAll(soul => soul == null);
         }
     }
 }
