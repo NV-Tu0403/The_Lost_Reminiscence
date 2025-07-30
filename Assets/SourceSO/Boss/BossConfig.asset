@@ -16,12 +16,12 @@ MonoBehaviour:
   moveSpeed: 5
   rotationSpeed: 90
   phase1:
-    idleDuration: 3
-    lureDuration: 6
-    mockDuration: 2
+    idleDuration: 2
+    lureDuration: 5
+    mockDuration: 4
     decoyCastTime: 5
     decoyDuration: 10
-    soulStateCastTime: 2
+    soulStateCastTime: 5
     lureDistance: 1.5
     lureApproachSpeed: 10
     lureRetreatSpeed: 8
@@ -29,19 +29,14 @@ MonoBehaviour:
     decoyCount: 2
     decoySpawnRadius: 8
     decoyPrefab: {fileID: 8248419940883197096, guid: a76d847d1c2cf65489a5419da1a710b6, type: 3}
-    enableRandomStates: 0
-    stateWeights:
-    - 1
-    - 1
-    - 1
-    - 1
+    decoySpawnEffectPrefab: {fileID: 8587220257183555831, guid: 88c1b5ab600ad5e45a81f2ec5d8db8de, type: 3}
   phase2:
     angryMoveDuration: 5
-    fearZoneCastTime: 5
-    fearZoneDuration: 10
+    fearZoneCastTime: 3
+    fearZoneDuration: 5
     fearZoneActivationTime: 3
     screamCastTime: 5
-    screamDuration: 10
+    screamDuration: 7
     cookStateDuration: 3
     angryMoveSpeed: 3
     circleRadius: 10
@@ -55,12 +50,8 @@ MonoBehaviour:
     soulSpawnRadius: 15
     soulFollowDistance: 1
     soulPrefab: {fileID: 5829457037273810398, guid: f075cb8a9f5e4dd449276637c38d11ed, type: 3}
+    soulSpawnEffectPrefab: {fileID: 5198231553486477311, guid: 2dee606d01b963f45be3fbfa4fc490b7, type: 3}
   uiConfig:
-    bossHealthPosition: {x: 0, y: 0.8}
-    playerHealthPosition: {x: 0, y: -0.8}
-    healthBarSize: {x: 300, y: 30}
-    skillCastBarOffset: {x: 0, y: -50}
-    skillCastBarSize: {x: 200, y: 20}
     bossHealthColor: {r: 1, g: 0, b: 0, a: 1}
     playerHealthColor: {r: 0, g: 1, b: 0, a: 1}
     skillCastColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -102,3 +93,67 @@ MonoBehaviour:
     masterVolume: 1
     sfxVolume: 0.8
     ambientVolume: 0.6
+  fmodAudioConfig:
+    mockLaughEvent:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
+    decoySpawnEvent:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
+    soulSpawnEvent:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
+    screamEvent:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
+    fearZoneEvent:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
+    heartbeatEvent:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
+    phaseChangeEvent:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
+    damageEvent:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
+    defeatEvent:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 

@@ -88,6 +88,7 @@ namespace Code.Boss
 
         private void OnSkillInterrupted(BossEventData data)
         {
+            Debug.Log("[BossSkillCastBar] OnSkillInterrupted called");
             SetVisible(false);
         }
 
@@ -95,7 +96,8 @@ namespace Code.Boss
         {
             if (isVisible && data?.stringValue != "ScreamState" 
                           && data?.stringValue != "FearZoneState" 
-                          && data?.stringValue != "DecoyState")
+                          && data?.stringValue != "DecoyState"
+                          && data?.stringValue != "SoulState")
             {
                 SetVisible(false);
             }
