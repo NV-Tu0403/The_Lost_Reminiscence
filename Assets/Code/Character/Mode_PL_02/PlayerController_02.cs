@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 
 public class PlayerController_02 : PlayerEventListenerBase
 {
@@ -131,6 +130,15 @@ public class PlayerController_02 : PlayerEventListenerBase
 
         UsingResource();
         CheckItemByLooking();
+
+        if (!aim)
+        {
+            // đợi 1 giây và setbool throw = false
+            if (_animator != null && _animator.GetBool("Throw") == true)
+            {
+                _animator.SetBool("Throw", false);
+            }
+        }
     }
 
     private void LateUpdate()
@@ -260,6 +268,7 @@ public class PlayerController_02 : PlayerEventListenerBase
                 break;
         }
     }
+
 
     public void PerformInteractInput(CharacterActionType actionType, GameObject currentSources)
     {
@@ -520,7 +529,7 @@ public class PlayerController_02 : PlayerEventListenerBase
     {
         if (!isGrounded)
         {
-            Debug.Log("Cannot jump: Player is not grounded.");
+            //Debug.Log("Cannot jump: Player is not grounded.");
             return false;
         }
 
@@ -655,61 +664,63 @@ public class PlayerController_02 : PlayerEventListenerBase
     #endregion
 
     #region Attack
-
-    private bool Thrown(float force)
+    private IEnumerator ThrownCoroutine(float force, float delay)
     {
-        try
+
+        _animator.SetBool("Throw", true);
+
+        // Đợi một khoảng thời gian để animation chạy
+        yield return new WaitForSeconds(delay);
+
+        GameObject thrownObject = currentEquippedItem?.gameObject;
+        if (thrownObject != null)
         {
-            if (_animator != null)
-            {
-                SetAnimationParameters(CharacterActionType.ThrowItem, Vector3.zero);
-            }
-
-            GameObject thrownObject = currentEquippedItem?.gameObject;
-            if (thrownObject != null)
-            {
-                thrownObject.SetActive(true);
-                currentEquippedItem.gameObject.transform.SetParent(null);
-                currentEquippedItem = null;
-            }
-            if (thrownObject == null)
-            {
-                // Tạo một đối tượng ném mặc định nếu không có item nào được trang bị
-                GameObject DefaulObjThrow = Resources.Load<GameObject>(config.prefabPath);
-                if (DefaulObjThrow == null)
-                {
-                    Debug.LogError($"Prefab not found at path: {config.prefabPath}");
-                    return false;
-                }
-                thrownObject = Instantiate(DefaulObjThrow);
-            }
-
-            _core_02._stateMachine.SetState(new ThrowWeaponState(_core_02._stateMachine, _playerEvent));
-
-            Ray camRay = GetCameraRayCenter();
-            Vector3 forward = camRay.direction.normalized;
-
-            Vector3 spawnPosition = /*camRay.origin*/FacePlayer.transform.position + forward * 1.5f;
-            thrownObject.transform.position = spawnPosition;
-
-            if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
-            {
-                rb.linearVelocity = forward * force;
-            }
-            if (thrownObject.TryGetComponent<ThrowableObject>(out var throwable))
-            {
-                throwable.SetThrower_02(this);
-                if (CurrentUsable != null) throwable.SetUsableData(CurrentUsable.Name, CurrentUsable.GetEffectValue());
-            }
-
-            CurrentUsable?.OnUse_2(this);
-            return true;
+            thrownObject.SetActive(true);
+            currentEquippedItem.gameObject.transform.SetParent(null);
+            currentEquippedItem = null;
         }
-        catch (Exception e)
+        if (thrownObject == null)
         {
-            mess = $"throw fuck; {e.Message}";
-            return false;
+            // Tạo một đối tượng ném mặc định nếu không có item nào được trang bị
+            GameObject DefaulObjThrow = Resources.Load<GameObject>(config.prefabPath);
+            if (DefaulObjThrow == null)
+            {
+                Debug.LogError($"Prefab not found at path: {config.prefabPath}");
+                yield break;
+            }
+            thrownObject = Instantiate(DefaulObjThrow);
         }
+
+        _core_02._stateMachine.SetState(new ThrowWeaponState(_core_02._stateMachine, _playerEvent));
+
+        if (_animator != null)
+        {
+            SetAnimationParameters(CharacterActionType.ThrowItem, Vector3.zero);
+        }
+
+        Ray camRay = GetCameraRayCenter();
+        Vector3 forward = camRay.direction.normalized;
+
+        Vector3 spawnPosition = FacePlayer.transform.position + forward * 1.5f;
+        thrownObject.transform.position = spawnPosition;
+
+        if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
+        {
+            rb.linearVelocity = forward * force;
+        }
+        if (thrownObject.TryGetComponent<ThrowableObject>(out var throwable))
+        {
+            throwable.SetThrower_02(this);
+            if (CurrentUsable != null) throwable.SetUsableData(CurrentUsable.Name, CurrentUsable.GetEffectValue());
+        }
+
+        CurrentUsable?.OnUse_2(this);
+
+    }
+
+    private void Thrown(float force)
+    {
+        StartCoroutine(ThrownCoroutine(force, 0.2f)); // Độ trễ 0.5 giây, bạn có thể điều chỉnh
     }
 
     /// <summary>
@@ -738,6 +749,7 @@ public class PlayerController_02 : PlayerEventListenerBase
             else
             {
                 SetAnimationParameters(CharacterActionType.Attack, attackDir);
+                Debug.Log($"Performing attack with range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
             }
 
             _core_02._stateMachine.SetState(new AttackState(_core_02._stateMachine, _playerEvent));
@@ -850,7 +862,7 @@ public class PlayerController_02 : PlayerEventListenerBase
         _animator.SetFloat("DirectionX", currentDirectionX);
         _animator.SetFloat("DirectionZ", currentDirectionZ);
 
-        Debug.Log($"SetAnimationParameters: State={state}, DirectionX={currentDirectionX}, DirectionZ={currentDirectionZ}, TargetX={targetDirectionX}, TargetZ={targetDirectionZ}, dir={dir}");
+        //Debug.Log($"SetAnimationParameters: State={state}, DirectionX={currentDirectionX}, DirectionZ={currentDirectionZ}, TargetX={targetDirectionX}, TargetZ={targetDirectionZ}, dir={dir}");
     }
     #endregion
 
@@ -977,6 +989,7 @@ public class PlayerController_02 : PlayerEventListenerBase
         return Mathf.Clamp(force, config.throwForceMin, config.throwForceMax);
     }
 
+    private bool aim = false;
     /// <summary>
     /// Thay đổi góc nhìn của camera khi nhấn nút Aim.
     /// </summary>
@@ -1005,6 +1018,7 @@ public class PlayerController_02 : PlayerEventListenerBase
             _playerInput._characterCamera.SetTargetValues(config.targetMaxDistance, config.targetHeight, config.rightOffset, config.isAiming);
             _playerInput._characterCamera.useInterpolation = false;
             //Debug.Log("Aim: Entered aiming mode");
+            aim = true;
         }
         else
         {
@@ -1013,6 +1027,7 @@ public class PlayerController_02 : PlayerEventListenerBase
             _playerInput._characterCamera.SetTargetValues(savedDistance, savedHeight, _playerInput._characterCamera.rightOffset, false);
             //Debug.Log($"Aim: Exited aiming mode, Restored - Distance={savedDistance}, Height={savedHeight}");
             isCameraSettingsSaved = false;
+            aim = false;
         }
     }
 
