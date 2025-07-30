@@ -58,6 +58,10 @@ public class PlayerController_02 : PlayerEventListenerBase
     private float savedHeight = 0f;
     private bool isCameraSettingsSaved = false;
 
+    private float currentDirectionX = 0f; // Giá trị hiện tại của DirectionX
+    private float currentDirectionZ = 0f; // Giá trị hiện tại của DirectionZ
+    [SerializeField] private float smoothSpeed = 10f; // Tốc độ làm mượt (có thể chỉnh trong Inspector)
+
     [SerializeField] private float checkInterval = 0.1f;
     private float lastCheckTime;
 
@@ -97,6 +101,10 @@ public class PlayerController_02 : PlayerEventListenerBase
             _navMeshAgent.updatePosition = useNavMesh;
             _navMeshAgent.updateRotation = false;
         }
+
+        _animator.SetInteger("State", 0); // Idle
+        _animator.SetFloat("DirectionX", 0f);
+        _animator.SetFloat("DirectionZ", 0f);
     }
 
     public void Update()
@@ -193,10 +201,9 @@ public class PlayerController_02 : PlayerEventListenerBase
         // Set animation trigger cho Movement hoặc Idle
         if (_animator != null)
         {
-            string trigger = GetAnimationTrigger(actionType, direction);
-            _animator.SetTrigger(trigger);
-            Debug.Log($"Movement trigger: {trigger}");
+            SetAnimationParameters(actionType, direction);
         }
+
 
         //if (actionType == CharacterActionType.Jump)
         //{
@@ -519,9 +526,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
         if (_animator != null)
         {
-            string trigger = GetAnimationTrigger(CharacterActionType.Jump, Vector3.zero);
-            _animator.SetTrigger(trigger);
-            Debug.Log($"Jump trigger: {trigger}");
+            SetAnimationParameters(CharacterActionType.Jump, Vector3.zero);
         }
 
         if (useNavMesh && _navMeshAgent != null)
@@ -655,6 +660,11 @@ public class PlayerController_02 : PlayerEventListenerBase
     {
         try
         {
+            if (_animator != null)
+            {
+                SetAnimationParameters(CharacterActionType.ThrowItem, Vector3.zero);
+            }
+
             GameObject thrownObject = currentEquippedItem?.gameObject;
             if (thrownObject != null)
             {
@@ -721,19 +731,14 @@ public class PlayerController_02 : PlayerEventListenerBase
 
         try
         {
-            // Phân tích hướng tấn công và gán trigger tương ứng cho animator
-            string trigger = GetAnimationTrigger(CharacterActionType.Attack, attackDir);
-
             if (_animator == null)
             {
                 Debug.LogWarning("Animator is null in Attack. No animation will be played.");
             }
             else
             {
-                _animator.SetTrigger(trigger);
+                SetAnimationParameters(CharacterActionType.Attack, attackDir);
             }
-
-            Debug.Log($"Attack triggered: {trigger}");
 
             _core_02._stateMachine.SetState(new AttackState(_core_02._stateMachine, _playerEvent));
 
@@ -774,83 +779,91 @@ public class PlayerController_02 : PlayerEventListenerBase
     }
     #endregion
 
-    #region animation
-
-    /// <summary>
-    /// trả về trigger tương ứng với hướng tấn công dựa trên hướng di chuyển hoặc hướng nhân vật đang đối mặt.
-    /// </summary>
-    /// <param name="attackDir"></param>
-    /// <returns></returns>
-    private string GetAnimationTrigger(CharacterActionType actionType, Vector3 dir)
+    #region Animation Parameters
+    private void SetAnimationParameters(CharacterActionType actionType, Vector3 dir)
     {
-        // Xử lý các action không cần hướng
-        switch (actionType)
+        if (_animator == null)
         {
-            case CharacterActionType.Jump:
-                return "Jump";
-            case CharacterActionType.ThrowItem:
-                return "ThrowItem";
-            case CharacterActionType.ThrowWeapon:
-                return "ThrowWeapon";
+            Debug.LogWarning("Animator is null in SetAnimationParameters.");
+            return;
         }
 
-        // Nếu không có hướng di chuyển, sử dụng hướng nhân vật đang đối mặt
-        if (dir.sqrMagnitude <= 0.001f)
+        // Ánh xạ actionType sang State
+        int state = actionType switch
         {
-            if (actionType == CharacterActionType.Walk || actionType == CharacterActionType.Run ||
-                actionType == CharacterActionType.Sprint || actionType == CharacterActionType.Dash)
-            {
-                return "Idle"; // Không di chuyển -> Idle
-            }
-            dir = lastRotationDirection; // Dùng hướng cuối cho Attack
-        }
-
-        // Lấy hướng camera (nếu có) hoặc hướng nhân vật
-        Vector3 referenceForward = _playerInput._characterCamera?.mainCamera != null
-            ? _playerInput._characterCamera.mainCamera.transform.forward
-            : transform.forward;
-        referenceForward.y = 0;
-        referenceForward = referenceForward.normalized;
-
-        Vector3 referenceRight = Vector3.Cross(Vector3.up, referenceForward).normalized;
-
-        // Tính Dot product để xác định hướng
-        float forwardDot = Vector3.Dot(dir.normalized, referenceForward);
-        float rightDot = Vector3.Dot(dir.normalized, referenceRight);
-
-        // Chọn prefix trigger dựa trên actionType
-        string prefix = actionType switch
-        {
-            CharacterActionType.Walk => "Walk",
-            CharacterActionType.Run => "Run",
-            CharacterActionType.Sprint => "Sprint",
-            CharacterActionType.Dash => "Dash",
-            CharacterActionType.Attack => "Attack",
-            _ => "Idle"
+            CharacterActionType.Idle => 0,
+            CharacterActionType.Walk => 1,
+            CharacterActionType.Run => 2,
+            CharacterActionType.Sprint => 3,
+            CharacterActionType.Dash => 4,
+            CharacterActionType.Attack => 5,
+            CharacterActionType.Jump => 6,
+            CharacterActionType.ThrowItem => 7,
+            CharacterActionType.ThrowWeapon => 8,
+            _ => 0 // Mặc định là Idle
         };
 
-        // Xác định hướng chính dựa trên Dot product
-        if (forwardDot > 0.5f)
+        // Set State
+        _animator.SetInteger("State", state);
+
+        // Tính toán hướng nếu cần
+        float targetDirectionX = 0f;
+        float targetDirectionZ = 0f;
+        if (actionType == CharacterActionType.Walk || actionType == CharacterActionType.Run ||
+            actionType == CharacterActionType.Sprint || actionType == CharacterActionType.Dash ||
+            actionType == CharacterActionType.Attack)
         {
-            return $"{prefix}Forward";
-        }
-        else if (forwardDot < -0.5f)
-        {
-            return $"{prefix}Back";
-        }
-        else if (rightDot > 0.5f)
-        {
-            return $"{prefix}Right";
-        }
-        else if (rightDot < -0.5f)
-        {
-            return $"{prefix}Left";
+            // Nếu không có hướng di chuyển, sử dụng hướng nhân vật đang đối mặt
+            if (dir.sqrMagnitude <= 0.001f)
+            {
+                if (actionType != CharacterActionType.Attack)
+                {
+                    _animator.SetInteger("State", 0); // Idle
+                    _animator.SetFloat("DirectionX", 0f);
+                    _animator.SetFloat("DirectionZ", 0f);
+                    currentDirectionX = 0f;
+                    currentDirectionZ = 0f;
+                    return;
+                }
+                dir = lastRotationDirection;
+            }
+
+            // Lấy hướng camera (nếu có) hoặc hướng nhân vật
+            Vector3 referenceForward = _playerInput._characterCamera?.mainCamera != null
+                ? _playerInput._characterCamera.mainCamera.transform.forward
+                : transform.forward;
+            referenceForward.y = 0;
+            referenceForward = referenceForward.normalized;
+
+            Vector3 referenceRight = Vector3.Cross(Vector3.up, referenceForward).normalized;
+
+            // Tính Dot product để xác định hướng mục tiêu
+            targetDirectionX = Vector3.Dot(dir.normalized, referenceRight);
+            targetDirectionZ = Vector3.Dot(dir.normalized, referenceForward);
         }
 
-        // Mặc định nếu không xác định được hướng
-        return $"{prefix}Forward";
+        // Làm mượt DirectionX và DirectionZ
+        currentDirectionX = Mathf.Lerp(currentDirectionX, targetDirectionX, smoothSpeed * Time.deltaTime);
+        currentDirectionZ = Mathf.Lerp(currentDirectionZ, targetDirectionZ, smoothSpeed * Time.deltaTime);
+
+        // Set DirectionX và DirectionZ
+        _animator.SetFloat("DirectionX", currentDirectionX);
+        _animator.SetFloat("DirectionZ", currentDirectionZ);
+
+        Debug.Log($"SetAnimationParameters: State={state}, DirectionX={currentDirectionX}, DirectionZ={currentDirectionZ}, TargetX={targetDirectionX}, TargetZ={targetDirectionZ}, dir={dir}");
     }
     #endregion
+
+    //#region Gizmos
+    //private void OnDrawGizmos()
+    //{
+    //    if (config != null)
+    //    {
+    //        Gizmos.color = Color.red;
+    //        Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
+    //    }
+    //}
+    //#endregion
 
     #region Actions & logic Action
 
@@ -1102,3 +1115,4 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     #endregion
 }
+
