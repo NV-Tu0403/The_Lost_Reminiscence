@@ -32,17 +32,15 @@ namespace Code.Boss
         private void SetupUI()
         {
             // Setup cast slider
-            if (castSlider != null)
-            {
-                castSlider.maxValue = 1f;
-                castSlider.value = 0f;
+            if (castSlider == null) return;
+            castSlider.maxValue = 1f;
+            castSlider.value = 0f;
                 
-                // Set colors
-                var fillImage = castSlider.fillRect.GetComponent<Image>();
-                if (fillImage != null && uiConfig != null)
-                {
-                    fillImage.color = uiConfig.skillCastColor;
-                }
+            // Set colors
+            var fillImage = castSlider.fillRect.GetComponent<Image>();
+            if (fillImage != null && uiConfig != null)
+            {
+                fillImage.color = uiConfig.skillCastColor;
             }
         }
 
