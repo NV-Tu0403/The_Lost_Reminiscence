@@ -142,21 +142,17 @@ namespace Tu_Develop.Import.Scripts
         private void OnSkillUsed(string skillName)
         {
             Debug.Log($"[SỰ KIỆN LẮNG NGHE] Fa vừa sử dụng kỹ năng: {skillName}.");
-
-            // // Tại đây, bạn có thể gọi hệ thống âm thanh
-            // // Ví dụ: AudioManager.Instance.PlaySkillSound(skillName);
-            //
-            // // Hoặc xử lý logic cooldown, v.v...
-            // switch (skillName)
-            // {
-            //     case "GuideSignal":
-            //         // Gọi hàm cooldown của skill 1
-            //         break;
-            //     case "KnowledgeLight":
-            //         // Gọi hàm cooldown của skill 2
-            //         break;
-            //     // ...
-            // }
+            
+            switch (skillName)
+            {
+                case "GuideSignal":
+                    AudioManager.Instance?.PlayOneShot(guideSignalSfx, transform.position);
+                    break;
+                case "KnowledgeLight":
+                    AudioManager.Instance?.PlayOneShot(knowledgeLightSfx, transform.position);
+                    break;
+                // ...
+            }
         }
 
         #endregion
