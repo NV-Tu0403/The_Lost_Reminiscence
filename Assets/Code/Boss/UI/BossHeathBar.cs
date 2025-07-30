@@ -32,17 +32,15 @@ namespace Code.Boss
         private void SetupUI()
         {
             // Setup health slider
-            if (healthSlider != null)
-            {
-                healthSlider.maxValue = bossController.Config.maxHealthPerPhase;
-                healthSlider.value = bossController.Config.maxHealthPerPhase;
+            if (healthSlider == null) return;
+            healthSlider.maxValue = bossController.Config.maxHealthPerPhase;
+            healthSlider.value = bossController.Config.maxHealthPerPhase;
                 
-                // Get fill image reference for animations
-                fillImage = healthSlider.fillRect?.GetComponent<Image>();
-                if (fillImage != null && uiConfig != null)
-                {
-                    fillImage.color = uiConfig.bossHealthColor;
-                }
+            // Get fill image reference for animations
+            fillImage = healthSlider.fillRect?.GetComponent<Image>();
+            if (fillImage != null && uiConfig != null)
+            {
+                fillImage.color = uiConfig.bossHealthColor;
             }
         }
 
@@ -98,7 +96,7 @@ namespace Code.Boss
 
         private void OnPhaseChanged(BossEventData data)
         {
-            int newPhase = data.intValue;
+            var newPhase = data.intValue;
             
             if (phaseText != null)
             {

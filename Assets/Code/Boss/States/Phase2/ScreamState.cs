@@ -74,18 +74,18 @@ namespace Code.Boss.States.Phase2
             var cam = Camera.main;
             if (cam != null)
             {
-                BossController.StartCoroutine(ScreenShakeCoroutine(cam, Config.phase2.screenShakeIntensity, 0.5f));
+                BossController.StartCoroutine(ScreenShakeCoroutine(cam, Config.phase2.screenShakeIntensity, 3f));
             }
         }
 
         private IEnumerator ScreenShakeCoroutine(Camera cam, float intensity, float duration)
         {
-            Vector3 originalPos = cam.transform.localPosition;
-            float elapsed = 0f;
+            var originalPos = cam.transform.localPosition;
+            var elapsed = 0f;
+            var x = Random.Range(-1f, 1f) * intensity;
+            var y = Random.Range(-1f, 1f) * intensity;
             while (elapsed < duration)
             {
-                float x = Random.Range(-1f, 1f) * intensity;
-                float y = Random.Range(-1f, 1f) * intensity;
                 cam.transform.localPosition = originalPos + new Vector3(x, y, 0);
                 elapsed += Time.deltaTime;
                 yield return null;
