@@ -197,7 +197,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             //Debug.LogError("currentUserBaseName is null or empty!");
             // Wait 1 second and try again
-            StartCoroutine(RetryRefreshSaveListAfterDelay());
+            //StartCoroutine(RetryRefreshSaveListAfterDelay());
             //return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
         }
 
