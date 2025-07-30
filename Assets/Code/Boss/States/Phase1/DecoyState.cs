@@ -10,17 +10,14 @@ namespace Code.Boss.States.Phase1
         private float castTimer;
         private float skillTimer;
         private bool isCasting = true;
-        private bool skillActivated;
-        
+        private bool skillActivated = false;
         private GameObject realDecoy;
         private GameObject fakeDecoy;
-        private GameObject decoyEffect1;
-        private GameObject decoyEffect2;
-        private bool decoyEffectSpawned;
 
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered DecoyState - Spawn 2 bóng ảo (1 thật 1 giả) truy đuổi người chơi");
+            // BossController.PlayAnimation("Decoy");
             
             castTimer = 0f;
             skillTimer = 0f;
@@ -45,30 +42,10 @@ namespace Code.Boss.States.Phase1
         private void HandleCasting()
         {
             castTimer += Time.deltaTime;
-            // Spawn decoy effect at the beginning of casting
-            if (!decoyEffectSpawned)
-            {
-                SpawnDecoyCastEffects();
-                decoyEffectSpawned = true;
-            }
             // Update skill cast progress for UI
             var progress = castTimer / Config.phase1.decoyCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
             if (castTimer >= Config.phase1.decoyCastTime) ActivateSkill();
-        }
-
-        private void SpawnDecoyCastEffects()
-        {
-            var spawnPoint1 = GameObject.Find("DecoySpawnPoint1");
-            var spawnPoint2 = GameObject.Find("DecoySpawnPoint2");
-            var point1 = spawnPoint1 != null ? spawnPoint1.transform.position : BossController.transform.position + Vector3.left * 2f;
-            var point2 = spawnPoint2 != null ? spawnPoint2.transform.position : BossController.transform.position + Vector3.right * 2f;
-            
-            if (Config.phase1.decoySpawnEffectPrefab == null) return;
-            
-            var effectRotation = Quaternion.Euler(0, 90, 0);
-            decoyEffect1 = Object.Instantiate(Config.phase1.decoySpawnEffectPrefab, point1, effectRotation);
-            decoyEffect2 = Object.Instantiate(Config.phase1.decoySpawnEffectPrefab, point2, effectRotation);
         }
 
         private void ActivateSkill()
@@ -77,34 +54,31 @@ namespace Code.Boss.States.Phase1
             skillActivated = true;
             BossEventSystem.Trigger(BossEventType.SkillInterrupted);
             SpawnDecoys();
-            DisableDecoyEffects();
         }
 
         private void SpawnDecoys()
         {
-            // Tìm 2 spawn point trong scene
-            var spawnPoint1 = GameObject.Find("DecoySpawnPoint1");
-            var spawnPoint2 = GameObject.Find("DecoySpawnPoint2");
-            var point1 = spawnPoint1 != null ? spawnPoint1.transform.position : 
-                BossController.transform.position + Vector3.left * 2f;
-            var point2 = spawnPoint2 != null ? spawnPoint2.transform.position : 
-                BossController.transform.position + Vector3.right * 2f;
-
-            // Random vị trí real/fake decoy
-            var realAtPoint1 = Random.value > 0.5f;
-            if (realAtPoint1)
-            {
-                realDecoy = CreateDecoy(point1, true);
-                fakeDecoy = CreateDecoy(point2, false);
-            }
-            else
-            {
-                realDecoy = CreateDecoy(point2, true);
-                fakeDecoy = CreateDecoy(point1, false);
-            }
+            var spawnCenter = BossController.Player.position;
+            var spawnRadius = Config.phase1.decoySpawnRadius;
+            
+            // Spawn real decoy (this is actually the boss)
+            var realPos = GetRandomSpawnPosition(spawnCenter, spawnRadius);
+            realDecoy = CreateDecoy(realPos, true);
+            
+            // Spawn fake decoy
+            var fakePos = GetRandomSpawnPosition(spawnCenter, spawnRadius);
+            fakeDecoy = CreateDecoy(fakePos, false);
+            
+            // Hide original boss
             BossController.gameObject.SetActive(false);
         }
-        
+
+        private static Vector3 GetRandomSpawnPosition(Vector3 center, float radius)
+        {
+            var randomCircle = Random.insideUnitCircle.normalized * radius;
+            return center + new Vector3(randomCircle.x, 0, randomCircle.y);
+        }
+
         private GameObject CreateDecoy(Vector3 position, bool isReal)
         {
             // Check if decoy prefab is assigned
@@ -128,18 +102,6 @@ namespace Code.Boss.States.Phase1
             BossController.AddDecoy(decoy);
             return decoy;
         }
-        
-        private void DisableDecoyEffects()
-        {
-            if (!decoyEffectSpawned) return;
-            // Chờ 2s
-            if (decoyEffect1 != null) 
-                Object.Destroy(decoyEffect1, 2f);
-            if (decoyEffect2 != null) 
-                Object.Destroy(decoyEffect2, 2f);
-            // Clear the decoy effects
-            decoyEffectSpawned = false;
-        }
 
         private void HandleSkillActive()
         {
@@ -149,9 +111,9 @@ namespace Code.Boss.States.Phase1
 
         private void EndDecoyState()
         {
-            BossController.ClearDecoys();
-            BossController.gameObject.SetActive(true);
-            BossController.ChangeState(new IdleState());
+            BossController.ClearDecoys();                               // Clean up decoys
+            BossController.gameObject.SetActive(true);                  // Show original boss
+            BossController.ChangeState(new IdleState());                // Return to idle
         }
 
         public override void Exit()

@@ -28,10 +28,10 @@ namespace Code.Boss
 
         private void FollowTarget()
         {
-            var direction = (target.position - transform.position).normalized;
+            Vector3 direction = (target.position - transform.position).normalized;
             
             // Keep minimum distance from player
-            var distance = Vector3.Distance(transform.position, target.position);
+            float distance = Vector3.Distance(transform.position, target.position);
             if (distance > config.soulFollowDistance)
             {
                 transform.position += direction * currentSpeed * Time.deltaTime;
@@ -49,8 +49,8 @@ namespace Code.Boss
 
         private void AddFloatingEffect()
         {
-            var hover = Mathf.Sin(Time.time * 2f) * 0.5f;
-            var pos = transform.position;
+            float hover = Mathf.Sin(Time.time * 2f) * 0.5f;
+            Vector3 pos = transform.position;
             pos.y += hover * Time.deltaTime;
             transform.position = pos;
         }
