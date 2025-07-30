@@ -3,13 +3,19 @@ using UnityEngine;
 
 namespace DuckLe
 {
-    public class CharacterInput : Core
+    public class CharacterInput : MonoBehaviour
     {
         private PlayerController _pc;
         public CharacterCamera _characterCamera;
 
+        public bool isInputLocked = false; // Lộc thêm để kiểm soát input
+
         private float _lastSpacePressTime;
         private int _spacePressCount;
+
+        private int currentIndex = 0;
+        private float aimCooldown = 0.5f;         // Thời gian cooldown giữa 2 lần bật aim
+        private float nextAvailableAimTime = 0f;  // Thời điểm tiếp theo được phép aim
 
         private void Start()
         {
@@ -20,20 +26,17 @@ namespace DuckLe
             }
 
             InitializeCharacterCamera();
-
-            if (Core.Instance._menuCamera.activeSelf)
-            {
-                _characterCamera.gameObject.SetActive(false);
-            }
         }
 
         void Update()
         {
-            if (!Core.Instance._menuCamera.activeSelf)
-            {
-                _characterCamera.gameObject.SetActive(true);
-            }
+            // Lộc thêm để kiểm soát input
 
+            //// Khi bị lock input, đảm bảo nhân vật về Idle
+            //if (_pc != null && _pc._stateMachine != null)
+            //{
+            //    _pc._stateMachine.SetPrimaryState(new IdleState());
+            //}
             if (_pc == null)
             {
                 Debug.LogError("PlayerController is not assigned in CharacterInput.");
@@ -42,7 +45,8 @@ namespace DuckLe
             Vector3 dir = GetMoveInput();
             MoveType moveType = GetSpecialActionsInput();
 
-            //GetAttackInput();
+            GetAttackInput();
+            GetObjInListSlot();
             GetUseResourceInput();
             InteractInput();
 
@@ -132,23 +136,36 @@ namespace DuckLe
 
         private void GetAttackInput()
         {
-            if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
-            if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(Duckle.ThrowType.ThrowItem, 2f);
+            //if (Input.GetMouseButtonDown(0)) _pc.PerformMeleeInput(Duckle.MeleeType.Melee_01);
+            
+            // Sử dụng script PlayerTaskInput để thực hiện đẩy task cho Fa rồi.
+            // if (Input.GetMouseButtonDown(0))
+            // {
+            //     var PointLookAt = _pc.ReturnPoinHit();
+            //     Debug.Log("[PlayerInput] PointLookAt: " + PointLookAt);
+            // }
 
-            if (Input.GetMouseButtonDown(1))
-            {
-                _pc.throwTimer.UpdateTimer(true);
-                if (_characterCamera != null)
+            if (Input.GetKeyDown(KeyCode.Q)) _pc.PerformThrowInput(ThrowType.ThrowItem, 2f);
+
+            //if (Time.time >= nextAvailableAimTime) // Kiểm tra cooldown
+            //{
+                if (Input.GetMouseButtonDown(1))
                 {
-                    _pc.Aim(true);
+                    _pc.throwTimer.UpdateTimer(true);
+                    if (_characterCamera != null)
+                    {
+                        _pc.Aim(true);
+                    }
                 }
-            }
-            else if (Input.GetMouseButtonUp(1))
-            {
-                _pc.Aim(false);
-                _pc.config.throwForce = _pc.CalculateThrowForce();
-                _pc.PerformThrowInput(Duckle.ThrowType.ThrowWeapon, _pc.config.throwForce);
-            }
+                else if (Input.GetMouseButtonUp(1))
+                {
+                    _pc.Aim(false);
+                    _pc.config.throwForce = _pc.CalculateThrowForce();
+                    _pc.PerformThrowInput(ThrowType.ThrowWeapon, _pc.config.throwForce);
+                    // Đặt lại cooldown
+                    nextAvailableAimTime = Time.time + aimCooldown;
+                }
+            //}
         }
 
         private void GetUseResourceInput()
@@ -174,6 +191,58 @@ namespace DuckLe
 
             }
         }
+
+        public void GetObjInListSlot()
+        {
+            float scroll = Input.mouseScrollDelta.y;
+            int totalSlots = _pc.ListSlot.transform.childCount;
+
+            if (totalSlots == 0)
+            {
+                //Debug.Log("Không có Item nào trong ListSlot!");
+                return;
+            }
+            //if (isInputLocked) // Kiểm tra nếu input bị khóa
+            //{
+            //    Debug.Log("Input is locked, không thay đổi slot.");
+            //    return;
+            //}
+            if (totalSlots <= 0)
+            {
+                //Debug.Log("Không có Item nào để thay đổi.");
+                return;
+            }
+            if (currentIndex < 0 || currentIndex >= totalSlots)
+            {
+                currentIndex = 0; // Đặt lại về chỉ số hợp lệ
+            }
+            if (scroll == 0)
+            {
+                return; // Không làm gì nếu không có scroll
+            }
+
+            if (scroll > 0)
+            {
+                currentIndex = (currentIndex + 1) % totalSlots;
+                _pc.ChangeSlotIndex(currentIndex);
+            }
+            else if (scroll < 0)
+            {
+                currentIndex = (currentIndex - 1 + totalSlots) % totalSlots;
+                _pc.ChangeSlotIndex(currentIndex);
+            }
+        }
+
+
+        #region  Methods
+        public Vector3 ReturnPointInput()
+        {
+            var pointLookAt = _pc.ReturnPoinHit();
+            Debug.Log("[PlayerInput] PointLookAt: " + pointLookAt);
+            return pointLookAt;
+        }
+        
+        #endregion
     }
 }
 //_____________________________________ ĐANG LỖI / CẦN CẢI TIẾN _____________________________________

@@ -14,6 +14,7 @@ public class ChapterUI : MonoBehaviour
     {
         SetupButtonListeners();
     }
+
     private void SetupButtonListeners()
     {
         foreach (GameObject button in buttons)
@@ -42,6 +43,7 @@ public class ChapterUI : MonoBehaviour
                 OnContinueGameClick();
                 break;
 
+
             default:
                 break;
         }
@@ -60,7 +62,7 @@ public class ChapterUI : MonoBehaviour
             return;
         }
 
-        ProfessionalSkilMenu.Instance.OnContinueGame(lastSelectedSaveFolder);
+        //ProfessionalSkilMenu.Instance.OnContinueGame(lastSelectedSaveFolder);
     }
 
     private void OnDestroy()

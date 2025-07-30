@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System;
+using System.Globalization;
+using System.Threading.Tasks;
 
 [Serializable]
 public struct SlotSave
@@ -17,13 +19,40 @@ public struct SlotSave
 /// </summary>
 public class UIPage05 : MonoBehaviour
 {
+    public static UIPage05 Instance { get; private set; } // Singleton instance
+
     [SerializeField] private SlotSave[] slotSaves; 
     [SerializeField] private GameObject saveItemPrefab; 
-    private List<GameObject> instantiatedSaveItems = new List<GameObject>(); 
+    private List<GameObject> instantiatedSaveItems = new List<GameObject>();
+    private List<string> saveItemFolderPaths = new List<string>();
 
-    private void OnEnable()
+    private void Awake()
     {
-        RefreshSaveSlots();
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.LogError("UIPage05 instance already exists!");
+            Destroy(gameObject);
+            return;
+        }
+        // Kiểm tra xem slotSaves đã được thiết lập hay chưa
+        if (slotSaves == null || slotSaves.Length == 0)
+        {
+            Debug.LogError("SlotSaves is not set or empty in UIPage05.");
+        }
+        // Kiểm tra prefab Save Item
+        if (saveItemPrefab == null)
+        {
+            Debug.LogError("Save Item prefab is not set in UIPage05.");
+        }
+    }
+
+    private async void OnEnable()
+    {
+        await RefreshSaveSlots();
     }
 
     private void OnDisable()
@@ -34,31 +63,59 @@ public class UIPage05 : MonoBehaviour
     /// <summary>
     /// Làm mới danh sách Save Slot, hiển thị các Save Item theo thứ tự từ mới nhất đến cũ nhất.
     /// </summary>
-    private void RefreshSaveSlots()
+    public async Task RefreshSaveSlots()
     {
-        // Xóa các Save Item cũ
-        ClearSaveSlots();
-
-        // Lấy danh sách SaveFolder từ SaveGameManager thông qua ProfessionalSkilMenu
-        SaveListContext context = ProfessionalSkilMenu.Instance.RefreshSaveList();
-        List<SaveFolder> saves = context.Saves;
-
-        for (int i = 0; i < saves.Count && i < slotSaves.Length; i++)
+        try
         {
-            SaveFolder save = saves[i];
-            GameObject slot = slotSaves[i].slotSave;
+            // Xóa các Save Item cũ
+           //Core.Instance.InitAccountState();
+            ClearSaveSlots();
 
-            // Tạo instance của Save Item prefab
-            GameObject saveItem = Instantiate(saveItemPrefab, slot.transform);
-            instantiatedSaveItems.Add(saveItem);
+            // Lấy danh sách SaveFolder từ SaveGameManager thông qua ProfessionalSkilMenu
+            SaveListContext context = ProfessionalSkilMenu.Instance.RefreshSaveList();
+            List<SaveFolder> saves = context.Saves;
 
-            // Cấu hình Save Item
-            ConfigureSaveItem(saveItem, save);
+            if (saves.Count <= 0 || saves == null)
+            {
+                //StartCoroutine(RetryRefreshSaveSlotsAfterDelay());
+                await RetryRefreshSaveSlotsAfterDelay();
+                //await Task.Delay(1); // Chờ 1 giây trước khi thử lại
+            }
+            else
+            {
+                for (int i = 0; i < saves.Count && i < slotSaves.Length; i++)
+                {
+                    SaveFolder save = saves[i];
+                    GameObject slot = slotSaves[i].slotSave;
+
+                    // Tạo instance của Save Item prefab
+                    GameObject saveItem = Instantiate(saveItemPrefab, slot.transform);
+                    instantiatedSaveItems.Add(saveItem);
+                    saveItemFolderPaths.Add(save.FolderPath); // Lưu folderPath tương ứng
+
+                    // Cấu hình Save Item
+                    ConfigureSaveItem(saveItem, save);
+                }
+            }
+            var (found, backupPath, originalPath) = await ProfessionalSkilMenu.Instance.CheckBackupSaveAsync(context);
+            ProfessionalSkilMenu.Instance.CurrentOriginalSavePath = originalPath;
+            ProfessionalSkilMenu.Instance.CurrentbackupSavePath = backupPath;
+            ProfessionalSkilMenu.Instance.CurrentbackupOke = found;
+        }
+        catch (Exception)
+        {
+            Debug.LogWarning("[UIPage05] Failed to refresh save slots. Retrying in 1 second...");
         }
     }
 
+    private async Task RetryRefreshSaveSlotsAfterDelay()
+    {
+        await Task.Delay(100);
+        await RefreshSaveSlots();
+    }
+
     /// <summary>
-    /// Cấu hình một Save Item với thông tin từ SaveFolder.
+    /// Cấu hình một Save Item với thông tin từ SaveFolder được trả về bởi RefreshSaveSlots.
     /// </summary>
     /// <param name="saveItem">GameObject của Save Item</param>
     /// <param name="save">Thông tin SaveFolder</param>
@@ -67,7 +124,6 @@ public class UIPage05 : MonoBehaviour
         // Lấy các thành phần UI
         TMP_Text saveNameText = saveItem.GetComponentInChildren<TMP_Text>();
         RawImage saveImage = saveItem.GetComponentInChildren<RawImage>();
-        //Button selectButton = saveItem.GetComponentInChildren<Button>();
 
         // Thiết lập tên
         if (saveNameText != null)
@@ -85,11 +141,6 @@ public class UIPage05 : MonoBehaviour
             saveImage.gameObject.SetActive(false);
         }
 
-        //// Thiết lập sự kiện nhấn cho nút chọn
-        //if (selectButton != null)
-        //{
-        //    selectButton.onClick.AddListener(() => OnSelectSaveItem(save.FolderPath));
-        //}
     }
 
     /// <summary>
@@ -102,23 +153,43 @@ public class UIPage05 : MonoBehaviour
             Destroy(item);
         }
         instantiatedSaveItems.Clear();
+        saveItemFolderPaths.Clear();
     }
 
     /// <summary>
-    /// Xử lý sự kiện khi nhấn vào Save Item.
+    /// Trả về folderPath của Save Item tương ứng với slotSaves dựa trên tên slot.
     /// </summary>
-    /// <param name="folderPath">Đường dẫn thư mục lưu trữ</param>
-    private void OnSelectSaveItem(string folderPath)
+    /// <param name="slotName">Tên của GameObject slotSaves</param>
+    /// <returns>Đường dẫn folderPath hoặc null nếu không tìm thấy</returns>
+    public async Task GetFolderPathBySlotName(string slotName, UIActionType uIActionType)
     {
-        if (!Directory.Exists(folderPath))
+        string Path = null;
+        for (int i = 0; i < slotSaves.Length && i < instantiatedSaveItems.Count; i++)
         {
-            Debug.LogError($"[UIPage05] Save folder does not exist: {folderPath}");
-            return;
+            if (slotSaves[i].slotSave.name == slotName)
+            {
+                Path = saveItemFolderPaths[i];
+               
+            }
         }
 
-        // Gọi hàm OnSelectSave trong ProfessionalSkilMenu
-        ProfessionalSkilMenu.Instance.OnSelectSave(folderPath);
-        Debug.Log($"[UIPage05] Selected save: {folderPath}");
+        if (Path != null)
+        {
+            switch (uIActionType)
+            {
+                case UIActionType.SelectSaveItem:
+                    CoreEvent.Instance.triggerSelectSaveItem(Path);  // kích hoạt sự kiện chọn Save Item với Path
+                    break;
+                case UIActionType.DeleteSaveItem:
+                    await ProfessionalSkilMenu.Instance.OnDeleteSave(Path); // (cần chuyển sang dùng sưj kiện để xữ lí tập trung)
+                    await RefreshSaveSlots();
+                    break;
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[UIPage05] No Save Item found for slot: {slotName}");
+        }
     }
 
     /// <summary>

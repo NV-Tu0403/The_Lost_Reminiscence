@@ -1,10 +1,8 @@
 using System;
-using Code.Puzzle;
 using DG.Tweening;
-using Script.Puzzle;
 using UnityEngine;
 
-namespace Events.Puzzle.StepPuzzle.OpenGate
+namespace Code.Puzzle.OpenGate
 {
     public class PuzzleStep1 : PuzzleStepCameraBase, IPuzzleStep
     {
@@ -33,6 +31,13 @@ namespace Events.Puzzle.StepPuzzle.OpenGate
             var sequence = MoveCameraToTarget(playerCam, cameraTarget, gate, cameraMoveDuration);
             sequence.AppendInterval(cameraHoldDuration);
             ReturnCameraToPlayer(sequence, playerCam, cameraMoveDuration, onComplete, characterCamera);
+        }
+
+        public void ForceComplete(bool instant = true)
+        {
+            // Nếu có logic trạng thái hoàn thành cho step này, set ở đây.
+            // Ví dụ: Đặt camera/gate về trạng thái đã hoàn thành, không chạy tween.
+            // Nếu không cần gì, để trống.
         }
     }
 }

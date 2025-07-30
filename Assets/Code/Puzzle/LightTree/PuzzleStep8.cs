@@ -68,5 +68,8 @@ namespace Code.Puzzle.LightTree
                 );
             }
         }
+        
+        // Phương thức này sẽ được gọi khi người chơi muốn hoàn thành bước này ngay lập tức
+        public void ForceComplete(bool instant = true) {}
     }
 }

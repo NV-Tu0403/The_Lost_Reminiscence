@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class FolderManager
@@ -23,7 +21,7 @@ public class FolderManager
         {
             if (string.IsNullOrEmpty(userName))
             {
-                Debug.LogError("UserName is empty!");
+                Debug.LogError("[FolderManager] UserName is empty!");
                 return null;
             }
 
@@ -31,7 +29,7 @@ public class FolderManager
             if (!Directory.Exists(fileSavePath))
             {
                 Directory.CreateDirectory(fileSavePath);
-                Debug.Log($"Created FileSave directory: {fileSavePath}");
+                Debug.Log($"[FolderManager] Created FileSave directory: {fileSavePath}");
             }
 
             string dateSave = DateTime.Now.ToString("yyyyMMdd_HHmmss");
@@ -47,7 +45,7 @@ public class FolderManager
             }
 
             Directory.CreateDirectory(folderPath);
-            Debug.Log($"Created new save folder: {folderPath}");
+            Debug.Log($"[FolderManager] Created new save folder: {folderPath}");
 
             if (!folderCache.ContainsKey(userName))
                 folderCache[userName] = new List<string>();
@@ -106,7 +104,7 @@ public class FolderManager
 
                 if (latestFolder != null)
                 {
-                    Debug.Log($"Found latest save folder from cache: {latestFolder}");
+                    Debug.Log($"[FolderManager] Found latest save folder from cache: {latestFolder}");
                     return latestFolder;
                 }
             }
@@ -114,7 +112,7 @@ public class FolderManager
             string fileSavePath = Path.Combine(userDataPath, $"FileSave_{userName}");
             if (!Directory.Exists(fileSavePath))
             {
-                Debug.LogWarning($"No FileSave directory for user: {userName}");
+                Debug.LogWarning($"[FolderManager] No FileSave directory for user: {userName}");
                 return null;
             }
 
@@ -141,7 +139,7 @@ public class FolderManager
                 return latestFolderPath;
             }
 
-            Debug.LogWarning($"No valid save folder found for user: {userName}");
+            Debug.LogWarning($"[FolderManager] No valid save folder found for user: {userName}");
             return null;
         }
     }
@@ -153,14 +151,14 @@ public class FolderManager
             if (Directory.Exists(folderPath))
             {
                 Directory.Delete(folderPath, true);
-                Debug.Log($"Deleted save folder: {folderPath}");
+                Debug.Log($"[FolderManager] Deleted save folder: {folderPath}");
                 foreach (var cacheEntry in folderCache)
                 {
                     cacheEntry.Value.Remove(folderPath);
                 }
                 return true;
             }
-            Debug.LogWarning($"Save folder not found: {folderPath}");
+            Debug.LogWarning($"[FolderManager] Save folder not found: {folderPath}");
             return false;
         }
     }
@@ -173,7 +171,7 @@ public class FolderManager
             var result = new List<(string, string)>();
             if (!Directory.Exists(fileSavePath))
             {
-                Debug.LogWarning($"No FileSave directory for user: {userName}");
+                //Debug.LogWarning($"[FolderManager] No FileSave directory for user: {userName}");
                 return result;
             }
 

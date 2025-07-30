@@ -16,7 +16,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2278042546463612563
 Transform:
   m_ObjectHideFlags: 0
@@ -44,7 +44,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43eac551c645460c8f65ef29174824f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialoguePanel: {fileID: 0}
+  fullDialoguePanel: {fileID: 0}
+  bubbleDialoguePanel: {fileID: 0}
+  storyDialoguePanel: {fileID: 0}
 --- !u!1 &1495338261065581108
 GameObject:
   m_ObjectHideFlags: 0
@@ -61,7 +63,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5121080515257794323
 Transform:
   m_ObjectHideFlags: 0
@@ -114,6 +116,7 @@ GameObject:
   - component: {fileID: 3681557477360695298}
   - component: {fileID: 8162764128036744893}
   - component: {fileID: 7160408433322295689}
+  - component: {fileID: 4089750698067897501}
   m_Layer: 0
   m_Name: Core
   m_TagString: Untagged
@@ -150,7 +153,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca76caa9615dbd64fb71ff3d1be45745, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _menuCamera: {fileID: 0}
+  _userAccountManager: {fileID: 0}
+  backendSync: {fileID: 0}
+  IsDebugMode: 1
+  CurrentAccountName: 
+  CurrentAccountState: 
+  CurrentCoreState: 
+  MainMenu: {fileID: 0}
+  ObjOnMenu: []
+  ObjOffMenu: []
+  menuCameraObj: {fileID: 0}
+  characterCameraObj: {fileID: 0}
+  _characterCamera: {fileID: 0}
 --- !u!114 &7733529909620116901
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -213,7 +227,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abc9f22733a9e8940a481dffaeadc9b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  progressionDataSO: {fileID: 11400000, guid: 020d4f24c0147b84dbf5635d13ffd7ee, type: 2}
+  progressionDataSo: {fileID: 11400000, guid: 020d4f24c0147b84dbf5635d13ffd7ee, type: 2}
   lootDatabase: {fileID: 11400000, guid: bd7a90ba8e4ee424d804ad014ee31745, type: 2}
   userAccountManager: {fileID: 7178835865881298155}
 --- !u!114 &4306140140246770148
@@ -242,6 +256,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerTransform: {fileID: 0}
+  characterCameraTransform: {fileID: 0}
+  characterCamera: {fileID: 0}
 --- !u!114 &3681557477360695298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -279,3 +295,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bba8423f3654d9b4a8ef517ce3388c9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  backendSync: {fileID: 0}
+  selectedSaveFolder: 
+  SelectedSaveImagePath: 
+  CurrentbackupSavePath: 
+  CurrentOriginalSavePath: 
+  CurrentbackupOke: 0
+  SceneDefault: Phong_scene
+--- !u!114 &4089750698067897501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9223153338814055006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af633e32641973c4ebdab16edc9a4e03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputActionMapping: {fileID: 11400000, guid: 2ddc590c6b61f164e97b120c748395f4, type: 2}

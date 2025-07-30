@@ -19,7 +19,12 @@ public struct UIItem
     public Color hoverColor;
     public int targetPage;
     public float turnTime;
+}
 
+[Serializable]
+public struct ObiOfPage
+{
+   public GameObject[] Obj;
 }
 
 /// <summary>
@@ -41,8 +46,12 @@ public class UIPageView : MonoBehaviour
     [SerializeField] private float maxRayCastDistance = 100f; // Khoảng cách tối đa raycast
     [SerializeField] private float checkInterval = 0.1f;
     [SerializeField] private bool debugMode = false;
+
+    [Header ("Item UI")]
     [SerializeField] private UIItem[] menuItems;
 
+    [Header("Obi of Page")]
+    [SerializeField] private ObiOfPage[] obiOfPages; // Mảng các Obi của trang
 
     private EndlessBook book;
     private UIItem? currentHovered;
@@ -81,7 +90,7 @@ public class UIPageView : MonoBehaviour
 
         if (debugMode)
         {
-            DebugRayCast();
+            //DebugRayCast();
         }
     }
 
@@ -97,28 +106,39 @@ public class UIPageView : MonoBehaviour
 
     public void Activate()
     {
+        ActiveObjOfPage(true);
         gameObject.SetActive(true);
         currentHovered = null;
         lastCheckTime = 0f;
         if (debugMode)
         {
-            Debug.Log($"[UIPageView] Activated on {gameObject.name}");
+            //Debug.Log($"[UIPageView] Activated on {gameObject.name}");
         }
     }
 
     public void Deactivate()
     {
         ClearHighlight();
+        ActiveObjOfPage(false);
         gameObject.SetActive(false);
         if (debugMode)
         {
-            Debug.Log($"[UIPageView] Deactivated on {gameObject.name}");
+            //Debug.Log($"[UIPageView] Deactivated on {gameObject.name}");
         }
     }
 
-    public void TouchDown()
+    private void ActiveObjOfPage(bool oke)
     {
-        ClearHighlight();
+        foreach (var obiPage in obiOfPages)
+        {
+            foreach (var obj in obiPage.Obj)
+            {
+                if (obj != null)
+                {
+                    obj.SetActive(oke);
+                }
+            }
+        }
     }
 
     private bool RaycastAt(Vector2 screenPoint, out RaycastHit hit, out UIItem item)
@@ -138,7 +158,7 @@ public class UIPageView : MonoBehaviour
                     item = i;
                     if (debugMode)
                     {
-                        Debug.Log($"[UIPageView] Ray hit: {hit.collider.name} with item {i.uIActionType}");
+                        //Debug.Log($"[UIPageView] Ray hit: {hit.collider.name} with item {i.uIActionType}");
                     }
                     return true;
                 }
@@ -152,6 +172,10 @@ public class UIPageView : MonoBehaviour
     {
         if (RaycastAt(screenPoint, out var hit, out var item))
         {
+            if (debugMode)
+            {
+                Debug.Log($"[UIPageView] HOVER - {item.uIActionType} - {item.targetPage}");
+            }
             Highlight(item);
         }
         else
@@ -165,6 +189,10 @@ public class UIPageView : MonoBehaviour
     {
         if (RaycastAt(screenPoint, out var hit, out var item))
         {
+            if (debugMode)
+            {
+                Debug.Log($"[UIPageView] TOUCH DOWN - {item.uIActionType} - {item.targetRenderer.gameObject.name}");
+            }
             onTouchDownDetected?.Invoke(screenPoint, item);
         }
     }
@@ -173,170 +201,21 @@ public class UIPageView : MonoBehaviour
     {
         if (RaycastAt(screenPoint, out var hit, out var item))
         {
-            onTouchUpDetected?.Invoke(screenPoint, item, false); // chua Không hỗ trợ drag trong này
+            if (debugMode)
+            {
+                Debug.Log($"[UIPageView] TOUCH UP - {item.uIActionType} - {item.targetRenderer.gameObject.name}");
+            }
+            onTouchUpDetected?.Invoke(screenPoint, item, false);
         }
     }
 
-//    #region tạm không dùng nũa
-
-//    public void TryHover(Vector2 screenPoint)
-//    {
-//        if (RaycastAt(screenPoint, out var hit, out var item))
-//        {
-//            Highlight(item);
-//        }
-//        else
-//        {
-//            ClearHighlight();
-//        }
-//    }
-
-//    public void TryClick(Vector2 screenPoint, BookActionDelegate action)
-//    {
-//        if (RaycastAt(screenPoint, out var hit, out var item))
-//        {
-//            HandleClick(item, action);
-//        }
-//    }
-
-//    //public override bool RayCast(Vector2 normalizedHitPoint, BookActionDelegate action)
-//    //{
-//    //    if (Time.time - lastCheckTime < checkInterval) return false; // Chỉ kiểm tra mỗi 0.1 giây để tránh quá tải
-//    //    lastCheckTime = Time.time;
-
-//    //    Camera cam = pageViewCamera != null ? pageViewCamera : Camera.main;
-//    //    Ray ray = cam.ViewportPointToRay(new Vector3(normalizedHitPoint.x, normalizedHitPoint.y, 0));
-
-//    //    Vector3 rayStart = cam.transform.position; // Vị trí bắt đầu raycast là camera
-//    //    Vector3 rayDirection = (ray.origin + ray.direction * maxRayCastDistance) - rayStart;
-
-//    //    Debug.DrawLine(rayStart, rayStart + rayDirection, Color.red, 0.1f, true);
-
-//    //    if (Physics.Raycast(rayStart, rayDirection, out var hit, maxRayCastDistance, raycastLayerMask))
-//    //    {
-//    //        if (debugMode)
-//    //        {
-//    //            Debug.Log("[MainMenu] Ray hit: " + hit.collider.name);
-//    //        }
-//    //        foreach (var item in menuItems)
-//    //        {
-//    //            if (item.targetColliderObject != null && hit.collider.gameObject == item.targetColliderObject)
-//    //            {
-//    //                Highlight(item);
-
-//    //                // gọi HandleHit để xử lý hành động click
-//    //                return HandleHit(hit, action);
-//    //            }
-//    //        }
-//    //    }
-//    //    else
-//    //    {
-//    //        Debug.Log("[MainMenu] Ray hit nothing");
-//    //        ClearHighlight();
-//    //    }
-
-//    //    return false; // Không click action trong auto raycast
-//    //}
-
-//    /// <summary>
-//    /// xác nhận hit từ raycast và xử lý hành động tương ứng với mục tiêu.
-//    /// </summary>
-//    /// <param name="hit"></param>
-//    /// <param name="action"></param>
-//    /// <returns></returns>
-//    //    private void HandleClick(UIItem item, BookActionTypeEnum actionType, int actionValue)
-//    //    {
-//    //        if (debugMode)
-//    //        {
-//    //            Debug.Log($"[UIPageView] Clicked on {item.uIActionType}");
-//    //        }
-
-//    //        switch (item.uIActionType)
-//    //        {
-//    //            case UIActionType.NewGame:
-//    //            case UIActionType.Continue:
-//    //            case UIActionType.SavePanel:
-//    //                book.TurnToPage(item.targetPage, PageTurnTimeTypeEnum.TotalTurnTime, item.turnTime);
-//    //                break;
-
-//    //            case UIActionType.QuitGame:
-//    //#if UNITY_EDITOR
-//    //                UnityEditor.EditorApplication.isPlaying = false;
-//    //#else
-//    //                Application.Quit();
-//    //#endif
-//    //                break;
-
-//    //            case UIActionType.TurnToPage:
-//    //                book.TurnToPage(item.targetPage, PageTurnTimeTypeEnum.TotalTurnTime, item.turnTime);
-//    //                break;
-//    //        }
-//    //    }
-
-//    /// <summary>
-//    /// cấu hình hành động khi người dùng click vào một mục tiêu.
-//    /// </summary>
-//    /// <param name="item"></param>
-//    /// <param name="action"></param>
-//    private void HandleClick(UIItem item, BookActionDelegate action)
-//    {
-//        if (debugMode)
-//        {
-//            Debug.Log($"[UIPageView] Clicked on {item.uIActionType}");
-//        }
-
-//        //EnsureBookOpenMiddle(); // bắt lỗi test
-
-//        switch (item.uIActionType)
-//        {
-//            case UIActionType.NewGame:
-//                togglePage(item);
-//                //action?.Invoke(BookActionTypeEnum.ChangeState, 2); // OpenMiddle
-//                break;
-
-//            case UIActionType.Continue:
-//                togglePage(item);
-//                //action?.Invoke(BookActionTypeEnum.TurnPage, item.targetPage); 
-//                break;
-
-//            case UIActionType.SavePanel:
-//                togglePage(item);
-//                break;
-
-//            case UIActionType.QuitGame:
-//#if UNITY_EDITOR
-//                UnityEditor.EditorApplication.isPlaying = false;
-//#else
-//                Application.Quit();
-//#endif
-//                break;
-
-//            case UIActionType.TurnToPage: // điều hướng đến trang cụ thể (test mục lục số)
-//                action?.Invoke(BookActionTypeEnum.TurnPage, item.targetPage);
-//                break;
-//        }
-//    }
-
-//    /// <summary>
-//    /// truy cập trực tiếp vào trang sách EndlessBook để chuyển đến trang cụ thể. (test)
-//    /// </summary>
-//    /// <param name="item"></param>
-//    private void togglePage(UIItem item)
-//    {
-//        book.TurnToPage(item.targetPage, PageTurnTimeTypeEnum.TotalTurnTime, item.turnTime);
-
-//    }
-
-//    //private void EnsureBookOpenMiddle()
-//    //{
-//    //    EndlessBook book = FindFirstObjectByType<EndlessBook>();
-//    //    if (book != null && book.CurrentState != EndlessBook.StateEnum.OpenMiddle)
-//    //    {
-//    //        book.SetState(EndlessBook.StateEnum.OpenMiddle); // Trực tiếp gọi vào book
-//    //    }
-//    //}
-
-//    #endregion
+    /// <summary>
+    /// nhận vào UIItem và trả về GameObject của renderer mục tiêu.
+    /// </summary>
+    public static GameObject GetRendererGameObject(UIItem item)
+    {
+        return item.targetRenderer != null ? item.targetRenderer.gameObject : null;
+    }
 
     private void Highlight(UIItem item)
     {

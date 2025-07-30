@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
-using System.Linq;
 using DuckLe;
 
 namespace Duckle
@@ -190,9 +188,9 @@ namespace Duckle
                 Vector3 camForward = controller._playerInput._characterCamera.mainCamera.transform.forward;
                 camForward.y = 0;
 
-                if (camForward.sqrMagnitude > 0.001f)
+                if (camForward./*direction.*/sqrMagnitude > 0.001f)
                 {
-                    lastRotationDirection = camForward.normalized;
+                    lastRotationDirection = camForward.normalized /*direction*/;
                 }
 
                 if (lastRotationDirection.sqrMagnitude > 0.001f)
@@ -297,18 +295,33 @@ namespace Duckle
 
         protected override void PerformOffline(IUsable usable = null)
         {
-            GameObject gameObject = Resources.Load<GameObject>(prefabPath);
-            if (gameObject == null)
+            GameObject thrownObject = controller.currentEquippedItem?.gameObject;
+            if (thrownObject != null)
             {
-                Debug.LogError($"Prefab not found at path: {prefabPath}");
-                return;
+                thrownObject.SetActive(true);
+                controller.currentEquippedItem.gameObject.transform.SetParent(null);
+                controller.currentEquippedItem = null;
+            }
+            if (thrownObject == null)
+            {
+                GameObject DefaulObjThrow = Resources.Load<GameObject>(prefabPath);
+                if (DefaulObjThrow == null)
+                {
+                    Debug.LogError($"Prefab not found at path: {prefabPath}");
+                    return;
+                }
+                thrownObject = Object.Instantiate(DefaulObjThrow);
             }
 
-            Vector3 spawnPosition = controller.transform.position + controller.transform.forward * 1.5f + Vector3.up * 1f;
-            GameObject thrownObject = Object.Instantiate(gameObject, spawnPosition, Quaternion.identity);
+            Ray camRay = controller.GetCameraRayCenter();
+            Vector3 forward = camRay.direction.normalized;
+
+            Vector3 spawnPosition = /*camRay.origin*/controller.FacePlayer.transform.position + forward * 1.5f;
+            thrownObject.transform.position = spawnPosition;
+
             if (thrownObject.TryGetComponent<Rigidbody>(out var rb))
             {
-                rb.linearVelocity = controller.transform.forward * force;
+                rb.linearVelocity = forward * force;
             }
             if (thrownObject.TryGetComponent<ThrowableObject>(out var throwable))
             {
@@ -404,7 +417,6 @@ namespace Duckle
 
         public override void update()
         {
-            // Không cần timer vì thời gian được quản lý trong InteractingState
         }
     }
 }

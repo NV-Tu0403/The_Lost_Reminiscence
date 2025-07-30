@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,10 +9,11 @@ using UnityEngine;
 [System.Serializable]
 public class UserAccount
 {
-    public string UserName; // e.g., "a_20250525_153959"
-    public string BaseName; // e.g., "a"
-    public string TimeCheckIn; // e.g., "20250525_153959"
+    public string UserName; //"a_20250525_153959"
+    public string BaseName; // "a"
+    public string TimeCheckIn; // "20250525_153959"
     public string PasswordHash;
+    public bool SyncToServer = false; // Mặc định là false
 }
 
 [System.Serializable]
@@ -159,6 +160,29 @@ public class UserAccountManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Kiểm tra theo baseName xem tài khoản có đồng bộ với server chưa.
+    /// </summary>
+    public bool IsBaseNameSynced(string baseName)
+    {
+        if (string.IsNullOrWhiteSpace(baseName))
+            return false;
+
+        var user = userData.Users
+            .Where(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(u => u.TimeCheckIn)
+            .FirstOrDefault();
+
+        if (user == null)
+        {
+            Debug.LogWarning($"[IsBaseNameSynced] Không tìm thấy tài khoản với baseName: {baseName}");
+            return false;
+        }
+
+        return user.SyncToServer;
+    }
+
+
     private void SaveUserData()
     {
         try
@@ -198,18 +222,18 @@ public class UserAccountManager : MonoBehaviour
         errorMessage = "";
         if (string.IsNullOrEmpty(baseName))
         {
-            errorMessage = "UserName cannot be empty!";
+            errorMessage = "điền tên vào tk mù!";
             return false;
         }
         if (string.IsNullOrEmpty(password))
         {
-            errorMessage = "Password cannot be empty!";
+            errorMessage = "điền pass vào tk khung!";
             return false;
         }
 
         if (userData.Users.Any(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase)))
         {
-            errorMessage = $"UserName '{baseName}' is already used!";
+            errorMessage = $"UserName '{baseName}' được dùng rồi!";
             return false;
         }
 
@@ -220,7 +244,8 @@ public class UserAccountManager : MonoBehaviour
             UserName = userName,
             BaseName = baseName,
             TimeCheckIn = timeCheckIn,
-            PasswordHash = HashPassword(password)
+            PasswordHash = HashPassword(password),
+            SyncToServer = false
         });
         SaveUserData();
 
@@ -235,20 +260,20 @@ public class UserAccountManager : MonoBehaviour
         var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase));
         if (user == null)
         {
-            errorMessage = $"User '{baseName}' does not exist!";
+            errorMessage = $"deo tìm thấy tk '{baseName}'!";
             return false;
         }
 
         if (!string.IsNullOrEmpty(password) && user.PasswordHash != HashPassword(password))
         {
-            errorMessage = "Incorrect password!";
+            errorMessage = "vl pass sai ròi kìa!";
             return false;
         }
 
         currentUserBaseName = baseName;
         userData.LastAccount = user.UserName;
         SaveUserData();
-        Debug.Log($"Logged in user: {baseName}");
+        //Debug.Log($"Logged in user: {baseName}");
         return true;
     }
 
@@ -257,14 +282,14 @@ public class UserAccountManager : MonoBehaviour
         errorMessage = "";
         if (string.IsNullOrEmpty(userData.LastAccount))
         {
-            errorMessage = "No LastAccount found.";
+            errorMessage = "đéo xác nhận đcj Ac đăng nhập gần nhất.";
             return false;
         }
 
         var user = userData.Users.FirstOrDefault(u => u.UserName == userData.LastAccount);
         if (user == null)
         {
-            errorMessage = $"LastAccount '{userData.LastAccount}' not found.";
+            errorMessage = $"LastAccount '{userData.LastAccount}' deo tim thay.";
             return false;
         }
 
@@ -279,11 +304,63 @@ public class UserAccountManager : MonoBehaviour
         return true;
     }
 
-    public void Logout()
+    public bool Logout(out string errorMessage)
     {
+        errorMessage = "";
         currentUserBaseName = null;
-        Debug.Log("User logged out.");
+        return true;
     }
+
+    /// <summary>
+    /// Kiểm tra xem người dùng hiện tại có kết nối với máy chủ chưa.
+    /// trả về true nếu đã đồng bộ, false nếu chưa đồng bộ hoặc không tìm thấy người dùng.
+    /// </summary>
+    /// <returns></returns>
+    public bool IsSynced(string userName)
+    {
+        if (string.IsNullOrEmpty(userName))
+        {
+            Debug.LogWarning("CurrentUserName is null or empty.");
+            return false;
+        }
+        var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+        if (user == null)
+        {
+            Debug.LogWarning($"User '{userName}' not found.");
+            return false;
+        }
+        return user.SyncToServer;
+    }
+
+    /// <summary>
+    /// Đánh dấu người dùng là đã đồng bộ với máy chủ.
+    /// </summary>
+    /// <param name="userName"></param>
+    public bool MarkAsSynced(string userName)
+    {
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            Debug.LogWarning("UserName is null or empty.");
+            return false;
+        }
+
+        userName = userName.Trim(); // Xử lý dấu cách vô tình
+        var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+
+        if (user != null)
+        {
+            Debug.Log($"[MarkAsSynced] User cần đánh dấu đã đồng bộ là : {user.UserName}");
+            user.SyncToServer = true;
+            SaveUserData();
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning($"[MarkAsSynced] Không tìm thấy user với UserName = '{userName}'");
+            return false;
+        }
+    }
+
 
     public void UpdateLastSession(string lastFileSave, double playTime)
     {

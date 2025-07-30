@@ -1,22 +1,19 @@
 using UnityEngine;
 using Code.GameEventSystem;
+using Duckle;
 using DuckLe;
-using UnityEngine.InputSystem;
 
 namespace Code.Character
 {
     public class InputLockManager : MonoBehaviour
     {
         private PlayerController _playerController;
-        private PlayerAnimator _playerAnimator;
         private CharacterInput _playerInput;
 
         private void Awake()
         {
             if (_playerController == null)
                 _playerController = GetComponentInParent<PlayerController>();
-            if (_playerAnimator == null)
-                _playerAnimator = GetComponentInParent<PlayerAnimator>();
             if (_playerInput == null)
                 _playerInput = GetComponentInParent<CharacterInput>();
             
@@ -36,22 +33,17 @@ namespace Code.Character
 
         private void OnLockInput(object data)
         {
-            if (_playerController != null)
-                _playerController.enabled = false;
-            if (_playerAnimator != null)
-                _playerAnimator.enabled = false;
-            if (_playerInput != null)
-                _playerInput.enabled = false;
+            if (_playerController != null && _playerController._stateMachine != null)
+            {
+                //_playerController._stateMachine.SetPrimaryState(new IdleState());
+            }
+            
+            if (_playerInput != null) _playerInput.isInputLocked = true;
         }
 
         private void OnUnlockInput(object data)
         {
-            if (_playerController != null)
-                _playerController.enabled = true;
-            if (_playerAnimator != null)
-                _playerAnimator.enabled = true;
-            if (_playerInput != null)
-                _playerInput.enabled = true;
+            if (_playerInput != null) _playerInput.isInputLocked = false;
         }
     }
 }

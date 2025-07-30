@@ -1,7 +1,7 @@
 ﻿using DuckLe;
 using UnityEngine;
 
-public class CharacterCamera : Core
+public class CharacterCamera : MonoBehaviour
 {
     [SerializeField] private Transform target;
     [SerializeField] private float rotationSpeed = 2.0f;
@@ -12,8 +12,9 @@ public class CharacterCamera : Core
     [SerializeField] private float minDistance = 0.5f;
     [SerializeField] public float maxDistance = 3.0f;
     [SerializeField] public bool useInterpolation = false;
-    [SerializeField] private bool useDistanceAndHeightInterpolation = true; // Thêm tùy chọn mới
+    [SerializeField] private bool useDistanceAndHeightInterpolation = true;
 
+    private bool lockRotationUntilInput = true;
     private float currentDistance;
     private float yaw;
     private float pitch;
@@ -24,10 +25,10 @@ public class CharacterCamera : Core
     private float targetHeight;
     private float smoothedDistance;
     public bool isAiming = false;
-    [SerializeField] private float rightOffset = 0f;
-    [SerializeField] private float transitionSpeed = 10f;
-    [SerializeField] public float distanceSmoothingSpeed = 10f;
-    [SerializeField] public float sphereCastRadius = 0.2f;
+    public float rightOffset = 0.7f;
+    public float transitionSpeed = 10f;
+    public float distanceSmoothingSpeed = 10f;
+    public float sphereCastRadius = 0.2f;
 
     private void Start()
     {
@@ -37,11 +38,11 @@ public class CharacterCamera : Core
             Debug.LogError("Camera component không tìm thấy trên PersonCamera_M3!");
         }
 
-        if (Core.IsInitialized && Core.Instance.IsOffline)
+        if (Core.Instance.IsOffline)
         {
             InitializeOffline();
         }
-        else if (Core.IsInitialized && !Core.Instance.IsOffline)
+        else if (!Core.Instance.IsOffline)
         {
             InitializeOnline();
         }
@@ -55,9 +56,22 @@ public class CharacterCamera : Core
     {
         if (target == null) return;
 
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = Input.GetAxis("Mouse Y");
+
+        // Nếu có input thật -> unlock rotation
+        if (Mathf.Abs(mouseX) > 0.01f || Mathf.Abs(mouseY) > 0.01f)
+        {
+            lockRotationUntilInput = false;
+        }
+
+        if (lockRotationUntilInput)
+            return; // Không update pitch/yaw nếu chưa có input
+
         yaw += Input.GetAxis("Mouse X") * rotationSpeed;
         pitch -= Input.GetAxis("Mouse Y") * rotationSpeed;
         pitch = Mathf.Clamp(pitch, -40f, 80f);
+
 
         if (useDistanceAndHeightInterpolation)
         {
@@ -158,7 +172,7 @@ public class CharacterCamera : Core
 
         Vector3 desiredPosition = target.position + Vector3.up * height + direction * currentDistance;
 
-        if (isAiming && rightOffset != 0f)
+        if (/*isAiming && */rightOffset != 0f)
         {
             Vector3 rightDirection = target.right;
             desiredPosition += rightDirection * rightOffset;
@@ -173,7 +187,7 @@ public class CharacterCamera : Core
         smoothedDistance = Mathf.Lerp(smoothedDistance, targetDistance, distanceSmoothingSpeed * Time.deltaTime);
         currentDistance = smoothedDistance;
 
-        desiredPosition = target.position + Vector3.up * height + direction * smoothedDistance;
+        //desiredPosition = target.position + Vector3.up * height + direction * smoothedDistance;
 
         if (useInterpolation)
         {
@@ -185,5 +199,23 @@ public class CharacterCamera : Core
             transform.position = desiredPosition;
             transform.rotation = rotation;
         }
+    }
+
+    public void ApplySavedTransform(Vector3 position, Quaternion rotation, float fov = 60f)
+    {
+        transform.position = position;
+        transform.rotation = rotation;
+
+        yaw = rotation.eulerAngles.y;
+        pitch = rotation.eulerAngles.x;
+
+        if (mainCamera != null)
+        {
+            mainCamera.fieldOfView = fov;
+        }
+
+        // Nếu dùng interpolation thì nên reset distance cho khớp:
+        //smoothedDistance = currentDistance = defaultDistance;
+        lockRotationUntilInput = true; // khóa input
     }
 }
