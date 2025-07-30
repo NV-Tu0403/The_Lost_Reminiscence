@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System.Collections.Generic;
+using FMODUnity;
 using TMPro;
 using Tu_Develop.Import.Scripts.EventConfig;
 using Unity.Behavior;
@@ -12,6 +13,12 @@ namespace Tu_Develop.Import.Scripts
         [Header("Event Channels")] [SerializeField]
         private OnFaAgentUseSkill? useSkillEventChannel;
         [SerializeField] private FaAgentEventChannel? onReadyEventChannel;
+        
+        [Header("FMOD Sound Events")]
+        [SerializeField] private EventReference guideSignalSfx;
+        [SerializeField] private EventReference knowledgeLightSfx;
+        [SerializeField] private EventReference protectiveAuraSfx;
+        
 
         [Header("Canvas")] [SerializeField] private TextMeshProUGUI? skill1Cooldown;
         [SerializeField] private TextMeshProUGUI? skill2Cooldown;
@@ -31,14 +38,14 @@ namespace Tu_Develop.Import.Scripts
         {
             if (useSkillEventChannel != null)
             {
-                //useSkillEventChannel.OnEventPushlished += StartSkillCooldown;
+                useSkillEventChannel.Event += OnSkillUsed;
             }
         }
         private void OnDisable()
         {
             if (useSkillEventChannel != null)
             {
-                //useSkillEventChannel.
+                useSkillEventChannel.Event -= OnSkillUsed;
             }
         }
         private void AddTask(FaTask task)
@@ -125,6 +132,36 @@ namespace Tu_Develop.Import.Scripts
                 Debug.LogWarning("Lệnh không hợp lệ.");
             }
         }
+
+        #region Audio Tasks
+
+        /// <summary>
+        /// Hàm này được gọi bởi EventChannel khi Cây Hành vi dùng node "Send Event Message".
+        /// </summary>
+        /// <param name="skillName">Đây là chuỗi string (tên skill) được gửi từ Cây Hành vi.</param>
+        private void OnSkillUsed(string skillName)
+        {
+            Debug.Log($"[SỰ KIỆN LẮNG NGHE] Fa vừa sử dụng kỹ năng: {skillName}.");
+
+            // // Tại đây, bạn có thể gọi hệ thống âm thanh
+            // // Ví dụ: AudioManager.Instance.PlaySkillSound(skillName);
+            //
+            // // Hoặc xử lý logic cooldown, v.v...
+            // switch (skillName)
+            // {
+            //     case "GuideSignal":
+            //         // Gọi hàm cooldown của skill 1
+            //         break;
+            //     case "KnowledgeLight":
+            //         // Gọi hàm cooldown của skill 2
+            //         break;
+            //     // ...
+            // }
+        }
+
+        #endregion
+        
+        
         public BehaviorGraphAgent? faBha;
 
         private void Start()
