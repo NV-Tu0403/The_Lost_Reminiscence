@@ -14,15 +14,15 @@ namespace Tu_Develop.Musical
         [SerializeField] private EventReference clickEvent;
         private void Update()
         {
-            // Kiểm tra nhấn chuột trái
-            if (Input.GetMouseButtonDown(0))
-            {
-                // Chỉ phát nếu không giới hạn ở menu hoặc đang ở menu
-                if (!onlyInMenu)
-                {
-                    AudioManager.Instance.PlaySfx2D(clickEvent);
-                }
-            }
+            // // Kiểm tra nhấn chuột trái
+            // if (Input.GetMouseButtonDown(0))
+            // {
+            //     // Chỉ phát nếu không giới hạn ở menu hoặc đang ở menu
+            //     if (!onlyInMenu)
+            //     {
+            //         AudioManager.Instance.PlaySfx2D(clickEvent);
+            //     }
+            // }
         }
 
         private bool IsInMenu()
