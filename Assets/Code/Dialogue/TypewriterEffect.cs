@@ -15,7 +15,7 @@ namespace Code.Dialogue
         public static IEnumerator PlayLocalized(TextMeshProUGUI textComponent, LocalizedString locStr, float delay)
         {
             string result = null;
-            bool received = false;
+            var received = false;
             locStr.StringChanged += (localizedText) =>
             {
                 result = localizedText;
@@ -31,12 +31,12 @@ namespace Code.Dialogue
         /// Hiệu ứng typewriter cho string thường:
         /// - Gõ từng ký tự lên TextMeshProUGUI với delay
         /// </summary>
-        public static IEnumerator Play(TextMeshProUGUI textComponent, string fullText, float delay)
+        private static IEnumerator Play(TextMeshProUGUI textComponent, string fullText, float delay)
         {
             if (textComponent == null || string.IsNullOrEmpty(fullText))
                 yield break;
             textComponent.text = "";
-            for (int i = 0; i < fullText.Length; i++)
+            for (var i = 0; i < fullText.Length; i++)
             {
                 textComponent.text = fullText.Substring(0, i + 1);
                 yield return new WaitForSeconds(delay);

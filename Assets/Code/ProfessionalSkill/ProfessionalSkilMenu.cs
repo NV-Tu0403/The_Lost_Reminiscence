@@ -197,7 +197,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             //Debug.LogError("currentUserBaseName is null or empty!");
             // Wait 1 second and try again
-            StartCoroutine(RetryRefreshSaveListAfterDelay());
+            //StartCoroutine(RetryRefreshSaveListAfterDelay());
             //return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
         }
 
@@ -281,8 +281,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 Debug.LogError("[OnNewGame] Player not found after loading scene.");
                 return;
             }
-
-
+            
             // Gọi Procession để load dữ lieu tu GameProcession
             ProgressionManager.Instance.InitProgression();
             PlayerCheckPoint.Instance.AssignCameraFromCore();
@@ -291,12 +290,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
             SaveGameManager.Instance.SaveToFolder(newSaveFolder);
         });
-
-
-
         return newSaveFolder;
     }
-
+    
     public void OnContinueGame(string saveFolder)
     {
         if (string.IsNullOrEmpty(saveFolder) || !Directory.Exists(saveFolder))

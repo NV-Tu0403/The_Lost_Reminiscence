@@ -8,15 +8,18 @@ namespace Code.Cutscene
     {
         public void Execute(BaseEventData data)
         {
-            //Debug.Log($"[CutsceneAction] Requesting cutscene for event: {data.eventId}");
-            // Đặt callback khi cutscene kết thúc
-            Action finishCallback = () => {
-                EventBus.Publish(data.eventId, data);
-            };
-            data.OnFinish = finishCallback;
+            data.OnFinish = FinishCallback;
 
             // Gửi sự kiện bắt đầu cutscene
             EventBus.Publish("StartCutscene", data);
+            return;
+
+            //Debug.Log($"[CutsceneAction] Requesting cutscene for event: {data.eventId}");
+            // Đặt callback khi cutscene kết thúc
+            void FinishCallback()
+            {
+                EventBus.Publish(data.eventId, data);
+            }
         }
     }
 }

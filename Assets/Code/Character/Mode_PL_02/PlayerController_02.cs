@@ -3,8 +3,8 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
-//using UnityEditorInternal;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 
 public class PlayerController_02 : PlayerEventListenerBase
 {
@@ -190,8 +190,22 @@ public class PlayerController_02 : PlayerEventListenerBase
         // Chuyển state
         _core_02._stateMachine.HandleAction(actionType);
 
+        // Set animation trigger cho Movement hoặc Idle
+        if (_animator != null)
+        {
+            string trigger = GetAnimationTrigger(actionType, direction);
+            _animator.SetTrigger(trigger);
+            Debug.Log($"Movement trigger: {trigger}");
+        }
+
+        //if (actionType == CharacterActionType.Jump)
+        //{
+        //    Jump();
+        //    return;
+        //}
+
         float moveSpeed = config.walkSpeed; // mặc định là walk
-        // Chọn tốc độ dựa trên state
+        // Chọn tốc độ dựa trên type action
         switch (actionType)
         {
             case CharacterActionType.Run:
@@ -207,6 +221,7 @@ public class PlayerController_02 : PlayerEventListenerBase
                 Dash();
                 return;
         }
+
         if (isGrounded) // chỉ di chuyển khi đang trên mặt đất
         {
             // Chọn phương thức di chuyển
@@ -216,20 +231,19 @@ public class PlayerController_02 : PlayerEventListenerBase
             }
             else
             {
-
                 Move(direction * moveSpeed, actionType);
             }
         }
     }
 
-    public void PerformAttackInput(CharacterActionType actionType)
+    public void PerformAttackInput(CharacterActionType actionType, Vector3 direction)
     {
         _core_02._stateMachine.HandleAction(actionType);
 
         switch (actionType)
         {
             case CharacterActionType.Attack:
-                Attack(config.attackRange, config.attackDuration, config.attackDamage, config.attackCooldown);
+                Attack(direction, config.attackRange, config.attackDuration, config.attackDamage, config.attackCooldown);
                 break;
             case CharacterActionType.ThrowItem:
                 Thrown(2f); // tạm thời
@@ -427,6 +441,7 @@ public class PlayerController_02 : PlayerEventListenerBase
     private void MoveNavMesh(Vector3 direction, float moveSpeed, CharacterActionType moveType)
     {
         float speed_n = N_speed;
+        float deltaTime = Time.fixedDeltaTime;
 
         if (_navMeshAgent == null)
         {
@@ -444,11 +459,11 @@ public class PlayerController_02 : PlayerEventListenerBase
 
         // Cập nhật tốc độ của NavMeshAgent
         _navMeshAgent.speed = moveSpeed * speed_n;
-        _navMeshAgent.angularSpeed = config.rotationSpeed * speed_n;
+        _navMeshAgent.angularSpeed = config.rotationSpeed * config.rotationSpeed;
         _navMeshAgent.acceleration = config.acceleration * speed_n;
 
         // Tính toán điểm đích dựa trên hướng di chuyển
-        Vector3 targetPosition = transform.position + direction * moveSpeed/* * Time.deltaTime*/;
+        Vector3 targetPosition = transform.position + direction * moveSpeed /* * deltaTime*/;
 
         // Đặt điểm đích cho NavMeshAgent
         _navMeshAgent.isStopped = false;
@@ -490,15 +505,25 @@ public class PlayerController_02 : PlayerEventListenerBase
         if (lastRotationDirection.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(lastRotationDirection);
-            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, config.rotationSpeed /** Time.deltaTime*/);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, config.rotationSpeed * deltaTime);
         }
     }
 
     private bool Jump(float jumpForce)
     {
-        if (!isGrounded) return false;
+        if (!isGrounded)
+        {
+            Debug.Log("Cannot jump: Player is not grounded.");
+            return false;
+        }
 
-        if (_animator != null) _animator.SetTrigger("Jump");
+        if (_animator != null)
+        {
+            string trigger = GetAnimationTrigger(CharacterActionType.Jump, Vector3.zero);
+            _animator.SetTrigger(trigger);
+            Debug.Log($"Jump trigger: {trigger}");
+        }
+
         if (useNavMesh && _navMeshAgent != null)
         {
             _navMeshAgent.enabled = false;
@@ -554,7 +579,7 @@ public class PlayerController_02 : PlayerEventListenerBase
             // Gán velocity ngay lập tức
             _rigidbody.linearVelocity = dashVelocity;
 
-            Debug.Log($"Dashing with velocity: {dashVelocity}");
+            //Debug.Log($"Dashing with velocity: {dashVelocity}");
 
             // Chuyển state Dash
             _core_02._stateMachine.SetState(new DashState(_core_02._stateMachine, _playerEvent));
@@ -685,37 +710,55 @@ public class PlayerController_02 : PlayerEventListenerBase
     /// <param name="attackDamage"></param>
     /// <param name="attackCooldown"></param>
     /// <returns></returns>
-    private bool Attack(float attackRange, float attackDuration, float attackDamage, float attackCooldown)
+    private bool Attack(Vector3 attackDir, float attackRange, float attackDuration, float attackDamage, float attackCooldown)
     {
+        //if (Time.time - lastAttackTime < attackCooldown)
+        //{
+        //    Debug.Log("Attack on cooldown.");
+        //    return false;
+        //}
+        //lastAttackTime = Time.time;
+
         try
         {
-            if (_animator != null)
+            // Phân tích hướng tấn công và gán trigger tương ứng cho animator
+            string trigger = GetAnimationTrigger(CharacterActionType.Attack, attackDir);
+
+            if (_animator == null)
             {
-                _animator.SetTrigger("Attack");
+                Debug.LogWarning("Animator is null in Attack. No animation will be played.");
             }
+            else
+            {
+                _animator.SetTrigger(trigger);
+            }
+
+            Debug.Log($"Attack triggered: {trigger}");
+
+            _core_02._stateMachine.SetState(new AttackState(_core_02._stateMachine, _playerEvent));
 
             // Kiểm tra va chạm với đối tượng trong phạm vi tấn công
-            Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
+            Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * attackRange * 0.5f, attackRange);
             foreach (Collider hit in hits)
             {
-                // Giả sử đối tượng có thể bị tấn công có tag "Enemy" và component Health
-                if (hit.CompareTag("Enemy"))
-                {
-                    TakeDamage(config.attackDamage);
-                    Debug.Log($"Hit enemy {hit.name} with {config.attackDamage} damage.");
-                }
+                //if (hit.CompareTag("Enemy"))
+                //{
+                //    Health enemyHealth = hit.GetComponent<Health>();
+                //    if (enemyHealth != null)
+                //    {
+                //        enemyHealth.TakeDamage(attackDamage);
+                //        Debug.Log($"Hit enemy {hit.name} with {attackDamage} damage.");
+                //    }
+                //}
             }
 
+            Debug.Log($"Attack performed: range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
             return true;
         }
-        catch (Exception e)
+        catch (System.Exception e)
         {
-            mess = e.Message;
+            Debug.LogError($"Attack failed: {e.Message}");
             return false;
-        }
-        finally
-        {
-            _animator = null;
         }
     }
 
@@ -728,6 +771,84 @@ public class PlayerController_02 : PlayerEventListenerBase
         float outDamaged = 0f;
 
         return (outDamaged);
+    }
+    #endregion
+
+    #region animation
+
+    /// <summary>
+    /// trả về trigger tương ứng với hướng tấn công dựa trên hướng di chuyển hoặc hướng nhân vật đang đối mặt.
+    /// </summary>
+    /// <param name="attackDir"></param>
+    /// <returns></returns>
+    private string GetAnimationTrigger(CharacterActionType actionType, Vector3 dir)
+    {
+        // Xử lý các action không cần hướng
+        switch (actionType)
+        {
+            case CharacterActionType.Jump:
+                return "Jump";
+            case CharacterActionType.ThrowItem:
+                return "ThrowItem";
+            case CharacterActionType.ThrowWeapon:
+                return "ThrowWeapon";
+        }
+
+        // Nếu không có hướng di chuyển, sử dụng hướng nhân vật đang đối mặt
+        if (dir.sqrMagnitude <= 0.001f)
+        {
+            if (actionType == CharacterActionType.Walk || actionType == CharacterActionType.Run ||
+                actionType == CharacterActionType.Sprint || actionType == CharacterActionType.Dash)
+            {
+                return "Idle"; // Không di chuyển -> Idle
+            }
+            dir = lastRotationDirection; // Dùng hướng cuối cho Attack
+        }
+
+        // Lấy hướng camera (nếu có) hoặc hướng nhân vật
+        Vector3 referenceForward = _playerInput._characterCamera?.mainCamera != null
+            ? _playerInput._characterCamera.mainCamera.transform.forward
+            : transform.forward;
+        referenceForward.y = 0;
+        referenceForward = referenceForward.normalized;
+
+        Vector3 referenceRight = Vector3.Cross(Vector3.up, referenceForward).normalized;
+
+        // Tính Dot product để xác định hướng
+        float forwardDot = Vector3.Dot(dir.normalized, referenceForward);
+        float rightDot = Vector3.Dot(dir.normalized, referenceRight);
+
+        // Chọn prefix trigger dựa trên actionType
+        string prefix = actionType switch
+        {
+            CharacterActionType.Walk => "Walk",
+            CharacterActionType.Run => "Run",
+            CharacterActionType.Sprint => "Sprint",
+            CharacterActionType.Dash => "Dash",
+            CharacterActionType.Attack => "Attack",
+            _ => "Idle"
+        };
+
+        // Xác định hướng chính dựa trên Dot product
+        if (forwardDot > 0.5f)
+        {
+            return $"{prefix}Forward";
+        }
+        else if (forwardDot < -0.5f)
+        {
+            return $"{prefix}Back";
+        }
+        else if (rightDot > 0.5f)
+        {
+            return $"{prefix}Right";
+        }
+        else if (rightDot < -0.5f)
+        {
+            return $"{prefix}Left";
+        }
+
+        // Mặc định nếu không xác định được hướng
+        return $"{prefix}Forward";
     }
     #endregion
 
