@@ -61,6 +61,7 @@ namespace Code.Boss
         public int decoyCount = 2; // 1 thật, 1 giả
         public float decoySpawnRadius = 8f;
         public GameObject decoyPrefab; // Prefab cho decoy
+        public GameObject decoySpawnEffectPrefab; // Prefab hiệu ứng khi spawn decoy
     }
 
     [Serializable]

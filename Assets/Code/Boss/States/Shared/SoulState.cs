@@ -51,7 +51,7 @@ namespace Code.Boss.States.Shared
             castTimer += Time.deltaTime;
             
             // Update skill cast progress for UI
-            float progress = castTimer / Config.phase1.soulStateCastTime;
+            var progress = castTimer / Config.phase1.soulStateCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
             
             if (castTimer >= Config.phase1.soulStateCastTime)
@@ -63,9 +63,9 @@ namespace Code.Boss.States.Shared
         private void CalculateTeleportPosition()
         {
             // Teleport to a random position away from player
-            Vector3 playerPos = BossController.Player.position;
-            Vector2 randomDirection = Random.insideUnitCircle.normalized;
-            float teleportDistance = Config.soulConfig.soulSpawnRadius * 0.8f;
+            var playerPos = BossController.Player.position;
+            var randomDirection = Random.insideUnitCircle.normalized;
+            var teleportDistance = Config.soulConfig.soulSpawnRadius * 0.8f;
             
             teleportPosition = playerPos + new Vector3(randomDirection.x, 0, randomDirection.y) * teleportDistance;
         }
@@ -105,11 +105,9 @@ namespace Code.Boss.States.Shared
 
         public override void OnTakeDamage()
         {
-            if (isCasting && CanBeInterrupted())
-            {
-                BossEventSystem.Trigger(BossEventType.SkillInterrupted);
-                TransitionToNextState();
-            }
+            if (!isCasting || !CanBeInterrupted()) return;
+            BossEventSystem.Trigger(BossEventType.SkillInterrupted);
+            TransitionToNextState();
         }
 
         public override bool CanBeInterrupted()
