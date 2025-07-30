@@ -226,75 +226,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &471323629
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 5.4138927
-      objectReference: {fileID: 0}
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -1.1299156
-      objectReference: {fileID: 0}
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -14.738803
-      objectReference: {fileID: 0}
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 936568322021429983, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4308075130808239124, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: MainMenu
-      value: 
-      objectReference: {fileID: 408769859}
-    - target: {fileID: 4308075130808239124, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: IsDebugMode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 9223153338814055006, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_Name
-      value: Core
-      objectReference: {fileID: 0}
-    - target: {fileID: 9223153338814055006, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
 --- !u!1 &488471548 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6990992609683028925, guid: 10974e7a26c6436498c7e4d818415a92, type: 3}
@@ -620,6 +551,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 6071543125456112788, guid: 10974e7a26c6436498c7e4d818415a92, type: 3}
+      propertyPath: m_ExcludeLayers.m_Bits
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 6990992609683028925, guid: 10974e7a26c6436498c7e4d818415a92, type: 3}
       propertyPath: m_Name
       value: Player
@@ -720,7 +655,7 @@ MonoBehaviour:
     OverrideAllowTileRotation: 0
     AllowTileRotation: 0
     DebugRender: 0
-    LengthMultiplier: 1
+    LengthMultiplier: 0.5
     PlaceTileTriggers: 1
     TileTriggerLayer: 2
     GenerateAsynchronously: 0
@@ -808,8 +743,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f76f356143a516846a54607aa83a9ae8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Priority: 5967
-  BakeMode: 2
+  Priority: 1
+  BakeMode: 3
   LayerMask:
     serializedVersion: 2
     m_Bits: 32755
@@ -821,9 +756,10 @@ MonoBehaviour:
   - AgentTypeID: -334000983
     AreaTypeID: 0
     DisableLinkWhenDoorIsClosed: 1
-  NavMeshLinkDistanceFromDoorway: 2.5
+  NavMeshLinkDistanceFromDoorway: 333.9
   AutoGenerateFullRebakeSurfaces: 1
-  FullRebakeTargets: []
+  FullRebakeTargets:
+  - {fileID: 0}
   UseAutomaticLinkDistance: 1
   AutomaticLinkDistanceOffset: 0.1
 --- !u!1 &1985348326
@@ -1084,5 +1020,4 @@ SceneRoots:
   - {fileID: 1985348330}
   - {fileID: 600149772}
   - {fileID: 1623611449}
-  - {fileID: 471323629}
   - {fileID: 1323168292}
