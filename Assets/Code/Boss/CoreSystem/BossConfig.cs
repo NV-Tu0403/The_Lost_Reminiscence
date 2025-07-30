@@ -97,6 +97,7 @@ namespace Code.Boss
         public float soulSpawnRadius = 15f;
         public float soulFollowDistance = 1f;
         public GameObject soulPrefab;
+        public GameObject soulSpawnEffectPrefab; // Prefab hiệu ứng khi spawn soul
     }
 
     [Serializable]

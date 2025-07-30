@@ -11,6 +11,7 @@ namespace Code.Boss.States.Phase1
         private float skillTimer;
         private bool isCasting = true;
         private bool skillActivated;
+        
         private GameObject realDecoy;
         private GameObject fakeDecoy;
         private GameObject decoyEffect1;
@@ -20,7 +21,6 @@ namespace Code.Boss.States.Phase1
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered DecoyState - Spawn 2 bóng ảo (1 thật 1 giả) truy đuổi người chơi");
-            // BossController.PlayAnimation("Decoy");
             
             castTimer = 0f;
             skillTimer = 0f;

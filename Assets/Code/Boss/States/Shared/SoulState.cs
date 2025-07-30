@@ -8,24 +8,38 @@ namespace Code.Boss.States.Shared
     public class SoulState : BossState
     {
         private float castTimer;
+        private float skillTimer;
         private bool isCasting = true;
+        
+        
         private Vector3 teleportPosition;
+        private Vector3 soulSpawnPosition;
+        private GameObject soulSpawnEffect;
 
         public override void Enter()
         {
-            castTimer = 0f;
-            isCasting = true;
-            
             Debug.Log("[Boss State] Entered SoulState - Teleporting and spawning soul");
-            // BossController.PlayAnimation("Soul");
+
+            castTimer = 0f;
+            skillTimer = 0f;
+            isCasting = true;
             BossEventSystem.Trigger(BossEventType.SoulStateStarted);
-            
-            // Trigger skill cast với skill name để UI hiển thị
-            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Soul Teleport" });
-            
-            // Calculate teleport position
-            CalculateTeleportPosition();
-            
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Soul" });
+
+            // Lấy vị trí spawn từ GameObject trong scene
+            var spawnPoint = GameObject.Find("SoulSpawnPoint");
+            soulSpawnPosition = spawnPoint != null
+                ? spawnPoint.transform.position
+                : BossController.transform.position + Vector3.forward * 3f;
+
+            // Nếu có prefab hiệu ứng spawn soul, instantiate nó
+            if (Config.soulConfig.soulSpawnEffectPrefab != null)
+            {
+                var effectRotation = Quaternion.Euler(0, 90, 0);
+                soulSpawnEffect = Object.Instantiate(Config.soulConfig.soulSpawnEffectPrefab, soulSpawnPosition,
+                    effectRotation);
+            }
+
             // Play soul spawn sound
             if (Config.audioConfig.soulSpawnSound != null)
             {
@@ -35,54 +49,43 @@ namespace Code.Boss.States.Shared
 
         public override void Update()
         {
-            if (isCasting)
-            {
-                HandleCasting();
-            }
-            else
-            {
-                // Immediately transition after teleport and soul spawn
-                TransitionToNextState();
-            }
+            if (isCasting) HandleCasting();
+            else HandleSkillActive();
+        }
+
+        private void HandleSkillActive()
+        {
+            skillTimer += Time.deltaTime;
+
+            // Check if skill is active for a certain duration
+            if (!(skillTimer >= Config.phase1.soulStateCastTime)) return;
+            Debug.Log("[Boss State] SoulState - Skill duration ended, transitioning to next state");
+            TransitionToNextState();
         }
 
         private void HandleCasting()
         {
             castTimer += Time.deltaTime;
-            
             // Update skill cast progress for UI
             var progress = castTimer / Config.phase1.soulStateCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
-            
-            if (castTimer >= Config.phase1.soulStateCastTime)
-            {
-                ExecuteTeleportAndSpawnSoul();
-            }
+            if (castTimer >= Config.phase1.soulStateCastTime) ActivateSkill();
         }
 
-        private void CalculateTeleportPosition()
-        {
-            // Teleport to a random position away from player
-            var playerPos = BossController.Player.position;
-            var randomDirection = Random.insideUnitCircle.normalized;
-            var teleportDistance = Config.soulConfig.soulSpawnRadius * 0.8f;
-            
-            teleportPosition = playerPos + new Vector3(randomDirection.x, 0, randomDirection.y) * teleportDistance;
-        }
-
-        private void ExecuteTeleportAndSpawnSoul()
+        private void ActivateSkill()
         {
             isCasting = false;
-            
-            // Teleport boss
-            BossController.transform.position = teleportPosition;
-            Debug.Log("[Boss State] SoulState - Boss teleported and soul activated");
-            
-            // Spawn soul if under limit
+            Debug.Log("[Boss State] SoulState - Soul spawned at point");
+            BossEventSystem.Trigger(BossEventType.SkillInterrupted);
             if (BossController.SoulManager.ActiveSoulCount < BossController.SoulManager.MaxSouls)
             {
-                BossController.SoulManager.SpawnSoul();
+                BossController.SoulManager.SpawnSoul(soulSpawnPosition);
             }
+
+            // Xóa hiệu ứng spawn nếu có
+            if (soulSpawnEffect == null) return;
+            Object.Destroy(soulSpawnEffect);
+            soulSpawnEffect = null;
         }
 
         private void TransitionToNextState()
@@ -98,21 +101,9 @@ namespace Code.Boss.States.Shared
             }
         }
 
-        public override void Exit()
-        {
-            // No special cleanup needed
-        }
-
-        public override void OnTakeDamage()
-        {
-            if (!isCasting || !CanBeInterrupted()) return;
-            BossEventSystem.Trigger(BossEventType.SkillInterrupted);
-            TransitionToNextState();
-        }
-
-        public override bool CanBeInterrupted()
-        {
-            return isCasting;
-        }
+        public override void Exit() { }
+        public override void OnTakeDamage() { }
+        public override bool CanTakeDamage() => false;
+        public override bool CanBeInterrupted() => isCasting;
     }
 }
