@@ -40,7 +40,6 @@ namespace Code.Boss.Testing
         private void Update()
         {
             HandleAttackInput();
-            HandleFaSkillInput();
         }
 
         private void HandleAttackInput()
@@ -51,40 +50,7 @@ namespace Code.Boss.Testing
                 PerformAttack();
             }
         }
-
-        private void HandleFaSkillInput()
-        {
-            // Q - Radar Skill
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                Debug.Log("[Player Test] Requesting Fa Radar Skill");
-                FaBossIntegration.NotifyFaSkillUsed("Radar", true);
-            }
-            
-            // E - Second Skill (example)
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                Debug.Log("[Player Test] Using Fa Second Skill");
-                FaBossIntegration.NotifyFaSkillUsed("SecondSkill", true);
-            }
-            
-            // R - Reveal Skill 
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                Debug.Log("[Player Test] Using Fa Reveal Skill");
-                
-                var faSimulator = FindFirstObjectByType<FaSkillSimulator>();
-                if (faSimulator != null)
-                {
-                    faSimulator.UseRevealSkill();
-                }
-                else
-                {
-                    Debug.LogWarning("[Player Test] FaSkillSimulator not found in scene!");
-                }
-            }
-        }
-
+        
         private bool CanAttack()
         {
             return Time.time >= lastAttackTime + attackCooldown;
