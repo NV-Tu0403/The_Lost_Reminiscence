@@ -17,23 +17,24 @@ namespace Code.Boss.States.Phase1
         private GameObject decoyEffect1;
         private GameObject decoyEffect2;
         private bool decoyEffectSpawned;
+        private GameObject realDecoyRevealEffectInstance;
 
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered DecoyState - Spawn 2 bóng ảo (1 thật 1 giả) truy đuổi người chơi");
-            
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;
             skillActivated = false;
             BossEventSystem.Trigger(BossEventType.DecoyStarted);
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Decoy" });
-            
             // Play decoy spawn sound
             if (Config.audioConfig.decoySpawnSound != null)
             {
                 BossController.PlaySound(Config.audioConfig.decoySpawnSound, Config.audioConfig.sfxVolume);
             }
+            // Đăng ký lắng nghe sự kiện GuideSignal
+            BossEventSystem.Subscribe(BossEventType.FaSkillUsed, OnFaSkillUsed);
         }
 
         public override void Update()
@@ -159,10 +160,42 @@ namespace Code.Boss.States.Phase1
             if (!skillActivated) return;
             BossController.ClearDecoys();
             BossController.gameObject.SetActive(true);
+            // Hủy đăng ký sự kiện khi thoát state
+            BossEventSystem.Unsubscribe(BossEventType.FaSkillUsed, OnFaSkillUsed);
+            // Xóa hiệu ứng nếu có
+            if (realDecoyRevealEffectInstance != null)
+            {
+                Object.Destroy(realDecoyRevealEffectInstance);
+                realDecoyRevealEffectInstance = null;
+            }
         }
 
         public override void OnTakeDamage() {}
         public override bool CanTakeDamage() => false;
         public override bool CanBeInterrupted() => isCasting;
+
+        private void OnFaSkillUsed(BossEventData data)
+        {
+            if (data != null && data.stringValue == "GuideSignal")
+            {
+                RevealRealDecoy();
+            }
+        }
+
+        private void RevealRealDecoy()
+        {
+            if (realDecoy == null) return;
+            // Spawn hiệu ứng prefab nếu có cấu hình
+            if (Config.phase1.realDecoyRevealEffectPrefab != null && realDecoyRevealEffectInstance == null)
+            {
+                realDecoyRevealEffectInstance = Object.Instantiate(
+                    Config.phase1.realDecoyRevealEffectPrefab,
+                    realDecoy.transform.position,
+                    Quaternion.identity,
+                    realDecoy.transform
+                );
+            }
+            Debug.Log("[DecoyState] Real decoy revealed by GuideSignal!");
+        }
     }
 }

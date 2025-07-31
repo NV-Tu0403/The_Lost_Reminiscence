@@ -53,7 +53,7 @@ namespace Code.Boss
         private void OnFaSkillUsed(BossEventData data)
         {
             // Assuming Fa's radar skill destroys all souls
-            if (data.stringValue == "Radar")
+            if (data.stringValue == "KnowledgeLight")
             {
                 DestroyAllSouls();
             }
