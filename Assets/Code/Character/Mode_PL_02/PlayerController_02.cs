@@ -125,7 +125,7 @@ public class PlayerController_02 : PlayerEventListenerBase
             return;
         }
 
-        _playerInput.isInputLocked = isAttacking; // Khóa input khi đang tấn công
+        //_playerInput.isInputLocked = isAttacking; // Khóa input khi đang tấn công
         // Kiểm tra nhấn chuột trái
         if (Input.GetMouseButtonDown(0) && !wait)
         {
@@ -772,7 +772,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
         if (maxDot < 0.5f) // Ngưỡng để đảm bảo hướng rõ ràng
         {
-            return 0; // Không xác định được hướng
+            return 3; // Không xác định được hướng
         }
 
         if (maxDot == dotRight)
@@ -819,33 +819,33 @@ public class PlayerController_02 : PlayerEventListenerBase
                 Debug.LogWarning("Animator is null in Attack. No animation will be played.");
                 return false;
             }
-
+          
             // Thiết lập parameter để chạy animation
             isAttacking = true;
             lastAttackTime = Time.time;
             _animator.SetInteger("AnimationIndex", attackIndex);
+            
 
-            Debug.Log($"Performing attack {attackIndex} with range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
+            //Debug.Log($"Performing attack {attackIndex} with range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
 
             _core_02._stateMachine.SetState(new AttackState(_core_02._stateMachine, _playerEvent));
 
-            // Kiểm tra va chạm với đối tượng trong phạm vi tấn công
-            //Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * attackRange * 0.5f, attackRange);
-            //foreach (Collider hit in hits)
-            //{
-            //    if (hit.CompareTag("Enemy"))
-            //    {
-            //        Health enemyHealth = hit.GetComponent<Health>();
-            //        if (enemyHealth != null)
-            //        {
-            //            enemyHealth.TakeDamage(attackDamage);
-            //            Debug.Log($"Hit enemy {hit.name} with {attackDamage} damage.");
-            //        }
-            //    }
-            //}
+            //Kiểm tra va chạm với đối tượng trong phạm vi tấn công
+            Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * attackRange * 0.5f, attackRange);
+            foreach (Collider hit in hits)
+            {
+                if (hit.CompareTag("Boss"))
+                {
+                    PlayerEvent.Instance.TriggerTakeOutDamage(this.gameObject, attackDamage, hit.gameObject);
+                    Debug.Log($"Hit {hit.gameObject.name} with attack {attackIndex}, damage: {attackDamage} at range: {attackRange}.");
+                }
+            }
 
             // Đặt lại trạng thái sau khi animation hoàn thành
             Invoke(nameof(ResetAttackState), attackDuration);
+
+            //ApplyForceAttack(attackIndex, _rigidbody);
+            StartCoroutine(WaitApplyForceAttack(attackIndex, _rigidbody));
 
             Debug.Log($"Attack {attackIndex} performed: range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
             return true;
@@ -863,6 +863,94 @@ public class PlayerController_02 : PlayerEventListenerBase
         isAttacking = false; // Cho phép attack tiếp theo sau khi animation hoàn thành
         _animator.SetInteger("AnimationIndex", 0); // Đặt lại parameter về trạng thái mặc định (nếu cần)
     }
+
+    private IEnumerator WaitApplyForceAttack(int attackIndex, Rigidbody rb)
+    {
+        // Đợi một khoảng thời gian trước khi áp dụng lực
+        yield return new WaitForSeconds(0.7f);
+        ApplyForceAttack(attackIndex, rb);
+    }
+
+    /// <summary>
+    /// tạo lực cho Rigidbody dựa trên attackIndex.
+    /// </summary>
+    /// <param name="attackIndex"></param>
+    /// <param name="rb"></param>
+    public void ApplyForceAttack(int attackIndex, Rigidbody rb)
+    {
+        // Lấy hướng phía trước của nhân vật
+        Vector3 forwardDirection = transform.forward;
+
+        switch (attackIndex)
+        {
+            case 1:
+                // Lực hướng về phía trước, cường độ 5f
+                rb.AddForce(forwardDirection * 8f, ForceMode.Impulse);
+                Debug.LogWarning("Applied force for attack 1: Forward direction with intensity 5f.");
+                break;
+
+            case 2:
+                // Lực hướng về phía trước, cường độ 4f
+                rb.AddForce(forwardDirection * 10f, ForceMode.Impulse);
+                Debug.LogWarning("Applied force for attack 2: Forward direction with intensity 4f.");
+                break;
+
+            case 3:
+                // Lực hướng ra tất cả các hướng xung quanh (trừ hướng xuống)
+                ApplyRadialForce(rb, 15f, false);
+                Debug.LogWarning("Applied radial force for attack 3: All directions except down with intensity 6f.");
+                break;
+
+            case 4:
+                // Lực hướng ra tất cả các hướng xung quanh (trừ hướng lên)
+                ApplyRadialForce(rb, 20f, true);
+                Debug.LogWarning("Applied radial force for attack 4: All directions except up with intensity 10f.");
+                break;
+
+            default:
+                Debug.LogWarning("Invalid attackIndex: " + attackIndex);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// hàm phụ để tạo lực hướng ra xung quanh từ vị trí của nhân vật.
+    /// </summary>
+    /// <param name="rb"></param>
+    /// <param name="forceMagnitude"></param>
+    /// <param name="excludeUp"></param>
+    private void ApplyRadialForce(Rigidbody rb, float forceMagnitude, bool excludeUp)
+    {
+        // Lấy tất cả các Rigidbody trong bán kính 10f
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 10f);
+
+        foreach (Collider col in colliders)
+        {
+            Rigidbody targetRb = col.GetComponent<Rigidbody>();
+            if (targetRb != null && targetRb != rb) // Không áp dụng lực cho chính nhân vật
+            {
+                // Tính hướng từ nhân vật đến đối tượng
+                Vector3 direction = (col.transform.position - transform.position).normalized;
+
+                // Nếu excludeUp = true, loại bỏ thành phần hướng lên (y dương)
+                if (excludeUp && direction.y > 0)
+                {
+                    direction.y = 0;
+                    direction = direction.normalized;
+                }
+                // Nếu excludeUp = false, loại bỏ thành phần hướng xuống (y âm)
+                else if (!excludeUp && direction.y < 0)
+                {
+                    direction.y = 0;
+                    direction = direction.normalized;
+                }
+
+                // Áp dụng lực
+                targetRb.AddForce(direction * forceMagnitude, ForceMode.Impulse);
+            }
+        }
+    }
+
     #endregion
 
     #region Animation Parameters
@@ -954,16 +1042,16 @@ public class PlayerController_02 : PlayerEventListenerBase
     }
     #endregion
 
-    //#region Gizmos
-    //private void OnDrawGizmos()
-    //{
-    //    if (config != null)
-    //    {
-    //        Gizmos.color = Color.red;
-    //        Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
-    //    }
-    //}
-    //#endregion
+    #region Gizmos
+    private void OnDrawGizmos()
+    {
+        if (config != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
+        }
+    }
+    #endregion
 
     #region Actions & logic Action
 
