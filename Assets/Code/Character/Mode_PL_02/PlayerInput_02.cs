@@ -243,12 +243,12 @@ public class PlayerInput_02 : MonoBehaviour
     }
 
     #region  Methods
-    //public Vector3 ReturnPointInput()
-    //{
-    //    var pointLookAt = _playerController.ReturnPoinHit();
-    //    Debug.Log("[PlayerInput] PointLookAt: " + pointLookAt);
-    //    return pointLookAt;
-    //}
+    public Vector3 ReturnPointInput()
+    {
+        var pointLookAt = _playerController.ReturnPoinHit();
+        Debug.Log("[PlayerInput] PointLookAt: " + pointLookAt);
+        return pointLookAt;
+    }
 
     #endregion
 }
