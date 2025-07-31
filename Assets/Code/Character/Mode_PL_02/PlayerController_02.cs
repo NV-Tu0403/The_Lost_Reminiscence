@@ -125,7 +125,23 @@ public class PlayerController_02 : PlayerEventListenerBase
             return;
         }
 
-        //_playerInput.isInputLocked = !isGrounded;
+        _playerInput.isInputLocked = isAttacking; // Khóa input khi đang tấn công
+        // Kiểm tra nhấn chuột trái
+        if (Input.GetMouseButtonDown(0) && !wait)
+        {
+            wait = true;
+            timer = waitTimeAt;
+        }
+
+        // Đếm ngược thời gian khi wait = true
+        if (wait)
+        {
+            timer -= Time.deltaTime;
+            if (timer <= 0)
+            {
+                wait = false;
+            }
+        }
 
         UsingResource();
         CheckItemByLooking();
@@ -138,6 +154,8 @@ public class PlayerController_02 : PlayerEventListenerBase
                 _animator.SetBool("Throw", false);
             }
         }
+
+        //PreformAttack();
     }
 
     private void LateUpdate()
@@ -163,6 +181,11 @@ public class PlayerController_02 : PlayerEventListenerBase
             _rigidbody.AddForce(Vector3.down * extraGravity, ForceMode.Acceleration);
         }
     }
+
+    public bool wait = false;
+    public float waitTimeAt = 2f; // Thời gian chờ 2 giây
+    private float timer = 0f;
+
 
     #region base Event/state
 
@@ -236,7 +259,7 @@ public class PlayerController_02 : PlayerEventListenerBase
                 return;
         }
 
-        if (isGrounded) // chỉ di chuyển khi đang trên mặt đất
+        if (isGrounded && !isAttacking) // chỉ di chuyển khi đang trên mặt đất
         {
             // Chọn phương thức di chuyển
             if (useNavMesh && _navMeshAgent != null)
@@ -253,11 +276,18 @@ public class PlayerController_02 : PlayerEventListenerBase
     public void PerformAttackInput(CharacterActionType actionType, Vector3 direction)
     {
         _core_02._stateMachine.HandleAction(actionType);
+        //Debug.LogWarning($"PerformAttackInput: {actionType} with direction {direction}");
 
         switch (actionType)
         {
             case CharacterActionType.Attack:
-                Attack(direction, config.attackRange, config.attackDuration, config.attackDamage, config.attackCooldown);
+                //Attack(direction, config.attackRange, config.attackDuration, config.attackDamage, config.attackCooldown);
+                int attackIndex = GetAttackIndexFromDirection(direction);
+                if (!isAttacking)
+                {
+                    TryAttack(attackIndex);
+                }
+
                 break;
             case CharacterActionType.ThrowItem:
                 Thrown(2f); // tạm thời
@@ -721,71 +751,117 @@ public class PlayerController_02 : PlayerEventListenerBase
         StartCoroutine(ThrownCoroutine(force, 0.2f)); // Độ trễ 0.5 giây, bạn có thể điều chỉnh
     }
 
-    /// <summary>
-    /// gọi hàm này để để đánh
-    /// </summary>
-    /// <param name="attackRange"></param>
-    /// <param name="attackDuration"></param>
-    /// <param name="attackDamage"></param>
-    /// <param name="attackCooldown"></param>
-    /// <returns></returns>
-    private bool Attack(Vector3 attackDir, float attackRange, float attackDuration, float attackDamage, float attackCooldown)
-    {
-        //if (Time.time - lastAttackTime < attackCooldown)
-        //{
-        //    Debug.Log("Attack on cooldown.");
-        //    return false;
-        //}
-        //lastAttackTime = Time.time;
 
+    private float lastAttackTime;
+    public bool isAttacking;
+    [SerializeField] private float[] attackDurations;
+
+    private int GetAttackIndexFromDirection(Vector3 direction)
+    {
+        // Chuẩn hóa direction để dễ so sánh
+        direction = direction.normalized;
+
+        // Tính góc giữa direction và các hướng chuẩn
+        float dotRight = Vector3.Dot(direction, Vector3.right);
+        float dotLeft = Vector3.Dot(direction, Vector3.left);
+        float dotForward = Vector3.Dot(direction, Vector3.forward);
+        float dotBack = Vector3.Dot(direction, Vector3.back);
+
+        // Tìm hướng có giá trị dot lớn nhất (gần nhất với direction)
+        float maxDot = Mathf.Max(dotRight, dotLeft, dotForward, dotBack);
+
+        if (maxDot < 0.5f) // Ngưỡng để đảm bảo hướng rõ ràng
+        {
+            return 0; // Không xác định được hướng
+        }
+
+        if (maxDot == dotRight)
+            return 1; // Right
+        if (maxDot == dotLeft)
+            return 2; // Left
+        if (maxDot == dotForward)
+            return 3; // Forward
+        if (maxDot == dotBack)
+            return 4; // Back
+
+        return 0; // Trường hợp không xác định
+    }
+
+    private bool TryAttack(int attackIndex)
+    {
+        // Kiểm tra chỉ số hợp lệ
+        if (attackIndex < 1 || attackIndex > attackDurations.Length)
+        {
+            Debug.LogError($"Invalid attack index: {attackIndex}");
+            return false;
+        }
+
+        // Lấy thời lượng animation tương ứng
+        float attackDuration = attackDurations[attackIndex - 1];
+        float attackCooldown = attackDuration + 0.5f; // Cooldown bằng thời gian animation + buffer
+
+        // Kiểm tra cooldown
+        if (Time.time - lastAttackTime < attackCooldown)
+        {
+            Debug.Log("Attack on cooldown.");
+            return false;
+        }
+
+        return Attack(Vector3.forward, config.attackRange, attackDuration, config.attackDamage, attackCooldown, attackIndex);
+    }
+
+    private bool Attack(Vector3 attackDir, float attackRange, float attackDuration, float attackDamage, float attackCooldown, int attackIndex)
+    {
         try
         {
             if (_animator == null)
             {
                 Debug.LogWarning("Animator is null in Attack. No animation will be played.");
+                return false;
             }
-            else
-            {
-                SetAnimationParameters(CharacterActionType.Attack, attackDir);
-                Debug.Log($"Performing attack with range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
-            }
+
+            // Thiết lập parameter để chạy animation
+            isAttacking = true;
+            lastAttackTime = Time.time;
+            _animator.SetInteger("AnimationIndex", attackIndex);
+
+            Debug.Log($"Performing attack {attackIndex} with range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
 
             _core_02._stateMachine.SetState(new AttackState(_core_02._stateMachine, _playerEvent));
 
             // Kiểm tra va chạm với đối tượng trong phạm vi tấn công
-            Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * attackRange * 0.5f, attackRange);
-            foreach (Collider hit in hits)
-            {
-                //if (hit.CompareTag("Enemy"))
-                //{
-                //    Health enemyHealth = hit.GetComponent<Health>();
-                //    if (enemyHealth != null)
-                //    {
-                //        enemyHealth.TakeDamage(attackDamage);
-                //        Debug.Log($"Hit enemy {hit.name} with {attackDamage} damage.");
-                //    }
-                //}
-            }
+            //Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * attackRange * 0.5f, attackRange);
+            //foreach (Collider hit in hits)
+            //{
+            //    if (hit.CompareTag("Enemy"))
+            //    {
+            //        Health enemyHealth = hit.GetComponent<Health>();
+            //        if (enemyHealth != null)
+            //        {
+            //            enemyHealth.TakeDamage(attackDamage);
+            //            Debug.Log($"Hit enemy {hit.name} with {attackDamage} damage.");
+            //        }
+            //    }
+            //}
 
-            Debug.Log($"Attack performed: range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
+            // Đặt lại trạng thái sau khi animation hoàn thành
+            Invoke(nameof(ResetAttackState), attackDuration);
+
+            Debug.Log($"Attack {attackIndex} performed: range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
             return true;
         }
         catch (Exception e)
         {
             Debug.LogError($"Attack failed: {e.Message}");
+            isAttacking = false; // Đặt lại trạng thái nếu lỗi
             return false;
         }
     }
 
-    /// <summary>
-    /// hàm tính damage tạm thời (sẽ sửa lại)
-    /// </summary>
-    /// <returns></returns>
-    public float TakeDamage(float attackDamage)
+    private void ResetAttackState()
     {
-        float outDamaged = 0f;
-
-        return (outDamaged);
+        isAttacking = false; // Cho phép attack tiếp theo sau khi animation hoàn thành
+        _animator.SetInteger("AnimationIndex", 0); // Đặt lại parameter về trạng thái mặc định (nếu cần)
     }
     #endregion
 
@@ -861,6 +937,20 @@ public class PlayerController_02 : PlayerEventListenerBase
         _animator.SetFloat("DirectionZ", currentDirectionZ);
 
         //Debug.Log($"SetAnimationParameters: State={state}, DirectionX={currentDirectionX}, DirectionZ={currentDirectionZ}, TargetX={targetDirectionX}, TargetZ={targetDirectionZ}, dir={dir}");
+    }
+
+    // Hàm chạy animation tương ứng
+    private void PlayAnimation(int index)
+    {
+        // Đảm bảo Animator đã được gán
+        if (_animator == null)
+        {
+            Debug.LogError("Animator chưa được gán trong Inspector!");
+            return;
+        }
+
+        // Tên parameter trong Animator, giả sử là "AnimationIndex"
+        _animator.SetInteger("AnimationIndex", index);
     }
     #endregion
 
