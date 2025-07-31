@@ -39,10 +39,10 @@ public class PlayerInput_02 : MonoBehaviour
         dir = GetMoveInput();
         CharacterActionType actionType = GetSpecialActionsInput();
 
-        if (!isInputLocked) // <=> true
-        {
+        //if (!isInputLocked) // <=> true
+        //{
             _playerController.PerformMoveInput(actionType, dir);
-        }
+        //}
 
         GetAttackInput();
         GetObjInListSlot();
