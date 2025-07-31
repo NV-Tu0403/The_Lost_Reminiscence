@@ -19,6 +19,9 @@ namespace Tu_Develop.Import.Scripts
         [SerializeField] private EventReference knowledgeLightSfx;
         [SerializeField] private EventReference protectiveAuraSfx;
         
+        // Ambient sound
+        [SerializeField] private EventReference ambientSound;
+        
 
         [Header("Canvas")] [SerializeField] private TextMeshProUGUI? skill1Cooldown;
         [SerializeField] private TextMeshProUGUI? skill2Cooldown;
@@ -210,7 +213,8 @@ namespace Tu_Develop.Import.Scripts
             UpdateCooldownToCanvas();
         
             if (faBha == null) return;
-        
+            
+            
             // 2. Đồng bộ hóa trạng thái cooldown LÊN Blackboard
             // Tên skill trong C# phải khớp với tên trong hàm IsSkillAvailable
             // Tên biến trên Blackboard phải khớp với những gì bạn đã tạo

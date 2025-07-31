@@ -1,7 +1,3 @@
-using UnityEngine;
-using Code.Boss.States.Phase1;
-using Code.Boss.States.Phase2;
-using Code.Boss.States.Shared;
 
 namespace Code.Boss
 {

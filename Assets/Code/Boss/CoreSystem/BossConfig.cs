@@ -10,6 +10,10 @@ namespace Code.Boss
     [CreateAssetMenu(fileName = "BossConfig", menuName = "Boss/Boss Configuration")]
     public class BossConfig : ScriptableObject
     {
+        [Header("Debug")]
+        [Tooltip("Chọn phase để test nhanh. None: Bình thường, Phase1: Phase 1, Phase2: Phase 2, ...")]
+        public BossDebugPhase debugStartPhase = BossDebugPhase.None;
+        
         [Header("General Boss Settings")]
         public int maxHealthPerPhase = 3;
         public float moveSpeed = 5f;
@@ -38,6 +42,8 @@ namespace Code.Boss
         [Header("FMOD Studio Settings")]
         [Space]
         public FMODAudioConfig fmodAudioConfig;
+        
+
     }
 
     [Serializable]
@@ -71,7 +77,6 @@ namespace Code.Boss
         public float angryMoveDuration = 5f;
         public float fearZoneCastTime = 2f;
         public float fearZoneDuration = 8f;
-        public float fearZoneActivationTime = 3f;
         public float screamCastTime = 3f;
         public float screamDuration = 5f;
         public float cookStateDuration = 3f;
@@ -82,7 +87,8 @@ namespace Code.Boss
         
         [Header("Fear Zone")]
         public float fearZoneRadius = 3f;
-        public float visionBlurIntensity = 0.7f;
+        public GameObject fearZoneCastEffectPrefab; // Prefab hiệu ứng khi cast skill
+        public GameObject fearZoneZoneEffectPrefab; // Prefab hiệu ứng khi zone xuất hiện
         
         [Header("Scream State")]
         public float screenShakeIntensity = 1f;
@@ -152,5 +158,12 @@ namespace Code.Boss
         public EventReference phaseChangeEvent;
         public EventReference damageEvent;
         public EventReference defeatEvent;
+    }
+
+    public enum BossDebugPhase
+    {
+        None = -1,
+        Phase1 = 0,
+        Phase2 = 1
     }
 }

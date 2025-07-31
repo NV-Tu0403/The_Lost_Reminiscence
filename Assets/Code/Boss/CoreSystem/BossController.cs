@@ -116,7 +116,19 @@ namespace Code.Boss
         private void StartBoss()
         {
             BossEventSystem.Trigger(BossEventType.BossSpawned);
-            ChangeToPhase(1);
+            // Debug: chọn phase khi test bằng enum
+            switch (bossConfig.debugStartPhase)
+            {
+                case BossDebugPhase.Phase1:
+                    ChangeToPhase(1);
+                    break;
+                case BossDebugPhase.Phase2:
+                    ChangeToPhase(2);
+                    break;
+                default:
+                    ChangeToPhase(1);
+                    break;
+            }
         }
 
         private void OnHealthChanged(int newHealth, int maxHealth)
