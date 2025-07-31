@@ -39,7 +39,10 @@ public class PlayerInput_02 : MonoBehaviour
         dir = GetMoveInput();
         CharacterActionType actionType = GetSpecialActionsInput();
 
-        _playerController.PerformMoveInput(actionType, dir);
+        if (!isInputLocked) // <=> true
+        {
+            _playerController.PerformMoveInput(actionType, dir);
+        }
 
         GetAttackInput();
         GetObjInListSlot();
@@ -240,12 +243,12 @@ public class PlayerInput_02 : MonoBehaviour
     }
 
     #region  Methods
-    public Vector3 ReturnPointInput()
-    {
-        var pointLookAt = _playerController.ReturnPoinHit();
-        Debug.Log("[PlayerInput] PointLookAt: " + pointLookAt);
-        return pointLookAt;
-    }
+    //public Vector3 ReturnPointInput()
+    //{
+    //    var pointLookAt = _playerController.ReturnPoinHit();
+    //    Debug.Log("[PlayerInput] PointLookAt: " + pointLookAt);
+    //    return pointLookAt;
+    //}
 
     #endregion
 }
