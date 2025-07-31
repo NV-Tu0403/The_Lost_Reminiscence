@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Tu_Develop.Import.Scripts;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
@@ -162,18 +163,22 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         Vector3 loadedPos = _lastLoadedData.position.ToVector3();
         Quaternion loadedRot = _lastLoadedData.playerRotation.ToQuaternion();
 
+        // Nếu có NavMeshAgent
+        if (playerTransform.TryGetComponent(out NavMeshAgent agent))
+        {
+            agent.enabled = false;
+            playerTransform.position = loadedPos;
+            agent.enabled = true; 
+            agent.Warp(loadedPos);
+            //agent.Warp(loadedPos);
+        }
         // Nếu có Rigidbody
-        if (playerTransform.TryGetComponent(out Rigidbody rb))
+        else if (playerTransform.TryGetComponent(out Rigidbody rb))
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.position = loadedPos;
             rb.rotation = loadedRot;
-        }
-        // Nếu có NavMeshAgent
-        else if (playerTransform.TryGetComponent(out NavMeshAgent agent))
-        {
-            agent.Warp(loadedPos);
         }
         else
         {
@@ -215,6 +220,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
     public void ResetPlayerPositionWord()
     {
+        // Tìm Player nếu chưa có
         if (playerTransform == null)
         {
             playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
@@ -225,34 +231,73 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             }
         }
 
-        Vector3 targetPos = new Vector3(0, 3, 2);
+        Vector3 targetPos = new Vector3(0, 3, 0);
 
+        // Kiểm tra NavMeshAgent trước
+        if (playerTransform.TryGetComponent(out NavMeshAgent navAgent))
+        {
+            // Tạm thời vô hiệu hóa NavMeshAgent để set vị trí
+            navAgent.enabled = false;
+            playerTransform.position = targetPos;
+            navAgent.enabled = true;
+            navAgent.Warp(targetPos);
+        }
         // Nếu có Rigidbody
-        if (playerTransform.TryGetComponent(out Rigidbody rb))
+        else if (playerTransform.TryGetComponent(out Rigidbody rb))
         {
             rb.linearVelocity = Vector3.zero;
             rb.MovePosition(targetPos);
         }
+        // Nếu không có NavMeshAgent hoặc Rigidbody
         else
         {
             playerTransform.position = targetPos;
         }
 
+        // Lưu dữ liệu checkpoint
         _lastLoadedData = new PlayerCheckPointData
         {
             mapName = CurrentMap,
             position = new SerializableVector3(playerTransform.position)
         };
 
-        _lastLoadedData = null;
+        // Không set _lastLoadedData = null ở đây, vì sẽ xóa dữ liệu vừa lưu
         _isDirty = true;
-        //Debug.Log($"[PlayerCheckPoint] Reset position to: {playerTransform.position}");
+        Debug.Log($"[PlayerCheckPoint] Reset position to: {playerTransform.position}");
     }
 
     public void SetPlayerTransform(Transform transform)
     {
         playerTransform = transform;
-        Debug.Log("[PlayerCheckPoint] PlayerTransform set via OnNewGame().");
+
+        if (playerTransform == null)
+        {
+            Debug.LogWarning("[PlayerCheckPoint] PlayerTransform is null after assignment.");
+            return;
+        }
+
+        Vector3 targetPos = transform.position;
+
+        // Kiểm tra NavMeshAgent trước
+        if (playerTransform.TryGetComponent(out NavMeshAgent navAgent))
+        {
+            // Tạm thời vô hiệu hóa NavMeshAgent để set vị trí
+            navAgent.enabled = false;
+            playerTransform.position = targetPos;
+            navAgent.enabled = true; // Kích hoạt lại NavMeshAgent
+            navAgent.Warp(targetPos); // Dùng Warp để đảm bảo NavMeshAgent cập nhật vị trí
+        }
+        // Nếu có Rigidbody
+        else if (playerTransform.TryGetComponent(out Rigidbody rb))
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.MovePosition(targetPos);
+        }
+        // Nếu không có NavMeshAgent hoặc Rigidbody
+        else
+        {
+            playerTransform.position = targetPos;
+        }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

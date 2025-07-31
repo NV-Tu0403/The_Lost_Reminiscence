@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 public class Core_02 : PlayerEventListenerBase
 {
@@ -7,7 +6,7 @@ public class Core_02 : PlayerEventListenerBase
     public CharStateMachine _stateMachine;
 
     #region biến cần thiết
-    public string _currentPlayerState = null;
+    //public string _currentPlayerState = null;
 
 
     #endregion
