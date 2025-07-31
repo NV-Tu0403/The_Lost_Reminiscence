@@ -420,15 +420,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                     {
                         SceneController.Instance.UnloadAllAdditiveScenes(() =>
                         {
+                            mess = "Đã lưu thành công và chuẩn bị thoát khỏi phiên chơi.";
                             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
                         });
 
-                        //// Gọi lại load ảnh tại đây – sau khi ảnh mới đã được chụp xong
-                        //string imagePath = Path.Combine(currentSaveFolder, "screenshot.png");
-                        //SelectedSaveImagePath = File.Exists(imagePath) ? imagePath : null;
-                        //ScreenshotDisplayer.Instance.LoadScreenshotToPlane(SelectedSaveImagePath);
+                        // Gọi lại load ảnh tại đây – sau khi ảnh mới đã được chụp xong
                         RefreshSaveImage(currentSaveFolder);
-
                         Core.Instance.ActiveMenu(true, true); // bật lại menu (hoàn thành QuitSesion)
                     }
                     else
@@ -442,9 +439,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 Debug.LogError($"[OnQuitSession] Failed to save before unloading: {ex.Message}");
             }
         }
-
         await UIPage05.Instance.RefreshSaveSlots();
-
     }
 
     /// <summary>
@@ -646,6 +641,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     }
 
     #endregion
+
+    #region Nghiệp vụ 4
 
     /// <summary>
     /// ghi đè file save gốc bằng file backup với path được trả về bởi CheckBackupSaveAsync
@@ -888,5 +885,5 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         //Debug.Log($"Backup timestamp: {result.backupTimestamp}"); // "_backup_20250720_160001"
     }
 
-
+    #endregion
 }

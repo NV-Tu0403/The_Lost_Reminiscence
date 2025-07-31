@@ -305,8 +305,8 @@
                 case UIActionType.NewSession:
                     await TurnToPage(item.targetPage, false);
                     Core.Instance.ActiveMenu(true, false);
-                    await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerKeyDown(), true);
-                    CoreEvent.Instance.triggerNewSession();
+                    await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerNewSession(), true);
+                    //CoreEvent.Instance.triggerNewSession();
                     await TurnToPage(7, false);
                     Core.Instance.ActiveMenu(false, false);
                     break;
