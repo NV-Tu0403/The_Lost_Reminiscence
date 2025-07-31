@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlayerTaskInput : MonoBehaviour
 {
     [Header("Player Components")]
-    [SerializeField] private CharacterInput characterInput;
+    [SerializeField] private PlayerInput_02 characterInput;
     [SerializeField] private FaAgentEventChannel faAgentReadyChannel;
     [Header("Fa Components")]
     public FaAgent faAgent;

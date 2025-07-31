@@ -338,6 +338,7 @@ namespace Tu_Develop.Import.Scripts
         {
             if (!IsSkillAvailable("ProtectiveAura")) return;
             StartSkillCooldown("ProtectiveAura", 20f);
+            Code.Boss.BossEventSystem.Trigger(Code.Boss.BossEventType.FaSkillUsed, new Code.Boss.BossEventData("ProtectiveAura"));
         }
 
         public void UseGuideSignal()
@@ -345,6 +346,7 @@ namespace Tu_Develop.Import.Scripts
             if (!IsSkillAvailable("GuideSignal")) return;
             Debug.Log("Thực thi kỹ năng TinHieuDanLoi (GuideSignal)!");
             StartSkillCooldown("GuideSignal", 10f);
+            Code.Boss.BossEventSystem.Trigger(Code.Boss.BossEventType.FaSkillUsed, new Code.Boss.BossEventData("GuideSignal"));
         }
 
         public void UseKnowledgeLight()
@@ -352,6 +354,7 @@ namespace Tu_Develop.Import.Scripts
             if (!IsSkillAvailable("KnowledgeLight")) return;
             Debug.Log("Thực thi kỹ năng AnhSangTriThuc (KnowledgeLight)!");
             StartSkillCooldown("KnowledgeLight", 15f);
+            Code.Boss.BossEventSystem.Trigger(Code.Boss.BossEventType.FaSkillUsed, new Code.Boss.BossEventData("KnowledgeLight"));
         }
 
         #endregion
