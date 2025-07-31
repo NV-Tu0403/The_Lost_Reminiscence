@@ -269,7 +269,6 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
     }
 
-
     public void PerformInteractInput(CharacterActionType actionType, GameObject currentSources)
     {
         _core_02._stateMachine.HandleAction(actionType);
@@ -772,7 +771,7 @@ public class PlayerController_02 : PlayerEventListenerBase
             Debug.Log($"Attack performed: range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
             return true;
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogError($"Attack failed: {e.Message}");
             return false;
