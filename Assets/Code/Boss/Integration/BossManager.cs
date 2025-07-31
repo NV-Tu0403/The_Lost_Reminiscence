@@ -114,12 +114,15 @@ namespace Code.Boss
                 {
                     case "GuideSignal":
                         faAgent.UseGuideSignal();
+                        BossEventSystem.Trigger(BossEventType.FaSkillUsed, new BossEventData("GuideSignal"));
                         break;
                     case "KnowledgeLight":
                         faAgent.UseKnowledgeLight();
+                        BossEventSystem.Trigger(BossEventType.FaSkillUsed, new BossEventData("KnowledgeLight"));
                         break;
                     case "ProtectiveAura":
                         faAgent.UseProtectiveAura();
+                        BossEventSystem.Trigger(BossEventType.FaSkillUsed, new BossEventData("ProtectiveAura"));
                         break;
                     default:
                         Debug.LogWarning($"Skill '{skillName}' is not recognized by FaAgent.");

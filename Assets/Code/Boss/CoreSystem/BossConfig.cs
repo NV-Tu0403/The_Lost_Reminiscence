@@ -68,6 +68,7 @@ namespace Code.Boss
         public float decoySpawnRadius = 8f;
         public GameObject decoyPrefab; // Prefab cho decoy
         public GameObject decoySpawnEffectPrefab; // Prefab hiệu ứng khi spawn decoy
+        public GameObject realDecoyRevealEffectPrefab; // Prefab hiệu ứng khi reveal decoy thật
     }
 
     [Serializable]
