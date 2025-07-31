@@ -177,7 +177,7 @@ namespace Tu_Develop.Import.Scripts
                 }
 
                 // Gán giá trị mặc định cho các biến trên Blackboard
-                var player = GameObject.Find("Player");
+                var player = GameObject.FindGameObjectWithTag("Player");
                 if (player != null)
                 {
                     faBha.BlackboardReference.SetVariableValue("Player", player);
