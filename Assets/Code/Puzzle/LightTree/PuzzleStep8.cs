@@ -19,24 +19,61 @@ namespace Code.Puzzle.LightTree
         [Tooltip("Thời gian giữ camera ở vị trí chỉ định")]
         [SerializeField] private float cameraHoldDuration = 2f;
         
+        [Header("Portal Controller")]
+        [Tooltip("Script Portal_Controller để điều khiển hiệu ứng Portal")]
+        [SerializeField] private Portal_Controller portalController;
+        
         [Header("Tree")]
         [Tooltip("Vị trí cây")]
         [SerializeField] private Transform tree; 
+        //
+        // [Header("Tree Glow Effect")]
+        // [Tooltip("GameObject hoặc component điều khiển hiệu ứng sáng của cây")]
+        // [SerializeField] private GameObject treeGlowEffect;
+        //
+        // [Header("Tree Glow Emission (Demo)")]
+        // [Tooltip("Renderer của cây để làm hiệu ứng phát sáng bằng Emission (demo)")]
+        // [SerializeField] private Renderer treeRenderer;
+        // [Tooltip("Màu phát sáng (Emission)")]
+        // [SerializeField] private Color glowColor = Color.white;
+        // [Tooltip("Cường độ phát sáng tối đa")] 
+        // [SerializeField] private float glowIntensity = 2f;
+        // [Tooltip("Thời gian hiệu ứng phát sáng")] 
+        // [SerializeField] private float glowDuration = 1f;
+
+        // public void StartStep(Action onComplete)
+        // {
+        //     if (!CheckCameraAvailable(onComplete)) return;
+        //     var playerCam = GetPlayerCam(out var characterCamera);
+        //     var sequence = MoveCameraToTarget(playerCam, cameraTarget, tree, cameraMoveDuration);
+        //     sequence.AppendCallback(() =>
+        //     {
+        //         if (treeGlowEffect != null)
+        //         {
+        //             treeGlowEffect.SetActive(true);
+        //         }
+        //         DemoLightingTree();
+        //     });
+        //     sequence.AppendInterval(cameraHoldDuration);
+        //     ReturnCameraToPlayer(sequence, playerCam, cameraMoveDuration, onComplete, characterCamera);
+        // }
+        //
+        // private void DemoLightingTree()
+        // {
+        //     // Demo: Tween Emission cho cây nếu có renderer
+        //     if (treeRenderer != null)
+        //     {
+        //         treeRenderer.material.EnableKeyword("_EMISSION");
+        //         DOTween.To(
+        //             () => treeRenderer.material.GetColor("_EmissionColor"),
+        //             x => treeRenderer.material.SetColor("_EmissionColor", x),
+        //             glowColor * glowIntensity,
+        //             glowDuration
+        //         );
+        //     }
+        // }
         
-        [Header("Tree Glow Effect")]
-        [Tooltip("GameObject hoặc component điều khiển hiệu ứng sáng của cây")]
-        [SerializeField] private GameObject treeGlowEffect;
-
-        [Header("Tree Glow Emission (Demo)")]
-        [Tooltip("Renderer của cây để làm hiệu ứng phát sáng bằng Emission (demo)")]
-        [SerializeField] private Renderer treeRenderer;
-        [Tooltip("Màu phát sáng (Emission)")]
-        [SerializeField] private Color glowColor = Color.white;
-        [Tooltip("Cường độ phát sáng tối đa")] 
-        [SerializeField] private float glowIntensity = 2f;
-        [Tooltip("Thời gian hiệu ứng phát sáng")] 
-        [SerializeField] private float glowDuration = 1f;
-
+        // Phương thức này sẽ được gọi khi người chơi muốn hoàn thành bước này ngay lập tức
         public void StartStep(Action onComplete)
         {
             if (!CheckCameraAvailable(onComplete)) return;
@@ -44,32 +81,15 @@ namespace Code.Puzzle.LightTree
             var sequence = MoveCameraToTarget(playerCam, cameraTarget, tree, cameraMoveDuration);
             sequence.AppendCallback(() =>
             {
-                if (treeGlowEffect != null)
+                if (portalController != null)
                 {
-                    treeGlowEffect.SetActive(true);
+                    portalController.TogglePortal(true); 
                 }
-                DemoLightingTree();
             });
             sequence.AppendInterval(cameraHoldDuration);
             ReturnCameraToPlayer(sequence, playerCam, cameraMoveDuration, onComplete, characterCamera);
         }
 
-        private void DemoLightingTree()
-        {
-            // Demo: Tween Emission cho cây nếu có renderer
-            if (treeRenderer != null)
-            {
-                treeRenderer.material.EnableKeyword("_EMISSION");
-                DOTween.To(
-                    () => treeRenderer.material.GetColor("_EmissionColor"),
-                    x => treeRenderer.material.SetColor("_EmissionColor", x),
-                    glowColor * glowIntensity,
-                    glowDuration
-                );
-            }
-        }
-        
-        // Phương thức này sẽ được gọi khi người chơi muốn hoàn thành bước này ngay lập tức
         public void ForceComplete(bool instant = true) {}
     }
 }
