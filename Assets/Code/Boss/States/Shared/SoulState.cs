@@ -101,7 +101,15 @@ namespace Code.Boss.States.Shared
             }
         }
 
-        public override void Exit() { }
+        public override void Exit()
+        {
+            // Reset movement speed
+            if (BossController.NavAgent != null)
+            {
+                BossController.NavAgent.speed = Config.moveSpeed;
+            }
+            BossController.ResetMoveDirection();
+        }
         public override void OnTakeDamage() { }
         public override bool CanTakeDamage() => false;
         public override bool CanBeInterrupted() => isCasting;

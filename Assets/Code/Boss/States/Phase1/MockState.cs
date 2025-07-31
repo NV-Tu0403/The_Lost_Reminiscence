@@ -42,7 +42,15 @@ namespace Code.Boss.States.Phase1
             }
         }
 
-        public override void Exit() { }
+        public override void Exit()
+        {
+            // Reset movement speed
+            if (BossController.NavAgent != null)
+            {
+                BossController.NavAgent.speed = Config.moveSpeed;
+            }
+            BossController.ResetMoveDirection();
+        }
 
         public override void OnTakeDamage() { }
 
