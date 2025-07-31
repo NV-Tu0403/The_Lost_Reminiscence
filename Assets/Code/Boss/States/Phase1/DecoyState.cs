@@ -162,14 +162,18 @@ namespace Code.Boss.States.Phase1
             if (!skillActivated) return;
             BossController.ClearDecoys();
             BossController.gameObject.SetActive(true);
-            // Hủy đăng ký sự kiện khi thoát state
             BossEventSystem.Unsubscribe(BossEventType.FaSkillUsed, OnFaSkillUsed);
             // Xóa hiệu ứng nếu có
-            if (realDecoyRevealEffectInstance != null)
+            if (realDecoyRevealEffectInstance == null) return;
+            Object.Destroy(realDecoyRevealEffectInstance);
+            realDecoyRevealEffectInstance = null;
+            
+            // Reset movement speed
+            if (BossController.NavAgent != null)
             {
-                Object.Destroy(realDecoyRevealEffectInstance);
-                realDecoyRevealEffectInstance = null;
+                BossController.NavAgent.speed = Config.moveSpeed;
             }
+            BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() {}
