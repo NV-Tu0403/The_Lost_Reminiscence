@@ -195,10 +195,10 @@ public class PlayerInput_02 : MonoBehaviour
         {
             _playerController.PerformInteractInput(CharacterActionType.PickUp, _playerController.CurrentSourcesLookAt);
         }
-        if (Input.GetKeyDown(KeyCode.F)) // kích hoạt vật thể
-        {
-            Debug.Log("Chưa viết xong chức năng Kích hoạt vật thể!");
-        }
+        // if (Input.GetKeyDown(KeyCode.F)) // kích hoạt vật thể
+        // {
+        //     Debug.Log("Chưa viết xong chức năng Kích hoạt vật thể!");
+        // }
     }
 
     public void GetObjInListSlot()
