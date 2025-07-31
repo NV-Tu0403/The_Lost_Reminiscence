@@ -125,8 +125,7 @@ public class PlayerController_02 : PlayerEventListenerBase
             return;
         }
 
-        // cập nhật _playerInput.isInputLocked theo !isGrounded
-        _playerInput.isInputLocked = !isGrounded;
+        //_playerInput.isInputLocked = !isGrounded;
 
         UsingResource();
         CheckItemByLooking();
