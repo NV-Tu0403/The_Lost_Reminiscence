@@ -11,8 +11,8 @@ namespace Code.Boss
         private BossController bossController;
         private float moveSpeed;
         private Transform target;
-        
-        public bool IsReal { get; private set; }
+
+        private bool IsReal { get; set; }
 
         public void Initialize(BossController controller, bool real, float speed)
         {
