@@ -24,6 +24,7 @@ namespace Code.Boss.States.Phase2
             playerHitBoss = false;
             
             Debug.Log("[Boss State] Entered ScreamState - Casting Scream skill");
+            BossController.PlayAnimation("CastSkillA");
             BossEventSystem.Trigger(BossEventType.ScreamStarted);
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Scream" });
         }

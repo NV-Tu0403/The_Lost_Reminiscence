@@ -22,6 +22,8 @@ namespace Code.Boss.States.Phase1
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered DecoyState - Spawn 2 bóng ảo (1 thật 1 giả) truy đuổi người chơi");
+            BossController.PlayAnimation("CastSkillA");
+            Debug.Log("CastSkillA");
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;
