@@ -24,6 +24,7 @@ namespace Code.Boss.States.Phase2
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered FearZoneState");
+            BossController.PlayAnimation("CastSkillA");
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;

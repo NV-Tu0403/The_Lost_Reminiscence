@@ -19,7 +19,7 @@ namespace Code.Boss.States.Shared
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered SoulState - Teleporting and spawning soul");
-
+            BossController.PlayAnimation("CastSkillB");
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;

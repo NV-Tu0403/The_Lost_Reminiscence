@@ -14,11 +14,10 @@ namespace Code.Boss.States.Phase2
         {
             cookTimer = 0f;
             memoryFragmentDropped = false;
-            // BossController.PlayAnimation("Cook");
+            BossController.PlayAnimation("Cook"); // Play death/cook animation
             
             BossEventSystem.Trigger(BossEventType.SkillInterrupted); 
             BossEventSystem.Trigger(BossEventType.BossDefeated); 
-            
             
             // Stop all movement
             if (BossController.NavAgent != null)

@@ -13,7 +13,7 @@ namespace Code.Boss.States.Phase1
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered IdleState - Boss đứng yên tại chỗ");
-            // BossController.PlayAnimation("Idle");
+            BossController.PlayAnimation("Idle");
             
             idleTimer = 0f;
             // Stop movement
