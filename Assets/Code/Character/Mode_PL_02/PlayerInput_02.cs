@@ -53,6 +53,10 @@ public class PlayerInput_02 : MonoBehaviour
         GetUseResourceInput();
         InteractInput();
 
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            _playerController.ActiveAttack = !_playerController.ActiveAttack;
+        }
     }
 
     private void InitializeCamera()

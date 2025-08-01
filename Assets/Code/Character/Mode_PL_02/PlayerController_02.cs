@@ -207,6 +207,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     #region get input
 
+    public bool ActiveAttack = false;
     public void PerformMoveInput(CharacterActionType actionType, Vector3 direction)
     {
         if (_core_02 == null)
@@ -281,12 +282,16 @@ public class PlayerController_02 : PlayerEventListenerBase
         switch (actionType)
         {
             case CharacterActionType.Attack:
-                //Attack(direction, config.attackRange, config.attackDuration, config.attackDamage, config.attackCooldown);
-                int attackIndex = GetAttackIndexFromDirection(direction);
-                if (!isAttacking)
+                if (ActiveAttack)
                 {
-                    TryAttack(attackIndex);
+                    //Attack(direction, config.attackRange, config.attackDuration, config.attackDamage, config.attackCooldown);
+                    int attackIndex = GetAttackIndexFromDirection(direction);
+                    if (!isAttacking)
+                    {
+                        TryAttack(attackIndex);
+                    }
                 }
+
 
                 break;
             case CharacterActionType.ThrowItem:
@@ -819,12 +824,12 @@ public class PlayerController_02 : PlayerEventListenerBase
                 Debug.LogWarning("Animator is null in Attack. No animation will be played.");
                 return false;
             }
-          
+
             // Thiết lập parameter để chạy animation
             isAttacking = true;
             lastAttackTime = Time.time;
             _animator.SetInteger("AnimationIndex", attackIndex);
-            
+
 
             //Debug.Log($"Performing attack {attackIndex} with range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
 
@@ -885,25 +890,27 @@ public class PlayerController_02 : PlayerEventListenerBase
         {
             case 1:
                 // Lực hướng về phía trước, cường độ 5f
-                rb.AddForce(forwardDirection * 8f, ForceMode.Impulse);
+                //rb.AddForce(forwardDirection * 15f, ForceMode.Impulse);
+                ApplyRadialForce(rb, 15f, false);
                 Debug.LogWarning("Applied force for attack 1: Forward direction with intensity 5f.");
                 break;
 
             case 2:
                 // Lực hướng về phía trước, cường độ 4f
-                rb.AddForce(forwardDirection * 10f, ForceMode.Impulse);
+                //rb.AddForce(forwardDirection * 20f, ForceMode.Impulse);
+                ApplyRadialForce(rb, 20f, true);
                 Debug.LogWarning("Applied force for attack 2: Forward direction with intensity 4f.");
                 break;
 
             case 3:
                 // Lực hướng ra tất cả các hướng xung quanh (trừ hướng xuống)
-                ApplyRadialForce(rb, 15f, false);
+                ApplyRadialForce(rb, 30f, false);
                 Debug.LogWarning("Applied radial force for attack 3: All directions except down with intensity 6f.");
                 break;
 
             case 4:
                 // Lực hướng ra tất cả các hướng xung quanh (trừ hướng lên)
-                ApplyRadialForce(rb, 20f, true);
+                ApplyRadialForce(rb, 40f, true);
                 Debug.LogWarning("Applied radial force for attack 4: All directions except up with intensity 10f.");
                 break;
 
@@ -915,6 +922,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     /// <summary>
     /// hàm phụ để tạo lực hướng ra xung quanh từ vị trí của nhân vật.
+    /// nhận vào 3 tham số: Rigidbody, cường độ lực và Bool ForceUp.
     /// </summary>
     /// <param name="rb"></param>
     /// <param name="forceMagnitude"></param>

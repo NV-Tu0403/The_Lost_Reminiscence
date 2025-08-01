@@ -341,13 +341,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3341638541259904196}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.47856182, y: 0.5120943, z: -0.53546816, w: -0.4711814}
-  m_LocalPosition: {x: -0.008, y: 0.085, z: 0.023}
-  m_LocalScale: {x: 0.042016998, y: 0.042016998, z: 2.9627883}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.907, y: 0.078, z: 0.039}
+  m_LocalScale: {x: 0.383611, y: 0.7072721, z: 2.9627883}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3797564489183127764}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!33 &5031745389661544079
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -379,7 +379,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8741ccbd2640601478dd207fe6bb823c, type: 2}
+  - {fileID: 2100000, guid: b46e7029294a40f4f871a5809614e7e1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -529,6 +529,8 @@ MonoBehaviour:
   _camera: {fileID: 0}
   _playerController: {fileID: 0}
   isInputLocked: 0
+  lastAnimationTime: 0
+  isOnCooldown: 0
 --- !u!114 &7869715670427333634
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -563,9 +565,9 @@ MonoBehaviour:
   extraGravity: 20
   isGrounded: 1
   JumpMomentumBoost: 4
-  dashForce: 15
+  dashForce: 10
   dashDuration: 0.3
-  dashMomentumBoost: 4
+  dashMomentumBoost: 2
   previousIndex: -1
   currentEquippedItem: {fileID: 0}
   markerPrefab: {fileID: 6150798707930328859, guid: 3c9f61a1e67c0924e8d680a32b9d9848, type: 3}
@@ -573,6 +575,14 @@ MonoBehaviour:
   laserWidth: 0
   smoothSpeed: 10
   checkInterval: 0
+  wait: 0
+  waitTimeAt: 1.5
+  isAttacking: 0
+  attackDurations:
+  - 0.25
+  - 0.25
+  - 0.25
+  - 0.25
 --- !u!195 &6567181857237788016
 NavMeshAgent:
   m_ObjectHideFlags: 0
