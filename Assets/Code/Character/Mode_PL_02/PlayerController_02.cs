@@ -260,7 +260,7 @@ public class PlayerController_02 : PlayerEventListenerBase
                 return;
         }
 
-        if (isGrounded && !isAttacking) // chỉ di chuyển khi đang trên mặt đất
+        if (/*isGrounded &&*/ !isAttacking) // chỉ di chuyển khi đang trên mặt đất
         {
             // Chọn phương thức di chuyển
             if (useNavMesh && _navMeshAgent != null)
