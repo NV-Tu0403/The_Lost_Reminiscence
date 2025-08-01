@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data.SqlClient;
 using UnityEngine;
 
@@ -42,6 +42,8 @@ public class PlayerEvent : MonoBehaviour
     #region event A4
     public event Action OnPlayerAttack;
     public event Action OnPlayerDefend;
+
+    public event Action<GameObject, float, GameObject> OnTakeOutDamage;
     #endregion
 
     // -----------------------------------------------------------------------------------------------------------
@@ -70,9 +72,12 @@ public class PlayerEvent : MonoBehaviour
     public void TriggerPlayerAttack() => OnPlayerAttack?.Invoke();
     public void TriggerPlayerDefend() => OnPlayerDefend?.Invoke();
 
+    public void TriggerTakeOutDamage(GameObject attacker, float damage, GameObject target)
+    {
+        OnTakeOutDamage?.Invoke(attacker, damage, target);
+    }
+
     #endregion
-
-
 
 }
 

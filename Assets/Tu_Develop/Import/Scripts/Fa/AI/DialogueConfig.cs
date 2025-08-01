@@ -1,16 +1,20 @@
+using System;
 using UnityEngine;
 
-public class DialogueConfig : MonoBehaviour
+[Serializable]
+public class DialogueConfigData
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public string description;
+    public string[] dialogues;
+}
 
-    // Update is called once per frame
-    void Update()
+[CreateAssetMenu(fileName = "DialogueConfig", menuName = "Configs/DialogueConfig", order = 1)]
+public class DialogueConfig : ScriptableObject
+{
+    public DialogueConfigData[] dialogueSets;
+
+    public DialogueConfig(DialogueConfigData[] dialogueSets)
     {
-        
+        this.dialogueSets = dialogueSets;
     }
 }

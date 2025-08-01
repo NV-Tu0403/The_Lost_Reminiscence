@@ -16,8 +16,9 @@ namespace Code.Boss.States.Phase1
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered LureState - Boss tiến lại gần người chơi rồi rút lui");
-            //Player animation
-            // BossController.PlayAnimation("Lure");
+            // Animation: set move direction toward player
+            var dir = (BossController.Player.position - BossController.transform.position).normalized;
+            BossController.SetMoveDirection(dir.x, dir.z);
             
             originalPosition = BossController.transform.position;
             currentPhase = LurePhase.Approaching;
@@ -55,6 +56,8 @@ namespace Code.Boss.States.Phase1
         private void HandleApproaching()
         {
             MoveTowards(targetPosition, Config.phase1.lureApproachSpeed);
+            var dir = (targetPosition - BossController.transform.position).normalized;
+            BossController.SetMoveDirection(dir.x, dir.z);
             
             var distanceToTarget = Vector3.Distance(BossController.transform.position, targetPosition);
             if (distanceToTarget < 0.5f || stateTimer > Config.phase1.lureDuration * 0.6f)
@@ -66,6 +69,8 @@ namespace Code.Boss.States.Phase1
         private void HandleRetreating()
         {
             MoveTowards(originalPosition, Config.phase1.lureRetreatSpeed);
+            var dir = (originalPosition - BossController.transform.position).normalized;
+            BossController.SetMoveDirection(dir.x, dir.z);
             
             var distanceToOriginal = Vector3.Distance(BossController.transform.position, originalPosition);
             if (distanceToOriginal < 0.5f || stateTimer > Config.phase1.lureDuration)
@@ -90,6 +95,7 @@ namespace Code.Boss.States.Phase1
             {
                 BossController.NavAgent.speed = Config.moveSpeed;
             }
+            BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() { }

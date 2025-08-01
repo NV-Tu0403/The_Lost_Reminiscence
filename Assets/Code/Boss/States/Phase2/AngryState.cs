@@ -20,9 +20,9 @@ namespace Code.Boss.States.Phase2
                            BossController.transform.position;
             
             Debug.Log("[Boss State] Entered AngryState - Boss di chuyển xoay quanh trung tâm NavMesh");
-            // animation
-           // BossController.PlayAnimation("Angry");
-            
+            // Animation: set move direction 
+            var tangent = new Vector3(-Mathf.Sin(currentAngle), 0, Mathf.Cos(currentAngle));
+            BossController.SetMoveDirection(tangent.x, tangent.z);
             // Set movement speed for angry state
             if (BossController.NavAgent != null)
             {
@@ -53,7 +53,9 @@ namespace Code.Boss.States.Phase2
                 0,
                 Mathf.Sin(currentAngle) * radius
             );
-            
+            // Cập nhật hướng di chuyển cho animation
+            var tangent = new Vector3(-Mathf.Sin(currentAngle), 0, Mathf.Cos(currentAngle));
+            BossController.SetMoveDirection(tangent.x, tangent.z);
             if (BossController.NavAgent != null)
             {
                 BossController.NavAgent.SetDestination(targetPosition);
@@ -67,6 +69,7 @@ namespace Code.Boss.States.Phase2
             {
                 BossController.NavAgent.speed = Config.moveSpeed;
             }
+            BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() { }
