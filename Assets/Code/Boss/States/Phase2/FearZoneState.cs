@@ -150,6 +150,13 @@ namespace Code.Boss.States.Phase2
             if (fearZone != null) Object.Destroy(fearZone);
             if (fearZoneZoneEffect != null) Object.Destroy(fearZoneZoneEffect);
             if (fearZoneCastEffect != null) Object.Destroy(fearZoneCastEffect);
+            
+            // Reset movement speed
+            if (BossController.NavAgent != null)
+            {
+                BossController.NavAgent.speed = Config.moveSpeed;
+            }
+            BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() {}

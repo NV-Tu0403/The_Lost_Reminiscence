@@ -109,7 +109,7 @@ Light:
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 0.2
+  m_Intensity: 6.1
   m_Range: 2.21
   m_SpotAngle: 83.069885
   m_InnerSpotAngle: 55.169117
@@ -341,13 +341,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3341638541259904196}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.47856182, y: 0.5120943, z: -0.53546816, w: -0.4711814}
-  m_LocalPosition: {x: -0.008, y: 0.085, z: 0.023}
-  m_LocalScale: {x: 0.042016998, y: 0.042016998, z: 2.9627883}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.907, y: 0.078, z: 0.039}
+  m_LocalScale: {x: 0.383611, y: 0.7072721, z: 2.9627883}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3797564489183127764}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!33 &5031745389661544079
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -379,7 +379,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8741ccbd2640601478dd207fe6bb823c, type: 2}
+  - {fileID: 2100000, guid: b46e7029294a40f4f871a5809614e7e1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -438,6 +438,7 @@ GameObject:
   - component: {fileID: 6567181857237788016}
   - component: {fileID: 6296599119666814536}
   - component: {fileID: 655472004166101152}
+  - component: {fileID: 1380643300660799149}
   m_Layer: 6
   m_Name: PL_f2
   m_TagString: Player
@@ -530,6 +531,8 @@ MonoBehaviour:
   _camera: {fileID: 0}
   _playerController: {fileID: 0}
   isInputLocked: 0
+  lastAnimationTime: 0
+  isOnCooldown: 0
 --- !u!114 &7869715670427333634
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -564,9 +567,9 @@ MonoBehaviour:
   extraGravity: 20
   isGrounded: 1
   JumpMomentumBoost: 4
-  dashForce: 15
+  dashForce: 10
   dashDuration: 0.3
-  dashMomentumBoost: 4
+  dashMomentumBoost: 2
   previousIndex: -1
   currentEquippedItem: {fileID: 0}
   markerPrefab: {fileID: 6150798707930328859, guid: 3c9f61a1e67c0924e8d680a32b9d9848, type: 3}
@@ -574,6 +577,14 @@ MonoBehaviour:
   laserWidth: 0
   smoothSpeed: 10
   checkInterval: 0
+  wait: 0
+  waitTimeAt: 1.5
+  isAttacking: 0
+  attackDurations:
+  - 0.25
+  - 0.25
+  - 0.25
+  - 0.25
 --- !u!195 &6567181857237788016
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -631,6 +642,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   puzzleHealth: 3
+--- !u!114 &1380643300660799149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4643428589773489116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43e7d46c3de795d41a042923226ed368, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  characterInput: {fileID: 4053555165586273173}
+  faAgentReadyChannel: {fileID: 11400000, guid: d0c0c6e8d44245c418d9d3cfbe5db81c, type: 2}
+  faAgent: {fileID: 0}
 --- !u!1 &6585916764801262120
 GameObject:
   m_ObjectHideFlags: 0
