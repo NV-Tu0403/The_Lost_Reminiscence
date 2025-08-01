@@ -8,7 +8,7 @@ namespace Code.Trigger
     {
         protected override bool IsValidTrigger(Collider other)
         {
-            return other.CompareTag("Rock");
+            return other.CompareTag("Bullet");
         }
 
         protected override void OnTriggered(Collider other)

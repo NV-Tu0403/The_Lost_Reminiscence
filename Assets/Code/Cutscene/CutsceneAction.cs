@@ -8,18 +8,13 @@ namespace Code.Cutscene
     {
         public void Execute(BaseEventData data)
         {
-            data.OnFinish = FinishCallback;
-
-            // Gửi sự kiện bắt đầu cutscene
-            EventBus.Publish("StartCutscene", data);
-            return;
-
-            //Debug.Log($"[CutsceneAction] Requesting cutscene for event: {data.eventId}");
-            // Đặt callback khi cutscene kết thúc
-            void FinishCallback()
-            {
+            Action finishCallback = () => {
                 EventBus.Publish(data.eventId, data);
-            }
+            };
+            data.OnFinish = finishCallback;
+            
+            // Gửi sự kiện bắt đầu hội thoại
+            EventBus.Publish("StartCutscene", data);
         }
     }
 }

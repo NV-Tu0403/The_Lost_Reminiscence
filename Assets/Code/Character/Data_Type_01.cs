@@ -53,9 +53,9 @@ using UnityEngine;
         Dialogue,
         Puzzle,
         Checkpoint,
-        ChangeMap,
-        Trap,
-        Custom // cho phép mở rộng sau này
+        //ChangeMap,
+        //Trap,
+        //Custom // cho phép mở rộng sau này
     }
 
 public enum CharacterStateType
