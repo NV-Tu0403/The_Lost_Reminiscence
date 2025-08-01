@@ -254,14 +254,14 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             playerTransform.position = targetPos;
         }
 
-        // Lưu dữ liệu checkpoint
-        _lastLoadedData = new PlayerCheckPointData
-        {
-            mapName = CurrentMap,
-            position = new SerializableVector3(playerTransform.position)
-        };
+        //// Lưu dữ liệu checkpoint
+        //_lastLoadedData = new PlayerCheckPointData
+        //{
+        //    mapName = CurrentMap,
+        //    position = new SerializableVector3(playerTransform.position)
+        //};
 
-        // Không set _lastLoadedData = null ở đây, vì sẽ xóa dữ liệu vừa lưu
+        _lastLoadedData = null;
         _isDirty = true;
         Debug.Log($"[PlayerCheckPoint] Reset position to: {playerTransform.position}");
     }
