@@ -273,6 +273,20 @@ namespace Code.Boss
             }
         }
 
+        // --- Animation Parameters for Move States ---
+        public void SetMoveDirection(float x, float y)
+        {
+            if (animator == null) return;
+            animator.SetFloat("MoveX", x);
+            animator.SetFloat("MoveY", y);
+        }
+        public void ResetMoveDirection()
+        {
+            if (animator == null) return;
+            animator.SetFloat("MoveX", 0f);
+            animator.SetFloat("MoveY", 0f);
+        }
+
         // Xử lý va chạm với Bullet
         private void OnTriggerEnter(Collider other)
         {

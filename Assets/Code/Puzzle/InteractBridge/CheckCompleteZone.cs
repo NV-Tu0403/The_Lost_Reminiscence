@@ -23,6 +23,7 @@ namespace Code.Puzzle.InteractBridge
             else
             // Vô hiệu hóa zone sau khi trigger
             DisableZone();
+            puzzleStep5.countdownCanvas.enabled = false;
         }
     }
 }

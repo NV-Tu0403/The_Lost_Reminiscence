@@ -54,3 +54,60 @@ namespace Code.Boss.Testing
         }
     }
 }
+//
+// using UnityEngine;
+// using UnityEngine.AI;
+//
+// [RequireComponent(typeof(NavMeshAgent))]
+// public class PlayerNavMeshMovement : MonoBehaviour
+// {
+//     public float moveSpeed = 5f;
+//
+//     private NavMeshAgent agent;
+//     private Transform mainCameraTransform;
+//
+//     void Start()
+//     {
+//         agent = GetComponent<NavMeshAgent>();
+//         mainCameraTransform = Camera.main.transform;
+//
+//         // Đảm bảo agent không tự xoay nếu bạn điều khiển thủ công
+//         agent.updateRotation = false;
+//         agent.updateUpAxis = false;
+//     }
+//
+//     void Update()
+//     {
+//         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
+//
+//         if (input.magnitude >= 0.1f)
+//         {
+//             // Tính hướng theo camera
+//             Vector3 cameraForward = mainCameraTransform.forward;
+//             Vector3 cameraRight = mainCameraTransform.right;
+//             cameraForward.y = 0f;
+//             cameraRight.y = 0f;
+//             cameraForward.Normalize();
+//             cameraRight.Normalize();
+//
+//             // Hướng di chuyển
+//             Vector3 moveDirection = cameraForward * input.y + cameraRight * input.x;
+//             Vector3 destination = transform.position + moveDirection;
+//
+//             agent.speed = moveSpeed;
+//             agent.SetDestination(destination);
+//
+//             // Xoay mặt nhân vật theo hướng di chuyển
+//             if (moveDirection != Vector3.zero)
+//             {
+//                 Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+//                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+//             }
+//         }
+//         else
+//         {
+//             // Nếu không bấm phím thì không di chuyển
+//             agent.SetDestination(transform.position);
+//         }
+//     }
+// }

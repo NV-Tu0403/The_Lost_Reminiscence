@@ -24,6 +24,7 @@ namespace Code.Boss.States.Phase2
             playerHitBoss = false;
             
             Debug.Log("[Boss State] Entered ScreamState - Casting Scream skill");
+            BossController.PlayAnimation("CastSkillA");
             BossEventSystem.Trigger(BossEventType.ScreamStarted);
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Scream" });
         }
@@ -167,8 +168,12 @@ namespace Code.Boss.States.Phase2
 
         public override void Exit()
         {
-            BossEventSystem.Trigger(BossEventType.SkillCasted, 
-                new BossEventData { stringValue = "RemoveEffects" });
+            // Reset movement speed
+            if (BossController.NavAgent != null)
+            {
+                BossController.NavAgent.speed = Config.moveSpeed;
+            }
+            BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage()

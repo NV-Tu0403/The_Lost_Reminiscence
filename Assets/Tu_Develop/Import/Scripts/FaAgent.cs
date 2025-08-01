@@ -28,7 +28,7 @@ namespace Tu_Develop.Import.Scripts
         [SerializeField] private TextMeshProUGUI? skill3Cooldown;
         
         // Giả lập máu
-        [SerializeField] private int playerHealth = 3;
+        [SerializeField] private int playerHealth;
         
 
         private readonly Dictionary<string, float> _cooldownTimers = new Dictionary<string, float>();
@@ -162,25 +162,49 @@ namespace Tu_Develop.Import.Scripts
         
         
         public BehaviorGraphAgent? faBha;
-
+        public BlackboardReference? playerInformationBlackboard;
+        public BlackboardReference? idleConfigBlackboard;
+        public DialogueConfig? idleConfigDialogue;
+        public BlackboardReference? puzzleConfigBlackboard;
+        public DialogueConfig? puzzleConfigDialogue;
+        public BlackboardReference? combatConfigBlackboard;
+        public DialogueConfig? combatConfigDialogue;
         private void Start()
         {
+            playerHealth = 10;
+            
             faBha = GetComponent<BehaviorGraphAgent>();
-
-            if (faBha)
+            
+            if (faBha && faBha.BlackboardReference != null)
             {
-                // Kiểm tra BlackboardReference đã được gán chưa
-                if (faBha.BlackboardReference == null)
-                {
-                    Debug.LogError("BehaviorGraphAgent không có BlackboardReference!");
-                    return;
-                }
-
+               // 1. Setup IdleConfig
+               if (idleConfigBlackboard != null && idleConfigDialogue != null)
+               {
+                   // Set dialogue đầu tiên
+                   var result = idleConfigBlackboard.SetVariableValue("Dialogues", idleConfigDialogue.dialogueSets[0].dialogues);
+                   if (!result)
+                   {
+                       Debug.LogError("Không thể gán biến 'Dialogues' trên Blackboard!");
+                   }
+                   else
+                   {
+                       Debug.Log("Đã gán biến 'Dialogues' thành công.");
+                   }
+               }
+               else
+               {
+                   Debug.LogWarning("Chưa gán IdleConfig Blackboard hoặc Dialogue!");
+               }
+               // 2. Setup PuzzleConfig
+               // 3. Setup CombatConfig
+               // 4. Setup PlayerInformation
+                
                 // Gán giá trị mặc định cho các biến trên Blackboard
-                var player = GameObject.Find("Player");
+                var player = GameObject.FindGameObjectWithTag("Player");
                 if (player != null)
                 {
                     faBha.BlackboardReference.SetVariableValue("Player", player);
+                    playerInformationBlackboard?.SetVariableValue("PlayerHealth", playerHealth);
                 }
                 
 
