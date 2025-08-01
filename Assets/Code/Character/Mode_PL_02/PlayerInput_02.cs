@@ -56,6 +56,7 @@ public class PlayerInput_02 : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.K))
         {
             _playerController.ActiveAttack = !_playerController.ActiveAttack;
+            _playerController._Object.SetActive(_playerController.ActiveAttack);
         }
     }
 

@@ -23,7 +23,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     [Header("Weapon Settings")]
     [SerializeField] private List<Transform> ListBody; //   Danh sách các slot vũ khí
-    [SerializeField] private GameObject _Object;
+    [SerializeField] public GameObject _Object;
 
     [Header("Slot Settings")]
     public GameObject FacePlayer; // mặt người chơi (tạm thời)
@@ -155,7 +155,6 @@ public class PlayerController_02 : PlayerEventListenerBase
             }
         }
 
-        //PreformAttack();
     }
 
     private void LateUpdate()
@@ -682,7 +681,6 @@ public class PlayerController_02 : PlayerEventListenerBase
             }
         }
     }
-
 
     private void OnCollisionExit(Collision collision)
     {
