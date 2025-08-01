@@ -22,6 +22,10 @@ public class PlayerInput_02 : MonoBehaviour
     private float aimCooldown = 0.5f;         // Thời gian cooldown giữa 2 lần bật aim
     private float nextAvailableAimTime = 0f;  // Thời điểm tiếp theo được phép aim
 
+    //[SerializeField] private float cooldownTime = 1f; // Thời gian cooldown (giây), có thể chỉnh trong Inspector
+    public float lastAnimationTime; // Thời gian lần cuối animation được kích hoạt
+    public bool isOnCooldown; // Trạng thái cooldown
+
     private void Awake()
     {
         if (_core == null) _core = Core_02.Instance;
@@ -48,6 +52,11 @@ public class PlayerInput_02 : MonoBehaviour
         GetObjInListSlot();
         GetUseResourceInput();
         InteractInput();
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            _playerController.ActiveAttack = !_playerController.ActiveAttack;
+        }
     }
 
     private void InitializeCamera()
