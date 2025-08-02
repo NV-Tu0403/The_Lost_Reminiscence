@@ -19,12 +19,11 @@ public class PlayerInput_02 : MonoBehaviour
     private int _spacePressCount;
 
     private int currentIndex = 0;
-    private float aimCooldown = 0.5f;         // Thời gian cooldown giữa 2 lần bật aim
-    private float nextAvailableAimTime = 0f;  // Thời điểm tiếp theo được phép aim
+    private float aimCooldown = 0.5f;           // Thời gian cooldown giữa 2 lần bật aim
+    private float nextAvailableAimTime = 0f;    // Thời điểm tiếp theo được phép aim
 
-    //[SerializeField] private float cooldownTime = 1f; // Thời gian cooldown (giây), có thể chỉnh trong Inspector
-    public float lastAnimationTime; // Thời gian lần cuối animation được kích hoạt
-    public bool isOnCooldown; // Trạng thái cooldown
+    public float lastAnimationTime;             // Thời gian lần cuối animation được kích hoạt
+    public bool isOnCooldown;                   // Trạng thái cooldown
 
     private void Awake()
     {
@@ -56,6 +55,7 @@ public class PlayerInput_02 : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.K))
         {
             _playerController.ActiveAttack = !_playerController.ActiveAttack;
+            _playerController.RightHandObject.SetActive(_playerController.ActiveAttack);
         }
     }
 
@@ -75,7 +75,7 @@ public class PlayerInput_02 : MonoBehaviour
             Debug.LogError("CharacterCamera component không tìm thấy trên prefab!");
             return;
         }
-        Debug.Log(mess);
+        //Debug.Log(mess);
         _characterCamera.SetTarget(transform);
     }
 
