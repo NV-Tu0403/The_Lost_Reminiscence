@@ -547,7 +547,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _core_02: {fileID: 0}
   config: {fileID: 11400000, guid: 3e48c8610ae09694b8d564d7d749c0e1, type: 2}
-  useNavMesh: 1
+  useNavMesh: 0
   _playerInput: {fileID: 0}
   _animator: {fileID: 0}
   CurrentPlayerState: 0
@@ -562,14 +562,14 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 640
   ListSlot: {fileID: 6585916764801262120}
-  N_speed: 1
+  N_speed: 1.3
   airDrag: 1
   extraGravity: 30
   isGrounded: 1
   JumpMomentumBoost: 2
-  dashForce: 10
+  dashForce: 15
   dashDuration: 0.3
-  dashMomentumBoost: 2
+  dashMomentumBoost: 1.3
   previousIndex: -1
   currentEquippedItem: {fileID: 0}
   markerPrefab: {fileID: 6150798707930328859, guid: 3c9f61a1e67c0924e8d680a32b9d9848, type: 3}
@@ -579,6 +579,11 @@ MonoBehaviour:
   checkInterval: 0
   wait: 0
   waitTimeAt: 1.5
+  groundCheckRadius: 1
+  groundCheckDistance: 0.4
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 512
   ActiveAttack: 0
   isAttacking: 0
   attackDurations:
