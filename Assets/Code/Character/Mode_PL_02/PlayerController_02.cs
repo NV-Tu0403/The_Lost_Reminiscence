@@ -246,8 +246,9 @@ public class PlayerController_02 : PlayerEventListenerBase
                 return;
         }
 
-        if (!isGrounded && CurrentPlayerState != CharacterStateType.Jump && CurrentPlayerState != CharacterStateType.Dash)
+        if (/*!isGrounded && */CurrentPlayerState != CharacterStateType.Jump && CurrentPlayerState != CharacterStateType.Dash)
             HelpCheckGround();
+        //if (!isGrounded) HelpCheckGround();
         if (isGrounded && !isAttacking)
         {
             // Chọn phương thức di chuyển
@@ -1046,17 +1047,17 @@ public class PlayerController_02 : PlayerEventListenerBase
         isGrounded = Physics.CheckSphere(groundCheckPosition, groundCheckRadius, invironmentLayer);
     }
 
-    private void OnDrawGizmos()
-    {
-        if (config != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
+    //private void OnDrawGizmos()
+    //{
+    //    if (config != null)
+    //    {
+    //        Gizmos.color = Color.red;
+    //        Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
 
-            Gizmos.color = isGrounded ? Color.green : Color.red;
-            Gizmos.DrawWireSphere(groundCheckPosition, groundCheckRadius);
-        }
-    }
+    //        Gizmos.color = isGrounded ? Color.green : Color.red;
+    //        Gizmos.DrawWireSphere(groundCheckPosition, groundCheckRadius);
+    //    }
+    //}
     #endregion
 
     #region Actions & logic Action
