@@ -84,7 +84,7 @@ namespace Code.Boss
             Debug.Log("Player Defeated!");
             // This could trigger game over screen, respawn, etc.
             // Reload Scene
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         private void OnBossDefeated(BossEventData data)
