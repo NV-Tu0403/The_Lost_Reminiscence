@@ -545,52 +545,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfaf308e66ebec746aa5024e71be7b32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _core_02: {fileID: 0}
+  checkInterval: 0
   config: {fileID: 11400000, guid: 3e48c8610ae09694b8d564d7d749c0e1, type: 2}
-  useNavMesh: 0
   _playerInput: {fileID: 0}
-  _animator: {fileID: 0}
   CurrentPlayerState: 0
+  FacePlayer: {fileID: 8087231924178536207}
   ListBody:
   - {fileID: 181701157510574171}
   - {fileID: 5299982958990802985}
   - {fileID: 5804514318105018676}
   - {fileID: 7121193446153382650}
-  _Object: {fileID: 3341638541259904196}
-  FacePlayer: {fileID: 8087231924178536207}
+  ListSlot: {fileID: 6585916764801262120}
+  invironmentLayer:
+    serializedVersion: 2
+    m_Bits: 0
   lookAtLayerMask:
     serializedVersion: 2
     m_Bits: 640
-  ListSlot: {fileID: 6585916764801262120}
+  RightHandObject: {fileID: 0}
+  useNavMesh: 1
+  isGrounded: 1
   N_speed: 1.3
   airDrag: 1
   extraGravity: 30
-  isGrounded: 1
   JumpMomentumBoost: 2
   dashForce: 15
   dashDuration: 0.3
   dashMomentumBoost: 1.3
   previousIndex: -1
-  currentEquippedItem: {fileID: 0}
   markerPrefab: {fileID: 6150798707930328859, guid: 3c9f61a1e67c0924e8d680a32b9d9848, type: 3}
   laserMaterial: {fileID: 2100000, guid: 8741ccbd2640601478dd207fe6bb823c, type: 2}
   laserWidth: 0
   smoothSpeed: 10
-  checkInterval: 0
-  wait: 0
-  waitTimeAt: 1.5
-  groundCheckRadius: 1
-  groundCheckDistance: 0.4
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 512
   ActiveAttack: 0
   isAttacking: 0
+  wait: 0
+  waitTimeAt: 1.5
   attackDurations:
   - 0.25
   - 0.25
   - 0.25
   - 0.25
+  groundCheckRadius: 1
+  groundCheckDistance: 0.4
 --- !u!195 &6567181857237788016
 NavMeshAgent:
   m_ObjectHideFlags: 0
