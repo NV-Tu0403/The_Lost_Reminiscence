@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using Loc_Backend.Scripts;
 using System;
+using Code.Backend;
 
 /// <summary>
 /// Trung tâm điều phối toàn bộ các State của Core game.

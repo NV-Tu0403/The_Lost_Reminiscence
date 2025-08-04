@@ -17,12 +17,12 @@ namespace Code.Dialogue
             SetDropdownToCurrentLocale();
         }
 
-        void PopulateDropdown()
+        private void PopulateDropdown()
         {
             dropdown.ClearOptions();
 
             var options = new List<TMP_Dropdown.OptionData>();
-            for (int i = 0; i < LocalizationSettings.AvailableLocales.Locales.Count; i++)
+            for (var i = 0; i < LocalizationSettings.AvailableLocales.Locales.Count; i++)
             {
                 var locale = LocalizationSettings.AvailableLocales.Locales[i];
                 var option = new TMP_Dropdown.OptionData(locale.Identifier.CultureInfo.NativeName);
@@ -38,20 +38,18 @@ namespace Code.Dialogue
             dropdown.RefreshShownValue();
         }
 
-        void SetDropdownToCurrentLocale()
+        private void SetDropdownToCurrentLocale()
         {
             var currentLocale = LocalizationSettings.SelectedLocale;
-            for (int i = 0; i < LocalizationSettings.AvailableLocales.Locales.Count; i++)
+            for (var i = 0; i < LocalizationSettings.AvailableLocales.Locales.Count; i++)
             {
-                if (LocalizationSettings.AvailableLocales.Locales[i].Identifier == currentLocale.Identifier)
-                {
-                    dropdown.value = i;
-                    break;
-                }
+                if (LocalizationSettings.AvailableLocales.Locales[i].Identifier != currentLocale.Identifier) continue;
+                dropdown.value = i;
+                break;
             }
         }
 
-        void ChangeLanguage(int index)
+        private static void ChangeLanguage(int index)
         {
             LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[index];
         }

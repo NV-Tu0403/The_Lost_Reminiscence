@@ -38,14 +38,7 @@ namespace Code.GameEventSystem
         /// </summary>
         public static void Publish(string eventKey, object data = null)
         {
-            if (eventTable.ContainsKey(eventKey))
-            {
-                eventTable[eventKey]?.Invoke(data);
-            }
-            else
-            {
-                Debug.LogWarning($"[EventBus] No listeners for event: {eventKey}");
-            }
+            if (eventTable.ContainsKey(eventKey)) eventTable[eventKey]?.Invoke(data);
         }
 
         /// <summary>
