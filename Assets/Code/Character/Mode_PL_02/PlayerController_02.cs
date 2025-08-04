@@ -7,65 +7,86 @@ using System.Collections.Generic;
 
 public class PlayerController_02 : PlayerEventListenerBase
 {
-    [SerializeField] private Core_02 _core_02;
+    #region biến cần thiết
+
+    [Header("Debug")]
+    private string mess = null;
+    [SerializeField] private float checkInterval = 0.1f;
+    private float lastCheckTime;
+    private Vector3 groundCheckPosition; // Vị trí kiểm tra mặt đất
+
+    [Header("Core base")]
+    private Core_02 _core_02;
+    private Animator _animator;
     public PlayerConfig config;
-    [SerializeField] private bool useNavMesh = false;
-    public PlayerInput_02 _playerInput;
+
+    [Header("Reference")]
     public Rigidbody _rigidbody { get; private set; }
     public NavMeshAgent _navMeshAgent { get; private set; }
-    [SerializeField] private Animator _animator; // set animator
-    public IUsable CurrentUsable { get; set; }
+
+    public PlayerInput_02 _playerInput;
     public Timer throwTimer = new Timer();
 
-    public CharacterStateType CurrentPlayerState;
+    public CharacterStateType CurrentPlayerState;           // Trạng thái hiện tại của người chơi
+    public IUsable CurrentUsable { get; set; }
 
-    #region Dictionary Type Action
+    [Header("Body")]
+    public GameObject FacePlayer;                           // mặt người chơi (tạm thời)
+    [SerializeField] private List<Transform> ListBody;      //   Danh sách các slot vũ khí
+    public GameObject ListSlot;                             // Danh sách Slot (tạm thời)
 
-    [Header("Weapon Settings")]
-    [SerializeField] private List<Transform> ListBody; //   Danh sách các slot vũ khí
-    [SerializeField] private GameObject _Object;
 
     [Header("Slot Settings")]
-    public GameObject FacePlayer; // mặt người chơi (tạm thời)
-    [SerializeField] private LayerMask lookAtLayerMask;
-    public GameObject ListSlot; // Danh sách Slot (tạm thời)
+    [SerializeField] private LayerMask invironmentLayer;    // Lớp để kiểm tra môi trường
+    [SerializeField] private LayerMask lookAtLayerMask;     // Lớp để kiểm tra đối tượng khi nhìn vào
+    public GameObject CurrentSourcesLookAt { get; set; }    // Đối tượng mà người chơi đang nhìn vào
+    [SerializeField] public GameObject RightHandObject;     // đối tượng đang được sử dụng (đang nằm trong tay phải)
 
-    private string mess = null;
 
+    [Header("Currrent character setting")]
     private Vector3 lastRotationDirection = Vector3.forward;
-    [SerializeField] private float N_speed = 32;
-    [SerializeField] private float airDrag = 0.97f;
-    [SerializeField] private float extraGravity = 20f;
+    [SerializeField] private bool useNavMesh = false;
     [SerializeField] private bool isGrounded = true;
-    [SerializeField] private float JumpMomentumBoost = 4f;
-    [SerializeField] private float dashForce = 15f;   // lực dash
-    [SerializeField] private float dashDuration = 0.3f; // thời gian dash
-    [SerializeField] private float dashMomentumBoost = 10f; // nhân vận tốc ngang
 
-    public int previousIndex = -1; // -1 = chưa có gì
-    public GameObject currentEquippedItem;
-    public Coroutine deactivateCoroutine;
+    [Header("Nav character Settings")]
+    [SerializeField] private float N_speed = 1.3f;
+    [SerializeField] private float airDrag = 1f;
+    [SerializeField] private float extraGravity = 30f;
 
-    [SerializeField] private GameObject markerPrefab; // Prefab dùng để đánh dấu (test)
-    [SerializeField] private Material laserMaterial; // Material cho laser line (test)
-    [SerializeField] private float laserWidth = 0.02f; // Độ rộng của laser line (test)
+    [SerializeField] private float JumpMomentumBoost = 2f;
+    [SerializeField] private float dashForce = 15f;         // lực dash
+    [SerializeField] private float dashDuration = 0.3f;     // thời gian dash
+    [SerializeField] private float dashMomentumBoost = 1.3f;// nhân vận tốc ngang
 
+    [Header("Character action Settings")]
+    public int previousIndex = -1;                          // Lưu chỉ mục trước đó của item được trang bị
+    public Coroutine deactivateCoroutine;                   // Coroutine để hủy kích hoạt item sau khi ném
+    [SerializeField] private GameObject markerPrefab;       // Prefab dùng để đánh dấu (test)
+    [SerializeField] private Material laserMaterial;        // Material cho laser line (test)
+    [SerializeField] private float laserWidth = 0.02f;      // Độ rộng của laser line (test)
     private GameObject currentMarker;
     private LineRenderer laserLine;
-
     private float savedDistance = 0f;
     private float savedHeight = 0f;
     private bool isCameraSettingsSaved = false;
 
-    private float currentDirectionX = 0f; // Giá trị hiện tại của DirectionX
-    private float currentDirectionZ = 0f; // Giá trị hiện tại của DirectionZ
+    private float currentDirectionX = 0f;
+    private float currentDirectionZ = 0f;
     [SerializeField] private float smoothSpeed = 10f; // Tốc độ làm mượt (có thể chỉnh trong Inspector)
-
-    [SerializeField] private float checkInterval = 0.1f;
-    private float lastCheckTime;
-
-    public GameObject CurrentSourcesLookAt { get; set; } // Đối tượng mà người chơi đang nhìn vào
     public Vector3 CurrentLookAtHitPoint { get; private set; } // tọa độ điểm va chạm của tia nhìn
+
+    [Header("Attack Settings")]
+    public bool ActiveAttack = false;
+    public bool isAttacking;
+    public bool wait = false;
+    public float waitTimeAt = 2f; // Thời gian chờ 2 giây
+    private float timer = 0f;
+    private float lastAttackTime;
+
+    [SerializeField] private float[] attackDurations;
+    [SerializeField] private float groundCheckRadius = 1f; // Radius of the sphere for ground check
+    [SerializeField] private float groundCheckDistance = 0.4f; // Distance to check below the player
+
     #endregion
 
     protected override void Awake()
@@ -111,36 +132,16 @@ public class PlayerController_02 : PlayerEventListenerBase
         if (Input.GetKeyDown(KeyCode.N))
         {
             useNavMesh = !useNavMesh;
-            if (_navMeshAgent != null)
+            if (useNavMesh)
             {
-                _navMeshAgent.updatePosition = useNavMesh;
-                _rigidbody.isKinematic = useNavMesh;
+                _navMeshAgent.Warp(transform.position); // Đồng bộ vị trí NavMeshAgent với Rigidbody
+                _navMeshAgent.updatePosition = true;
+            }
+            else
+            {
+                _navMeshAgent.updatePosition = false;
             }
             Debug.Log($"Switched to {(useNavMesh ? "NavMesh" : "Rigidbody")} movement.");
-        }
-
-        if (_core_02 == null)
-        {
-            Debug.LogError("Core_02 instance is null in PlayerController_02 Update.");
-            return;
-        }
-
-        //_playerInput.isInputLocked = isAttacking; // Khóa input khi đang tấn công
-        // Kiểm tra nhấn chuột trái
-        if (Input.GetMouseButtonDown(0) && !wait)
-        {
-            wait = true;
-            timer = waitTimeAt;
-        }
-
-        // Đếm ngược thời gian khi wait = true
-        if (wait)
-        {
-            timer -= Time.deltaTime;
-            if (timer <= 0)
-            {
-                wait = false;
-            }
         }
 
         UsingResource();
@@ -154,8 +155,7 @@ public class PlayerController_02 : PlayerEventListenerBase
                 _animator.SetBool("Throw", false);
             }
         }
-
-        //PreformAttack();
+        WaitCheck();
     }
 
     private void LateUpdate()
@@ -182,11 +182,6 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
     }
 
-    public bool wait = false;
-    public float waitTimeAt = 2f; // Thời gian chờ 2 giây
-    private float timer = 0f;
-
-
     #region base Event/state
 
     public override void RegisterEvent(PlayerEvent e)
@@ -207,7 +202,6 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     #region get input
 
-    public bool ActiveAttack = false;
     public void PerformMoveInput(CharacterActionType actionType, Vector3 direction)
     {
         if (_core_02 == null)
@@ -229,18 +223,10 @@ public class PlayerController_02 : PlayerEventListenerBase
         // Chuyển state
         _core_02._stateMachine.HandleAction(actionType);
 
-        // Set animation trigger cho Movement hoặc Idle
         if (_animator != null)
         {
             SetAnimationParameters(actionType, direction);
         }
-
-
-        //if (actionType == CharacterActionType.Jump)
-        //{
-        //    Jump();
-        //    return;
-        //}
 
         float moveSpeed = config.walkSpeed; // mặc định là walk
         // Chọn tốc độ dựa trên type action
@@ -254,13 +240,15 @@ public class PlayerController_02 : PlayerEventListenerBase
                 break;
             case CharacterActionType.Jump:
                 Jump(config.jumpImpulse);
-                break;
+                return;
             case CharacterActionType.Dash:
                 Dash();
                 return;
         }
 
-        if (/*isGrounded &&*/ !isAttacking) // chỉ di chuyển khi đang trên mặt đất
+        if (!isGrounded && CurrentPlayerState != CharacterStateType.Jump && CurrentPlayerState != CharacterStateType.Dash)
+            HelpCheckGround();
+        if (isGrounded && !isAttacking)
         {
             // Chọn phương thức di chuyển
             if (useNavMesh && _navMeshAgent != null)
@@ -291,8 +279,6 @@ public class PlayerController_02 : PlayerEventListenerBase
                         TryAttack(attackIndex);
                     }
                 }
-
-
                 break;
             case CharacterActionType.ThrowItem:
                 Thrown(2f); // tạm thời
@@ -335,6 +321,9 @@ public class PlayerController_02 : PlayerEventListenerBase
         Debug.Log($"Equipped usable: {CurrentUsable.Name}");
     }
 
+    /// <summary>
+    /// Sử dụng tài nguyên từ ListBody[1] (tay phải).
+    /// </summary>
     public void UsingResource()
     {
         if (ListBody == null)
@@ -343,16 +332,17 @@ public class PlayerController_02 : PlayerEventListenerBase
             return;
         }
 
+        // kiểm tra ListBody[1] có tồn tại và có con không
         if (ListBody.Count > 2 && ListBody[1] != null && ListBody[1].childCount > 0)
         {
             Transform childTransform = ListBody[1].transform.GetChild(0);
             if (childTransform != null)
             {
                 GameObject childObject = childTransform.gameObject;
-                _Object = childObject;
+                RightHandObject = childObject;
                 Component component = null;
 
-                Component[] components = _Object.GetComponents<Component>();
+                Component[] components = RightHandObject.GetComponents<Component>();
                 foreach (var c in components)
                 {
                     if (c.GetType().Name == "Weapon")
@@ -375,7 +365,7 @@ public class PlayerController_02 : PlayerEventListenerBase
                 }
                 else
                 {
-                    Debug.LogWarning($"Weapons component not found on {_Object.name}!");
+                    Debug.LogWarning($"Weapons component not found on {RightHandObject.name}!");
                 }
             }
             else
@@ -663,37 +653,6 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision?.gameObject.CompareTag("Ground") == true)
-        {
-            isGrounded = true;
-
-            // Triệt tiêu quán tính ngang khi tiếp đất
-            Vector3 vel = _rigidbody.linearVelocity;
-            vel.x = 0;
-            vel.z = 0;
-            _rigidbody.linearVelocity = vel;
-
-            // Thoát JumpState
-            if (CurrentPlayerState == CharacterStateType.Jump)
-            {
-                _core_02._stateMachine.SetState(new IdleState_1(_core_02._stateMachine, _playerEvent));
-            }
-        }
-    }
-
-
-    private void OnCollisionExit(Collision collision)
-    {
-        if (collision == null) { return; }
-
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-        }
-    }
-
     #endregion
 
     #region Attack
@@ -705,12 +664,12 @@ public class PlayerController_02 : PlayerEventListenerBase
         // Đợi một khoảng thời gian để animation chạy
         yield return new WaitForSeconds(delay);
 
-        GameObject thrownObject = currentEquippedItem?.gameObject;
+        GameObject thrownObject = RightHandObject?.gameObject;
         if (thrownObject != null)
         {
             thrownObject.SetActive(true);
-            currentEquippedItem.gameObject.transform.SetParent(null);
-            currentEquippedItem = null;
+            RightHandObject.gameObject.transform.SetParent(null);
+            RightHandObject = null;
         }
         if (thrownObject == null)
         {
@@ -755,11 +714,6 @@ public class PlayerController_02 : PlayerEventListenerBase
     {
         StartCoroutine(ThrownCoroutine(force, 0.2f)); // Độ trễ 0.5 giây, bạn có thể điều chỉnh
     }
-
-
-    private float lastAttackTime;
-    public bool isAttacking;
-    [SerializeField] private float[] attackDurations;
 
     private int GetAttackIndexFromDirection(Vector3 direction)
     {
@@ -1050,18 +1004,80 @@ public class PlayerController_02 : PlayerEventListenerBase
     }
     #endregion
 
-    #region Gizmos
+    #region check collision
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision?.gameObject.CompareTag("Ground") == true)
+        {
+            isGrounded = true;
+
+            // Triệt tiêu quán tính ngang khi tiếp đất
+            Vector3 vel = _rigidbody.linearVelocity;
+            vel.x = 0;
+            vel.z = 0;
+            _rigidbody.linearVelocity = vel;
+
+            // Thoát JumpState
+            if (CurrentPlayerState == CharacterStateType.Jump)
+            {
+                _core_02._stateMachine.SetState(new IdleState_1(_core_02._stateMachine, _playerEvent));
+            }
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision == null) { return; }
+
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = false;
+        }
+    }
+
+    private void HelpCheckGround()
+    {
+        //if (Time.time - lastCheckTime < checkInterval) return;
+        //lastCheckTime = Time.time;
+
+        groundCheckPosition = transform.position + Vector3.down * 0.2f;
+
+        isGrounded = Physics.CheckSphere(groundCheckPosition, groundCheckRadius, invironmentLayer);
+    }
+
     private void OnDrawGizmos()
     {
         if (config != null)
         {
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
+
+            Gizmos.color = isGrounded ? Color.green : Color.red;
+            Gizmos.DrawWireSphere(groundCheckPosition, groundCheckRadius);
         }
     }
     #endregion
 
     #region Actions & logic Action
+
+    private bool WaitCheck()
+    {
+        if (Input.GetMouseButtonDown(0) && !wait)
+        {
+            wait = true;
+            timer = waitTimeAt;
+        }
+        if (wait)
+        {
+            timer -= Time.deltaTime;
+            if (timer <= 0)
+            {
+                wait = false;
+            }
+        }
+        return true;
+    }
 
     /// <summary>
     /// Trả về hướng nhìn hiện tại của camera từ trung tâm màn hình.
@@ -1277,10 +1293,10 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
 
         // Trả item cũ về slot nếu có
-        if (previousIndex >= 0 && currentEquippedItem != null)
+        if (previousIndex >= 0 && RightHandObject != null)
         {
-            currentEquippedItem.transform.SetParent(ListSlot.transform, false);
-            currentEquippedItem.SetActive(false);
+            RightHandObject.transform.SetParent(ListSlot.transform, false);
+            //RightHandObject.SetActive(false);
         }
 
         // Lấy item mới từ index
@@ -1292,7 +1308,7 @@ public class PlayerController_02 : PlayerEventListenerBase
         newItem.transform.localRotation = Quaternion.identity;
         newItem.SetActive(true);
 
-        currentEquippedItem = newItem;
+        RightHandObject = newItem;
         previousIndex = index;
 
         if (deactivateCoroutine != null)
