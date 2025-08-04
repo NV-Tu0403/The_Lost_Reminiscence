@@ -22,7 +22,7 @@ namespace Code.Dialogue
     
     
     [CreateAssetMenu(fileName = "Dialogue_" ,menuName = "Events/Dialogue", order = 2)]
-    public class DialogueNodeSO : ScriptableObject
+    public class DialogueNodeSo : ScriptableObject
     {
         [Header("Speaker")] 
         public SpeakerName speakerName;
@@ -37,13 +37,13 @@ namespace Code.Dialogue
         public DialogueChoiceData[] choices; // Nếu null hoặc rỗng → không có branching
 
         [Header("Tiếp tục (nếu không có branching)")]
-        public DialogueNodeSO nextNode;
+        public DialogueNodeSo nextNode;
     }
 
     [System.Serializable]
     public class DialogueChoiceData
     {
         public LocalizedString choiceText; // Key cho localization
-        public DialogueNodeSO nextNode; // Node tiếp theo nếu chọn
+        public DialogueNodeSo nextNode; // Node tiếp theo nếu chọn
     }
 }

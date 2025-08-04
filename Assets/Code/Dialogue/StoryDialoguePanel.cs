@@ -17,9 +17,7 @@ namespace Code.Dialogue
 
         // Callback for when dialogue ends
         private Action onDialogueEnd;
-        private DialogueNodeSO currentNode;
         private Coroutine typingCoroutine;
-        private bool isTyping = false;
         private Tween blinkNextTween;
         private Tween blinkSkipTween;
         private const float TypewriterDelay = 0.05f;
@@ -27,7 +25,7 @@ namespace Code.Dialogue
         /// <summary>
         /// Show dialogue from root node, set end callback.
         /// </summary>
-        public void ShowDialogue(DialogueNodeSO rootNode, Action onEnd)
+        public void ShowDialogue(DialogueNodeSo rootNode, Action onEnd)
         {
             EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             
@@ -51,7 +49,7 @@ namespace Code.Dialogue
         /// <summary>
         /// Show a dialogue node, or end if null.
         /// </summary>
-        private void ShowNode(DialogueNodeSO node)
+        private void ShowNode(DialogueNodeSo node)
         {
             StopBlinking(ref blinkNextTween);
 
@@ -60,7 +58,6 @@ namespace Code.Dialogue
                 EndDialogue();
                 return;
             }
-            currentNode = node;
             nextButton.gameObject.SetActive(false);
             if (typingCoroutine != null)
                 StopCoroutine(typingCoroutine);
@@ -70,14 +67,10 @@ namespace Code.Dialogue
         /// <summary>
         /// Typewriter effect for dialogue text.
         /// </summary>
-        private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
+        private IEnumerator TypewriterCoroutine(DialogueNodeSo node)
         {
-            isTyping = true;
-            Debug.Log(isTyping);
             yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
-            isTyping = false;
             ShowNextButton(node);
-
             StopBlinking(ref blinkNextTween);
             StartBlinking(nextButton, ref blinkNextTween);
         }
@@ -85,18 +78,12 @@ namespace Code.Dialogue
         /// <summary>
         /// Show next button, bind click to next node or end.
         /// </summary>
-        private void ShowNextButton(DialogueNodeSO node)
+        private void ShowNextButton(DialogueNodeSo node)
         {
             nextButton.gameObject.SetActive(true);
             nextButton.onClick.RemoveAllListeners();
-            if (node.nextNode != null)
-            {
-                nextButton.onClick.AddListener(() => ShowNode(node.nextNode));
-            }
-            else
-            {
-                nextButton.onClick.AddListener(EndDialogue);
-            }
+            if (node.nextNode != null) nextButton.onClick.AddListener(() => ShowNode(node.nextNode));
+            else nextButton.onClick.AddListener(EndDialogue);
         }
 
         /// <summary>
@@ -106,7 +93,6 @@ namespace Code.Dialogue
         {
             if (typingCoroutine != null)
                 StopCoroutine(typingCoroutine);
-            isTyping = false;
             EndDialogue();
         }
 
@@ -129,7 +115,7 @@ namespace Code.Dialogue
         /// <summary>
         /// Button blinking effect.
         /// </summary>
-        private void StartBlinking(Button button, ref Tween tweenHolder)
+        private static void StartBlinking(Button button, ref Tween tweenHolder)
         {
             var image = button.GetComponent<Image>();
             if (image == null) return;
@@ -141,13 +127,11 @@ namespace Code.Dialogue
                 .SetEase(Ease.InOutSine);
         }
 
-        private void StopBlinking(ref Tween tween)
+        private static void StopBlinking(ref Tween tween)
         {
-            if (tween != null)
-            {
-                tween.Kill();
-                tween = null;
-            }
+            if (tween == null) return;
+            tween.Kill();
+            tween = null;
         }
     }
 }

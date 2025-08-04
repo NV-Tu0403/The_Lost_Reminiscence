@@ -21,13 +21,8 @@ namespace Code.Dialogue
         private void Awake()
         {
             if (fullDialoguePanel != null) fullDialoguePanel.gameObject.SetActive(false);
-            //else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + fullDialoguePanel );
-            
             if (bubbleDialoguePanel != null) bubbleDialoguePanel.gameObject.SetActive(false);
-            //else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + bubbleDialoguePanel );
-            
             if (storyDialoguePanel != null) storyDialoguePanel.gameObject.SetActive(false);
-            //else Debug.Log("[DialogueManager] Hệ thống chưa gán:" + storyDialoguePanel );
         }
 
         /// <summary>
@@ -36,10 +31,10 @@ namespace Code.Dialogue
         /// - Load DialogueNodeSO từ Addressables.
         /// - Khi load xong, gọi CheckDisplayDialogue để chọn panel phù hợp.
         /// </summary>
-        public void StartDialogue(string dialogueId, Action onFinish)
+        private void StartDialogue(string dialogueId, Action onFinish)
         {
             if (dialogueId == null) return;
-            Addressables.LoadAssetAsync<DialogueNodeSO>(dialogueId).Completed += handle =>
+            Addressables.LoadAssetAsync<DialogueNodeSo>(dialogueId).Completed += handle =>
             {
                 if (handle.Status == AsyncOperationStatus.Succeeded)
                 {
@@ -56,7 +51,7 @@ namespace Code.Dialogue
         /// - Hiển thị FullDialoguePanel, BubbleDialoguePanel hoặc StoryDialoguePanel tương ứng
         /// - Nếu không có displayMode hợp lệ, ghi log cảnh báo.
         /// </summary>
-        private void CheckDisplayDialogue(string dialogueId, Action onFinish, AsyncOperationHandle<DialogueNodeSO> handle)
+        private void CheckDisplayDialogue(string dialogueId, Action onFinish, AsyncOperationHandle<DialogueNodeSo> handle)
         {
             var dialogue = handle.Result;
             var onDialogueEnd = CallEvent(onFinish);
@@ -65,16 +60,14 @@ namespace Code.Dialogue
             {
                 case DialogueDisplayMode.FullPanel:
                     fullDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
-                    //Debug.Log("[DialogueManager] Hiển thị FullDialoguePanel: " + dialogueId);
                     break;
                 case DialogueDisplayMode.BubblePanel:
                     bubbleDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
-                    //Debug.Log("[DialogueManager] Hiển thị BubbleDialoguePanel: " + dialogueId);
                     break;
                 case DialogueDisplayMode.StoryPanel:
                     storyDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
-                    //Debug.Log("[DialogueManager] Hiển thị StoryDialoguePanel: " + dialogueId);
                     break;
+                case DialogueDisplayMode.None:
                 default:
                     Debug.LogWarning($"DialogueNodeSO {dialogueId} không có displayMode hợp lệ!");
                     break;
@@ -90,13 +83,15 @@ namespace Code.Dialogue
         {
             // Phát event bắt đầu hội thoại
             EventBus.Publish("StartDialogue");
+
+            return OnDialogueEnd;
+
             // Tạo callback kết thúc hội thoại
-            Action onDialogueEnd = () =>
+            void OnDialogueEnd()
             {
                 EventBus.Publish("EndDialogue");
                 onFinish?.Invoke();
-            };
-            return onDialogueEnd;
+            }
         }
 
         /// <summary>
@@ -127,10 +122,7 @@ namespace Code.Dialogue
         /// </summary>
         private void OnStartDialogueEvent(object data)
         {
-            //Debug.Log($"[DialogueManager] OnStartDialogueEvent received | Data: {data}");
-            var eventData = data as BaseEventData;
-            if (eventData == null) return;
-            //Debug.Log($"[DialogueManager] Starting dialogue with eventId: {eventData.eventId}");
+            if (data is not BaseEventData eventData) return;
             StartDialogue(eventData.eventId, eventData.OnFinish);
         }
     }

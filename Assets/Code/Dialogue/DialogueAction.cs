@@ -1,7 +1,4 @@
-using System;
 using Code.GameEventSystem;
-using UnityEngine;
-using EventBus = Code.GameEventSystem.EventBus;
 
 namespace Code.Dialogue
 {
@@ -9,11 +6,16 @@ namespace Code.Dialogue
     {
         public void Execute(BaseEventData data)
         {
-            Action finishCallback = () => { EventBus.Publish(data.eventId, data); };
-            data.OnFinish = finishCallback;
+            data.OnFinish = FinishCallback;
 
             // Gửi sự kiện bắt đầu hội thoại
             EventBus.Publish("StartDialogue", data);
+            return;
+
+            void FinishCallback()
+            {
+                EventBus.Publish(data.eventId, data);
+            }
         }
     }
 }

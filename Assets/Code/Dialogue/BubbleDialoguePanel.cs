@@ -18,10 +18,8 @@ namespace Code.Dialogue
         [SerializeField] private AudioSource sfxSource;
         
         private Action onDialogueEnd;
-        private DialogueNodeSO currentNode;
         private Coroutine typingCoroutine;
         private CanvasGroup canvasGroup;
-        private bool isTyping = false;
         private const float TypewriterDelay = 0.05f;
         
         private void Awake()
@@ -35,13 +33,11 @@ namespace Code.Dialogue
         /// - Hiển thị text với hiệu ứng typewriter.
         /// - Tự động ẩn sau 2 giây khi gõ xong.
         /// </summary>
-        public void ShowDialogue(DialogueNodeSO node, Action onEnd)
+        public void ShowDialogue(DialogueNodeSo node, Action onEnd)
         {
             EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             gameObject.SetActive(true);
             onDialogueEnd = onEnd;
-            currentNode = node;
-
             ShowAnimation();
             ShowNode(node);
         }
@@ -51,14 +47,13 @@ namespace Code.Dialogue
         /// - Nếu node null thì kết thúc.
         /// - Dừng hiệu ứng cũ nếu có, bắt đầu hiệu ứng mới.
         /// </summary>
-        private void ShowNode(DialogueNodeSO node)
+        private void ShowNode(DialogueNodeSo node)
         {
             if (node == null)
             {
                 EndDialogue();
                 return;
             }
-            currentNode = node;
             if (typingCoroutine != null)
                 StopCoroutine(typingCoroutine);
             typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
@@ -69,12 +64,9 @@ namespace Code.Dialogue
         /// - Lấy text từ LocalizedString và chạy hiệu ứng gõ chữ.
         /// - Sau khi gõ xong, tự động ẩn bubble sau 2 giây.
         /// </summary>
-        private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
+        private IEnumerator TypewriterCoroutine(DialogueNodeSo node)
         {
-            isTyping = true;
-            Debug.Log(isTyping);
             yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
-            isTyping = false;
             yield return new WaitForSeconds(timeToHide);
             EndDialogue();
         }
@@ -96,7 +88,7 @@ namespace Code.Dialogue
         {
             if (canvasGroup == null) return;
 
-            RectTransform rectTransform = transform as RectTransform;
+            var rectTransform = transform as RectTransform;
             if (rectTransform == null) return;
 
             // Khởi tạo trạng thái
@@ -104,8 +96,8 @@ namespace Code.Dialogue
             transform.localScale = Vector3.one * 0.8f; // scale nhỏ ban đầu
 
             // Vị trí ban đầu: thấp hơn 30px
-            Vector2 originalPos = rectTransform.anchoredPosition;
-            Vector2 startPos = originalPos - new Vector2(0f, 30f);
+            var originalPos = rectTransform.anchoredPosition;
+            var startPos = originalPos - new Vector2(0f, 30f);
             rectTransform.anchoredPosition = startPos;
 
             // Tween hiệu ứng
@@ -124,11 +116,11 @@ namespace Code.Dialogue
             if (canvasGroup == null) return;
 
             // Lưu vị trí hiện tại để tween anchorPos
-            RectTransform rectTransform = transform as RectTransform;
+            var rectTransform = transform as RectTransform;
             if (rectTransform == null) return;
 
-            Vector2 startPos = rectTransform.anchoredPosition;
-            Vector2 endPos = startPos + new Vector2(0f, 30f); // bay lên 30px
+            var startPos = rectTransform.anchoredPosition;
+            var endPos = startPos + new Vector2(0f, 30f); // bay lên 30px
 
             // Di chuyển vị trí UI (bay lên)
             rectTransform.DOAnchorPos(endPos, 0.25f).SetEase(Ease.OutSine);
