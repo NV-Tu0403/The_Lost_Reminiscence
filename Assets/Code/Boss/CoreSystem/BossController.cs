@@ -34,6 +34,10 @@ namespace Code.Boss
         private int currentPhase = 1;
         private List<GameObject> currentDecoys = new List<GameObject>();
         
+        // Initial position and rotation for reset
+        private Vector3 initialPosition;
+        private Quaternion initialRotation;
+        
         // Public Properties
         public BossConfig Config => bossConfig;
         public NavMeshAgent NavAgent => navMeshAgent;
@@ -57,6 +61,10 @@ namespace Code.Boss
 
         private void Start()
         {
+            // Store initial position and rotation for reset
+            initialPosition = transform.position;
+            initialRotation = transform.rotation;
+            
             InitializeSystems();
             StartBoss();
         }
@@ -308,6 +316,46 @@ namespace Code.Boss
             
             ClearDecoys();
             BossEventSystem.ClearAllListeners();
+        }
+
+        /// <summary>
+        /// Reset boss về trạng thái ban đầu (dùng khi restart game)
+        /// </summary>
+        public void ResetBoss()
+        {
+            Debug.Log("[BossController] Resetting boss to initial state");
+            
+            // Reset health through health system
+            healthSystem.ResetPhaseHealth();
+            
+            // Reset phase
+            currentPhase = 1;
+            
+            // Reset position
+            if (navMeshAgent != null)
+            {
+                navMeshAgent.enabled = false;
+                transform.position = initialPosition;
+                transform.rotation = initialRotation;
+                navMeshAgent.enabled = true;
+            }
+            
+            // Clear decoys
+            ClearDecoys();
+            
+            // Reset state machine to initial state
+            ChangeToPhase(1);
+            
+            // Clear any ongoing effects
+            StopAllCoroutines();
+            
+            // Clear soul manager
+            if (soulManager != null)
+            {
+                soulManager.DestroyAllSouls();
+            }
+            
+            Debug.Log($"[BossController] Boss reset - Phase: {currentPhase}");
         }
     }
 }

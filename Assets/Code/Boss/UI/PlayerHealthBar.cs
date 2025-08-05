@@ -67,6 +67,7 @@ namespace Code.Boss
         {
             BossEventSystem.Subscribe(BossEventType.PlayerTakeDamage, OnPlayerTakeDamage);
             BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeated);
+            BossEventSystem.Subscribe(BossEventType.PlayerHealthReset, OnPlayerHealthReset);
         }
 
         private void OnPlayerTakeDamage(BossEventData data)
@@ -95,11 +96,9 @@ namespace Code.Boss
 
         private void OnPlayerDefeated()
         {
-            // Handle player defeat
-            Debug.Log("Player Defeated!");
-            // This could trigger game over screen, respawn, etc.
-            // Reload Scene
-            //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            Debug.Log("[PlayerHealthBar] Player Defeated!");
+            // Trigger PlayerDefeated event để GameManager xử lý
+            BossEventSystem.Trigger(BossEventType.PlayerDefeated);
         }
 
         private void OnBossDefeated(BossEventData data)
@@ -111,6 +110,7 @@ namespace Code.Boss
         {
             BossEventSystem.Unsubscribe(BossEventType.PlayerTakeDamage, OnPlayerTakeDamage);
             BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeated);
+            BossEventSystem.Unsubscribe(BossEventType.PlayerHealthReset, OnPlayerHealthReset);
         }
 
         private void AnimateHealthChange(int newHealth)
@@ -136,6 +136,21 @@ namespace Code.Boss
                 yield return null;
             }
             healthSlider.value = end;
+        }
+
+        private void OnPlayerHealthReset(BossEventData data)
+        {
+            int newMaxHealth = data.intValue;
+            currentHealth = newMaxHealth;
+            maxHealth = newMaxHealth;
+            
+            if (healthSlider != null)
+            {
+                healthSlider.maxValue = maxHealth;
+                AnimateHealthChange(currentHealth);
+            }
+            UpdateHealthText();
+            Debug.Log($"[PlayerHealthBar] Health reset to {currentHealth}/{maxHealth}");
         }
     }
 }
