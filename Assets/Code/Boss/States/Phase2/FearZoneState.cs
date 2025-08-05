@@ -25,7 +25,8 @@ namespace Code.Boss.States.Phase2
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered FearZoneState");
-            //BossController.PlayAnimation("CastSkillA");
+            BossController.PlayAnimation("CastSkillA");
+            
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;
@@ -227,7 +228,12 @@ namespace Code.Boss.States.Phase2
             castTimer = 0f;
             skillTimer = 0f;
             
-            Debug.Log("[FearZoneState] Exit cleanup completed - all effects destroyed");
+            // // Reset movement speed
+            // if (BossController.NavAgent != null)
+            // {
+            //     BossController.NavAgent.speed = Config.moveSpeed;
+            // }
+            // BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() {}

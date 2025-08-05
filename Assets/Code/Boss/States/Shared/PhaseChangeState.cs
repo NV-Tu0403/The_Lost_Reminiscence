@@ -40,7 +40,8 @@ namespace Code.Boss.States.Shared
 
         public override void Exit()
         {
-            // Cleanup handled in Enter()
+            // BossController.ResetMoveDirection();
+            // BossController.NavAgent.speed = Config.moveSpeed;
         }
 
         public override void OnTakeDamage()

@@ -20,6 +20,7 @@ namespace Code.Boss.States.Shared
         {
             Debug.Log("[Boss State] Entered SoulState - Teleporting and spawning soul");
             BossController.PlayAnimation("CastSkillB");
+            
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;
@@ -103,12 +104,12 @@ namespace Code.Boss.States.Shared
 
         public override void Exit()
         {
-            // Reset movement speed
-            if (BossController.NavAgent != null)
-            {
-                BossController.NavAgent.speed = Config.moveSpeed;
-            }
-            BossController.ResetMoveDirection();
+            // // Reset movement speed
+            // if (BossController.NavAgent != null)
+            // {
+            //     BossController.NavAgent.speed = Config.moveSpeed;
+            // }
+            // BossController.ResetMoveDirection();
         }
         public override void OnTakeDamage() { }
         public override bool CanTakeDamage() => false;
