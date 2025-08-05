@@ -38,7 +38,7 @@ namespace Code.Dialogue
             textComponent.text = "";
             for (var i = 0; i < fullText.Length; i++)
             {
-                textComponent.text = fullText.Substring(0, i + 1);
+                if (i + 1 >= 0 && i + 1 <= fullText.Length) textComponent.text = fullText[..(i + 1)];
                 yield return new WaitForSeconds(delay);
             }
             textComponent.text = fullText;
