@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 namespace Code.Boss
 {
@@ -14,15 +15,27 @@ namespace Code.Boss
         [SerializeField] private TextMeshProUGUI skillNameText;
         [SerializeField] private GameObject castBarContainer;
         
+        [Header("Animation Settings")]
+        [SerializeField] private float slideInDuration = 0.5f;
+        [SerializeField] private float slideOutDuration = 0.3f;
+        [SerializeField] private Ease slideInEase = Ease.OutBack;
+        [SerializeField] private Ease slideOutEase = Ease.InBack;
+        
         private UIConfig uiConfig;
         private bool isVisible = false;
+        
         private Coroutine castAnimationCoroutine;
+        private Vector2 originalPosition;
+        private Vector2 hiddenPosition;
+        private RectTransform rectTransform;
+        private Tween currentTween;
 
         public void Initialize(BossController controller)
         {
             uiConfig = controller.Config.uiConfig;
             
             SetupUI();
+            SetupAnimation();
             RegisterEvents();
             
             // Hide initially
@@ -42,6 +55,22 @@ namespace Code.Boss
             {
                 fillImage.color = uiConfig.skillCastColor;
             }
+        }
+
+        private void SetupAnimation()
+        {
+            // Get RectTransform for animation
+            rectTransform = castBarContainer?.GetComponent<RectTransform>();
+            if (rectTransform == null) return;
+            
+            // Store original position (current position in scene)
+            originalPosition = rectTransform.anchoredPosition;
+            
+            // Calculate hidden position (off-screen to the left)
+            hiddenPosition = originalPosition + Vector2.left * (rectTransform.rect.width + 100f);
+            
+            // Start at hidden position
+            rectTransform.anchoredPosition = hiddenPosition;
         }
 
         private void RegisterEvents()
@@ -110,12 +139,45 @@ namespace Code.Boss
         private void SetVisible(bool visible)
         {
             isVisible = visible;
-            if (castBarContainer == null) return;
-            castBarContainer.SetActive(visible);
+            if (castBarContainer == null || rectTransform == null) return;
+
+            // Kill any existing tween
+            currentTween?.Kill();
+            
+            // Always make sure the container is active for animation
+            castBarContainer.SetActive(true);
+
+            if (visible)
+            {
+                // Slide in from left - Start at hidden position, animate to original position
+                rectTransform.anchoredPosition = hiddenPosition;
+                currentTween = DOTween.To(() => rectTransform.anchoredPosition, 
+                                        x => rectTransform.anchoredPosition = x, 
+                                        originalPosition, slideInDuration)
+                    .SetEase(slideInEase)
+                    .OnComplete(() => {
+                        Debug.Log("[BossSkillCastBar] Slide in animation completed");
+                    });
+            }
+            else
+            {
+                // Slide out to left - Start at current position, animate to hidden position
+                currentTween = DOTween.To(() => rectTransform.anchoredPosition, 
+                                        x => rectTransform.anchoredPosition = x, 
+                                        hiddenPosition, slideOutDuration)
+                    .SetEase(slideOutEase)
+                    .OnComplete(() => {
+                        castBarContainer.SetActive(false);
+                        Debug.Log("[BossSkillCastBar] Slide out animation completed");
+                    });
+            }
         }
 
         private void OnDestroy()
         {
+            // Kill any active tweens
+            currentTween?.Kill();
+            
             BossEventSystem.Unsubscribe(BossEventType.SkillCasted, OnSkillCasted);
             BossEventSystem.Unsubscribe(BossEventType.SkillCastProgress, OnSkillCastProgress);
             BossEventSystem.Unsubscribe(BossEventType.SkillInterrupted, OnSkillInterrupted);
