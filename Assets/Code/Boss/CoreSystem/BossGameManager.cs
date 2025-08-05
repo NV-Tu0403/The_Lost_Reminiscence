@@ -12,6 +12,7 @@ namespace Code.Boss
     {
         [Header("Boss Setup")]
         [SerializeField] private BossController bossController;
+        [SerializeField] private BossTriggerZone bossTriggerZone;
         
         [Header("Fa Agent Reference")]
         [SerializeField] private FaAgent faAgent;
@@ -19,15 +20,19 @@ namespace Code.Boss
         [Header("UI References")]
         [SerializeField] private GameObject gameOverUI;
         [SerializeField] private PlayerHealthBar playerHealthBar;
+        [SerializeField] private BossHealthBar bossHealthBar;
+        [SerializeField] private BossSkillCastBar bossSkillCastBar;
         
         public static BossGameManager Instance { get; private set; }
         
         private bool isGameOver = false;
+        private bool bossFightStarted = false;
         
         // Events for external systems
         public System.Action<int> OnBossPhaseChanged;
         public System.Action OnBossDefeated;
         public System.Action<int> OnPlayerHealthChanged;
+        public System.Action OnBossFightStarted;
 
         private void Awake()
         {
@@ -44,20 +49,16 @@ namespace Code.Boss
         {
             InitializeBossSystem();
             RegisterBossEvents();
-            
-            if (gameOverUI != null)
-                gameOverUI.SetActive(false);
+            HideAllUI(); // Ẩn UI ban đầu
         }
 
         private void InitializeBossSystem()
         {
-            // Setup boss controller if not assigned
+            // Setup boss trigger zone if not assigned
+            if (bossTriggerZone == null) bossTriggerZone = FindFirstObjectByType<BossTriggerZone>();
+            
+            // Setup boss controller if not assigned (có thể null ban đầu vì chưa spawn)
             if (bossController == null) bossController = FindFirstObjectByType<BossController>();
-            if (bossController == null)
-            {
-                Debug.LogError("BossController not found! Please assign it in the inspector.");
-                return;
-            }
             
             // Setup FaAgent if not assigned
             if (faAgent == null) faAgent = FindFirstObjectByType<FaAgent>();
@@ -66,16 +67,15 @@ namespace Code.Boss
                 Debug.LogWarning("FaAgent not found! Boss system will work without Fa integration.");
             }
             
-            // Setup PlayerHealthBar if not assigned
+            // Setup UI components
             if (playerHealthBar == null) playerHealthBar = FindFirstObjectByType<PlayerHealthBar>();
-            if (playerHealthBar == null)
-            {
-                Debug.LogWarning("PlayerHealthBar not found! Please assign it in the inspector.");
-            }
+            if (bossHealthBar == null) bossHealthBar = FindFirstObjectByType<BossHealthBar>();
+            if (bossSkillCastBar == null) bossSkillCastBar = FindFirstObjectByType<BossSkillCastBar>();
         }
 
         private void RegisterBossEvents()
         {
+            BossEventSystem.Subscribe(BossEventType.BossFightStarted, OnBossFightStartedEvent);
             BossEventSystem.Subscribe(BossEventType.PhaseChanged, OnPhaseChangedEvent);
             BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeatedEvent);
             BossEventSystem.Subscribe(BossEventType.PlayerTakeDamage, OnPlayerTakeDamageEvent);
@@ -84,8 +84,48 @@ namespace Code.Boss
             BossEventSystem.Subscribe(BossEventType.RequestRadarSkill, OnRequestRadarSkill);
             BossEventSystem.Subscribe(BossEventType.RequestOtherSkill, OnRequestOtherSkill);
         }
+
+        private void HideAllUI()
+        {
+            if (playerHealthBar != null) playerHealthBar.gameObject.SetActive(false);
+            if (bossHealthBar != null) bossHealthBar.gameObject.SetActive(false);
+            if (bossSkillCastBar != null) bossSkillCastBar.gameObject.SetActive(false);
+            if (gameOverUI != null) gameOverUI.SetActive(false);
+        }
+
+        private void ShowBossUI()
+        {
+            if (playerHealthBar != null) playerHealthBar.gameObject.SetActive(true);
+            if (bossHealthBar != null) bossHealthBar.gameObject.SetActive(true);
+            if (bossSkillCastBar != null) bossSkillCastBar.gameObject.SetActive(true);
+            
+            // Initialize UI với boss controller mới spawn
+            if (bossController != null)
+            {
+                if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config);
+                if (bossHealthBar != null) bossHealthBar.Initialize(bossController);
+                if (bossSkillCastBar != null) bossSkillCastBar.Initialize(bossController);
+            }
+        }
         
         #region Boss Events
+        private void OnBossFightStartedEvent(BossEventData data)
+        {
+            bossFightStarted = true;
+            
+            // Update boss controller reference từ trigger zone
+            if (bossTriggerZone != null)
+            {
+                bossController = bossTriggerZone.GetSpawnedBoss();
+            }
+            
+            // Show boss UI
+            ShowBossUI();
+            
+            OnBossFightStarted?.Invoke();
+            Debug.Log("[BossGameManager] Boss fight started - UI activated!");
+        }
+
         private void OnPhaseChangedEvent(BossEventData data)
         {
             var newPhase = data.intValue;
@@ -182,13 +222,13 @@ namespace Code.Boss
             // Reset time scale
             Time.timeScale = 1f;
             isGameOver = false;
+            bossFightStarted = false;
             
-            // Hide Game Over UI
-            if (gameOverUI != null)
-                gameOverUI.SetActive(false);
+            // Hide all UI
+            HideAllUI();
             
-            // Reset Boss System
-            ResetBossSystem();
+            // Reset trigger zone
+            ResetTriggerZone();
             
             // Reset Player Health
             ResetPlayerHealth();
@@ -198,8 +238,18 @@ namespace Code.Boss
         {
             if (bossController != null)
             {
-                bossController.ResetBoss();
-                Debug.Log("[BossGameManager] Boss system reset");
+                Destroy(bossController.gameObject);
+                bossController = null;
+                Debug.Log("[BossGameManager] Boss destroyed for restart");
+            }
+        }
+        
+        private void ResetTriggerZone()
+        {
+            if (bossTriggerZone != null)
+            {
+                bossTriggerZone.ResetTrigger();
+                Debug.Log("[BossGameManager] Trigger zone reset");
             }
         }
         
@@ -208,23 +258,6 @@ namespace Code.Boss
             // Trigger event to reset player health
             BossEventSystem.Trigger(BossEventType.PlayerHealthReset, new BossEventData(3));
             Debug.Log("[BossGameManager] Player health reset");
-        }
-        
-        public void ReloadScene()
-        {
-            Debug.Log("[BossGameManager] Reloading scene...");
-            Time.timeScale = 1f;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
-        
-        public void QuitGame()
-        {
-            Debug.Log("[BossGameManager] Quitting game...");
-            Application.Quit();
-            
-            #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-            #endif
         }
         #endregion
 

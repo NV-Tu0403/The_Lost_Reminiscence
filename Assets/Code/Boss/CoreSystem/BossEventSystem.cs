@@ -71,6 +71,9 @@ namespace Code.Boss
     /// </summary>
     public enum BossEventType
     {
+        // Game Flow Events
+        BossFightStarted,
+        
         // Phase Events
         PhaseChanged,
         BossSpawned,
@@ -98,10 +101,6 @@ namespace Code.Boss
         SoulStateStarted,
         FearZoneCreated,
         ScreamStarted,
-        
-        // Physics Events
-        CameraShake,
-        VisionShrink,
         
         // UI Events
         HealthChanged,
