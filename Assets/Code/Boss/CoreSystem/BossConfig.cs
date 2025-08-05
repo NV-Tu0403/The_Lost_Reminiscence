@@ -50,6 +50,7 @@ namespace Code.Boss
         [Header("FMOD Studio Settings")]
         [Space]
         public FMODAudioConfig fmodAudioConfig;
+
     }
 
     [Serializable]
@@ -96,10 +97,14 @@ namespace Code.Boss
         public float fearZoneRadius = 3f;
         public GameObject fearZoneCastEffectPrefab; // Prefab hiệu ứng khi cast skill
         public GameObject fearZoneZoneEffectPrefab; // Prefab hiệu ứng khi zone xuất hiện
-        public GameObject fearZonePlayerEffectPrefab; // Prefab hiệu ứng bao quanh player khi trong fear zone
-        [Header("Scream State")]
-        public float screenShakeIntensity = 1f;
-        public float visionShrinkAmount = 0.5f;
+        public GameObject fearZonePlayerEffectPrefab;
+        
+        [Header("Shake Effect Settings")]
+        public float shakeDuration = 0.5f;
+        public float shakeStrength = 0.5f;
+        public int shakeVibrato = 20;
+        public float shakeRandomness = 90f;
+        public GameObject shakeEffectPrefab;// Prefab hiệu ứng bao quanh player khi trong fear zone
     }
 
     [Serializable]
