@@ -1009,7 +1009,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision?.gameObject.CompareTag("Ground") == true)
+        if (collision != null && collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             isGrounded = true;
 
@@ -1029,9 +1029,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     private void OnCollisionExit(Collision collision)
     {
-        if (collision == null) { return; }
-
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision != null && collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             isGrounded = false;
         }
@@ -1047,17 +1045,17 @@ public class PlayerController_02 : PlayerEventListenerBase
         isGrounded = Physics.CheckSphere(groundCheckPosition, groundCheckRadius, invironmentLayer);
     }
 
-    //private void OnDrawGizmos()
-    //{
-    //    if (config != null)
-    //    {
-    //        Gizmos.color = Color.red;
-    //        Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
+    private void OnDrawGizmos()
+    {
+        if (config != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
 
-    //        Gizmos.color = isGrounded ? Color.green : Color.red;
-    //        Gizmos.DrawWireSphere(groundCheckPosition, groundCheckRadius);
-    //    }
-    //}
+            Gizmos.color = isGrounded ? Color.green : Color.red;
+            Gizmos.DrawWireSphere(groundCheckPosition, groundCheckRadius);
+        }
+    }
     #endregion
 
     #region Actions & logic Action
