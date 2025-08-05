@@ -47,14 +47,20 @@ namespace Code.Boss.States.Phase2
         
         private void DropMemoryFragment()
         {
-            // Create memory fragment at boss position
-            var memoryFragment = new GameObject("MemoryFragment");
-            memoryFragment.transform.position = BossController.transform.position;
-            
-            // Add memory fragment behavior
-            var fragmentBehavior = memoryFragment.AddComponent<MemoryFragmentBehavior>();
-            
-            BossEventSystem.Trigger(BossEventType.BossDefeated, new BossEventData(memoryFragment));
+            // Spawn memory fragment prefab từ BossConfig tại vị trí boss
+            if (Config.memoryFragmentPrefab != null)
+            {
+                var memoryFragment = Object.Instantiate(Config.memoryFragmentPrefab, 
+                    BossController.transform.position, 
+                    Quaternion.identity);
+                
+                BossEventSystem.Trigger(BossEventType.BossDefeated, new BossEventData(memoryFragment));
+            }
+            else
+            {
+                Debug.LogWarning("[CookState] Memory Fragment Prefab not assigned in BossConfig!");
+                BossEventSystem.Trigger(BossEventType.BossDefeated);
+            }
         }
 
         private void CompleteBossDefeat()
