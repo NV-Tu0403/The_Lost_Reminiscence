@@ -1,3 +1,5 @@
+using System;
+using Tu_Develop.Import.Scripts;
 using UnityEngine;
 
 namespace Code.Boss
@@ -11,14 +13,21 @@ namespace Code.Boss
         [SerializeField] private BossController bossController;
         
         [Header("Fa Agent Reference")]
-        [SerializeField] private Tu_Develop.Import.Scripts.FaAgent faAgent;
+        [SerializeField] private FaAgent faAgent;
 
         public static BossManager Instance { get; private set; }
         
         // Events for external systems
-        public System.Action<int> OnBossPhaseChanged;
-        public System.Action OnBossDefeated;
-        public System.Action<int> OnPlayerHealthChanged;
+        private readonly Action<int> onBossPhaseChanged;
+        private readonly Action onBossDefeated;
+        private readonly Action<int> onPlayerHealthChanged;
+
+        public BossManager(Action<int> onBossPhaseChanged, Action onBossDefeated, Action<int> onPlayerHealthChanged)
+        {
+            this.onBossPhaseChanged = onBossPhaseChanged;
+            this.onBossDefeated = onBossDefeated;
+            this.onPlayerHealthChanged = onPlayerHealthChanged;
+        }
 
         private void Awake()
         {
@@ -47,7 +56,7 @@ namespace Code.Boss
             }
             
             // Setup FaAgent if not assigned
-            if (faAgent == null) faAgent = FindFirstObjectByType<Tu_Develop.Import.Scripts.FaAgent>();
+            if (faAgent == null) faAgent = FindFirstObjectByType<FaAgent>();
             if (faAgent == null)
             {
                 Debug.LogError("FaAgent not found! Please assign it in the inspector.");
@@ -69,21 +78,21 @@ namespace Code.Boss
         private void OnPhaseChanged(BossEventData data)
         {
             var newPhase = data.intValue;
-            OnBossPhaseChanged?.Invoke(newPhase);
+            onBossPhaseChanged?.Invoke(newPhase);
             
             Debug.Log($"Boss entered Phase {newPhase}");
         }
 
         private void OnBossDefeatedEvent(BossEventData data)
         {
-            OnBossDefeated?.Invoke();
+            onBossDefeated?.Invoke();
             Debug.Log("Boss has been defeated!");
         }
 
         private void OnPlayerTakeDamageEvent(BossEventData data)
         {
             var damage = data.intValue;
-            OnPlayerHealthChanged?.Invoke(damage);
+            onPlayerHealthChanged?.Invoke(damage);
         }
 
         private void OnBossSpawned(BossEventData data)
