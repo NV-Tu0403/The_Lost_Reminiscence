@@ -252,8 +252,9 @@ public class PlayerController_02 : PlayerEventListenerBase
                 return;
         }
 
-        if (!isGrounded && CurrentPlayerState != CharacterStateType.Jump && CurrentPlayerState != CharacterStateType.Dash)
+        if (/*!isGrounded && */CurrentPlayerState != CharacterStateType.Jump && CurrentPlayerState != CharacterStateType.Dash)
             HelpCheckGround();
+        //if (!isGrounded) HelpCheckGround();
         if (isGrounded && !isAttacking)
         {
             // Chọn phương thức di chuyển
@@ -1014,7 +1015,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision?.gameObject.CompareTag("Ground") == true)
+        if (collision != null && collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             isGrounded = true;
 
@@ -1034,9 +1035,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     private void OnCollisionExit(Collision collision)
     {
-        if (collision == null) { return; }
-
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision != null && collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             isGrounded = false;
         }
