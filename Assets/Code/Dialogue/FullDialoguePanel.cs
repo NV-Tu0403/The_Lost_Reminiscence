@@ -36,12 +36,8 @@ namespace Code.Dialogue
         // Callback để thông báo về bên ngoài khi kết thúc toàn bộ dialogue
         private Action onDialogueEnd;
 
-        // Tham chiếu node đang hiển thị
-        private DialogueNodeSO currentNode;
-
         // Coroutine gõ chữ
         private Coroutine typingCoroutine;
-        private bool isTyping = false;
         
         // Coroutine nhấp nháy
         private Tween blinkNextTween;
@@ -56,7 +52,7 @@ namespace Code.Dialogue
         /// - node gốc
         /// - callback khi kết thúc 
         /// </summary>
-        public void ShowDialogue(DialogueNodeSO rootNode, Action onEnd)
+        public void ShowDialogue(DialogueNodeSo rootNode, Action onEnd)
         {
             EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
             
@@ -93,7 +89,7 @@ namespace Code.Dialogue
         /// - Xóa lựa chọn cũ, ẩn Next, dừng typewriter cũ.
         /// - Bắt đầu hiệu ứng typewriter cho node mới.
         /// </summary>
-        private void ShowNode(DialogueNodeSO node)
+        private void ShowNode(DialogueNodeSo node)
         {
             StopBlinking(ref blinkNextTween);
             
@@ -102,8 +98,6 @@ namespace Code.Dialogue
                 EndDialogue();
                 return;
             }
-            currentNode = node;
-            //Debug.Log("Hiển thị node: " + currentNode);
             
             ShowSpeaker(node);
             ClearChoices();
@@ -119,15 +113,11 @@ namespace Code.Dialogue
         /// - Gõ từng ký tự với delay 0.5s.
         /// - Sau khi gõ xong, show Next hoặc các lựa chọn.
         /// </summary>
-        private IEnumerator TypewriterCoroutine(DialogueNodeSO node)
+        private IEnumerator TypewriterCoroutine(DialogueNodeSo node)
         {
-            isTyping = true;
-            Debug.Log(isTyping);
             yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
-            isTyping = false;
             
-            if (node.choices != null && node.choices.Length > 0)
-                ShowChoices(node);
+            if (node.choices is { Length: > 0 }) ShowChoices(node);
             else
             {
                 ShowNextButton(node);
@@ -141,7 +131,7 @@ namespace Code.Dialogue
         /// <summary>
         /// Hiển thị tên nhân vật nói
         /// </summary>
-        private void ShowSpeaker(DialogueNodeSO node)
+        private void ShowSpeaker(DialogueNodeSo node)
         {
             nameSpeaker.text = node.speakerName.ToString();
         }
@@ -150,27 +140,20 @@ namespace Code.Dialogue
         /// Hiển thị nút Next (nếu node.nextNode != null),
         /// hoặc gọi EndDialogue khi nextNode == null.
         /// </summary>
-        private void ShowNextButton(DialogueNodeSO node)
+        private void ShowNextButton(DialogueNodeSo node)
         {
             choicesPanel.gameObject.SetActive(false);
             nextButton.gameObject.SetActive(true);
-
             nextButton.onClick.RemoveAllListeners();
-            if (node.nextNode != null)
-            {
-                nextButton.onClick.AddListener(() => ShowNode(node.nextNode));
-            }
-            else
-            {
-                nextButton.onClick.AddListener(EndDialogue);
-            }
+            if (node.nextNode != null) nextButton.onClick.AddListener(() => ShowNode(node.nextNode));
+            else nextButton.onClick.AddListener(EndDialogue);
         }
 
         /// <summary>
         /// Tạo và hiển thị các nút lựa chọn.
         /// Khi người chơi ấn, sẽ gọi ShowNode với nextNode tương ứng.
         /// </summary>
-        private void ShowChoices(DialogueNodeSO node)
+        private void ShowChoices(DialogueNodeSo node)
         {
             choicesPanel.gameObject.SetActive(true);
             nextButton.gameObject.SetActive(false);
@@ -191,7 +174,7 @@ namespace Code.Dialogue
             btn.onClick.RemoveAllListeners();
 
             // Lấy component TextMeshProUGUI in children để hiển thị text
-            TextMeshProUGUI txt = btn.GetComponentInChildren<TextMeshProUGUI>();
+            var txt = btn.GetComponentInChildren<TextMeshProUGUI>();
 
             // Đăng ký LocalizedString để cập nhật text
             choice.choiceText.StringChanged += localizedText =>
@@ -238,8 +221,6 @@ namespace Code.Dialogue
             // Nếu đang gõ chữ, dừng và show full text (tránh crash)
             if (typingCoroutine != null)
                 StopCoroutine(typingCoroutine);
-
-            isTyping = false;
             EndDialogue();
         }
 
@@ -271,7 +252,7 @@ namespace Code.Dialogue
         /// <summary>
         /// Hiệu ứng nhấp nháy nút
         /// </summary>
-        private void StartBlinking(Button button, ref Tween tweenHolder)
+        private static void StartBlinking(Button button, ref Tween tweenHolder)
         {
             var image = button.GetComponent<Image>();
             if (image == null) return;
@@ -283,13 +264,11 @@ namespace Code.Dialogue
                 .SetEase(Ease.InOutSine);
         }
 
-        private void StopBlinking(ref Tween tween)
+        private static void StopBlinking(ref Tween tween)
         {
-            if (tween != null)
-            {
-                tween.Kill();
-                tween = null;
-            }
+            if (tween == null) return;
+            tween.Kill();
+            tween = null;
         }
     }
 }

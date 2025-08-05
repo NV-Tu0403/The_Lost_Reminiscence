@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Loc_Backend.Scripts
+namespace Code.Backend
 {
     public class BackendSync : MonoBehaviour
     {
@@ -23,10 +23,6 @@ namespace Loc_Backend.Scripts
             if (string.IsNullOrEmpty(jwtToken))
             {
                 Debug.Log("Chưa có token, vui lòng đăng nhập hoặc đăng ký.");
-            }
-            else
-            {
-                Debug.Log("Token đã được tải: " + jwtToken);
             }
         }
 
@@ -46,57 +42,51 @@ namespace Loc_Backend.Scripts
         #region Login/Register/OTP-verify/UploadSave
         public IEnumerator RequestCloudRegister(string userName, string password, string email, Action<bool, string> callback)
         {
-            string url = apiBaseUrl + "/register";
+            var url = apiBaseUrl + "/register";
             var data = new
             {
                 username = userName,
                 password,
                 email
             };
-            string body = JsonConvert.SerializeObject(data);
-            using (UnityWebRequest www = UnityWebRequest.Post(url, body, "application/json"))
-            {
-                yield return www.SendWebRequest();
+            var body = JsonConvert.SerializeObject(data);
+            using var www = UnityWebRequest.Post(url, body, "application/json");
+            yield return www.SendWebRequest();
 
-                if (www.result == UnityWebRequest.Result.Success)
-                {
-                    callback(true, "OTP đang được gửi đến Email của bạn!");
-                }
-                else
-                {
-                    string error = www.downloadHandler?.text ?? www.error;
-                    callback(false, $"đăng kí Cloud thất baij: {error}");
-                }
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                callback(true, "OTP đang được gửi đến Email của bạn!");
+            }
+            else
+            {
+                var error = www.downloadHandler?.text ?? www.error;
+                callback(false, $"đăng kí Cloud thất baij: {error}");
             }
         }
 
         public IEnumerator VerifyOtp( string userName, string otp, Action<bool, string> callback)
         {
-            string url = apiBaseUrl + "/verify-otp";
+            var url = apiBaseUrl + "/verify-otp";
             var data = new
             {
                 username = userName,
                 otp
             };
-            string body = JsonConvert.SerializeObject(data);
-            using (UnityWebRequest www = UnityWebRequest.Post(url, body, "application/json"))
-            {
-                yield return www.SendWebRequest();
+            var body = JsonConvert.SerializeObject(data);
+            using var www = UnityWebRequest.Post(url, body, "application/json");
+            yield return www.SendWebRequest();
                 
-                if (www.result == UnityWebRequest.Result.Success)
-                {
-                    var result = JsonConvert.DeserializeObject<LoginResult>(www.downloadHandler.text);
-                    jwtToken = result.token; // Lưu token cho các request sau
-                    Debug.Log($"Token đăng nhập: {jwtToken}");
-                    SaveToken(); // Lưu token vào PlayerPrefs
-                    Debug.Log($"Token saved to PlayerPrefs");
-                    callback(true, "đăng kí Cloud thành công!");
-                }
-                else
-                {
-                    string error = www.downloadHandler?.text ?? www.error;
-                    callback(false, $"Xác thực OTP thất bại: {error}");
-                }
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                var result = JsonConvert.DeserializeObject<LoginResult>(www.downloadHandler.text);
+                jwtToken = result.token; // Lưu token cho các request sau
+                SaveToken(); // Lưu token vào PlayerPrefs
+                callback(true, "đăng kí Cloud thành công!");
+            }
+            else
+            {
+                string error = www.downloadHandler?.text ?? www.error;
+                callback(false, $"Xác thực OTP thất bại: {error}");
             }
         }
         

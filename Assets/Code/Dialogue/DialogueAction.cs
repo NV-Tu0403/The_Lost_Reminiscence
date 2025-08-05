@@ -1,7 +1,4 @@
-using System;
 using Code.GameEventSystem;
-using UnityEngine;
-using EventBus = Code.GameEventSystem.EventBus;
 
 namespace Code.Dialogue
 {
@@ -15,8 +12,6 @@ namespace Code.Dialogue
             EventBus.Publish("StartDialogue", data);
             return;
 
-            //Debug.Log($"[DialogueAction] Starting dialogue for event: {data.eventId}");
-            // Đặt callback khi hội thoại kết thúc
             void FinishCallback()
             {
                 EventBus.Publish(data.eventId, data);
