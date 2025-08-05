@@ -7,49 +7,60 @@ namespace Code.Boss
     /// </summary>
     public class MemoryFragmentBehavior : MonoBehaviour
     {
-        private bool collected = false;
+        [Header("Float Animation")]
+        [SerializeField] private float floatHeight = 1.5f;
+        [SerializeField] private float floatSpeed = 2f;
         
+        [Header("Rotation Animation")]
+        [SerializeField] private float rotationSpeed = 50f;
+        [SerializeField] private Vector3 rotationAxis = Vector3.up;
+        
+        private bool collected = false;
+        private Vector3 startPosition;
+        private Vector3 targetPosition;
+        private bool hasReachedTarget = false;
+        private float floatProgress = 0f;
+        private GameObject spawnedEffect;
+
         private void Start()
         {
-            // Add visual effects for memory fragment
-            AddGlowEffect();
-        }
-
-        private void AddGlowEffect()
-        {
-            // Add rotating and glowing effect
-            var renderer = GetComponent<Renderer>();
-            if (renderer == null)
-            {
-                // Create a simple cube as memory fragment
-                var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                cube.transform.parent = transform;
-                cube.transform.localPosition = Vector3.zero;
-                renderer = cube.GetComponent<Renderer>();
-            }
+            startPosition = transform.position;
+            targetPosition = startPosition + Vector3.up * floatHeight;
             
-            if (renderer != null)
-            {
-                var material = new Material(Shader.Find("Standard"));
-                material.color = Color.cyan;
-                material.EnableKeyword("_EMISSION");
-                material.SetColor("_EmissionColor", Color.cyan * 0.5f);
-                renderer.material = material;
-            }
+            // Spawn effect nếu có trong BossConfig
+            SpawnEffect();
         }
 
         private void Update()
         {
             if (!collected)
             {
-                // Rotate the fragment
-                transform.Rotate(0, 90 * Time.deltaTime, 0);
+                if (!hasReachedTarget)
+                {
+                    // Bay lên đến vị trí target
+                    floatProgress += Time.deltaTime * floatSpeed;
+                    transform.position = Vector3.Lerp(startPosition, targetPosition, floatProgress);
+                    
+                    if (floatProgress >= 1f)
+                    {
+                        hasReachedTarget = true;
+                        //transform.position = targetPosition;
+                    }
+                }
                 
-                // Add floating effect
-                float hover = Mathf.Sin(Time.time * 2f) * 0.2f;
-                Vector3 pos = transform.position;
-                pos.y += hover * Time.deltaTime;
-                transform.position = pos;
+                // Xoay vòng liên tục
+                transform.Rotate(rotationAxis, rotationSpeed * Time.deltaTime);
+            }
+        }
+
+        private void SpawnEffect()
+        {
+            // Tìm BossConfig để lấy effect prefab
+            var bossController = FindFirstObjectByType<BossController>();
+            if (bossController != null && bossController.Config.memoryFragmentEffectPrefab != null)
+            {
+                spawnedEffect = Instantiate(bossController.Config.memoryFragmentEffectPrefab, 
+                    transform.position, Quaternion.identity, transform);
             }
         }
 
@@ -69,8 +80,10 @@ namespace Code.Boss
             BossEventSystem.Trigger(BossEventType.SkillCasted, 
                 new BossEventData { stringValue = "MemoryFragmentCollected", gameObject = gameObject });
             
+            // TODO:
             // Play collection effect and sound
             // Add particle effects here
+            // Run Timeline here
             
             // Destroy after collection
             Destroy(gameObject, 0.5f);
