@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -16,9 +17,15 @@ namespace Code.Boss
         
         private int maxHealth = 3; // Default player health
         private int currentHealth = 3;
+        private BossConfig bossConfig;
+        private UIConfig uiConfig;
+        private Coroutine healthAnimationCoroutine;
+        private Image fillImage;
 
-        public void Initialize(int playerMaxHealth)
+        public void Initialize(int playerMaxHealth, BossConfig config)
         {
+            bossConfig = config;
+            uiConfig = config?.uiConfig;
             maxHealth = playerMaxHealth;
             currentHealth = playerMaxHealth;
             
@@ -29,20 +36,31 @@ namespace Code.Boss
         private void SetupUI()
         {
             // Setup health slider
-            if (healthSlider != null)
+            if (healthSlider == null) 
             {
-                healthSlider.maxValue = maxHealth;
-                healthSlider.value = currentHealth;
-                
-                // Set green color for player health
-                var fillImage = healthSlider.fillRect.GetComponent<Image>();
-                if (fillImage != null)
-                {
-                    fillImage.color = Color.green;
-                }
+                Debug.LogError("[PlayerHealthBar] HealthSlider is NULL!");
+                return;
             }
             
-            UpdateHealthText();
+            healthSlider.maxValue = maxHealth;
+            healthSlider.value = currentHealth;
+            fillImage = healthSlider.fillRect?.GetComponent<Image>();
+            
+            if (fillImage != null && uiConfig != null)
+            {
+                fillImage.color = uiConfig.playerHealthColor;
+            }
+            
+            // Setup health text
+            if (healthText != null)
+            {
+                healthText.color = Color.black;
+                healthText.text = $"{currentHealth}/{maxHealth}";
+            }
+            else
+            {
+                Debug.LogError("[PlayerHealthBar] HealthText is NULL!");
+            }
         }
 
         private void RegisterEvents()
@@ -53,16 +71,13 @@ namespace Code.Boss
 
         private void OnPlayerTakeDamage(BossEventData data)
         {
-            int damage = data.intValue;
+            var damage = data.intValue;
             currentHealth = Mathf.Max(0, currentHealth - damage);
-            
             if (healthSlider != null)
             {
-                healthSlider.value = currentHealth;
+                AnimateHealthChange(currentHealth);
             }
-            
             UpdateHealthText();
-            
             // Check if player is defeated
             if (currentHealth <= 0)
             {
@@ -89,7 +104,6 @@ namespace Code.Boss
 
         private void OnBossDefeated(BossEventData data)
         {
-            // Hide player health bar UI
             gameObject.SetActive(false);
         }
 
@@ -97,6 +111,31 @@ namespace Code.Boss
         {
             BossEventSystem.Unsubscribe(BossEventType.PlayerTakeDamage, OnPlayerTakeDamage);
             BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeated);
+        }
+
+        private void AnimateHealthChange(int newHealth)
+        {
+            if (healthSlider == null || bossConfig == null) return;
+            var duration = bossConfig.uiConfig.uiAnimationSpeed;
+            var curve = bossConfig.uiConfig.uiAnimationCurve;
+            var startValue = healthSlider.value;
+            float endValue = newHealth;
+            healthSlider.StopAllCoroutines();
+            healthSlider.StartCoroutine(AnimateSliderCoroutine(startValue, endValue, duration, curve));
+        }
+
+        private IEnumerator AnimateSliderCoroutine(float start, float end, float duration, AnimationCurve curve)
+        {
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                var t = Mathf.Clamp01(elapsed / duration);
+                var value = Mathf.Lerp(start, end, curve.Evaluate(t));
+                healthSlider.value = value;
+                yield return null;
+            }
+            healthSlider.value = end;
         }
     }
 }
