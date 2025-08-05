@@ -96,7 +96,7 @@ namespace Code.Boss
         public float fearZoneRadius = 3f;
         public GameObject fearZoneCastEffectPrefab; // Prefab hiệu ứng khi cast skill
         public GameObject fearZoneZoneEffectPrefab; // Prefab hiệu ứng khi zone xuất hiện
-        
+        public GameObject fearZonePlayerEffectPrefab; // Prefab hiệu ứng bao quanh player khi trong fear zone
         [Header("Scream State")]
         public float screenShakeIntensity = 1f;
         public float visionShrinkAmount = 0.5f;
