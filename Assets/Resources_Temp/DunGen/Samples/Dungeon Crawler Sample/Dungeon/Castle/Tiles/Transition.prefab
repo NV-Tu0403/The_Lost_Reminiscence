@@ -5037,8 +5037,75 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3127114101577224370, guid: 73978ae0aad253d43ade541bfd266ed9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7711214478461932987}
+    - targetCorrespondingSourceObject: {fileID: 3127114101577224370, guid: 73978ae0aad253d43ade541bfd266ed9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8839460980419035748}
   m_SourcePrefab: {fileID: 100100000, guid: 73978ae0aad253d43ade541bfd266ed9, type: 3}
+--- !u!1 &4077282062586734563 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3127114101577224370, guid: 73978ae0aad253d43ade541bfd266ed9, type: 3}
+  m_PrefabInstance: {fileID: 1436885620775319377}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7711214478461932987
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4077282062586734563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32a188f8ee195cf4cb8b2fdccd193b79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DoorPrefabPriority: 0
+  ConnectorPrefabWeights: []
+  BlockerPrefabWeights: []
+  AvoidRotatingDoorPrefab: 0
+  AvoidRotatingBlockerPrefab: 0
+  ConnectorSceneObjects: []
+  BlockerSceneObjects: []
+  Tags:
+    Tags: []
+  socketGroup_obsolete: -1
+  doorPrefabs_obsolete: []
+  blockerPrefabs_obsolete: []
+  socket: {fileID: -7648096479914416553, guid: 3b7964207e296e843bb52c0ad1a4f1fd, type: 2}
+  doorPrefabInstance: {fileID: 0}
+  doorComponent: {fileID: 0}
+  tile: {fileID: 0}
+  connectedDoorway: {fileID: 0}
+  hideConditionalObjects: 0
+  fileVersion: 1
+--- !u!114 &8839460980419035748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4077282062586734563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SerializedVersion: 1
+  m_AgentTypeID: -334000983
+  m_StartPoint: {x: -0.07179546, y: 0.08333349, z: 0.6743599}
+  m_EndPoint: {x: 0, y: 0.07057329, z: -0.6}
+  m_StartTransform: {fileID: 0}
+  m_EndTransform: {fileID: 0}
+  m_Activated: 1
+  m_Width: 1
+  m_CostModifier: 1
+  m_IsOverridingCost: 0
+  m_Bidirectional: 1
+  m_AutoUpdatePosition: 0
+  m_Area: 0
 --- !u!4 &5892144178733606933 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4770946095819824964, guid: 73978ae0aad253d43ade541bfd266ed9, type: 3}
@@ -7586,6 +7653,10 @@ PrefabInstance:
     - target: {fileID: 1629555651350074919, guid: b4bcb27993d547c4d82561279067fce3, type: 3}
       propertyPath: m_Name
       value: Rug
+      objectReference: {fileID: 0}
+    - target: {fileID: 1629555651350074919, guid: b4bcb27993d547c4d82561279067fce3, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2361577132358198324, guid: b4bcb27993d547c4d82561279067fce3, type: 3}
       propertyPath: m_RootOrder
@@ -11437,6 +11508,14 @@ PrefabInstance:
     - target: {fileID: 311751935903910774, guid: b29ddb0d1b7e05846b21ceada85482d0, type: 3}
       propertyPath: m_Name
       value: Single Doorway
+      objectReference: {fileID: 0}
+    - target: {fileID: 311751935903910774, guid: b29ddb0d1b7e05846b21ceada85482d0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5282622281893812958, guid: b29ddb0d1b7e05846b21ceada85482d0, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5931072721558515769, guid: b29ddb0d1b7e05846b21ceada85482d0, type: 3}
       propertyPath: m_RootOrder
