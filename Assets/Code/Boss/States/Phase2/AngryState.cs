@@ -10,7 +10,7 @@ namespace Code.Boss.States.Phase2
         private float stateTimer;
         private float currentAngle = 0f;
         private Vector3 centerPosition;
-        private bool canTransition = true;
+        private const bool CanTransition = true;
 
         public override void Enter()
         {
@@ -37,7 +37,7 @@ namespace Code.Boss.States.Phase2
             // Move in circle around center
             MoveInCircle();
             
-            if (stateTimer >= Config.phase2.angryMoveDuration && canTransition)
+            if (stateTimer >= Config.phase2.angryMoveDuration && CanTransition)
             {
                 BossController.ChangeState(new FearZoneState());
             }
@@ -64,12 +64,12 @@ namespace Code.Boss.States.Phase2
         
         public override void Exit()
         {
-            // Reset movement speed
-            if (BossController.NavAgent != null)
-            {
-                BossController.NavAgent.speed = Config.moveSpeed;
-            }
-            BossController.ResetMoveDirection();
+            // // Reset movement speed
+            // if (BossController.NavAgent != null)
+            // {
+            //     BossController.NavAgent.speed = Config.moveSpeed;
+            // }
+            // BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() { }
