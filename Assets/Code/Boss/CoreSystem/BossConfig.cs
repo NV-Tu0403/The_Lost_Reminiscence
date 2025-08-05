@@ -13,6 +13,14 @@ namespace Code.Boss
         [Header("Debug")]
         [Tooltip("Chọn phase để test nhanh. None: Bình thường, Phase1: Phase 1, Phase2: Phase 2, ...")]
         public BossDebugPhase debugStartPhase = BossDebugPhase.None;
+     
+        [Header("Prefab Settings")]
+        [Tooltip("Prefab của boss để spawn lại khi cần reset")]
+        public GameObject bossPrefab;
+        [Tooltip("Prefab memory fragment rớt ra khi boss chết")]
+        public GameObject memoryFragmentPrefab;
+        [Tooltip("Effect xung quanh memory fragment")]
+        public GameObject memoryFragmentEffectPrefab;
         
         [Header("General Boss Settings")]
         public int maxHealthPerPhase = 3;
@@ -42,8 +50,6 @@ namespace Code.Boss
         [Header("FMOD Studio Settings")]
         [Space]
         public FMODAudioConfig fmodAudioConfig;
-        
-
     }
 
     [Serializable]
@@ -90,7 +96,7 @@ namespace Code.Boss
         public float fearZoneRadius = 3f;
         public GameObject fearZoneCastEffectPrefab; // Prefab hiệu ứng khi cast skill
         public GameObject fearZoneZoneEffectPrefab; // Prefab hiệu ứng khi zone xuất hiện
-        
+        public GameObject fearZonePlayerEffectPrefab; // Prefab hiệu ứng bao quanh player khi trong fear zone
         [Header("Scream State")]
         public float screenShakeIntensity = 1f;
         public float visionShrinkAmount = 0.5f;
