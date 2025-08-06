@@ -71,8 +71,6 @@ namespace Code.Boss
         
         [Header("Decoy State")]
         public float decoyMoveSpeed = 2f;
-        public int decoyCount = 2; // 1 thật, 1 giả
-        public float decoySpawnRadius = 8f;
         public GameObject decoyPrefab; // Prefab cho decoy
         public GameObject decoySpawnEffectPrefab; // Prefab hiệu ứng khi spawn decoy
         public GameObject realDecoyRevealEffectPrefab; // Prefab hiệu ứng khi reveal decoy thật
@@ -112,7 +110,7 @@ namespace Code.Boss
     {
         public int maxSouls = 2;
         public float soulMoveSpeed = 4f;
-        public float soulSpawnRadius = 15f;
+        //public float soulSpawnRadius = 15f;
         public float soulFollowDistance = 1f;
         public GameObject soulPrefab;
         public GameObject soulSpawnEffectPrefab; // Prefab hiệu ứng khi spawn soul

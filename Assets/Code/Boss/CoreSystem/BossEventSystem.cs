@@ -71,6 +71,9 @@ namespace Code.Boss
     /// </summary>
     public enum BossEventType
     {
+        // Game Flow Events
+        BossFightStarted,
+        
         // Phase Events
         PhaseChanged,
         BossSpawned,
@@ -99,10 +102,6 @@ namespace Code.Boss
         FearZoneCreated,
         ScreamStarted,
         
-        // Physics Events
-        CameraShake,
-        VisionShrink,
-        
         // UI Events
         HealthChanged,
         SkillCastProgress,
@@ -110,7 +109,11 @@ namespace Code.Boss
         // Fa Integration Events
         RequestRadarSkill, // Yêu cầu Fa sử dụng Radar skill
         RequestOtherSkill, // Yêu cầu Fa sử dụng skill khác
-        FaSkillUsed        // Fa đã sử dụng skill
+        FaSkillUsed,        // Fa đã sử dụng skill
+
+        // Player events
+        PlayerDefeated,
+        PlayerHealthReset,
     }
 
     /// <summary>
