@@ -1,88 +1,109 @@
 ﻿using UnityEngine;
-using System.Collections; // Cần thiết để sử dụng Coroutine
+using System.Collections;
 
 public class InteractablePainting : MonoBehaviour, IInteractable
 {
-    [Tooltip("Đánh dấu nếu đây là bức tranh đúng")]
-    public bool isCorrectAnswer = false;
+    [Tooltip("ID của Mảnh Tranh mà khung này cần để hoàn thành.")]
+    public string requiredPictureID = "Default_ID";
 
     [Tooltip("Hiệu ứng tan biến sẽ kéo dài trong bao lâu (giây)")]
     public float dissolveDuration = 1.5f;
 
-    // Các biến để lưu trữ Renderer của khung và tranh
     private Renderer frameRenderer;
-    private Renderer pictureRenderer;
+    private Renderer pictureRenderer; // Renderer của Mảnh Tranh sẽ được đặt vào
+    private Transform pictureSlot; // Vị trí để đặt Mảnh Tranh vào
 
-    // Cờ để đảm bảo hiệu ứng không bị gọi nhiều lần
-    private bool isDissolving = false;
+    private bool isSolved = false;
 
-    private void Start()
+    private void Awake()
     {
-        // Lấy Renderer của chính GameObject này (khungtranh)
         frameRenderer = GetComponent<Renderer>();
+        pictureSlot = transform.Find("Cube"); // Tìm vị trí con tên là "Cube"
 
-        // Tìm và lấy Renderer của GameObject con tên là "Cube" (bức tranh)
-        Transform pictureTransform = transform.Find("Cube");
-        if (pictureTransform != null)
+        // Ban đầu, tắt hình ảnh mẫu đi
+        if (pictureSlot != null)
         {
-            pictureRenderer = pictureTransform.GetComponent<Renderer>();
+            pictureRenderer = pictureSlot.GetComponent<Renderer>();
+            pictureSlot.gameObject.SetActive(false); 
         }
     }
 
     public void Interact(PlayerPuzzleInteractor interactor)
     {
-        // Nếu đang tan biến thì không cho tương tác nữa
-        if (isDissolving || interactor == null) return;
+        if (isSolved || interactor == null) return;
 
-        if (isCorrectAnswer)
+        // Lấy mảnh tranh mà người chơi đang cầm
+        CollectiblePicture heldPicture = interactor.GetHeldPicture();
+
+        // Nếu người chơi không cầm gì, không làm gì cả
+        if (heldPicture == null)
         {
-            Debug.Log("CHÍNH XÁC! Bạn đã giải được câu đố!");
+            Debug.Log("Bạn cần tìm một mảnh tranh để đặt vào đây.");
+            return;
+        }
 
-            if (PaintingPuzzleController.Instance != null)
-            {
-                PaintingPuzzleController.Instance.OnPaintingSolved();
-            }
-
-            // Thay vì tắt ngay lập tức, hãy bắt đầu hiệu ứng tan biến
-            StartCoroutine(DissolveEffect());
+        // --- KIỂM TRA ĐÚNG/SAI ---
+        if (heldPicture.pictureID == requiredPictureID)
+        {
+            // ĐÚNG!
+            Debug.Log("CHÍNH XÁC! Bạn đã lắp đúng mảnh tranh!");
+            isSolved = true;
+            PlaceAndSolve(heldPicture);
+            interactor.ClearHeldPicture(); // Xóa mảnh tranh khỏi tay người chơi
         }
         else
         {
-            Debug.Log("SAI RỒI! Hãy thử lại.");
+            // SAI!
+            Debug.Log("SAI RỒI! Mảnh tranh này không khớp.");
             interactor.TakePuzzleDamage();
+            interactor.ClearHeldPicture(true); // Xóa và phá hủy mảnh tranh giả
         }
+    }
+
+    private void PlaceAndSolve(CollectiblePicture picture)
+    {
+        // Hiện Mảnh Tranh lên và đặt nó vào đúng vị trí trong khung
+        picture.transform.SetParent(pictureSlot.parent);
+        picture.transform.position = pictureSlot.position;
+        picture.transform.rotation = pictureSlot.rotation;
+        picture.transform.localScale = pictureSlot.localScale;
+        picture.gameObject.SetActive(true);
+
+        // Lấy Renderer của Mảnh Tranh vừa đặt vào
+        pictureRenderer = picture.GetComponent<Renderer>();
+
+        // Thông báo cho PuzzleManager
+        if (PaintingPuzzleController.Instance != null)
+        {
+            PaintingPuzzleController.Instance.OnPaintingSolved();
+        }
+
+        // Bắt đầu hiệu ứng tan biến
+        StartCoroutine(DissolveEffect());
     }
 
     private IEnumerator DissolveEffect()
     {
-        isDissolving = true;
-        // Tắt Collider ngay lập tức để người chơi không thể tương tác lại
+        // Tắt Collider ngay lập tức để không tương tác lại được
         GetComponent<Collider>().enabled = false;
-
-        // Lấy bản sao của material để không ảnh hưởng đến các tranh khác
+        
         Material frameMat = frameRenderer.material;
         Material pictureMat = pictureRenderer.material;
-
         float elapsedTime = 0f;
 
         while (elapsedTime < dissolveDuration)
         {
             elapsedTime += Time.deltaTime;
-
-            // Tính toán giá trị tan biến từ 0 đến 1
             float dissolveAmount = Mathf.Clamp01(elapsedTime / dissolveDuration);
 
-            // Cập nhật giá trị "DissolveAmount" cho cả hai material
-            // LƯU Ý: Tên "_DissolveAmount" phải khớp với tên Reference trong Shader Graph
             frameMat.SetFloat("_DissolveAmount", dissolveAmount);
             if (pictureMat != null)
             {
                 pictureMat.SetFloat("_DissolveAmount", dissolveAmount);
             }
-
-            yield return null; // Chờ đến frame tiếp theo
+            yield return null;
         }
-
+        
         // Sau khi hiệu ứng kết thúc, tắt hẳn GameObject đi
         gameObject.SetActive(false);
     }
