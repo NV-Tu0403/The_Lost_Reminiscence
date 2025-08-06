@@ -20,11 +20,13 @@ namespace Code.Boss.States.Phase2
 
         private bool playerInZone = false;
         private float playerInZoneTime = 0f;
+        private GameObject playerFearEffect; // Effect bao quanh player
 
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered FearZoneState");
             BossController.PlayAnimation("CastSkillA");
+            
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;
@@ -129,6 +131,41 @@ namespace Code.Boss.States.Phase2
         private void ApplyFearEffects(bool enable)
         {
             Debug.Log("[Boss State] Player " + (enable ? "entered" : "left") + " fear zone");
+            
+            if (enable)
+            {
+                // Spawn effect bao quanh player khi vào fear zone
+                if (Config.phase2.fearZonePlayerEffectPrefab != null && playerFearEffect == null)
+                {
+                    playerFearEffect = Object.Instantiate(Config.phase2.fearZonePlayerEffectPrefab, 
+                        BossController.Player.position, 
+                        Quaternion.identity, 
+                        BossController.Player);
+                }
+                
+                // Giảm tốc độ di chuyển của player
+                var playerController = BossController.Player.GetComponent<PlayerController_02>();
+                if (playerController != null)
+                {
+                    playerController.ReduceMovementSpeed(0.3f); // Giảm 70% tốc độ
+                }
+            }
+            else
+            {
+                // Destroy effect khi player rời khỏi fear zone
+                if (playerFearEffect != null)
+                {
+                    Object.Destroy(playerFearEffect);
+                    playerFearEffect = null;
+                }
+                
+                // Khôi phục tốc độ di chuyển của player
+                var playerController = BossController.Player.GetComponent<PlayerController_02>();
+                if (playerController != null)
+                {
+                    playerController.RestoreMovementSpeed();
+                }
+            }
         }
         
         private void StartHeartbeatSound()
@@ -147,16 +184,56 @@ namespace Code.Boss.States.Phase2
         
         public override void Exit()
         {
-            if (fearZone != null) Object.Destroy(fearZone);
-            if (fearZoneZoneEffect != null) Object.Destroy(fearZoneZoneEffect);
-            if (fearZoneCastEffect != null) Object.Destroy(fearZoneCastEffect);
+            StopHeartbeatSound();
             
-            // Reset movement speed
-            if (BossController.NavAgent != null)
+            // Cleanup tốc độ player nếu vẫn đang bị giảm
+            if (playerInZone)
             {
-                BossController.NavAgent.speed = Config.moveSpeed;
+                var playerController = BossController.Player.GetComponent<PlayerController_02>();
+                if (playerController != null)
+                {
+                    playerController.RestoreMovementSpeed();
+                }
             }
-            BossController.ResetMoveDirection();
+            
+            // Cleanup tất cả effect ngay lập tức
+            if (playerFearEffect != null)
+            {
+                Object.DestroyImmediate(playerFearEffect);
+                playerFearEffect = null;
+            }
+            
+            if (fearZoneCastEffect != null)
+            {
+                Object.DestroyImmediate(fearZoneCastEffect);
+                fearZoneCastEffect = null;
+            }
+            
+            if (fearZoneZoneEffect != null)
+            {
+                Object.DestroyImmediate(fearZoneZoneEffect);
+                fearZoneZoneEffect = null;
+            }
+            
+            if (fearZone != null)
+            {
+                Object.DestroyImmediate(fearZone);
+                fearZone = null;
+            }
+            
+            // Reset trạng thái
+            playerInZone = false;
+            playerInZoneTime = 0f;
+            isCasting = true;
+            castTimer = 0f;
+            skillTimer = 0f;
+            
+            // // Reset movement speed
+            // if (BossController.NavAgent != null)
+            // {
+            //     BossController.NavAgent.speed = Config.moveSpeed;
+            // }
+            // BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() {}

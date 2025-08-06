@@ -1,5 +1,5 @@
-using System.Collections;
 using Code.Boss.States.Shared;
+using DG.Tweening;
 using UnityEngine;
 
 namespace Code.Boss.States.Phase2
@@ -25,6 +25,8 @@ namespace Code.Boss.States.Phase2
             
             Debug.Log("[Boss State] Entered ScreamState - Casting Scream skill");
             BossController.PlayAnimation("CastSkillA");
+            
+            
             BossEventSystem.Trigger(BossEventType.ScreamStarted);
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Scream" });
         }
@@ -66,81 +68,29 @@ namespace Code.Boss.States.Phase2
         private void ApplyScreamEffects()
         {
             ApplyScreenShake();     
-            ApplyVisionShrink();  
         }
 
         private void ApplyScreenShake()
         {
-            // Demo: Shake main camera for 0.5s
-            var cam = Camera.main;
-            if (cam != null)
+            var mainCam = Camera.main;
+            if (mainCam == null) return;
+            var config = BossController.Config.phase2;
+            var originalPos = mainCam.transform.position;
+            mainCam.transform.DOShakePosition(
+                config.shakeDuration,
+                config.shakeStrength,
+                config.shakeVibrato,
+                config.shakeRandomness,
+                false,
+                true)
+                .OnComplete(() => mainCam.transform.position = originalPos);
+            // Spawn shake effect prefab if assigned
+            if (config.shakeEffectPrefab != null)
             {
-                BossController.StartCoroutine(ScreenShakeCoroutine(cam, Config.phase2.screenShakeIntensity, 3f));
+                Object.Instantiate(config.shakeEffectPrefab, mainCam.transform.position, Quaternion.identity);
             }
         }
-
-        private IEnumerator ScreenShakeCoroutine(Camera cam, float intensity, float duration)
-        {
-            var originalPos = cam.transform.localPosition;
-            var elapsed = 0f;
-            var x = Random.Range(-1f, 1f) * intensity;
-            var y = Random.Range(-1f, 1f) * intensity;
-            while (elapsed < duration)
-            {
-                cam.transform.localPosition = originalPos + new Vector3(x, y, 0);
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-            cam.transform.localPosition = originalPos;
-        }
-
-        private void ApplyVisionShrink()
-        {
-            BossController.StartCoroutine(VisionShrinkOverlayCoroutine(1f));
-        }
-
-        private IEnumerator VisionShrinkOverlayCoroutine(float duration)
-        {
-            // Create overlay canvas and image
-            var cam = Camera.main;
-            if (cam == null) yield break;
-            var canvasGO = new GameObject("VisionShrinkCanvas");
-            var canvas = canvasGO.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 999;
-            var imgGO = new GameObject("VisionShrinkImage");
-            imgGO.transform.SetParent(canvasGO.transform);
-            var img = imgGO.AddComponent<UnityEngine.UI.Image>();
-            img.color = Color.black;
-            img.rectTransform.anchorMin = Vector2.zero;
-            img.rectTransform.anchorMax = Vector2.one;
-            img.rectTransform.offsetMin = Vector2.zero;
-            img.rectTransform.offsetMax = Vector2.zero;
-            img.material = null;
-            // Animate alpha mask inward
-            float elapsed = 0f;
-            while (elapsed < duration * 0.5f)
-            {
-                float t = elapsed / (duration * 0.5f);
-                img.color = new Color(0, 0, 0, Mathf.Lerp(0f, 1f, t));
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-            img.color = new Color(0, 0, 0, 1f);
-            // Hold for a moment
-            yield return new WaitForSeconds(duration * 0.2f);
-            // Animate alpha mask outward
-            elapsed = 0f;
-            while (elapsed < duration * 0.3f)
-            {
-                float t = elapsed / (duration * 0.3f);
-                img.color = new Color(0, 0, 0, Mathf.Lerp(1f, 0f, t));
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-            img.color = new Color(0, 0, 0, 0f);
-            Object.Destroy(canvasGO);
-        }
+        
 
         private void HandleSkillActive()
         {
@@ -168,12 +118,23 @@ namespace Code.Boss.States.Phase2
 
         public override void Exit()
         {
-            // Reset movement speed
-            if (BossController.NavAgent != null)
+            // Tắt hiệu ứng shake
+            var mainCam = Camera.main;
+            if (mainCam == null) return;
+            // Đưa camera về vị trí ban đầu
+            mainCam.transform.DOKill();
+            // Nếu có hiệu ứng shakeEffectPrefab thì tìm và xóa
+            var config = BossController.Config;
+            if (config == null || config.phase2.shakeEffectPrefab == null) return;
+            var shakeEffectName = config.phase2.shakeEffectPrefab.name;
+            var shakeEffects = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+            foreach (var obj in shakeEffects)
             {
-                BossController.NavAgent.speed = Config.moveSpeed;
+                if (obj.name.Contains(shakeEffectName))
+                {
+                    Object.Destroy(obj);
+                }
             }
-            BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage()

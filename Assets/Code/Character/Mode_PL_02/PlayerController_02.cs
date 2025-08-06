@@ -52,7 +52,13 @@ public class PlayerController_02 : PlayerEventListenerBase
     [SerializeField] private float N_speed = 1.3f;
     [SerializeField] private float airDrag = 1f;
     [SerializeField] private float extraGravity = 30f;
-
+    
+    /// <summary>
+    /// Lộc thêm 2 biến để giảm tốc độ di chuyển player
+    /// </summary>
+    private float originalSpeed;                // Lưu tốc độ gốc
+    private bool isSpeedReduced = false;        // Kiểm tra xem tốc độ có đang bị giảm không
+    
     [SerializeField] private float JumpMomentumBoost = 2f;
     [SerializeField] private float dashForce = 15f;         // lực dash
     [SerializeField] private float dashDuration = 0.3f;     // thời gian dash
@@ -1326,7 +1332,34 @@ public class PlayerController_02 : PlayerEventListenerBase
             obj.SetActive(false);
         }
     }
+    #endregion
+    
+    #region Lộc thêm để giảm tốc độ di chuyển của player
+    /// <summary>
+    /// Giảm tốc độ di chuyển của player (dùng cho fear zone effect)
+    /// </summary>
+    /// <param name="speedMultiplier">Hệ số nhân tốc độ (0.5f = giảm 50%)</param>
+    public void ReduceMovementSpeed(float speedMultiplier = 0.5f)
+    {
+        if (!isSpeedReduced)
+        {
+            originalSpeed = N_speed;
+            isSpeedReduced = true;
+        }
+        N_speed = originalSpeed * speedMultiplier;
+        Debug.Log($"[PlayerController] Speed reduced to {N_speed} (multiplier: {speedMultiplier})");
+    }
 
+    /// <summary>
+    /// Khôi phục tốc độ di chuyển ban đầu của player
+    /// </summary>
+    public void RestoreMovementSpeed()
+    {
+        if (!isSpeedReduced) return;
+        N_speed = originalSpeed;
+        isSpeedReduced = false;
+        Debug.Log($"[PlayerController] Speed restored to {N_speed}");
+    }
     #endregion
 }
 
