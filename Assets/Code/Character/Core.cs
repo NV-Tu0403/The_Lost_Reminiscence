@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using UnityEngine;
 using System.Collections;
-using Loc_Backend.Scripts;
 using System;
 using Code.Backend;
 
@@ -536,7 +535,6 @@ public class Core : CoreEventListenerBase
 
     private void PauseSession()
     {
-        //_coreEvent.triggerTurnOnMenu();// => (Event)TurnOnMenu -> turnOnMenu();
         ActiveMenu(true, false);
     }
 

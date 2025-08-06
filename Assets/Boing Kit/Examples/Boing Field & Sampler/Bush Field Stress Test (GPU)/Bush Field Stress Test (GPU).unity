@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: ccb948504210dcd4cb4e0ab03332c6bf, type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: e467c2dd67430fa4ab7bbc8281c22d44, type: 2}
 --- !u!196 &4
 NavMeshSettings:
@@ -322,6 +322,7 @@ GameObject:
   m_Component:
   - component: {fileID: 686389893}
   - component: {fileID: 686389892}
+  - component: {fileID: 686389894}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -409,6 +410,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 45.000004, y: 33.34, z: 0}
+--- !u!114 &686389894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 686389891}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &1215783730
 GameObject:
   m_ObjectHideFlags: 0
@@ -489,12 +513,12 @@ MonoBehaviour:
   Sphere: {fileID: 1887590550986244, guid: fd1b6502a2ae3c44bab9c806a67fa75b, type: 3}
   ReactorField: {fileID: 209459304}
   NumBushes: 3000
-  BushScaleRange: {x: 0.3, y: 0.8}
+  BushScaleRange: {x: 0.2, y: 0.6}
   NumBlossoms: 0
   BlossomScaleRange: {x: 0, y: 0}
-  FieldBounds: {x: 10, y: 10}
-  NumSpheresPerCircle: 3
-  NumCircles: 2
+  FieldBounds: {x: 40, y: 40}
+  NumSpheresPerCircle: 1
+  NumCircles: 1
   MaxCircleRadius: 4
   CircleSpeed: 5
 --- !u!1 &1650817688
