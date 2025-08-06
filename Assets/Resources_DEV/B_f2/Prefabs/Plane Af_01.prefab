@@ -47,9 +47,9 @@ MonoBehaviour:
   HardwareMode: 1
   CellMoveMode: 1
   CellSize: 0.65
-  CellsX: 16
+  CellsX: 2
   CellsY: 1
-  CellsZ: 16
+  CellsZ: 2
   FalloffMode: 2
   FalloffRatio: 0.7
   FalloffDimensions: 2
@@ -86,7 +86,7 @@ MonoBehaviour:
     ScaleOscillationDampingRatio: 0.5
     RotationReactionUp: {x: 0, y: 0, z: 0}
   SharedParams: {fileID: 0}
-  EnablePropagation: 0
+  EnablePropagation: 1
   PositionPropagation: 1
   RotationPropagation: 1
   PropagationDepth: 1
@@ -120,13 +120,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2627854771069547055}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.06, z: 0}
   m_LocalScale: {x: 8, y: 8, z: 8}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 818712190436330828}
-  - {fileID: 4266432886083512586}
   - {fileID: 3089773973199016494}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -212,7 +211,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2627854771069547055}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
   m_Name: 
@@ -224,7 +223,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 512
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_GenerateLinks: 0
@@ -235,7 +234,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 8ee0bb26e8e2a3c43ad047650b6ec178, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 1a774d3b6c516c046a7da8a90e1ab57d, type: 2}
   m_BuildHeightMesh: 0
 --- !u!114 &3272729851027454997
 MonoBehaviour:
@@ -267,7 +266,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 1c4342994693ec04fa2419cc6534acc0, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 6f3bcdc3e712c214fb01c4c901456df8, type: 2}
   m_BuildHeightMesh: 0
 --- !u!1 &7938026440544611171
 GameObject:
@@ -324,57 +323,5 @@ MonoBehaviour:
   FieldBounds: {x: 80, y: 80}
   NumSpheresPerCircle: 1
   NumCircles: 1
-  MaxCircleRadius: 0
-  CircleSpeed: 0
---- !u!1 &8722158604099133513
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4266432886083512586}
-  - component: {fileID: 6525091610659343183}
-  m_Layer: 9
-  m_Name: Spawn Plane Physical
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4266432886083512586
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8722158604099133513}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6775651676873594655}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6525091610659343183
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8722158604099133513}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61a87cedaa066b84c84e6ab13292dc9c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  chunkSize: 80
-  objectGroups:
-  - objects:
-    - {fileID: 8925977433204791584, guid: 1555a75bb90f4754781253dfab5b569b, type: 3}
-    - {fileID: 7613558041405734472, guid: 2b86c6959760e744589e980bfa2cd612, type: 3}
-    - {fileID: 662560603157446093, guid: 2ff5dd281adbea24abc9b1024213cd0f, type: 3}
-    density: 0.01
-  create: 1
+  MaxCircleRadius: 1
+  CircleSpeed: 1
