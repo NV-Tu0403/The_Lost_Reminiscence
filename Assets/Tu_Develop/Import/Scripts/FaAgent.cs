@@ -25,9 +25,6 @@ namespace Tu_Develop.Import.Scripts
         [Header("UI Settings")]
         [SerializeField] private UIFaSkill? uiFaSkill;
         
-        // Giả lập máu
-        [SerializeField] private int playerHealth;
-        
 
         private readonly Dictionary<string, float> _cooldownTimers = new Dictionary<string, float>();
 
@@ -174,8 +171,6 @@ namespace Tu_Develop.Import.Scripts
         public DialogueConfig? combatConfigDialogue;
         private void Start()
         {
-            playerHealth = 10;
-            
             faBha = GetComponent<BehaviorGraphAgent>();
             
             if (faBha && faBha.BlackboardReference != null)
@@ -207,7 +202,6 @@ namespace Tu_Develop.Import.Scripts
                 if (player != null)
                 {
                     faBha.BlackboardReference.SetVariableValue("Player", player);
-                    playerInformationBlackboard?.SetVariableValue("PlayerHealth", playerHealth);
                 }
                 
 

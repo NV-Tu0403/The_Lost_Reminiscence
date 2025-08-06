@@ -1,7 +1,11 @@
+using System;
 using DuckLe;
 using Tu_Develop.Import.Scripts;
 using Tu_Develop.Import.Scripts.EventConfig;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Serialization;
 
 public class PlayerTaskInput : MonoBehaviour
 {
@@ -17,6 +21,10 @@ public class PlayerTaskInput : MonoBehaviour
     private float _skill3PressTime; // Mốc thời gian khi người chơi nhấn phím 3
     private const float Skill3ComboTimeout = 1.5f; // Thời gian tối đa để nhấn 1 hoặc 2 (1.5 giây)
     private const float Skill3HoldDuration = 0.5f; // Thời gian cần giữ phím 3 để kích hoạt (0.5 giây)
+    
+    [SerializeField] private Volume postProcessVolume;
+    private Vignette _vignette;
+    
 
     // Dùng OnEnable và OnDisable để đăng ký và hủy đăng ký sự kiện
     private void OnEnable()
@@ -40,6 +48,19 @@ public class PlayerTaskInput : MonoBehaviour
     {
         faAgent = agent;
         Debug.Log("[PlayerTaskInput] Đã nhận được tham chiếu đến FaAgent!");
+        
+        postProcessVolume = GameObject.Find("Fa-Volume").GetComponent<Volume>();
+        
+        // Cố gắng lấy hiệu ứng Vignette từ profile của nó
+        if (postProcessVolume != null && postProcessVolume.profile.TryGet(out Vignette vignette))
+        {
+            _vignette = vignette;
+        }
+        else
+        {
+            Debug.LogWarning("Không tìm thấy Global Volume hoặc Vignette trong scene!");
+        }
+        
     }
     
     private void Update()
@@ -51,6 +72,21 @@ public class PlayerTaskInput : MonoBehaviour
             _isCommandMode = !_isCommandMode;
             faAgent.ActivePlayerControl(_isCommandMode);
             if (!_isCommandMode) _isWaitingForSkill3Target = false;
+            
+            // --- BỔ SUNG LOGIC VIGNETTE ---
+            if (_vignette != null)
+            {
+                if (_isCommandMode)
+                {
+                    // Bật hiệu ứng khi vào chế độ chỉ huy
+                    _vignette.intensity.value = 0.4f; // Hoặc giá trị bạn đã chọn
+                }
+                else
+                {
+                    // Tắt hiệu ứng khi thoát
+                    _vignette.intensity.value = 0f;
+                }
+            }
         }
 
         if (_isCommandMode == false) return;
