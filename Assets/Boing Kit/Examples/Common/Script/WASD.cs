@@ -1,21 +1,11 @@
-﻿/******************************************************************************/
-/*
-  Project   - Boing Kit
-  Publisher - Long Bunny Labs
-              http://LongBunnyLabs.com
-  Author    - Ming-Lun "Allen" Chou
-              http://AllenChou.net
-*/
-/******************************************************************************/
-
-using UnityEngine;
+﻿using UnityEngine;
 
 public class WASD : MonoBehaviour
 {
   public float Speed = 1.0f;
-  public float Omega = 1.0f;
+  public float Omega = 1.0f; // đây là tốc độ xoay vòng
 
-  public Vector3 Velocity { get { return m_velocity; } }
+    public Vector3 Velocity { get { return m_velocity; } }
   public Vector3 m_velocity;
 
   public void Update()
@@ -35,21 +25,21 @@ public class WASD : MonoBehaviour
     if (Input.GetKey(KeyCode.D))
       moveDir.x += 1.0f;
 
-    /*
-    if (Input.GetKey(KeyCode.R))
-      moveDir.y += 1.0f;
 
-    if (Input.GetKey(KeyCode.F))
-      moveDir.y -= 1.0f;
+        if (Input.GetKey(KeyCode.R))
+            moveDir.y += 1.0f;
 
-    if (Input.GetKey(KeyCode.Q))
-      rot -= 1.0f;
+        if (Input.GetKey(KeyCode.F))
+            moveDir.y -= 1.0f;
 
-    if (Input.GetKey(KeyCode.E))
-      rot += 1.0f;
-    */
+        if (Input.GetKey(KeyCode.Q))
+            rot -= 1.0f;
 
-    Vector3 moveVec = 
+        if (Input.GetKey(KeyCode.E))
+            rot += 1.0f;
+
+
+        Vector3 moveVec = 
       moveDir.sqrMagnitude > 0.0f 
         ? moveDir.normalized * Speed * Time.deltaTime 
         : Vector3.zero;
