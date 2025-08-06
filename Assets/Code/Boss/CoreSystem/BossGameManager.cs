@@ -227,6 +227,9 @@ namespace Code.Boss
             // Hide all UI
             HideAllUI();
             
+            // Reset boss system first (destroy current boss)
+            ResetBossSystem();
+            
             // Reset trigger zone
             ResetTriggerZone();
             
@@ -281,6 +284,7 @@ namespace Code.Boss
         private void OnDestroy()
         {
             // Cleanup events
+            BossEventSystem.Unsubscribe(BossEventType.BossFightStarted, OnBossFightStartedEvent);
             BossEventSystem.Unsubscribe(BossEventType.PhaseChanged, OnPhaseChangedEvent);
             BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeatedEvent);
             BossEventSystem.Unsubscribe(BossEventType.PlayerTakeDamage, OnPlayerTakeDamageEvent);

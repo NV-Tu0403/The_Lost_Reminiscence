@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace Code.Boss
@@ -91,10 +92,11 @@ namespace Code.Boss
             Vector3 spawnPosition = bossSpawnPoint != null ? bossSpawnPoint.position : transform.position;
             Quaternion spawnRotation = bossSpawnPoint != null ? bossSpawnPoint.rotation : Quaternion.identity;
             
-            // Play spawn effect
+            // Play spawn effect và destroy sau 3 giây
             if (bossSpawnEffectPrefab != null)
             {
-                Instantiate(bossSpawnEffectPrefab, spawnPosition, spawnRotation);
+                GameObject spawnEffect = Instantiate(bossSpawnEffectPrefab, spawnPosition, spawnRotation);
+                Destroy(spawnEffect, 3f); // Tự động destroy effect sau 3 giây
             }
             
             // Spawn boss
@@ -146,7 +148,61 @@ namespace Code.Boss
                 spawnedBoss = null;
             }
             
+            // Cleanup all boss-related objects in scene
+            CleanupBossEffects();
+            
             Debug.Log("[BossTriggerZone] Trigger zone reset");
+        }
+        
+        /// <summary>
+        /// Cleanup tất cả effects, souls, decoys còn sót lại từ boss fight trước
+        /// </summary>
+        private static void CleanupBossEffects()
+        {
+            // Cleanup souls bằng cách tìm SoulBehavior component
+            var soulBehaviors = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).OfType<object>()
+                .Where(mb => mb.GetType().Name == "SoulBehavior");
+            foreach (var soul in soulBehaviors)
+            {
+                if (soul is MonoBehaviour mb)
+                    Destroy(mb.gameObject);
+            }
+            
+            // Cleanup decoys bằng cách tìm DecoyBehavior component
+            var decoyBehaviors = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).OfType<object>()
+                .Where(mb => mb.GetType().Name == "DecoyBehavior");
+            foreach (var decoy in decoyBehaviors)
+            {
+                if (decoy is MonoBehaviour mb)
+                    Destroy(mb.gameObject);
+            }
+            
+            // Cleanup effects (tìm theo tên chứa "Effect" hoặc "VFX")
+            var allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+            foreach (var obj in allObjects)
+            {
+                if (obj.name.Contains("Effect") || obj.name.Contains("VFX") || 
+                    obj.name.Contains("FearZone") || obj.name.Contains("Shake"))
+                {
+                    // Kiểm tra không phải UI hoặc player
+                    if (!obj.GetComponent<Canvas>() && !obj.CompareTag("Player"))
+                    {
+                        Destroy(obj);
+                    }
+                }
+            }
+            
+            // Stop all coroutines trong scene
+            var allMonoBehaviours = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+            foreach (var mb in allMonoBehaviours)
+            {
+                if (mb != null && mb.gameObject != null)
+                {
+                    mb.StopAllCoroutines();
+                }
+            }
+            
+            Debug.Log("[BossTriggerZone] Boss effects cleanup completed");
         }
         
         /// <summary>

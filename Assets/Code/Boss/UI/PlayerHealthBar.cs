@@ -113,15 +113,45 @@ namespace Code.Boss
             BossEventSystem.Unsubscribe(BossEventType.PlayerHealthReset, OnPlayerHealthReset);
         }
 
+        private void OnPlayerHealthReset(BossEventData data)
+        {
+            int newMaxHealth = data.intValue;
+            currentHealth = newMaxHealth;
+            maxHealth = newMaxHealth;
+            
+            if (healthSlider != null)
+            {
+                healthSlider.maxValue = maxHealth;
+                healthSlider.value = currentHealth;
+            }
+            UpdateHealthText();
+            Debug.Log($"[PlayerHealthBar] Health reset to {currentHealth}/{maxHealth}");
+        }
+
         private void AnimateHealthChange(int newHealth)
         {
             if (healthSlider == null || bossConfig == null) return;
+            
+            // Kiểm tra GameObject có active không trước khi chạy coroutine
+            if (!gameObject.activeInHierarchy)
+            {
+                // Nếu GameObject không active, set value trực tiếp
+                healthSlider.value = newHealth;
+                return;
+            }
+            
             var duration = bossConfig.uiConfig.uiAnimationSpeed;
             var curve = bossConfig.uiConfig.uiAnimationCurve;
             var startValue = healthSlider.value;
             float endValue = newHealth;
-            healthSlider.StopAllCoroutines();
-            healthSlider.StartCoroutine(AnimateSliderCoroutine(startValue, endValue, duration, curve));
+            
+            // Stop existing coroutines before starting new one
+            if (healthAnimationCoroutine != null)
+            {
+                StopCoroutine(healthAnimationCoroutine);
+            }
+            
+            healthAnimationCoroutine = StartCoroutine(AnimateSliderCoroutine(startValue, endValue, duration, curve));
         }
 
         private IEnumerator AnimateSliderCoroutine(float start, float end, float duration, AnimationCurve curve)
@@ -136,21 +166,6 @@ namespace Code.Boss
                 yield return null;
             }
             healthSlider.value = end;
-        }
-
-        private void OnPlayerHealthReset(BossEventData data)
-        {
-            int newMaxHealth = data.intValue;
-            currentHealth = newMaxHealth;
-            maxHealth = newMaxHealth;
-            
-            if (healthSlider != null)
-            {
-                healthSlider.maxValue = maxHealth;
-                AnimateHealthChange(currentHealth);
-            }
-            UpdateHealthText();
-            Debug.Log($"[PlayerHealthBar] Health reset to {currentHealth}/{maxHealth}");
         }
     }
 }
