@@ -54,7 +54,7 @@ namespace Code.Boss
             playerHealthBar = Object.FindFirstObjectByType<PlayerHealthBar>();
             if (playerHealthBar != null)
             {
-                playerHealthBar.Initialize(3); // Default player health
+                playerHealthBar.Initialize(3, bossController.Config); 
                 Debug.Log("Player Health Bar found and initialized");
             }
             else
