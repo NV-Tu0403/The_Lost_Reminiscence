@@ -23,7 +23,7 @@ namespace Code.Boss.States.Phase1
         {
             Debug.Log("[Boss State] Entered DecoyState - Spawn 2 bóng ảo (1 thật 1 giả) truy đuổi người chơi");
             BossController.PlayAnimation("CastSkillA");
-            Debug.Log("CastSkillA");
+            
             castTimer = 0f;
             skillTimer = 0f;
             isCasting = true;
@@ -167,13 +167,13 @@ namespace Code.Boss.States.Phase1
             if (realDecoyRevealEffectInstance == null) return;
             Object.Destroy(realDecoyRevealEffectInstance);
             realDecoyRevealEffectInstance = null;
-            
-            // Reset movement speed
-            if (BossController.NavAgent != null)
-            {
-                BossController.NavAgent.speed = Config.moveSpeed;
-            }
-            BossController.ResetMoveDirection();
+            //
+            // // Reset movement speed
+            // if (BossController.NavAgent != null)
+            // {
+            //     BossController.NavAgent.speed = Config.moveSpeed;
+            // }
+            // BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() {}

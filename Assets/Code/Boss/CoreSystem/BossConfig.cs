@@ -13,6 +13,14 @@ namespace Code.Boss
         [Header("Debug")]
         [Tooltip("Chọn phase để test nhanh. None: Bình thường, Phase1: Phase 1, Phase2: Phase 2, ...")]
         public BossDebugPhase debugStartPhase = BossDebugPhase.None;
+     
+        [Header("Prefab Settings")]
+        [Tooltip("Prefab của boss để spawn lại khi cần reset")]
+        public GameObject bossPrefab;
+        [Tooltip("Prefab memory fragment rớt ra khi boss chết")]
+        public GameObject memoryFragmentPrefab;
+        [Tooltip("Effect xung quanh memory fragment")]
+        public GameObject memoryFragmentEffectPrefab;
         
         [Header("General Boss Settings")]
         public int maxHealthPerPhase = 3;
@@ -42,7 +50,6 @@ namespace Code.Boss
         [Header("FMOD Studio Settings")]
         [Space]
         public FMODAudioConfig fmodAudioConfig;
-        
 
     }
 
@@ -64,8 +71,6 @@ namespace Code.Boss
         
         [Header("Decoy State")]
         public float decoyMoveSpeed = 2f;
-        public int decoyCount = 2; // 1 thật, 1 giả
-        public float decoySpawnRadius = 8f;
         public GameObject decoyPrefab; // Prefab cho decoy
         public GameObject decoySpawnEffectPrefab; // Prefab hiệu ứng khi spawn decoy
         public GameObject realDecoyRevealEffectPrefab; // Prefab hiệu ứng khi reveal decoy thật
@@ -90,10 +95,14 @@ namespace Code.Boss
         public float fearZoneRadius = 3f;
         public GameObject fearZoneCastEffectPrefab; // Prefab hiệu ứng khi cast skill
         public GameObject fearZoneZoneEffectPrefab; // Prefab hiệu ứng khi zone xuất hiện
+        public GameObject fearZonePlayerEffectPrefab;
         
-        [Header("Scream State")]
-        public float screenShakeIntensity = 1f;
-        public float visionShrinkAmount = 0.5f;
+        [Header("Shake Effect Settings")]
+        public float shakeDuration = 0.5f;
+        public float shakeStrength = 0.5f;
+        public int shakeVibrato = 20;
+        public float shakeRandomness = 90f;
+        public GameObject shakeEffectPrefab;// Prefab hiệu ứng bao quanh player khi trong fear zone
     }
 
     [Serializable]
@@ -101,7 +110,7 @@ namespace Code.Boss
     {
         public int maxSouls = 2;
         public float soulMoveSpeed = 4f;
-        public float soulSpawnRadius = 15f;
+        //public float soulSpawnRadius = 15f;
         public float soulFollowDistance = 1f;
         public GameObject soulPrefab;
         public GameObject soulSpawnEffectPrefab; // Prefab hiệu ứng khi spawn soul
