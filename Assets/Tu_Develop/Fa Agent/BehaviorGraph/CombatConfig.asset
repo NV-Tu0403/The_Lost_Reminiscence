@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-6226445390919865854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c02bb70996b49eba31d0c206e28da24, type: 3}
+  m_Name: CombatConfig
+  m_EditorClassIdentifier: 
+  VersionTimestamp: 638892329534401302
+  AssetID:
+    m_Value0: 15278649121517262162
+    m_Value1: 14783128774627390826
+  m_Blackboard:
+    m_Variables:
+    - rid: 838317780416594229
+    - rid: 838317780416594230
+    - rid: 838317780416594231
+  m_SharedBlackboardVariableGuids: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 838317780416594229
+      type: {class: 'BlackboardVariable`1[[System.Single, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 14200658761931121383
+          m_Value1: 9281876553392074175
+        Name: Combat_FollowDistance
+        m_Value: 5
+    - rid: 838317780416594230
+      type: {class: 'BlackboardVariable`1[[System.Int32, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 1048485316571909743
+          m_Value1: 9536292481496448581
+        Name: PlayerHealth
+        m_Value: 0
+    - rid: 838317780416594231
+      type: {class: 'BlackboardVariable`1[[System.Int32, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 123214158355308906
+          m_Value1: 2123976792069996621
+        Name: EnemyCount
+        m_Value: 0
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dd922ae02c94c87a66e46a10a7319b9, type: 3}
+  m_Name: CombatConfig
+  m_EditorClassIdentifier: 
+  AssetID:
+    m_Value0: 15278649121517262162
+    m_Value1: 14783128774627390826
+  m_Variables:
+  - rid: 838317763483140250
+  - rid: 838317763718021712
+  - rid: 838317761358987387
+  m_VersionTimestamp: 638892329534401302
+  m_CommandBuffer:
+    m_Commands: []
+  m_RuntimeBlackboardAsset: {fileID: -6226445390919865854}
+  references:
+    version: 2
+    RefIds:
+    - rid: 838317761358987387
+      type: {class: 'TypedVariableModel`1[[System.Int32, mscorlib]]', ns: Unity.Behavior.GraphFramework, asm: Unity.Behavior.GraphFramework}
+      data:
+        ID:
+          m_Value0: 123214158355308906
+          m_Value1: 2123976792069996621
+        Name: EnemyCount
+        IsExposed: 1
+        m_IsShared: 0
+        m_Value: 0
+    - rid: 838317763483140250
+      type: {class: 'TypedVariableModel`1[[System.Single, mscorlib]]', ns: Unity.Behavior.GraphFramework, asm: Unity.Behavior.GraphFramework}
+      data:
+        ID:
+          m_Value0: 14200658761931121383
+          m_Value1: 9281876553392074175
+        Name: Combat_FollowDistance
+        IsExposed: 1
+        m_IsShared: 0
+        m_Value: 5
+    - rid: 838317763718021712
+      type: {class: 'TypedVariableModel`1[[System.Int32, mscorlib]]', ns: Unity.Behavior.GraphFramework, asm: Unity.Behavior.GraphFramework}
+      data:
+        ID:
+          m_Value0: 1048485316571909743
+          m_Value1: 9536292481496448581
+        Name: PlayerHealth
+        IsExposed: 1
+        m_IsShared: 0
+        m_Value: 0
