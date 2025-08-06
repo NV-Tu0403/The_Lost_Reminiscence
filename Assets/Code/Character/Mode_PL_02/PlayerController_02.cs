@@ -59,6 +59,7 @@ public class PlayerController_02 : PlayerEventListenerBase
     [SerializeField] private float dashMomentumBoost = 1.3f;// nhân vận tốc ngang
 
     [Header("Character action Settings")]
+    //[SerializeField] private string movementMode = "Rigidbody";
     public int previousIndex = -1;                          // Lưu chỉ mục trước đó của item được trang bị
     public Coroutine deactivateCoroutine;                   // Coroutine để hủy kích hoạt item sau khi ném
     [SerializeField] private GameObject markerPrefab;       // Prefab dùng để đánh dấu (test)
@@ -129,7 +130,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     public void Update()
     {
-        if (Input.GetKeyDown(KeyCode.N))
+        if(Input.GetKeyDown(KeyCode.N))
         {
             useNavMesh = !useNavMesh;
             if (useNavMesh)
@@ -382,6 +383,64 @@ public class PlayerController_02 : PlayerEventListenerBase
     #endregion
 
     #region Move
+
+    /// <summary>
+    /// Move cơ bản sử dụng Transform, không dùng Rigidbody hay NavMeshAgent.
+    /// </summary>
+    private void MoveBasic(Vector3 direction, CharacterActionType moveType)
+    {
+        float rotationSpeed = config.rotationSpeed;
+        float deltaTime = Time.deltaTime;
+
+        if (direction.sqrMagnitude <= 0.001f && moveType != CharacterActionType.Jump)
+        {
+            _core_02._stateMachine.SetState(new IdleState_1(_core_02._stateMachine, _playerEvent));
+            return;
+        }
+
+        // Di chuyển nhân vật
+        Vector3 moveVector = direction * deltaTime;
+        transform.position += moveVector;
+
+        // Xử lý xoay nhân vật
+        if (_playerInput == null)
+        {
+            Debug.LogError("_playerInput is null in MoveBasic.");
+            return;
+        }
+
+        if (_playerInput._characterCamera == null)
+        {
+            Debug.LogWarning("_characterCamera is null in MoveBasic. Using default rotation.");
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                lastRotationDirection = direction;
+            }
+        }
+        else if (!_playerInput._characterCamera.isAiming)
+        {
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                lastRotationDirection = direction;
+            }
+        }
+        else if (_playerInput._characterCamera.mainCamera != null)
+        {
+            Vector3 camForward = _playerInput._characterCamera.mainCamera.transform.forward;
+            camForward.y = 0;
+            if (camForward.sqrMagnitude > 0.001f)
+            {
+                lastRotationDirection = camForward.normalized;
+            }
+        }
+
+        // Xoay nhân vật
+        if (lastRotationDirection.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(lastRotationDirection);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * deltaTime);
+        }
+    }
 
     /// <summary>
     /// Move bằng Rigidbody.
