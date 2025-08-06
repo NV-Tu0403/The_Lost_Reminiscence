@@ -17,6 +17,10 @@ public class EnemyController : PlayerEventListenerBase
     [SerializeField] private LayerMask detectionLayer; // Layer được phép quét
     [SerializeField] private float checkInterval = 0.5f; // Tần suất quét
 
+    [Header("Movement Settings")]
+    [SerializeField] private float stopDistance = 2f; // Khoảng cách dừng lại khi gần Player
+    [SerializeField] private float MoveSpeed = 2f; // Máu tối đa
+
     [Header("Phase Thresholds")]
     [SerializeField] private float phase2Threshold = 0.75f; // Ngưỡng chuyển sang Phase 2 (75% HP)
     [SerializeField] private float phase3Threshold = 0.50f; // Ngưỡng chuyển sang Phase 3 (50% HP)
@@ -94,7 +98,7 @@ public class EnemyController : PlayerEventListenerBase
             if (hit.gameObject.layer == LayerMask.NameToLayer("Character"))
             {
                 targetCharacter = hit.gameObject;
-                Debug.Log($"Found Character: {targetCharacter.name}");
+                //Debug.Log($"Found Character: {targetCharacter.name}");
                 break; // Ưu tiên Character, dừng quét khi tìm thấy
             }
         }
@@ -169,7 +173,7 @@ public class EnemyController : PlayerEventListenerBase
         // Ví dụ: Di chuyển chậm, tấn công cơ bản
         if (targetCharacter != null)
         {
-            MoveTowardsTarget(2f); // Tốc độ chậm
+            MoveTowardsTarget(MoveSpeed); // Tốc độ chậm
             // Thêm logic tấn công nếu cần
         }
     }
@@ -179,7 +183,7 @@ public class EnemyController : PlayerEventListenerBase
         // Ví dụ: Di chuyển nhanh hơn, tấn công mạnh hơn
         if (targetCharacter != null)
         {
-            MoveTowardsTarget(4f); // Tốc độ nhanh hơn
+            MoveTowardsTarget(MoveSpeed * 2); // Tốc độ nhanh hơn
             // Thêm logic tấn công mạnh hơn
         }
     }
@@ -189,12 +193,15 @@ public class EnemyController : PlayerEventListenerBase
         // Ví dụ: Di chuyển rất nhanh, hành vi liều lĩnh
         if (targetCharacter != null)
         {
-            MoveTowardsTarget(6f); // Tốc độ rất nhanh
+            MoveTowardsTarget(MoveSpeed * 4); // Tốc độ rất nhanh
             // Thêm logic tấn công liều lĩnh
         }
     }
 
-    // Di chuyển tới mục tiêu
+    /// <summary>
+    /// Di chuyển về phía mục tiêu
+    /// </summary>
+    /// <param name="speed"></param>
     private void MoveTowardsTarget(float speed)
     {
         if (targetCharacter == null) return;
@@ -202,16 +209,23 @@ public class EnemyController : PlayerEventListenerBase
         Vector3 direction = (targetCharacter.transform.position - transform.position).normalized;
         direction.y = 0; // Giữ di chuyển trên mặt phẳng XZ
 
-        // Kiểm tra va chạm trước khi di chuyển
-        Vector3 moveVector = direction * speed * Time.deltaTime;
-        RaycastHit hit;
-        if (!Physics.Raycast(transform.position, direction, out hit, moveVector.magnitude + 0.1f, LayerMask.GetMask("Environment")))
+        // Kiểm tra khoảng cách đến Player
+        float distanceToTarget = Vector3.Distance(transform.position, targetCharacter.transform.position);
+        if (distanceToTarget > stopDistance)
         {
-            transform.position += moveVector;
+            Vector3 moveVector = direction * speed * Time.deltaTime;
+            if (!Physics.Raycast(transform.position, direction, moveVector.magnitude + 0.1f, LayerMask.GetMask("Environment")))
+            {
+                transform.position += moveVector;
+            }
+            else
+            {
+                Debug.Log("Blocked by obstacle");
+            }
         }
         else
         {
-            Debug.Log("Blocked by obstacle: " + hit.collider.name);
+            //Debug.Log("Enemy stopped: Within stopDistance of Player");
         }
 
         // Xoay về phía mục tiêu
@@ -225,8 +239,10 @@ public class EnemyController : PlayerEventListenerBase
     // Nhận sát thương và cập nhật phase
     public void TakeDamage(GameObject Attacker, float damage, GameObject target)
     {
+        if (target.name != gameObject.name) return;
+
         currentHealth = Mathf.Max(0, currentHealth - damage);
-        Debug.Log($"Enemy took {damage} damage from {Attacker.name}. Current health: {currentHealth}");
+        Debug.Log($"{gameObject.name} nhận {damage} damage từ {Attacker.name}. Current health: {currentHealth}");
 
         UpdatePhase();
 
@@ -246,6 +262,8 @@ public class EnemyController : PlayerEventListenerBase
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, stopDistance);
     }
 }
 

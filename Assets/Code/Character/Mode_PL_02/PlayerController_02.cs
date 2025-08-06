@@ -856,17 +856,16 @@ public class PlayerController_02 : PlayerEventListenerBase
                 if (hit.CompareTag("Boss"))
                 {
                     PlayerEvent.Instance.TriggerTakeOutDamage(this.gameObject, attackDamage, hit.gameObject);
-                    Debug.Log($"Hit {hit.gameObject.name} with attack {attackIndex}, damage: {attackDamage} at range: {attackRange}.");
+                    //Debug.Log($"Hit {hit.gameObject.name} with attack {attackIndex}, damage: {attackDamage} at range: {attackRange}.");
                 }
             }
 
             // Đặt lại trạng thái sau khi animation hoàn thành
             Invoke(nameof(ResetAttackState), attackDuration);
 
-            //ApplyForceAttack(attackIndex, _rigidbody);
-            StartCoroutine(WaitApplyForceAttack(attackIndex, _rigidbody));
+            //StartCoroutine(WaitApplyForceAttack(attackIndex, _rigidbody));
 
-            Debug.Log($"Attack {attackIndex} performed: range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
+            //Debug.Log($"Attack {attackIndex} performed: range={attackRange}, duration={attackDuration}, damage={attackDamage}, cooldown={attackCooldown}");
             return true;
         }
         catch (Exception e)
