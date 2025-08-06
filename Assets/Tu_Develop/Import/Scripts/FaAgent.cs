@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using System.Collections.Generic;
+using Code.UI.Gameplay;
 using FMODUnity;
-using TMPro;
 using Tu_Develop.Import.Scripts.EventConfig;
 using Unity.Behavior;
 using UnityEngine;
@@ -21,11 +21,9 @@ namespace Tu_Develop.Import.Scripts
         
         // Ambient sound
         [SerializeField] private EventReference ambientSound;
-        
 
-        [Header("Canvas")] [SerializeField] private TextMeshProUGUI? skill1Cooldown;
-        [SerializeField] private TextMeshProUGUI? skill2Cooldown;
-        [SerializeField] private TextMeshProUGUI? skill3Cooldown;
+        [Header("UI Settings")]
+        [SerializeField] private UIFaSkill? uiFaSkill;
         
         // Giả lập máu
         [SerializeField] private int playerHealth;
@@ -69,7 +67,12 @@ namespace Tu_Develop.Import.Scripts
         {
             return !_cooldownTimers.ContainsKey(skillName) || _cooldownTimers[skillName] <= 0;
         }
-    
+
+        public float ReturnCooldownSkill(string skillName)
+        {
+            // Trả về thời gian cooldown còn lại của skill, nếu không có thì trả về 0
+            return _cooldownTimers.GetValueOrDefault(skillName, 0f);
+        }
         // Hàm này sẽ được gọi từ Behavior Graph để bắt đầu đếm ngược
         private void StartSkillCooldown(string skillName, float duration)
         {
@@ -223,6 +226,8 @@ namespace Tu_Develop.Import.Scripts
             {
                 Debug.LogWarning("Chưa gán Event Channel cho FaAgent!");
             }
+
+            uiFaSkill = FindAnyObjectByType<UIFaSkill>();
         }
 
         void Update()
@@ -232,9 +237,10 @@ namespace Tu_Develop.Import.Scripts
             foreach (string key in keys)
             {
                 _cooldownTimers[key] = Mathf.Max(0, _cooldownTimers[key] - Time.deltaTime);
+                // đổi sang int
+                var cooldownValue = Mathf.CeilToInt(_cooldownTimers[key]);
+                uiFaSkill?.UpdateCoolDown(key, cooldownValue);
             }
-
-            UpdateCooldownToCanvas();
         
             if (faBha == null) return;
             
@@ -296,32 +302,7 @@ namespace Tu_Develop.Import.Scripts
                 }
             }
         }
-
-    
-        private void UpdateCooldownToCanvas()
-        {
-            float cooldownValue; // Biến tạm để lưu giá trị cooldown
-
-            if (skill1Cooldown != null)
-            {
-                // Thử lấy giá trị, nếu không có thì cooldownValue sẽ là 0
-                _cooldownTimers.TryGetValue("GuideSignal", out cooldownValue);
-                skill1Cooldown.text = cooldownValue > 0 ? Mathf.CeilToInt(cooldownValue).ToString() : "Ready";
-            }
-
-            if (skill2Cooldown != null)
-            {
-                _cooldownTimers.TryGetValue("KnowledgeLight", out cooldownValue);
-                skill2Cooldown.text = cooldownValue > 0 ? Mathf.CeilToInt(cooldownValue).ToString() : "Ready";
-            }
-    
-            if (skill3Cooldown != null)
-            {
-                _cooldownTimers.TryGetValue("ProtectiveAura", out cooldownValue);
-                skill3Cooldown.text = cooldownValue > 0 ? Mathf.CeilToInt(cooldownValue).ToString() : "Ready";
-            }
-        }
-
+        
         public bool ActivePlayerControl(bool v)
         {
             try
