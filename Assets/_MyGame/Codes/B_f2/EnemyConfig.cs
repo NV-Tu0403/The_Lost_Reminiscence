@@ -17,7 +17,8 @@ public class EnemyConfig : ScriptableObject
     public float skill2SphereRadius = 3f; // Bán kính vùng OverlapSphere của Skill 2
     public float skill2Duration = 5f; // Thời gian tồn tại của Skill 2
     public float skill2Interval = 1f; // Khoảng cách thời gian giữa các lần gây sát thương
-    public GameObject skill2VFXPrefab; // Prefab hiệu ứng VFX cho Skill 2
+    public GameObject skill2InVFXPrefab; // Prefab hiệu ứng VFX tại tọa độ Enemy (efect bắt đầu Skill)
+    public GameObject skill2OutVFXPrefab; // Prefab hiệu ứng VFX cho Skill 2
 
     [Header("Phase 1 Settings")]
     public float teleportDistanceThreshold = 5f; // Khoảng cách tối thiểu để dịch chuyển tức thời

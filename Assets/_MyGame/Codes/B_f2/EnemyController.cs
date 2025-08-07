@@ -51,6 +51,7 @@ public class EnemyController : PlayerEventListenerBase
     private float skill1Timer; // Bộ đếm thời gian cho Skill 1
     private List<Skill2Point> skill2Points = new List<Skill2Point>(); // Lưu các điểm của Skill 2
     private float teleportCooldownTimer; // Bộ đếm thời gian cho dịch chuyển ở Phase 2
+    private GameObject skill2InVFXInstance; // Lưu instance hiện tại của skill2InVFXPrefab
 
     private class Skill2Point
     {
@@ -416,6 +417,18 @@ public class EnemyController : PlayerEventListenerBase
     {
         if (currentPhase != EnemyPhase.Phase2) return;
 
+        // Xóa instance cũ của skill2InVFXPrefab nếu tồn tại
+        if (skill2InVFXInstance != null)
+        {
+            Destroy(skill2InVFXInstance);
+        }
+
+        // Bật VFX tại vị trí Enemy khi bắt đầu Skill 2
+        if (config.skill2InVFXPrefab != null)
+        {
+            skill2InVFXInstance = Instantiate(config.skill2InVFXPrefab, transform.position, Quaternion.identity);
+        }
+
         // Lấy vị trí Player và tạo 5 điểm ngẫu nhiên
         Vector3 playerPos = targetCharacter != null ? targetCharacter.transform.position : transform.position;
         skill2Points.Clear();
@@ -423,16 +436,16 @@ public class EnemyController : PlayerEventListenerBase
         // Thêm vị trí Player
         skill2Points.Add(CreateSkill2Point(playerPos));
 
-        // Tạo 5 điểm ngẫu nhiên
-        for (int i = 0; i < 5; i++)
-        {
-            Vector3 randomPos = new Vector3(
-                Random.Range(-config.mapSize.x / 2, config.mapSize.x / 2),
-                0,
-                Random.Range(-config.mapSize.y / 2, config.mapSize.y / 2)
-            );
-            skill2Points.Add(CreateSkill2Point(randomPos));
-        }
+        //// Tạo 5 điểm ngẫu nhiên
+        //for (int i = 0; i < 5; i++)
+        //{
+        //    Vector3 randomPos = new Vector3(
+        //        Random.Range(-config.mapSize.x / 2, config.mapSize.x / 2),
+        //        0,
+        //        Random.Range(-config.mapSize.y / 2, config.mapSize.y / 2)
+        //    );
+        //    skill2Points.Add(CreateSkill2Point(randomPos));
+        //}
 
         Debug.Log("Skill 2 activated: Created damage zones");
     }
@@ -445,10 +458,10 @@ public class EnemyController : PlayerEventListenerBase
             timer = config.skill2Duration
         };
 
-        // Tạo hiệu ứng VFX
-        if (config.skill2VFXPrefab != null)
+        // Tạo hiệu ứng VFX tại điểm gây sát thương
+        if (config.skill2OutVFXPrefab != null)
         {
-            point.vfxInstance = Instantiate(config.skill2VFXPrefab, position, Quaternion.identity);
+            point.vfxInstance = Instantiate(config.skill2OutVFXPrefab, position, Quaternion.identity);
         }
 
         return point;
