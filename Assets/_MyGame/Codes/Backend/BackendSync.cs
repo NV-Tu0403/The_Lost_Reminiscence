@@ -10,37 +10,34 @@ namespace Code.Backend
 {
     public class BackendSync : MonoBehaviour
     {
-
-        [Header("API")]
-        public string apiBaseUrl = "https://backend-datn-iwqa.onrender.com/api"; 
+        [Header("API")] public string apiBaseUrl = "https://backend-datn-iwqa.onrender.com/api";
         private string jwtToken = null;
-        
-        #region  Save Token
 
-        private void Start()
+        // Lớp kết quả đăng nhập
+        [System.Serializable]
+        public class LoginResult
         {
-            LoadToken(); // Tải token từ PlayerPrefs khi bắt đầu
-            if (string.IsNullOrEmpty(jwtToken))
-            {
-                Debug.Log("Chưa có token, vui lòng đăng nhập hoặc đăng ký.");
-            }
-        }
-
-        private void SaveToken()
-        {
-            PlayerPrefs.SetString("jwtToken", jwtToken);
-            PlayerPrefs.Save();
+            public string token;
         }
         
-        private void LoadToken()
+        [System.Serializable]
+        public class CloudSaveData
         {
-            jwtToken = PlayerPrefs.GetString("jwtToken", null);
+            public string folderPath;
+            public List<CloudFile> files;
         }
 
-        #endregion
-        
-        #region Login/Register/OTP-verify/UploadSave
-        public IEnumerator RequestCloudRegister(string userName, string password, string email, Action<bool, string> callback)
+        [System.Serializable]
+        public class CloudFile
+        {
+            public string fileName;
+            public object data;
+        }
+
+        #region Register/OTP-verify/UploadSave
+
+        public IEnumerator RequestCloudRegister(string userName, string password, string email,
+            Action<bool, string> callback)
         {
             var url = apiBaseUrl + "/register";
             var data = new
@@ -64,7 +61,7 @@ namespace Code.Backend
             }
         }
 
-        public IEnumerator VerifyOtp( string userName, string otp, Action<bool, string> callback)
+        public IEnumerator VerifyOtp(string userName, string otp, Action<bool, string> callback)
         {
             var url = apiBaseUrl + "/verify-otp";
             var data = new
@@ -75,12 +72,11 @@ namespace Code.Backend
             var body = JsonConvert.SerializeObject(data);
             using var www = UnityWebRequest.Post(url, body, "application/json");
             yield return www.SendWebRequest();
-                
+
             if (www.result == UnityWebRequest.Result.Success)
             {
                 var result = JsonConvert.DeserializeObject<LoginResult>(www.downloadHandler.text);
                 jwtToken = result.token; // Lưu token cho các request sau
-                SaveToken(); // Lưu token vào PlayerPrefs
                 callback(true, "đăng kí Cloud thành công!");
             }
             else
@@ -89,34 +85,8 @@ namespace Code.Backend
                 callback(false, $"Xác thực OTP thất bại: {error}");
             }
         }
-        
-        IEnumerator UploadPayloadToCloud(object payload, string folderToDelete)
-        {
-            Debug.Log("Bắt đầu upload dữ liệu lên Cloud...");
-            string jsonBody = JsonConvert.SerializeObject(payload);
-            string url = apiBaseUrl + "/save";
-            using (UnityWebRequest www = new UnityWebRequest(url, "POST"))
-            {
-                byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
-                www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-                www.downloadHandler = new DownloadHandlerBuffer();
-                www.SetRequestHeader("Content-Type", "application/json");
-                www.SetRequestHeader("Authorization", jwtToken);
 
-                yield return www.SendWebRequest();
 
-                if (www.result == UnityWebRequest.Result.Success)
-                {
-                    TryDeleteFolder(folderToDelete);
-                    Debug.Log("Upload batch thành công!");
-                }
-                else
-                {
-                    Debug.LogError("Upload batch lỗi: " + www.error);
-                }
-            }
-        }
-        
         #endregion
 
         #region Upload All JSON Files
@@ -126,45 +96,47 @@ namespace Code.Backend
             StartCoroutine(UploadAllJsonFilesAsBatch());
         }
 
-        string GetTransferFolder()
+        private static string GetTransferFolder()
         {
-
             return Path.Combine(
                 Application.persistentDataPath,
                 "User_DataGame",
                 "BackUpTray"
             );
         }
-        
-        IEnumerator UploadAllJsonFilesAsBatch()
+
+        private IEnumerator UploadAllJsonFilesAsBatch()
         {
             if (!IsAuthenticated())
             {
                 Debug.LogError("3. Authentication FAILED - Token null hoặc empty");
                 yield break;
             }
+
             Debug.Log("3. Authentication PASSED");
 
             // Kiểm tra folder chứa dữ liệu
-            string transferFolder = GetTransferFolder();
+            var transferFolder = GetTransferFolder();
             Debug.Log($"4. Transfer folder path: {transferFolder}");
-            
+
             if (!CheckFolderExists(transferFolder))
             {
                 Debug.LogError("5. Folder KHÔNG TỒN TẠI");
                 yield break;
             }
+
             Debug.Log("5. Folder TỒN TẠI");
 
             // Lấy tất cả file JSON trong thư mục con đầu tiên
             var jsonFiles = GetAllJsonFilesInFirstSubFolder(transferFolder);
             Debug.Log($"6. Số lượng JSON files tìm được: {jsonFiles?.Length ?? 0}");
-            
+
             if (jsonFiles == null || jsonFiles.Length == 0)
             {
                 Debug.LogError("7. KHÔNG TÌM THẤY FILE JSON nào");
                 yield break;
             }
+
             Debug.Log("7. Đã tìm thấy file JSON");
 
             // In ra danh sách file
@@ -174,11 +146,11 @@ namespace Code.Backend
             }
 
             // Lấy tên folder chứa các file JSON
-            string folderToUpload = Path.GetDirectoryName(jsonFiles[0]);
-            string folderPathCloud = Path.GetFileName(folderToUpload);
+            var folderToUpload = Path.GetDirectoryName(jsonFiles[0]);
+            var folderPathCloud = Path.GetFileName(folderToUpload);
             Debug.Log($"8. Folder to upload: {folderToUpload}");
             Debug.Log($"9. Folder path cloud: {folderPathCloud}");
-            
+
             var filesList = BuildFilesList(jsonFiles);
             Debug.Log($"10. Files list build result: {filesList?.Count ?? 0} files");
 
@@ -187,6 +159,7 @@ namespace Code.Backend
                 Debug.LogError("11. BUILD FILES LIST FAILED");
                 yield break;
             }
+
             Debug.Log("11. Build files list THÀNH CÔNG");
 
             // Tạo payload để upload
@@ -196,47 +169,37 @@ namespace Code.Backend
                 files = filesList
             };
             yield return StartCoroutine(UploadPayloadToCloud(payload, folderToUpload));
-        }   
-
-        bool IsAuthenticated()
-        {
-            if (string.IsNullOrEmpty(jwtToken))
-            {
-                return false;
-            }
-            return true;
         }
 
-        bool CheckFolderExists(string folder)
+        private bool IsAuthenticated()
+        {
+            return !string.IsNullOrEmpty(jwtToken);
+        }
+
+        private static bool CheckFolderExists(string folder)
         {
             Debug.Log($"Checking folder existence: '{folder}'");
             Debug.Log($"Folder length: {folder.Length}");
             Debug.Log($"Directory.Exists result: {Directory.Exists(folder)}");
-            
-            if (!Directory.Exists(folder))
-            {
-                return false;
-            }
-            return true;
-        }
-        
-        string[] GetAllJsonFilesInFirstSubFolder(string rootFolder)
-        {
-            var saveFolders = Directory.GetDirectories(rootFolder, "SaveGame_*", SearchOption.TopDirectoryOnly);
-            if (saveFolders.Length == 0)
-            {
-                return null;
-            }
-            return Directory.GetFiles(saveFolders[0], "*.json", SearchOption.AllDirectories);
+
+            return Directory.Exists(folder);
         }
 
-        List<object> BuildFilesList(string[] jsonFiles)
+        private static string[] GetAllJsonFilesInFirstSubFolder(string rootFolder)
+        {
+            var saveFolders = Directory.GetDirectories(rootFolder, "SaveGame_*", SearchOption.TopDirectoryOnly);
+            return saveFolders.Length == 0
+                ? null
+                : Directory.GetFiles(saveFolders[0], "*.json", SearchOption.AllDirectories);
+        }
+
+        private static List<object> BuildFilesList(string[] jsonFiles)
         {
             var filesList = new List<object>();
             foreach (var filePath in jsonFiles)
             {
-                string fileContent = File.ReadAllText(filePath);
-                string fileName = Path.GetFileName(filePath);
+                var fileContent = File.ReadAllText(filePath);
+                var fileName = Path.GetFileName(filePath);
 
                 object fileDataObj;
                 try
@@ -254,26 +217,23 @@ namespace Code.Backend
                     data = fileDataObj
                 });
             }
+
             return filesList;
         }
 
-        void TryDeleteFolder(string folder)
+        private static void TryDeleteFolder(string folder)
         {
             try
             {
-                if (Directory.Exists(folder))
-                {
-                    Directory.Delete(folder, true);
-                    Debug.Log("Đã xóa folder local: " + folder);
+                if (!Directory.Exists(folder)) return;
+                Directory.Delete(folder, true);
+                Debug.Log("Đã xóa folder local: " + folder);
 
-                    // Xóa file .meta đi kèm 
-                    string metaFile = folder + ".meta";
-                    if (File.Exists(metaFile))
-                    {
-                        File.Delete(metaFile);
-                        Debug.Log("Đã xóa file meta: " + metaFile);
-                    }
-                }
+                // Xóa file .meta đi kèm 
+                var metaFile = folder + ".meta";
+                if (!File.Exists(metaFile)) return;
+                File.Delete(metaFile);
+                Debug.Log("Đã xóa file meta: " + metaFile);
             }
             catch (Exception ex)
             {
@@ -281,13 +241,113 @@ namespace Code.Backend
             }
         }
 
+        private IEnumerator UploadPayloadToCloud(object payload, string folderToDelete)
+        {
+            Debug.Log("Bắt đầu upload dữ liệu lên Cloud...");
+            var jsonBody = JsonConvert.SerializeObject(payload);
+            var url = apiBaseUrl + "/save";
+            using UnityWebRequest www = new UnityWebRequest(url, "POST");
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
+            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "application/json");
+            www.SetRequestHeader("Authorization", jwtToken);
+
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                TryDeleteFolder(folderToDelete);
+                Debug.Log("Upload batch thành công!");
+            }
+            else
+            {
+                Debug.LogError("Upload batch lỗi: " + www.error);
+            }
+        }
         #endregion
         
-        // Lớp kết quả đăng nhập
-        [System.Serializable]
-        public class LoginResult
+        #region Download Data From Cloud
+
+        public void OnDownloadDataFromCloud()
         {
-            public string token;
+            Debug.Log("Bắt đầu tải dữ liệu từ Cloud về...");
+            StartCoroutine(DownloadDataFromCloud());
         }
+
+        private IEnumerator DownloadDataFromCloud()
+        {
+            if (!IsAuthenticated())
+            {
+                Debug.LogError("Authentication FAILED - Token null hoặc empty");
+                yield break;
+            }
+
+            var url = apiBaseUrl + "/load";
+
+            using var www = UnityWebRequest.Get(url);
+            www.SetRequestHeader("Authorization", jwtToken);
+
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log("Tải dữ liệu thành công!");
+                var responseData = www.downloadHandler.text;
+                yield return StartCoroutine(ProcessDownloadedData(responseData));
+            }
+            else
+            {
+                Debug.LogError("Tải dữ liệu lỗi: " + www.error);
+            }
+        }
+        private IEnumerator ProcessDownloadedData(string jsonData)
+        {
+            CloudSaveData cloudData = null;
+    
+            try
+            {
+                cloudData = JsonConvert.DeserializeObject<CloudSaveData>(jsonData);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Lỗi parse dữ liệu: {ex.Message}");
+                yield break;
+            }
+            
+            if (cloudData != null)
+            {
+                yield return StartCoroutine(SaveCloudDataToLocal(cloudData));
+            }
+        }
+        
+        private static IEnumerator SaveCloudDataToLocal(CloudSaveData cloudData)
+        {
+            var saveFolder = Path.Combine(
+                Application.persistentDataPath,
+                "User_DataGame",
+                "GetBackUpTray",
+                cloudData.folderPath
+            );
+
+            if (!Directory.Exists(saveFolder))
+            {
+                Directory.CreateDirectory(saveFolder);
+            }
+
+            Debug.Log($"Bắt đầu lưu {cloudData.files.Count} files vào: {saveFolder}");
+
+            foreach (var file in cloudData.files)
+            {
+                var filePath = Path.Combine(saveFolder, file.fileName);
+                var fileContent = JsonConvert.SerializeObject(file.data, Formatting.Indented);
+                File.WriteAllText(filePath, fileContent);
+                Debug.Log($"Đã lưu file: {file.fileName}");
+                yield return null; // Tránh block UI
+            }
+
+            Debug.Log($"Hoàn thành download {cloudData.files.Count} files vào folder: {saveFolder}");
+        }
+        #endregion
     }
 }

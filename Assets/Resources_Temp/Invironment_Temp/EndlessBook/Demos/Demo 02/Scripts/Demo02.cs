@@ -4,8 +4,6 @@
     using UnityEngine;
     using echo17.EndlessBook;
     using System.Threading.Tasks;
-    using System.Collections;
-    using Loc_Backend.Scripts;
 
     public enum BookActionTypeEnum
     {
