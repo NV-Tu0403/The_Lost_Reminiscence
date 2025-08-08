@@ -3,15 +3,14 @@ using System.Collections;
 
 public class InteractablePainting : MonoBehaviour, IInteractable
 {
-    [Header("Puzzle Logic")]
-    [Tooltip("ID của Mảnh Tranh mà khung này cần để hoàn thành.")]
-    public string requiredPictureID = "Default_ID";
+    // Bỏ qua `requiredPictureID` vì không cần nữa, nhưng bạn có thể giữ lại nếu muốn dùng sau
+    // [Header("Puzzle Logic")]
+    // [Tooltip("ID của Mảnh Tranh mà khung này cần để hoàn thành.")]
+    // public string requiredPictureID = "Default_ID";
 
     [Header("Effects")]
     [Tooltip("Hiệu ứng tan biến sẽ kéo dài trong bao lâu (giây)")]
     public float dissolveDuration = 1.5f;
-
-    // Xóa biến GameObject ghostPrefab vì không cần nữa
 
     private Renderer frameRenderer;
     private Transform pictureSlot;
@@ -27,32 +26,25 @@ public class InteractablePainting : MonoBehaviour, IInteractable
         }
     }
 
+    // --- HÀM INTERACT ĐÃ ĐƯỢC CẬP NHẬT THEO YÊU CẦU ---
     public void Interact(PlayerPuzzleInteractor interactor)
     {
         if (isSolved || interactor == null) return;
 
-        CollectiblePicture heldPicture = interactor.GetHeldPicture();
+        // Lấy một bức tranh thật BẤT KỲ từ túi đồ của người chơi
+        CollectiblePicture anyRealPicture = interactor.GetAnyRealPicture();
 
-        if (heldPicture == null)
+        if (anyRealPicture != null)
         {
-            Debug.Log("Bạn đang không cầm mảnh tranh nào cả.");
-            return;
-        }
-
-        // Logic kiểm tra và xử lý khi sai đã được chuyển sang CollectiblePicture
-        // Khung tranh giờ chỉ quan tâm đến việc lắp đúng tranh
-        if (heldPicture.pictureID == requiredPictureID)
-        {
-            Debug.Log("CHÍNH XÁC! Bạn đã lắp đúng mảnh tranh!");
+            Debug.Log("Bạn đã lắp một mảnh tranh thật vào khung!");
             isSolved = true;
-            PlaceAndSolve(heldPicture);
-            interactor.ClearHeldPicture();
+            
+            PlaceAndSolve(anyRealPicture);
+            interactor.RemovePicture(anyRealPicture);
         }
         else
         {
-            // Nếu người chơi cầm một mảnh tranh thật nhưng sai vị trí
-            Debug.Log("Mảnh tranh này không khớp với khung này.");
-            // Không trừ máu, chỉ thông báo để người chơi thử khung khác
+            Debug.Log("Bạn không có mảnh tranh thật nào để lắp vào đây.");
         }
     }
 
@@ -74,7 +66,7 @@ public class InteractablePainting : MonoBehaviour, IInteractable
     private IEnumerator DissolveEffect(Renderer pictureRenderer)
     {
         GetComponent<Collider>().enabled = false;
-
+        
         Material frameMat = frameRenderer.material;
         Material pictureMat = pictureRenderer.material;
         float elapsedTime = 0f;
@@ -90,7 +82,7 @@ public class InteractablePainting : MonoBehaviour, IInteractable
             }
             yield return null;
         }
-
+        
         gameObject.SetActive(false);
     }
 }

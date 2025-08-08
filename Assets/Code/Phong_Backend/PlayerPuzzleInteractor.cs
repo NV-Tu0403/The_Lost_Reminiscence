@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System.Collections.Generic; // Cần thiết để sử dụng List
+using System.Linq; // Cần thiết để dùng .FirstOrDefault()
 
 public class PlayerPuzzleInteractor : MonoBehaviour
 {
@@ -9,8 +11,9 @@ public class PlayerPuzzleInteractor : MonoBehaviour
     private IInteractable currentInteractable;
     private NavMeshAgent navMeshAgent;
 
-    // --- PHẦN MỚI: "Bàn tay" của người chơi ---
-    private CollectiblePicture heldPicture; // Lưu trữ mảnh tranh đang cầm
+    // --- NÂNG CẤP TỪ "BÀN TAY" THÀNH "TÚI ĐỒ" ---
+    // Sử dụng một List để lưu trữ tất cả các mảnh tranh thật đã nhặt
+    private List<CollectiblePicture> collectedPictures = new List<CollectiblePicture>();
 
     private void Awake()
     {
@@ -25,33 +28,35 @@ public class PlayerPuzzleInteractor : MonoBehaviour
         }
     }
 
-    // --- CÁC HÀM QUẢN LÝ "BÀN TAY" MỚI ---
+    // --- CÁC HÀM QUẢN LÝ "TÚI ĐỒ" ---
     public void PickupPicture(CollectiblePicture pictureToPickup)
     {
-        if (heldPicture != null)
-        {
-            Debug.Log("Bạn đang cầm một mảnh tranh khác rồi!");
-            return;
-        }
-
-        heldPicture = pictureToPickup;
-        heldPicture.gameObject.SetActive(false); // Ẩn mảnh tranh khỏi thế giới
-        Debug.Log($"Đã nhặt: Mảnh tranh '{heldPicture.pictureID}'");
+        collectedPictures.Add(pictureToPickup);
+        pictureToPickup.gameObject.SetActive(false);
+        Debug.Log($"Đã nhặt: Mảnh tranh '{pictureToPickup.pictureID}'. Tổng số tranh trong túi: {collectedPictures.Count}");
     }
 
-    public CollectiblePicture GetHeldPicture()
+    // Tìm và trả về một bức tranh khớp với ID yêu cầu
+    public CollectiblePicture GetPictureByID(string pictureID)
     {
-        return heldPicture;
+        return collectedPictures.FirstOrDefault(p => p.pictureID == pictureID);
     }
 
-    public void ClearHeldPicture(bool destroy = false)
+    // Xóa một bức tranh khỏi túi sau khi đã sử dụng
+    public void RemovePicture(CollectiblePicture pictureToRemove)
     {
-        if (heldPicture != null && destroy)
+        if (pictureToRemove != null)
         {
-            // Dùng khi lắp sai, mảnh tranh giả bị phá hủy
-            Destroy(heldPicture.gameObject); 
+            collectedPictures.Remove(pictureToRemove);
         }
-        heldPicture = null;
+    }
+    
+    // --- HÀM MỚI THEO YÊU CẦU CẢI TIẾN ---
+    // Lấy một bức tranh thật BẤT KỲ từ trong túi đồ
+    public CollectiblePicture GetAnyRealPicture()
+    {
+        // Lấy bức tranh đầu tiên tìm thấy trong túi đồ
+        return collectedPictures.FirstOrDefault();
     }
 
 
@@ -62,7 +67,7 @@ public class PlayerPuzzleInteractor : MonoBehaviour
         if (interactableObject != null)
         {
             currentInteractable = interactableObject;
-            Debug.Log("Entered interactable zone: " + other.gameObject.name);
+            // Debug.Log("Entered interactable zone: " + other.gameObject.name);
         }
     }
 
@@ -71,7 +76,7 @@ public class PlayerPuzzleInteractor : MonoBehaviour
         if (currentInteractable != null && other.gameObject == (currentInteractable as MonoBehaviour)?.gameObject)
         {
             currentInteractable = null;
-            Debug.Log("Exited interactable zone.");
+            // Debug.Log("Exited interactable zone.");
         }
     }
     
