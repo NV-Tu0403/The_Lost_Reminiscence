@@ -36,7 +36,6 @@ namespace Code.Cutscene
         private void OnStartCutsceneEvent(object data)
         { var eventData = data as BaseEventData;
             if (eventData == null) return;
-            //Debug.Log($"[CutsceneManager] Starting cutscene with eventId: {eventData.eventId}");
             StartCutscene(eventData.eventId, eventData.OnFinish);
         }
 
@@ -58,7 +57,6 @@ namespace Code.Cutscene
             ShowUI(data, out var rt);
 
             PlayCutscene(data);
-            //Debug.Log($"[CutsceneManager] Playing cutscene: {cutsceneId} (clip: {clip.name})");
         }
 
         private void PlayCutscene(CutsceneSo data)
@@ -92,26 +90,20 @@ namespace Code.Cutscene
         private static bool GetVideoClipFormData(string cutsceneId, Action onFinished, CutsceneSo data, out VideoClip clip)
         {
             clip = data.videoClip;
-            if (clip == null)
-            {
-                Debug.LogError($"[CutsceneManager] videoClip null trong CutsceneDataSO {cutsceneId}");
-                onFinished?.Invoke();
-                return true;
-            }
-            return false;
+            if (clip != null) return false;
+            Debug.LogError($"[CutsceneManager] videoClip null trong CutsceneDataSO {cutsceneId}");
+            onFinished?.Invoke();
+            return true;
         }
 
         private static bool GetCutsceneDataFromResource(string cutsceneId, Action onFinished, out CutsceneSo data)
         {
             data = Resources.Load<CutsceneSo>($"Cutscenes/{cutsceneId}");
-            if (data == null)
-            {
-                Debug.LogError($"[CutsceneManager] Không tìm thấy CutsceneDataSO với ID: {cutsceneId}");
-                onFinished?.Invoke();
-                return true;
-            }
+            if (data != null) return false;
+            Debug.LogError($"[CutsceneManager] Không tìm thấy CutsceneDataSO với ID: {cutsceneId}");
+            onFinished?.Invoke();
+            return true;
 
-            return false;
         }
 
         private void OnVideoEnd(VideoPlayer vp)
