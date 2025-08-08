@@ -10,6 +10,20 @@ namespace Code.Backend
 {
     public class BackendSync : MonoBehaviour
     {
+        [Header("Simple Test UI")]
+        public UnityEngine.UI.Button simpleDownloadButton;
+
+        void Start()
+        {
+            if (simpleDownloadButton != null)
+            {
+                simpleDownloadButton.onClick.AddListener(() => {
+                    Debug.Log("Button clicked - Starting download test...");
+                    OnDownloadDataFromCloud();
+                });
+            }
+        }
+        
         [Header("API")] public string apiBaseUrl = "https://backend-datn-iwqa.onrender.com/api";
         private string jwtToken = null;
 

@@ -163,7 +163,6 @@ public class Core : CoreEventListenerBase
             {
                 _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
                 Debug.Log($"[InitAccountState] Tài khoản '{baseName}' đã đồng bộ → HaveConnectToServer");
-                backendSync.OnDownloadDataFromCloud();
             }
             else
             {
