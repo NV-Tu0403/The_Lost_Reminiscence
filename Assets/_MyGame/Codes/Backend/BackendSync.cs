@@ -10,43 +10,9 @@ namespace Code.Backend
 {
     public class BackendSync : MonoBehaviour
     {
-        [Header("Simple Test UI")]
-        public UnityEngine.UI.Button simpleDownloadButton;
-
-        void Start()
-        {
-            if (simpleDownloadButton != null)
-            {
-                simpleDownloadButton.onClick.AddListener(() => {
-                    Debug.Log("Button clicked - Starting download test...");
-                    OnDownloadDataFromCloud();
-                });
-            }
-        }
-        
         [Header("API")] public string apiBaseUrl = "https://backend-datn-iwqa.onrender.com/api";
         private string jwtToken = null;
-
-        // Lớp kết quả đăng nhập
-        [System.Serializable]
-        public class LoginResult
-        {
-            public string token;
-        }
         
-        [System.Serializable]
-        public class CloudSaveData
-        {
-            public string folderPath;
-            public List<CloudFile> files;
-        }
-
-        [System.Serializable]
-        public class CloudFile
-        {
-            public string fileName;
-            public object data;
-        }
 
         #region Register/OTP-verify/UploadSave
 
@@ -103,6 +69,36 @@ namespace Code.Backend
 
         #endregion
 
+        #region Login
+
+        public IEnumerator RequestCloudLogin(string userName, string password, Action<bool, string> callback)
+        {
+            var url = apiBaseUrl + "/login";
+            var data = new
+            {
+                // username hặc email đều được chấp nhận
+                username = userName,
+                password = password
+            };
+            var body = JsonConvert.SerializeObject(data);
+            using var www = UnityWebRequest.Post(url, body, "application/json");
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                var result = JsonConvert.DeserializeObject<LoginResult>(www.downloadHandler.text);
+                jwtToken = result.token; // Lưu token cho các request sau
+                callback(true, "Đăng nhập thành công!");
+            }
+            else
+            {
+                var error = www.downloadHandler?.text ?? www.error;
+                callback(false, $"Đăng nhập thất bại: {error}");
+            }
+        }
+
+        #endregion
+        
         #region Upload All JSON Files
 
         public void OnUploadAllJsonFilesToCloud()
@@ -354,13 +350,42 @@ namespace Code.Backend
             foreach (var file in cloudData.files)
             {
                 var filePath = Path.Combine(saveFolder, file.fileName);
-                var fileContent = JsonConvert.SerializeObject(file.data, Formatting.Indented);
+                var fileContent = JsonConvert.SerializeObject(file.Data, Formatting.Indented);
                 File.WriteAllText(filePath, fileContent);
                 Debug.Log($"Đã lưu file: {file.fileName}");
                 yield return null; // Tránh block UI
             }
-
             Debug.Log($"Hoàn thành download {cloudData.files.Count} files vào folder: {saveFolder}");
+        }
+        #endregion
+        
+        
+        #region Authentication
+        
+        
+        [System.Serializable]
+        public class LoginResult
+        {
+            public string token;
+        }
+        
+        [System.Serializable]
+        public class CloudSaveData
+        {
+            public string folderPath;
+            public List<CloudFile> files;
+        }
+
+        [System.Serializable]
+        public class CloudFile
+        {
+            public string fileName;
+            public object Data;
+
+            public CloudFile(object data)
+            {
+                Data = data;
+            }
         }
         #endregion
     }
