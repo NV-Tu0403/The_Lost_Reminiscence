@@ -4,9 +4,6 @@
     using UnityEngine;
     using echo17.EndlessBook;
     using System.Threading.Tasks;
-    using System.Collections;
-    using Loc_Backend.Scripts;
-    using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 
     public enum BookActionTypeEnum
     {
