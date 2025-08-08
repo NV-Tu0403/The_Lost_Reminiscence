@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.SqlClient;
 using UnityEngine;
 
 public class PlayerEvent : MonoBehaviour
@@ -44,6 +43,7 @@ public class PlayerEvent : MonoBehaviour
     public event Action OnPlayerDefend;
 
     public event Action<GameObject, float, GameObject> OnTakeOutDamage;
+    public event Action<EnemySkill> OnApplyEnemySkill;
     #endregion
 
     // -----------------------------------------------------------------------------------------------------------
@@ -77,7 +77,13 @@ public class PlayerEvent : MonoBehaviour
         OnTakeOutDamage?.Invoke(attacker, damage, target);
     }
 
+    public void TriggerApplyEnemySkill(EnemySkill skill)
+    {
+        OnApplyEnemySkill?.Invoke(skill);
+    }
+
     #endregion
+
 
 }
 
