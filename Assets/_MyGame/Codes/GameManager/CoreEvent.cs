@@ -56,6 +56,8 @@ public class CoreEvent : MonoBehaviour
     public event Action OnConnectingToServer;
     public event Action<string> OnSyncFileSave;
 
+    public  event Action OnOverriceSave;
+
     #endregion
 
     #region sự kiện A4
@@ -63,6 +65,11 @@ public class CoreEvent : MonoBehaviour
     public event Action<CoreStateType> OnChangeState;
     public event Action<AccountStateType> OnAccountChangeState;
     public event Action OnKeyDown;
+
+    /// <summary>
+    /// Sự kiện này được kích hoạt khi cần lấy tên người dùng từ hệ thống.
+    /// </summary>
+    public event Action<string> OnGetUserName;
 
     #endregion
 
@@ -103,6 +110,8 @@ public class CoreEvent : MonoBehaviour
     public void triggerConnectingToServer() => OnConnectingToServer?.Invoke();
     public void triggerSyncFileSave(string path) => OnSyncFileSave?.Invoke(path);
 
+    public void triggerOverriceSave() => OnOverriceSave?.Invoke();
+
     #endregion
 
     #region trigger sự kiện A4
@@ -110,6 +119,10 @@ public class CoreEvent : MonoBehaviour
     public void TriggerChangeState(CoreStateType stateType) => OnChangeState?.Invoke(stateType);
     public void TriggerAccountChangeState(AccountStateType accountStateType) => OnAccountChangeState?.Invoke(accountStateType);
     public void triggerKeyDown() => OnKeyDown?.Invoke();
+
+    public void triggerGetUserName(string userName) => OnGetUserName?.Invoke(userName);
+
+
 
     #endregion
 }
@@ -171,3 +184,4 @@ public abstract class CoreEventListenerBase : MonoBehaviour, ICoreEvent
 // ----------------------------------------------------NOTE:--------------------------------------------------
 
 // - 
+

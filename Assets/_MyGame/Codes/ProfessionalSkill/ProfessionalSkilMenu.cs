@@ -1,12 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using Code.Procession;
-using Loc_Backend.Scripts;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Code.Backend;
@@ -67,6 +65,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         e.OnSelectSaveItem += (path) => OnSelectSave(path);
         e.OnSyncFileSave += async (path) => await BackUpSaveItemAsync(path);
+        e.OnOverriceSave += () =>SetBackUpSaveItemAsync(); // ghi đè bản backup lên bản gốc nếu có bản backup hợp lệ.
 
         e.OnLogin += () => Login();
         e.OnRegister += () => Register();
@@ -84,6 +83,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         e.OnSelectSaveItem -= (path) => OnSelectSave(path);
         e.OnSyncFileSave -= async (path) => await BackUpSaveItemAsync(path);
+        e.OnOverriceSave -= () => SetBackUpSaveItemAsync();
 
         e.OnLogin -= () => Login();
         e.OnRegister -= () => Register();
@@ -112,7 +112,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         string userAccountsPath = Path.Combine(Application.persistentDataPath, "User_DataGame", "UserAccounts.json");
         if (!File.Exists(userAccountsPath) ||
-            JsonUtility.FromJson<UserAccountData>(File.ReadAllText(userAccountsPath)).Users.Count == 0)
+            JsonUtility.FromJson<UserAccountData>(File.ReadAllText(userAccountsPath)).Users.Count == 0) // nếu không có tài khoản nào
         {
             lastSelectedSaveFolder = null;
             // set trạng thái không có tài khoản hiện tại
@@ -130,9 +130,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     private void TryAutoLogin()
     {
-        if (_core._userAccountManager.TryAutoLogin(out string errorMessage))
+        if (_core._userAccountManager.TryAutoLogin(out string Message))
         {
-            UiPage06_C.Instance.ShowLogMessage(errorMessage);
+            UiPage06_C.Instance.ShowLogMessage(Message);
             lastSelectedSaveFolder = GetValidLastSaveFolder();
             PlayTimeManager.Instance.StartCounting();
 
@@ -146,7 +146,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
 
             UiPage06_C.Instance.ActiveObj(true, false, false, false);
-
         }
         else
         {
@@ -282,7 +281,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 Debug.LogError("[OnNewGame] Player not found after loading scene.");
                 return;
             }
-            
+
             // Gọi Procession để load dữ lieu tu GameProcession
             ProgressionManager.Instance.InitProgression();
             PlayerCheckPoint.Instance.AssignCameraFromCore();
@@ -293,7 +292,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         });
         return newSaveFolder;
     }
-    
+
     public void OnContinueGame(string saveFolder)
     {
         if (string.IsNullOrEmpty(saveFolder) || !Directory.Exists(saveFolder))
@@ -555,7 +554,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         string userName = inputs[0].text;
         string passWord = inputs[1].text;
 
-        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord))
+        if (string.IsNullOrWhiteSpace(userName) /*|| string.IsNullOrWhiteSpace(passWord)*/) // nếu trống tên đăng nhập hoặc mật khẩu
         {
             //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
             UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass ní..");
@@ -566,6 +565,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             _core.LoginAccount(userName, passWord);
         }
+
+        _coreEvent.triggerGetUserName(userName);
 
         foreach (var input in inputs)
         {
@@ -587,7 +588,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (inputs.Length < 3)
         {
-            
+
             UiPage06_C.Instance.ShowLogMessage($"Không đủ input field cho đăng ký (cần ít nhất 3).{inputs.Length}");
             return;
         }
@@ -596,7 +597,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         string passWord = inputs[1].text;
         string email = inputs[2].text;
 
-        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord) || string.IsNullOrWhiteSpace(email))
+        if (string.IsNullOrWhiteSpace(userName) /*|| string.IsNullOrWhiteSpace(passWord) */|| string.IsNullOrWhiteSpace(email))
         {
             //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu hoặc email trống.");
             UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass hoặc email ní..");
@@ -650,16 +651,15 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     /// <param name="pathSelectSaveFolder"></param>
     /// <returns></returns>
-    public async Task<bool> SetBackUpSaveItemAsync()
+    public bool SetBackUpSaveItemAsync()
     {
-        try
-        {
+        //try
+        //{
             bool found = CurrentbackupOke;
             string backupPath = CurrentbackupSavePath;
             string originalPath = CurrentOriginalSavePath;
 
-            return await Task.Run(() =>
-            {
+
                 if (!found || string.IsNullOrEmpty(backupPath) || string.IsNullOrEmpty(originalPath))
                     return false;
 
@@ -669,22 +669,29 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 CopyDirectory(backupPath, originalPath); // Sao chép bản backup
 
                 mess = "Đã khôi phục thành công bản backup.";
+
+                // đợi đảm bảo dữ liệu đã được ghi đè
+                Task.Delay(3000).Wait(); 
+                ClearGetBackupTrayAsync();
+                UiPage06_C.Instance.ShowLogMessage(mess);
                 return true;
-            });
-        }
-        catch (Exception e)
-        {
-            mess = $"Lỗi khi khôi phục backup: {e.Message}";
-            return false;
-        }
-        finally
-        {
-            UiPage06_C.Instance.ShowLogMessage(mess);
-#if UNITY_EDITOR
-            Debug.Log(mess);
-            UiPage06_C.Instance.ShowLogMessage(mess);
-#endif
-        }
+         
+        //}
+        //catch (Exception e)
+        //{
+        //    mess = $"Lỗi khi khôi phục backup: {e.Message}";
+        //    return false;
+        //}
+        //finally
+        //{
+          
+        //    await UIPage05.Instance.RefreshSaveSlots();
+        //    UiPage06_C.Instance.ShowLogMessage(mess);
+        //    #if UNITY_EDITOR
+        //                Debug.Log(mess);
+        //                UiPage06_C.Instance.ShowLogMessage(mess);
+        //    #endif
+        //}
     }
 
     /// <summary>
@@ -726,7 +733,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 return (false, null, null);
             });
         }
-        catch (Exception )
+        catch (Exception)
         {
             //mess = $"Lỗi khi kiểm tra bản backup: {e.Message}";
             return (false, null, null);
@@ -845,6 +852,29 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.LogError($"[ClearBackupTrayAsync] Error clearing backup tray: {e.Message}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Xoá toàn bộ nội dung trong thư mục GetBackUpTray và tạo lại thư mục trống.
+    /// </summary>
+    /// <returns></returns>
+    public bool ClearGetBackupTrayAsync()
+    {
+        string rootBackupDir = Path.Combine(Application.persistentDataPath, "User_DataGame", "GetBackUpTray");
+        if (!Directory.Exists(rootBackupDir))
+        {
+            Debug.LogWarning("[ClearGetBackupTrayAsync] GetBackup tray does not exist.");
+            return false;
+        }
+
+        // Xoá toàn bộ
+        Directory.Delete(rootBackupDir, true);
+        // Tạo lại folder trống
+        Directory.CreateDirectory(rootBackupDir);
+
+        mess = "[ClearGetBackupTrayAsync] GetBackup tray cleared successfully.";
+        return true;
+
     }
 
     /// <summary>
