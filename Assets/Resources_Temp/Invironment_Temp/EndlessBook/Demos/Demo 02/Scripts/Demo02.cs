@@ -4,8 +4,6 @@
     using UnityEngine;
     using echo17.EndlessBook;
     using System.Threading.Tasks;
-    using System.Collections;
-    using Loc_Backend.Scripts;
 
     public enum BookActionTypeEnum
     {
@@ -375,7 +373,7 @@
             string accountState = Core.Instance.CurrentAccountState;
             switch (item.uIActionType)
             {
-                case UIActionType.Confim:           // thực hiện Login/ Register/ ConnectToServer tùy AccountStateType
+                case UIActionType.Confim: // thực hiện Login/ Register/ ConnectToServer tùy AccountStateType
                     if (accountState == AccountStateType.NoCurrentAccount.ToString())
                     {
                         if (isLogin) CoreEvent.Instance.triggerLogin(); // đăng nhập
@@ -425,7 +423,10 @@
                     {
                         UiPage06_C.Instance.ActiveObj(false, true, false, true);
                     }
-
+                    if (accountState == AccountStateType .HaveConnectToServer.ToString()) // nếu 
+                    {
+                        CoreEvent.Instance.triggerOverriceSave(); // ghi đè dữ liệu save
+                    }
                     break;
             }
         }

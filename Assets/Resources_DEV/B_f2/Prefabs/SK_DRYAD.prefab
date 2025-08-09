@@ -6219,7 +6219,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6587735733292327403}
   serializedVersion: 4
-  m_Mass: 20
+  m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 2
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -7381,22 +7381,25 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6587735733292327403}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9dfeb18356730324fbe23c4c44fd043e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 1000
+  currentPhaseDisplay: 
+  config: {fileID: 11400000, guid: de250d96621857341ab7202a82e35538, type: 2}
+  maxHealth: 200
   currentHealth: 0
   detectionRadius: 40
   detectionLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   checkInterval: 3
   stopDistance: 3
-  MoveSpeed: 6
-  phase2Threshold: 0.75
-  phase3Threshold: 2
+  MoveSpeed: 2
+  rotationSpeed: 4
+  phase2Threshold: 0.5
+  phase3Threshold: 0.15
   targetCharacter: {fileID: 0}
 --- !u!4 &6753212409198471949 stripped
 Transform:

@@ -135,7 +135,7 @@ public class UiPage06_C : MonoBehaviour
 
     public void UpdateInfo(string userName, string playTime, AccountStateType accountStateType)
     {
-        Debug.Log($"UpdateInfo called with userName: {userName}, playTime: {playTime}, accountStateType: {accountStateType}");
+        //Debug.Log($"UpdateInfo called with userName: {userName}, playTime: {playTime}, accountStateType: {accountStateType}");
         bool isConnected = accountStateType == AccountStateType.HaveConnectToServer;
         bool hasAccount = accountStateType != AccountStateType.NoCurrentAccount;
 
