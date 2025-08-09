@@ -13,7 +13,7 @@ namespace Code.Backend
         [Header("API")] public string apiBaseUrl = "https://backend-datn-iwqa.onrender.com/api";
         private string jwtToken = null;
         
-
+        
         #region Register/OTP-verify/UploadSave
 
         public IEnumerator RequestCloudRegister(string userName, string password, string email,
@@ -358,7 +358,6 @@ namespace Code.Backend
             Debug.Log($"Hoàn thành download {cloudData.files.Count} files vào folder: {saveFolder}");
         }
         #endregion
-        
         
         #region Authentication
         
