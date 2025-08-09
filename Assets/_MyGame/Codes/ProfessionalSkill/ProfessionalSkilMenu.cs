@@ -1,12 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using Code.Procession;
-using Loc_Backend.Scripts;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Code.Backend;
@@ -29,9 +27,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public string SelectedSaveImagePath;
 
     [Header("BackUp")]
-    public string CurrentbackupSavePath;
-    public string CurrentOriginalSavePath;
-    public bool CurrentbackupOke;
+    public string CurrentbackupSavePath; // đường dẫn đến thư mục backup hiện tại
+    public string CurrentOriginalSavePath; // đường dẫn đến thư mục gốc của bản backup hiện tại
+    public bool CurrentbackupOke; // đánh dấu xem bản backup hiện tại có hợp lệ hay không
 
     public string SceneDefault = "Phong_scene";
 
@@ -67,6 +65,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         e.OnSelectSaveItem += (path) => OnSelectSave(path);
         e.OnSyncFileSave += async (path) => await BackUpSaveItemAsync(path);
+        e.OnOverriceSave += () => SetBackUpSaveItemAsync(); // ghi đè bản backup lên bản gốc nếu có bản backup hợp lệ.
 
         e.OnLogin += () => Login();
         e.OnRegister += () => Register();
@@ -84,6 +83,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         e.OnSelectSaveItem -= (path) => OnSelectSave(path);
         e.OnSyncFileSave -= async (path) => await BackUpSaveItemAsync(path);
+        e.OnOverriceSave -= () => SetBackUpSaveItemAsync();
 
         e.OnLogin -= () => Login();
         e.OnRegister -= () => Register();
@@ -112,7 +112,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     {
         string userAccountsPath = Path.Combine(Application.persistentDataPath, "User_DataGame", "UserAccounts.json");
         if (!File.Exists(userAccountsPath) ||
-            JsonUtility.FromJson<UserAccountData>(File.ReadAllText(userAccountsPath)).Users.Count == 0)
+            JsonUtility.FromJson<UserAccountData>(File.ReadAllText(userAccountsPath)).Users.Count == 0) // nếu không có tài khoản nào
         {
             lastSelectedSaveFolder = null;
             // set trạng thái không có tài khoản hiện tại
@@ -126,13 +126,13 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     }
 
     /// <summary>
-    /// Thử tự động đăng nhập người dùng nếu có thông tin đăng nhập hợp lệ.
+    /// Thử tự động đăng nhập 
     /// </summary>
     private void TryAutoLogin()
     {
-        if (_core._userAccountManager.TryAutoLogin(out string errorMessage))
+        if (_core._userAccountManager.TryAutoLogin(out string Message))
         {
-            UiPage06_C.Instance.ShowLogMessage(errorMessage);
+            UiPage06_C.Instance.ShowLogMessage(Message);
             lastSelectedSaveFolder = GetValidLastSaveFolder();
             PlayTimeManager.Instance.StartCounting();
 
@@ -142,11 +142,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
             else
             {
-                _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
+                //_core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
+                _core._accountStateMachine.SetState(new NoConnectToServerState(_core._accountStateMachine, _coreEvent)); // tạm thời để test
+
             }
 
             UiPage06_C.Instance.ActiveObj(true, false, false, false);
-
         }
         else
         {
@@ -282,7 +283,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 Debug.LogError("[OnNewGame] Player not found after loading scene.");
                 return;
             }
-            
+
             // Gọi Procession để load dữ lieu tu GameProcession
             ProgressionManager.Instance.InitProgression();
             PlayerCheckPoint.Instance.AssignCameraFromCore();
@@ -293,7 +294,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         });
         return newSaveFolder;
     }
-    
+
     public void OnContinueGame(string saveFolder)
     {
         if (string.IsNullOrEmpty(saveFolder) || !Directory.Exists(saveFolder))
@@ -313,11 +314,13 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             PlayTimeManager.Instance.StartCounting();
             MapStateSave.Instance.ApplyMapState();
-            PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
             PlayerCheckPoint.Instance.AssignCameraFromCore();
+            PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
+            Debug.Log($" Player transform position: {gameObject.transform.position}");
 
             // Đồng bộ hóa dữ liệu vật thể
             ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
+
         });
     }
 
@@ -555,7 +558,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         string userName = inputs[0].text;
         string passWord = inputs[1].text;
 
-        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord))
+        if (string.IsNullOrWhiteSpace(userName) /*|| string.IsNullOrWhiteSpace(passWord)*/) // nếu trống tên đăng nhập hoặc mật khẩu
         {
             //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
             UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass ní..");
@@ -566,6 +569,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             _core.LoginAccount(userName, passWord);
         }
+
+        _coreEvent.triggerGetUserName(userName);
 
         foreach (var input in inputs)
         {
@@ -587,7 +592,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (inputs.Length < 3)
         {
-            
+
             UiPage06_C.Instance.ShowLogMessage($"Không đủ input field cho đăng ký (cần ít nhất 3).{inputs.Length}");
             return;
         }
@@ -596,14 +601,21 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         string passWord = inputs[1].text;
         string email = inputs[2].text;
 
-        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord) || string.IsNullOrWhiteSpace(email))
+        if (string.IsNullOrWhiteSpace(userName) /*|| string.IsNullOrWhiteSpace(passWord) */|| string.IsNullOrWhiteSpace(email))
         {
             //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu hoặc email trống.");
             UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass hoặc email ní..");
             return;
         }
 
-        _core.SyncToServer(userName, passWord, email);
+        if (_core._userAccountManager.IsSynced(userName)) 
+        {
+            _core.AutoLoginAndDownLoadbackUpSaveItem(userName, passWord);
+        }
+        else
+        {
+            _core.SyncToServer(userName, passWord, email);
+        }
 
         foreach (var input in inputs)
         {
@@ -641,6 +653,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
     }
 
+
     #endregion
 
     #region Nghiệp vụ 4
@@ -650,27 +663,53 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     /// <param name="pathSelectSaveFolder"></param>
     /// <returns></returns>
-    public async Task<bool> SetBackUpSaveItemAsync()
+    public bool SetBackUpSaveItemAsync()
     {
         try
         {
-            bool found = CurrentbackupOke;
-            string backupPath = CurrentbackupSavePath;
             string originalPath = CurrentOriginalSavePath;
+            string backupPath = CurrentbackupSavePath;
+            bool found = CurrentbackupOke;
 
-            return await Task.Run(() =>
+            if (!found || string.IsNullOrEmpty(backupPath) || string.IsNullOrEmpty(originalPath))
             {
-                if (!found || string.IsNullOrEmpty(backupPath) || string.IsNullOrEmpty(originalPath))
-                    return false;
+                Debug.LogError($"[SetBackUpSaveItemAsync] Không tìm thấy bản backup hợp lệ hoặc đường dẫn không hợp lệ: {backupPath} - {originalPath}");
+                return false;
+            }
 
-                if (Directory.Exists(originalPath))
-                    Directory.Delete(originalPath, true); // Xóa bản cũ
 
-                CopyDirectory(backupPath, originalPath); // Sao chép bản backup
+          
 
+            if (CopyDirectory(originalPath, backupPath))
+            {
                 mess = "Đã khôi phục thành công bản backup.";
-                return true;
-            });
+            }
+            else
+            {
+                mess = "Lỗi khi khôi phục bản backup. Vui lòng kiểm tra lại.";
+                return false;
+            }
+
+
+            Task.Delay(500).Wait();
+
+            if( ClearGetBackupTrayAsync())
+            {
+                mess += "Đã xóa thư mục GetBackUpTray.";
+            }
+            else
+            {
+                mess += "Không thể xóa thư mục GetBackUpTray.";
+            }
+
+            UiPage06_C.Instance.ShowLogMessage(mess);
+
+            CurrentOriginalSavePath = null; // reset đường dẫn gốc
+            CurrentbackupSavePath = null; // reset đường dẫn backup
+            CurrentbackupOke = false; // reset trạng thái backup
+
+            return true;
+
         }
         catch (Exception e)
         {
@@ -679,6 +718,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
         finally
         {
+
+            //await UIPage05.Instance.RefreshSaveSlots();
             UiPage06_C.Instance.ShowLogMessage(mess);
 #if UNITY_EDITOR
             Debug.Log(mess);
@@ -694,7 +735,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// <returns></returns>
     public async Task<(bool found, string backupFolderPath, string originalSaveFolderPath)> CheckBackupSaveAsync(SaveListContext Context)
     {
-        mess = "";
+        //mess = "";
         try
         {
             string rootBackupDir = Path.Combine(Application.persistentDataPath, "User_DataGame", "GetBackUpTray");
@@ -717,6 +758,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                         if (parsed.originalName == originalFolderName)
                         {
                             mess = $"Tìm thấy bản backup cho:\n\n - {parsed.originalName} \n- {parsed.backupTimestamp}";
+                            Debug.Log($"[CheckBackupSaveAsync] Found backup for: {parsed.originalName} at {backupPath}");
                             return (true, save.FolderPath, backupPath);
                         }
                     }
@@ -726,9 +768,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 return (false, null, null);
             });
         }
-        catch (Exception )
+        catch (Exception e)
         {
-            //mess = $"Lỗi khi kiểm tra bản backup: {e.Message}";
+            mess = $"Lỗi khi kiểm tra bản backup: {e.Message}";
             return (false, null, null);
         }
         finally
@@ -796,20 +838,63 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     /// <param name="sourceDir"></param>
     /// <param name="destDir"></param>
-    private void CopyDirectory(string sourceDir, string destDir)
+    private bool CopyDirectory(string sourceDir, string destDir)
     {
-        Directory.CreateDirectory(destDir);
-
-        foreach (string filePath in Directory.GetFiles(sourceDir))
+        try
         {
-            string destFile = Path.Combine(destDir, Path.GetFileName(filePath));
-            File.Copy(filePath, destFile, true);
+            // Validate input paths
+            if (string.IsNullOrWhiteSpace(sourceDir) || string.IsNullOrWhiteSpace(destDir))
+            {
+                Debug.LogError($"Invalid directory paths: sourceDir='{sourceDir}', destDir='{destDir}'");
+                return false;
+            }
+
+            // Ensure source directory exists
+            if (!Directory.Exists(sourceDir))
+            {
+                Debug.LogError($"Source directory does not exist: {sourceDir}");
+                return false;
+            }
+
+            // Create destination directory if it doesn't exist
+            Directory.CreateDirectory(destDir);
+            Debug.Log($"Ensured destination directory exists: {destDir}");
+
+            // Copy all files in the source directory
+            foreach (string filePath in Directory.GetFiles(sourceDir))
+            {
+                try
+                {
+                    string destFile = Path.Combine(destDir, Path.GetFileName(filePath));
+                    File.Copy(filePath, destFile, true);
+                    Debug.Log($"Copied file: {filePath} to {destFile}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Failed to copy file {filePath} to destFile: {e.Message}");
+                }
+            }
+
+            // Copy all subdirectories in the source directory
+            foreach (string dirPath in Directory.GetDirectories(sourceDir))
+            {
+                try
+                {
+                    string destSubDir = Path.Combine(destDir, Path.GetFileName(dirPath));
+                    CopyDirectory(dirPath, destSubDir);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Failed to copy directory {dirPath} to destSubDir: {e.Message}");
+                }
+            }
+
+            return true;
         }
-
-        foreach (string dirPath in Directory.GetDirectories(sourceDir))
+        catch (Exception e)
         {
-            string destSubDir = Path.Combine(destDir, Path.GetFileName(dirPath));
-            CopyDirectory(dirPath, destSubDir);
+            Debug.LogError($"Error in CopyDirectory from {sourceDir} to {destDir}: {e.Message}");
+            return false;
         }
     }
 
@@ -845,6 +930,29 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.LogError($"[ClearBackupTrayAsync] Error clearing backup tray: {e.Message}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Xoá toàn bộ nội dung trong thư mục GetBackUpTray và tạo lại thư mục trống.
+    /// </summary>
+    /// <returns></returns>
+    public bool ClearGetBackupTrayAsync()
+    {
+        string rootBackupDir = Path.Combine(Application.persistentDataPath, "User_DataGame", "GetBackUpTray");
+        if (!Directory.Exists(rootBackupDir))
+        {
+            Debug.LogWarning("[ClearGetBackupTrayAsync] GetBackup tray does not exist.");
+            return false;
+        }
+
+        // Xoá toàn bộ
+        Directory.Delete(rootBackupDir, true);
+        // Tạo lại folder trống
+        Directory.CreateDirectory(rootBackupDir);
+
+        mess = "[ClearGetBackupTrayAsync] GetBackup tray cleared successfully.";
+        return true;
+
     }
 
     /// <summary>

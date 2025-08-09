@@ -73,7 +73,7 @@ public class UserAccountManager : MonoBehaviour
         }
     }
 
-    private void LoadUserData()
+    public void LoadUserData()
     {
         if (!File.Exists(userAccountsPath))
         {
@@ -83,6 +83,8 @@ public class UserAccountManager : MonoBehaviour
                 LastFileSave = "",
                 PlayTime = 0.0
             };
+
+            CreateGuestAccount(); // Create default GuestAccount
             SaveUserData();
             Debug.Log($"Created new UserAccounts.json at: {userAccountsPath}");
         }
@@ -114,6 +116,12 @@ public class UserAccountManager : MonoBehaviour
                     userData.PlayTime = 0.0;
                 }
 
+                // If no users exist, create a GuestAccount
+                if (userData.Users.Count == 0)
+                {
+                    CreateGuestAccount();
+                }
+
                 SaveUserData();
                 //Debug.Log($"Loaded UserAccounts: Users={userData.Users.Count}, LastAccount={userData.LastAccount}");
             }
@@ -126,6 +134,7 @@ public class UserAccountManager : MonoBehaviour
                     LastFileSave = "",
                     PlayTime = 0.0
                 };
+                CreateGuestAccount();
                 SaveUserData();
             }
         }
@@ -182,7 +191,6 @@ public class UserAccountManager : MonoBehaviour
         return user.SyncToServer;
     }
 
-
     private void SaveUserData()
     {
         try
@@ -215,6 +223,26 @@ public class UserAccountManager : MonoBehaviour
             }
             return builder.ToString();
         }
+    }
+
+    /// <summary>
+    /// Tạo tài khoản Guest mặc định khi không có tài khoản nào.
+    /// </summary>
+    private void CreateGuestAccount()
+    {
+        string baseName = "Guest";
+        string timeCheckIn = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        string userName = $"{baseName}_{timeCheckIn}";
+        userData.Users.Add(new UserAccount
+        {
+            UserName = userName,
+            BaseName = baseName,
+            TimeCheckIn = timeCheckIn,
+            PasswordHash = "", // No password for GuestAccount
+            SyncToServer = false
+        });
+        userData.LastAccount = userName; // Set GuestAccount as the last account
+        Debug.Log($"Created GuestAccount: {userName}");
     }
 
     public bool CreateAccount(string baseName, string password, out string errorMessage)
@@ -282,17 +310,39 @@ public class UserAccountManager : MonoBehaviour
         errorMessage = "";
         if (string.IsNullOrEmpty(userData.LastAccount))
         {
-            errorMessage = "đéo xác nhận đcj Ac đăng nhập gần nhất.";
-            return false;
+            // Try to find GuestAccount if no LastAccount is set
+            var guestUser = userData.Users.FirstOrDefault(u => u.BaseName.Equals("Guest", StringComparison.OrdinalIgnoreCase));
+            if (guestUser == null)
+            {
+                errorMessage = "No LastAccount or GuestAccount found.";
+                return false;
+            }
+            currentUserBaseName = guestUser.BaseName;
+            userData.LastAccount = guestUser.UserName;
+            SaveUserData();
+            Debug.Log($"Auto-logged in GuestAccount: {guestUser.BaseName}");
+            return true;
         }
 
         var user = userData.Users.FirstOrDefault(u => u.UserName == userData.LastAccount);
+        // nếu LastAccount không tồn tại, thì sẽ tự động đăng nhập vào GuestAccount
         if (user == null)
         {
-            errorMessage = $"LastAccount '{userData.LastAccount}' deo tim thay.";
-            return false;
+            // Fall back to GuestAccount if LastAccount is invalid
+            var guestUser = userData.Users.FirstOrDefault(u => u.BaseName.Equals("Guest", StringComparison.OrdinalIgnoreCase));
+            if (guestUser == null)
+            {
+                errorMessage = $"LastAccount '{userData.LastAccount}' not found and no GuestAccount available.";
+                return false;
+            }
+            currentUserBaseName = guestUser.BaseName;
+            userData.LastAccount = guestUser.UserName;
+            SaveUserData();
+            Debug.Log($"Auto-logged in GuestAccount: {guestUser.BaseName}");
+            return true;
         }
 
+        // Nếu đã đăng nhập vào một tài khoản khác, thì không cho phép tự động đăng nhập
         if (!string.IsNullOrEmpty(currentUserBaseName))
         {
             errorMessage = $"Already logged in as '{currentUserBaseName}'.";
@@ -300,7 +350,7 @@ public class UserAccountManager : MonoBehaviour
         }
 
         currentUserBaseName = user.BaseName;
-        //Debug.Log($"Auto-logged in user: {user.BaseName}");
+        Debug.Log($"Auto-logged in user: {user.BaseName}");
         return true;
     }
 
@@ -360,7 +410,6 @@ public class UserAccountManager : MonoBehaviour
             return false;
         }
     }
-
 
     public void UpdateLastSession(string lastFileSave, double playTime)
     {

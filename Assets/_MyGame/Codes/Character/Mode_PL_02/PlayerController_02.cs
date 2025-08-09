@@ -194,11 +194,15 @@ public class PlayerController_02 : PlayerEventListenerBase
     public override void RegisterEvent(PlayerEvent e)
     {
         e.OnChangePlayerState += UpdateCurrentPlayerState;
+        //e.OnTakeOutDamage += 
+        e.OnApplyEnemySkill += ApplyEffectByOder;
     }
 
     public override void UnregisterEvent(PlayerEvent e)
     {
         e.OnChangePlayerState -= UpdateCurrentPlayerState;
+        //e.OnTakeOutDamage -=
+        e.OnApplyEnemySkill -= ApplyEffectByOder;
     }
 
     private void UpdateCurrentPlayerState(CharacterStateType stateType)
@@ -976,6 +980,23 @@ public class PlayerController_02 : PlayerEventListenerBase
                 targetRb.AddForce(direction * forceMagnitude, ForceMode.Impulse);
             }
         }
+    }
+
+    private void ApplyEffectByOder(EnemySkill Skill)
+    {
+        //// setParent _characterCamera vào facePlayer
+        //if (_playerInput == null || _playerInput._characterCamera == null)
+        //{
+        //    Debug.LogError("_playerInput or _characterCamera is null in ApplyEffectByOder.");
+        //    return;
+        //}
+        //if (FacePlayer == null)
+        //{
+        //    Debug.LogError("FacePlayer is null in ApplyEffectByOder.");
+        //    return;
+        //}
+        //_playerInput._characterCamera.transform.SetParent(FacePlayer.transform);
+        //// tạm thời chăn mọi Input vào Camera
     }
 
     #endregion
