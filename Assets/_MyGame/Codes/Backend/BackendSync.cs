@@ -71,6 +71,11 @@ namespace Code.Backend
 
         #region Login
 
+        public void OnLoginToCloud(string userName, string password, Action<bool, string> callback)
+        {
+            StartCoroutine(RequestCloudLogin(userName, password, callback));
+        }
+
         public IEnumerator RequestCloudLogin(string userName, string password, Action<bool, string> callback)
         {
             var url = apiBaseUrl + "/login";

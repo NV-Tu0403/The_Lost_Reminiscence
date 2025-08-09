@@ -325,6 +325,7 @@ public class UserAccountManager : MonoBehaviour
         }
 
         var user = userData.Users.FirstOrDefault(u => u.UserName == userData.LastAccount);
+        // nếu LastAccount không tồn tại, thì sẽ tự động đăng nhập vào GuestAccount
         if (user == null)
         {
             // Fall back to GuestAccount if LastAccount is invalid
@@ -341,6 +342,7 @@ public class UserAccountManager : MonoBehaviour
             return true;
         }
 
+        // Nếu đã đăng nhập vào một tài khoản khác, thì không cho phép tự động đăng nhập
         if (!string.IsNullOrEmpty(currentUserBaseName))
         {
             errorMessage = $"Already logged in as '{currentUserBaseName}'.";

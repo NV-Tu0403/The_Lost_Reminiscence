@@ -426,7 +426,6 @@
                     if (accountState == AccountStateType .HaveConnectToServer.ToString()) // nếu 
                     {
                         CoreEvent.Instance.triggerOverriceSave(); // ghi đè dữ liệu save
-                        //UiPage06_C.Instance.ActiveObj(true, false, false, false);
                     }
                     break;
             }

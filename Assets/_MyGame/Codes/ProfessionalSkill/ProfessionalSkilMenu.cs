@@ -126,7 +126,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     }
 
     /// <summary>
-    /// Thử tự động đăng nhập người dùng nếu có thông tin đăng nhập hợp lệ.
+    /// Thử tự động đăng nhập 
     /// </summary>
     private void TryAutoLogin()
     {
@@ -142,7 +142,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
             else
             {
-                _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
+                //_core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
+                _core._accountStateMachine.SetState(new NoConnectToServerState(_core._accountStateMachine, _coreEvent)); // tạm thời để test
+
             }
 
             UiPage06_C.Instance.ActiveObj(true, false, false, false);
@@ -606,7 +608,14 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             return;
         }
 
-        _core.SyncToServer(userName, passWord, email);
+        if (_core._userAccountManager.IsSynced(userName)) 
+        {
+            _core.AutoLoginAndDownLoadbackUpSaveItem(userName, passWord);
+        }
+        else
+        {
+            _core.SyncToServer(userName, passWord, email);
+        }
 
         foreach (var input in inputs)
         {
@@ -644,6 +653,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
     }
 
+
     #endregion
 
     #region Nghiệp vụ 4
@@ -668,8 +678,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
 
 
-            //if (Directory.Exists(originalPath)) Directory.Delete(originalPath, true); // Xóa bản cũ
-            //Debug.Log($"[SetBackUpSaveItemAsync] Đã xóa bản gốc: {originalPath}");
+          
 
             if (CopyDirectory(originalPath, backupPath))
             {
@@ -682,8 +691,17 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
 
 
-            Task.Delay(2000).Wait();
-            //ClearGetBackupTrayAsync();
+            Task.Delay(500).Wait();
+
+            if( ClearGetBackupTrayAsync())
+            {
+                mess += "Đã xóa thư mục GetBackUpTray.";
+            }
+            else
+            {
+                mess += "Không thể xóa thư mục GetBackUpTray.";
+            }
+
             UiPage06_C.Instance.ShowLogMessage(mess);
 
             CurrentOriginalSavePath = null; // reset đường dẫn gốc
@@ -698,16 +716,16 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             mess = $"Lỗi khi khôi phục backup: {e.Message}";
             return false;
         }
-        //        finally
-        //        {
+        finally
+        {
 
-        //            //await UIPage05.Instance.RefreshSaveSlots();
-        //            UiPage06_C.Instance.ShowLogMessage(mess);
-        //#if UNITY_EDITOR
-        //            Debug.Log(mess);
-        //            UiPage06_C.Instance.ShowLogMessage(mess);
-        //#endif
-        //        }
+            //await UIPage05.Instance.RefreshSaveSlots();
+            UiPage06_C.Instance.ShowLogMessage(mess);
+#if UNITY_EDITOR
+            Debug.Log(mess);
+            UiPage06_C.Instance.ShowLogMessage(mess);
+#endif
+        }
     }
 
     /// <summary>
@@ -750,9 +768,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 return (false, null, null);
             });
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            //mess = $"Lỗi khi kiểm tra bản backup: {e.Message}";
+            mess = $"Lỗi khi kiểm tra bản backup: {e.Message}";
             return (false, null, null);
         }
         finally

@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System;
 using Code.Backend;
+using UnityEngine.Experimental.GlobalIllumination;
 
 /// <summary>
 /// Trung tâm điều phối toàn bộ các State của Core game.
@@ -161,7 +162,8 @@ public class Core : CoreEventListenerBase
 
             if (isSynced)
             {
-                _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
+                //_accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
+                _accountStateMachine.SetState(new NoConnectToServerState(_accountStateMachine, _coreEvent)); // tạm thời để test
                 Debug.Log($"[InitAccountState] Tài khoản '{baseName}' đã đồng bộ → HaveConnectToServer");
             }
             else
@@ -400,7 +402,8 @@ public class Core : CoreEventListenerBase
                 }
                 else
                 {
-                    _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
+                    //_accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
+                    _accountStateMachine.SetState(new NoConnectToServerState(_accountStateMachine, _coreEvent)); // tạm thời để test
                 }
             }
             UiPage06_C.Instance.ShowLogMessage(errorMessage);
@@ -515,6 +518,24 @@ public class Core : CoreEventListenerBase
             UiPage06_C.Instance.ShowLogMessage($"Lỗi xác thực OTP: {e.Message}");
             throw new Exception($"[OnOtp] Error during OTP verification: {e.Message}", e);
         }
+    }
+
+    public void AutoLoginAndDownLoadbackUpSaveItem(string userName, string password)
+    {
+        backendSync.OnLoginToCloud(CurrentAccountName, password, (success, message) =>
+        {
+            if (success)
+            {
+                _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
+                UiPage06_C.Instance.ShowLogMessage("Đăng nhập thành công và tải xuống dữ liệu lưu trữ.");
+                backendSync.OnDownloadDataFromCloud();
+            }
+            else
+            {
+                UiPage06_C.Instance.ShowLogMessage($"Đăng nhập thất bại: {message}");
+                Debug.LogWarning($"Auto login failed: {message}");
+            }
+        });
     }
 
     #endregion
