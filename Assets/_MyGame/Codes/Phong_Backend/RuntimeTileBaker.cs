@@ -6,15 +6,14 @@ using System.Collections.Generic;
 using Unity.AI.Navigation; // Namespace cần thiết cho NavMeshSurface
 
 /// <summary>
-/// Một adapter tùy chỉnh cho DunGen để bake NavMesh cho từng tile một cách riêng lẻ tại runtime.
-/// Nó sẽ chạy trước Unity NavMesh Adapter mặc định.
+/// Một adapter tùy chỉnh cho DunGen để bake một NavMesh DUY NHẤT cho toàn bộ dungeon tại runtime.
 /// </summary>
-[AddComponentMenu("DunGen/Adapters/Runtime Tile Baker")]
+[AddComponentMenu("DunGen/Adapters/Full Dungeon Baker (Custom)")]
 public class RuntimeTileBaker : BaseAdapter
 {
     public RuntimeTileBaker()
     {
-        // Đặt Priority thấp (-1) để đảm bảo nó chạy TRƯỚC Unity NavMesh Adapter (mặc định Priority = 0)
+        // Đặt Priority thấp (-1) để đảm bảo nó chạy TRƯỚC các adapter khác nếu cần
         Priority = -1;
     }
 
@@ -27,50 +26,36 @@ public class RuntimeTileBaker : BaseAdapter
     {
         Dungeon dungeon = generator.CurrentDungeon;
 
+        // SỬA LỖI: Chỉ cần kiểm tra dungeon có null không. 
+        // Nếu dungeon tồn tại, dungeon.gameObject cũng sẽ tồn tại.
         if (dungeon == null)
         {
-            Debug.LogError("RuntimeTileBaker: Dungeon object is null. Cannot bake tiles.");
+            Debug.LogError("Custom Baker: Dungeon object is null. Cannot bake NavMesh.");
             return;
         }
 
-        Debug.Log("RuntimeTileBaker: Starting to bake individual tiles...");
+        Debug.Log("Custom Baker: Starting to bake a single NavMesh for the entire dungeon...");
 
-        // Tạo một danh sách để chứa tất cả các NavMeshSurface cần bake
-        List<NavMeshSurface> surfacesToBake = new List<NavMeshSurface>();
+        // SỬA LỖI: Truy cập GameObject của component Dungeon bằng "dungeon.gameObject"
+        GameObject dungeonRoot = dungeon.gameObject;
 
-        foreach (var tile in dungeon.AllTiles)
+        // 1. Tìm hoặc tạo một NavMeshSurface duy nhất trên đối tượng Root của dungeon
+        NavMeshSurface surface = dungeonRoot.GetComponent<NavMeshSurface>();
+        if (surface == null)
         {
-            if (tile == null)
-                continue;
-
-            // Kiểm tra xem tile đã có NavMeshSurface chưa
-            NavMeshSurface surface = tile.GetComponent<NavMeshSurface>();
-
-            if (surface == null)
-            {
-                // Nếu chưa có, thêm mới một component NavMeshSurface
-                surface = tile.gameObject.AddComponent<NavMeshSurface>();
-            }
-
-            // Thiết lập các thông số cho surface
-            // Thu thập tất cả các đối tượng con để bake
-            surface.collectObjects = CollectObjects.All;
-            // Sử dụng Render Meshes thay vì colliders để xác định hình dạng NavMesh
-            surface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
-            // Bake cho tất cả các agent type
-            surface.agentTypeID = 0;
-
-            // Thêm surface vừa tạo hoặc tìm thấy vào danh sách cần bake
-            surfacesToBake.Add(surface);
+            surface = dungeonRoot.AddComponent<NavMeshSurface>();
         }
 
-        // Bake tất cả các surface đã thu thập
-        foreach (var surface in surfacesToBake)
-        {
-            surface.BuildNavMesh();
-            Debug.Log($"RuntimeTileBaker: Successfully built NavMesh for tile: {surface.gameObject.name}");
-        }
+        // 2. Thiết lập các thông số cho surface
+        surface.collectObjects = CollectObjects.All;
+        surface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
+        surface.agentTypeID = 0;
+        surface.RemoveData();
 
-        Debug.Log("RuntimeTileBaker: Finished baking all tiles.");
+        // 3. Thực hiện bake NavMesh cho toàn bộ các đối tượng đã thu thập
+        surface.BuildNavMesh();
+
+        // SỬA LỖI: Sử dụng dungeonRoot.name để lấy tên
+        Debug.Log($"Custom Baker: Successfully built a unified NavMesh for the dungeon '{dungeonRoot.name}'.");
     }
 }
