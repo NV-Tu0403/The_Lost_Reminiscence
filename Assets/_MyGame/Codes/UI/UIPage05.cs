@@ -97,6 +97,7 @@ public class UIPage05 : MonoBehaviour
                     ConfigureSaveItem(saveItem, save);
                 }
             }
+
             var (found, backupPath, originalPath) = await ProfessionalSkilMenu.Instance.CheckBackupSaveAsync(context);
             ProfessionalSkilMenu.Instance.CurrentOriginalSavePath = originalPath;
             ProfessionalSkilMenu.Instance.CurrentbackupSavePath = backupPath;

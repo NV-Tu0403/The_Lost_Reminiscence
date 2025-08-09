@@ -27,9 +27,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public string SelectedSaveImagePath;
 
     [Header("BackUp")]
-    public string CurrentbackupSavePath;
-    public string CurrentOriginalSavePath;
-    public bool CurrentbackupOke;
+    public string CurrentbackupSavePath; // đường dẫn đến thư mục backup hiện tại
+    public string CurrentOriginalSavePath; // đường dẫn đến thư mục gốc của bản backup hiện tại
+    public bool CurrentbackupOke; // đánh dấu xem bản backup hiện tại có hợp lệ hay không
 
     public string SceneDefault = "Phong_scene";
 
@@ -65,7 +65,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         e.OnSelectSaveItem += (path) => OnSelectSave(path);
         e.OnSyncFileSave += async (path) => await BackUpSaveItemAsync(path);
-        e.OnOverriceSave += () =>SetBackUpSaveItemAsync(); // ghi đè bản backup lên bản gốc nếu có bản backup hợp lệ.
+        e.OnOverriceSave += () => SetBackUpSaveItemAsync(); // ghi đè bản backup lên bản gốc nếu có bản backup hợp lệ.
 
         e.OnLogin += () => Login();
         e.OnRegister += () => Register();
@@ -312,11 +312,13 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             PlayTimeManager.Instance.StartCounting();
             MapStateSave.Instance.ApplyMapState();
-            PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
             PlayerCheckPoint.Instance.AssignCameraFromCore();
+            PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
+            Debug.Log($" Player transform position: {gameObject.transform.position}");
 
             // Đồng bộ hóa dữ liệu vật thể
             ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
+
         });
     }
 
@@ -653,45 +655,59 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// <returns></returns>
     public bool SetBackUpSaveItemAsync()
     {
-        //try
-        //{
-            bool found = CurrentbackupOke;
-            string backupPath = CurrentbackupSavePath;
+        try
+        {
             string originalPath = CurrentOriginalSavePath;
+            string backupPath = CurrentbackupSavePath;
+            bool found = CurrentbackupOke;
+
+            if (!found || string.IsNullOrEmpty(backupPath) || string.IsNullOrEmpty(originalPath))
+            {
+                Debug.LogError($"[SetBackUpSaveItemAsync] Không tìm thấy bản backup hợp lệ hoặc đường dẫn không hợp lệ: {backupPath} - {originalPath}");
+                return false;
+            }
 
 
-                if (!found || string.IsNullOrEmpty(backupPath) || string.IsNullOrEmpty(originalPath))
-                    return false;
+            //if (Directory.Exists(originalPath)) Directory.Delete(originalPath, true); // Xóa bản cũ
+            //Debug.Log($"[SetBackUpSaveItemAsync] Đã xóa bản gốc: {originalPath}");
 
-                if (Directory.Exists(originalPath))
-                    Directory.Delete(originalPath, true); // Xóa bản cũ
-
-                CopyDirectory(backupPath, originalPath); // Sao chép bản backup
-
+            if (CopyDirectory(originalPath, backupPath))
+            {
                 mess = "Đã khôi phục thành công bản backup.";
+            }
+            else
+            {
+                mess = "Lỗi khi khôi phục bản backup. Vui lòng kiểm tra lại.";
+                return false;
+            }
 
-                // đợi đảm bảo dữ liệu đã được ghi đè
-                Task.Delay(3000).Wait(); 
-                ClearGetBackupTrayAsync();
-                UiPage06_C.Instance.ShowLogMessage(mess);
-                return true;
-         
-        //}
-        //catch (Exception e)
-        //{
-        //    mess = $"Lỗi khi khôi phục backup: {e.Message}";
-        //    return false;
-        //}
-        //finally
-        //{
-          
-        //    await UIPage05.Instance.RefreshSaveSlots();
-        //    UiPage06_C.Instance.ShowLogMessage(mess);
-        //    #if UNITY_EDITOR
-        //                Debug.Log(mess);
-        //                UiPage06_C.Instance.ShowLogMessage(mess);
-        //    #endif
-        //}
+
+            Task.Delay(2000).Wait();
+            //ClearGetBackupTrayAsync();
+            UiPage06_C.Instance.ShowLogMessage(mess);
+
+            CurrentOriginalSavePath = null; // reset đường dẫn gốc
+            CurrentbackupSavePath = null; // reset đường dẫn backup
+            CurrentbackupOke = false; // reset trạng thái backup
+
+            return true;
+
+        }
+        catch (Exception e)
+        {
+            mess = $"Lỗi khi khôi phục backup: {e.Message}";
+            return false;
+        }
+        //        finally
+        //        {
+
+        //            //await UIPage05.Instance.RefreshSaveSlots();
+        //            UiPage06_C.Instance.ShowLogMessage(mess);
+        //#if UNITY_EDITOR
+        //            Debug.Log(mess);
+        //            UiPage06_C.Instance.ShowLogMessage(mess);
+        //#endif
+        //        }
     }
 
     /// <summary>
@@ -701,7 +717,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// <returns></returns>
     public async Task<(bool found, string backupFolderPath, string originalSaveFolderPath)> CheckBackupSaveAsync(SaveListContext Context)
     {
-        mess = "";
+        //mess = "";
         try
         {
             string rootBackupDir = Path.Combine(Application.persistentDataPath, "User_DataGame", "GetBackUpTray");
@@ -724,6 +740,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                         if (parsed.originalName == originalFolderName)
                         {
                             mess = $"Tìm thấy bản backup cho:\n\n - {parsed.originalName} \n- {parsed.backupTimestamp}";
+                            Debug.Log($"[CheckBackupSaveAsync] Found backup for: {parsed.originalName} at {backupPath}");
                             return (true, save.FolderPath, backupPath);
                         }
                     }
@@ -803,20 +820,63 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// </summary>
     /// <param name="sourceDir"></param>
     /// <param name="destDir"></param>
-    private void CopyDirectory(string sourceDir, string destDir)
+    private bool CopyDirectory(string sourceDir, string destDir)
     {
-        Directory.CreateDirectory(destDir);
-
-        foreach (string filePath in Directory.GetFiles(sourceDir))
+        try
         {
-            string destFile = Path.Combine(destDir, Path.GetFileName(filePath));
-            File.Copy(filePath, destFile, true);
+            // Validate input paths
+            if (string.IsNullOrWhiteSpace(sourceDir) || string.IsNullOrWhiteSpace(destDir))
+            {
+                Debug.LogError($"Invalid directory paths: sourceDir='{sourceDir}', destDir='{destDir}'");
+                return false;
+            }
+
+            // Ensure source directory exists
+            if (!Directory.Exists(sourceDir))
+            {
+                Debug.LogError($"Source directory does not exist: {sourceDir}");
+                return false;
+            }
+
+            // Create destination directory if it doesn't exist
+            Directory.CreateDirectory(destDir);
+            Debug.Log($"Ensured destination directory exists: {destDir}");
+
+            // Copy all files in the source directory
+            foreach (string filePath in Directory.GetFiles(sourceDir))
+            {
+                try
+                {
+                    string destFile = Path.Combine(destDir, Path.GetFileName(filePath));
+                    File.Copy(filePath, destFile, true);
+                    Debug.Log($"Copied file: {filePath} to {destFile}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Failed to copy file {filePath} to destFile: {e.Message}");
+                }
+            }
+
+            // Copy all subdirectories in the source directory
+            foreach (string dirPath in Directory.GetDirectories(sourceDir))
+            {
+                try
+                {
+                    string destSubDir = Path.Combine(destDir, Path.GetFileName(dirPath));
+                    CopyDirectory(dirPath, destSubDir);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Failed to copy directory {dirPath} to destSubDir: {e.Message}");
+                }
+            }
+
+            return true;
         }
-
-        foreach (string dirPath in Directory.GetDirectories(sourceDir))
+        catch (Exception e)
         {
-            string destSubDir = Path.Combine(destDir, Path.GetFileName(dirPath));
-            CopyDirectory(dirPath, destSubDir);
+            Debug.LogError($"Error in CopyDirectory from {sourceDir} to {destDir}: {e.Message}");
+            return false;
         }
     }
 

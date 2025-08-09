@@ -168,9 +168,10 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         {
             agent.enabled = false;
             playerTransform.position = loadedPos;
-            agent.enabled = true; 
+            agent.enabled = true;
             agent.Warp(loadedPos);
             //agent.Warp(loadedPos);
+            Debug.LogWarning($"[PlayerCheckPoint] Applied position with NavMeshAgent - Position: {loadedPos}, Rotation: {loadedRot}");
         }
         // Nếu có Rigidbody
         else if (playerTransform.TryGetComponent(out Rigidbody rb))
@@ -179,6 +180,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             rb.angularVelocity = Vector3.zero;
             rb.position = loadedPos;
             rb.rotation = loadedRot;
+            Debug.LogWarning($"[PlayerCheckPoint] Applied position with Rigidbody - Position: {loadedPos}, Rotation: {loadedRot}");
         }
         else
         {
@@ -205,11 +207,10 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             }
         }
 
-        _lastLoadedData = null;
-
         Quaternion rot = playerTransform.rotation;
-        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}," +
-                  $"\nRotation (Euler): {rot.eulerAngles}");
+        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}," + $"\nRotation (Euler): {rot.eulerAngles}");
+
+        _lastLoadedData = null;
     }
 
     public void SetCharacterCamera(Transform camTransform, Camera cam)
