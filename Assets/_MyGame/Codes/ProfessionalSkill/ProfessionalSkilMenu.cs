@@ -813,7 +813,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
             await Task.Delay(300);
 
-            Core.Instance.backendSync.OnUploadAllJsonFilesToCloud();
+            //Core.Instance.backendSync.OnUploadAllJsonFilesToCloud();
             mess = $"Item save đã được chuyển vào thư mục Backup: {backupTargetPath}";
             return true;
         }

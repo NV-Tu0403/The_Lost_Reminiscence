@@ -451,20 +451,20 @@ public class Core : CoreEventListenerBase
             }
 
             // yêu cầu đăng ký OTP để đồng bộ Account to Server
-            StartCoroutine(backendSync.RequestCloudRegister(userName, passWord, email, (success, message) =>
-            {
-                if (success)
-                {
-                    _accountStateMachine.SetState(new ConectingServer(_accountStateMachine, _coreEvent));
-                    mess = message;
-                    UiPage06_C.Instance.ShowLogMessage($"Đăng ký OTP thành công. Vui lòng kiểm tra email: {email}");
-                }
-                else
-                {
-                    mess = message;
-                    Debug.LogWarning($"Cloud register failed: {message}");
-                }
-            }));
+            // StartCoroutine(backendSync.RequestCloudRegister(userName, passWord, email, (success, message) =>
+            // {
+            //     if (success)
+            //     {
+            //         _accountStateMachine.SetState(new ConectingServer(_accountStateMachine, _coreEvent));
+            //         mess = message;
+            //         UiPage06_C.Instance.ShowLogMessage($"Đăng ký OTP thành công. Vui lòng kiểm tra email: {email}");
+            //     }
+            //     else
+            //     {
+            //         mess = message;
+            //         Debug.LogWarning($"Cloud register failed: {message}");
+            //     }
+            // }));
         }
         catch (Exception e)
         {
@@ -491,27 +491,27 @@ public class Core : CoreEventListenerBase
                 return;
             }
 
-            StartCoroutine(backendSync.VerifyOtp(userName, otp, (success, message) =>
-            {
-                if (success)
-                {
-                    UiPage06_C.Instance.ShowLogMessage("Xác thực OTP thành công. Tài khoản đã được đồng bộ với máy chủ.");
-                    if (_userAccountManager.MarkAsSynced(userName))
-                    {
-                        _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
-                    }
-                    else
-                    {
-                        UiPage06_C.Instance.ShowLogMessage("Không thể đánh dấu tài khoản đã đồng bộ sau khi xác thực OTP.");
-                        //Debug.LogWarning("Failed to mark user as synced after OTP verification");
-                    }
-                }
-                else
-                {
-                    UiPage06_C.Instance.ShowLogMessage($"Xác thực OTP thất bại: {message}");
-                    Debug.LogWarning($"OTP verification failed: {message}");
-                }
-            }));
+            // StartCoroutine(backendSync.VerifyOtp(userName, otp, (success, message) =>
+            // {
+            //     if (success)
+            //     {
+            //         UiPage06_C.Instance.ShowLogMessage("Xác thực OTP thành công. Tài khoản đã được đồng bộ với máy chủ.");
+            //         if (_userAccountManager.MarkAsSynced(userName))
+            //         {
+            //             _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
+            //         }
+            //         else
+            //         {
+            //             UiPage06_C.Instance.ShowLogMessage("Không thể đánh dấu tài khoản đã đồng bộ sau khi xác thực OTP.");
+            //             //Debug.LogWarning("Failed to mark user as synced after OTP verification");
+            //         }
+            //     }
+            //     else
+            //     {
+            //         UiPage06_C.Instance.ShowLogMessage($"Xác thực OTP thất bại: {message}");
+            //         Debug.LogWarning($"OTP verification failed: {message}");
+            //     }
+            // }));
         }
         catch (Exception e)
         {
@@ -522,13 +522,13 @@ public class Core : CoreEventListenerBase
 
     public void AutoLoginAndDownLoadbackUpSaveItem(string userName, string password)
     {
-        backendSync.OnLoginToCloud(CurrentAccountName, password, (success, message) =>
+        backendSync.OnLogin(CurrentAccountName, password, (success, message) =>
         {
             if (success)
             {
                 _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
                 UiPage06_C.Instance.ShowLogMessage("Đăng nhập thành công và tải xuống dữ liệu lưu trữ.");
-                backendSync.OnDownloadDataFromCloud();
+                backendSync.OnDownload();
             }
             else
             {
