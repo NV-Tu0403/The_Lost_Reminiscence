@@ -10,7 +10,8 @@ namespace Code.Backend
 {
     public class BackendSync : MonoBehaviour
     {
-        [Header("API")] public string apiBaseUrl = "https://backend-datn-iwqa.onrender.com/api";
+        private const string APIBaseUrl = "https://backend-datn-iwqa.onrender.com/api";
+        //private string APIBaseUrl = "http://localhost:3000/api";
         private string jwtToken = null;
         
         
@@ -19,7 +20,7 @@ namespace Code.Backend
         public IEnumerator RequestCloudRegister(string userName, string password, string email,
             Action<bool, string> callback)
         {
-            var url = apiBaseUrl + "/register";
+            var url = APIBaseUrl + "/register";
             var data = new
             {
                 username = userName,
@@ -43,7 +44,7 @@ namespace Code.Backend
 
         public IEnumerator VerifyOtp(string userName, string otp, Action<bool, string> callback)
         {
-            var url = apiBaseUrl + "/verify-otp";
+            var url = APIBaseUrl + "/verify-otp";
             var data = new
             {
                 username = userName,
@@ -78,7 +79,7 @@ namespace Code.Backend
 
         public IEnumerator RequestCloudLogin(string userName, string password, Action<bool, string> callback)
         {
-            var url = apiBaseUrl + "/login";
+            var url = APIBaseUrl + "/login";
             var data = new
             {
                 // username hặc email đều được chấp nhận
@@ -260,7 +261,7 @@ namespace Code.Backend
         {
             Debug.Log("Bắt đầu upload dữ liệu lên Cloud...");
             var jsonBody = JsonConvert.SerializeObject(payload);
-            var url = apiBaseUrl + "/save";
+            var url = APIBaseUrl + "/save";
             using UnityWebRequest www = new UnityWebRequest(url, "POST");
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
             www.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -298,7 +299,7 @@ namespace Code.Backend
                 yield break;
             }
 
-            var url = apiBaseUrl + "/load";
+            var url = APIBaseUrl + "/load";
 
             using var www = UnityWebRequest.Get(url);
             www.SetRequestHeader("Authorization", jwtToken);
