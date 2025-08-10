@@ -14,10 +14,50 @@ namespace Code.Backend
         //private string APIBaseUrl = "http://localhost:3000/api";
         private string jwtToken = null;
         
+        /// <summary>
+        /// Public method
+        /// </summary>
+        /// 
+        // Login to the cloud
+        public void OnLoginToCloud(string userName, string password, Action<bool, string> callback)
+        {
+            Debug.Log("[Backend] Bắt đầu đăng nhập Cloud...");
+            StartCoroutine(RequestCloudLogin(userName, password, callback));
+        }
         
-        #region Register/OTP-verify/UploadSave
+        // Register a new user and send OTP
+        public void OnRegisterCloud(string userName, string password, string email, Action<bool, string> callback)
+        {
+            Debug.Log("[Backend] Bắt đầu đăng kí Cloud...");
+            StartCoroutine(RequestCloudRegister(userName, password, email, callback));
+        }
+        
+        // Verify OTP for the registered user
+        public void OnVerifyOtp(string userName, string otp, Action<bool, string> callback)
+        {
+            Debug.Log("[Backend] Bắt đầu xác thực OTP...");
+            StartCoroutine(VerifyOtp(userName, otp, callback));
+        }
+        
+        
+        // Upload all JSON files to the cloud
+        public void OnUploadDataToCloud()
+        {
+            Debug.Log("[Backend] Bắt đầu upload tất cả file JSON lên Cloud...");
+            StartCoroutine(UploadAllJsonFilesAsBatch());
+        }
+        
+        // Download data from the cloud
+        public void OnDownloadDataFromCloud()
+        {
+            Debug.Log("[Backend] Bắt đầu tải dữ liệu từ Cloud về...");
+            StartCoroutine(DownloadDataFromCloud());
+        }
 
-        public IEnumerator RequestCloudRegister(string userName, string password, string email,
+
+        #region Register/OTP-verify
+
+        private static IEnumerator RequestCloudRegister(string userName, string password, string email,
             Action<bool, string> callback)
         {
             var url = APIBaseUrl + "/register";
@@ -42,7 +82,7 @@ namespace Code.Backend
             }
         }
 
-        public IEnumerator VerifyOtp(string userName, string otp, Action<bool, string> callback)
+        private IEnumerator VerifyOtp(string userName, string otp, Action<bool, string> callback)
         {
             var url = APIBaseUrl + "/verify-otp";
             var data = new
@@ -71,13 +111,7 @@ namespace Code.Backend
         #endregion
 
         #region Login
-
-        public void OnLoginToCloud(string userName, string password, Action<bool, string> callback)
-        {
-            StartCoroutine(RequestCloudLogin(userName, password, callback));
-        }
-
-        public IEnumerator RequestCloudLogin(string userName, string password, Action<bool, string> callback)
+        private IEnumerator RequestCloudLogin(string userName, string password, Action<bool, string> callback)
         {
             var url = APIBaseUrl + "/login";
             var data = new
@@ -106,12 +140,7 @@ namespace Code.Backend
         #endregion
         
         #region Upload All JSON Files
-
-        public void OnUploadAllJsonFilesToCloud()
-        {
-            StartCoroutine(UploadAllJsonFilesAsBatch());
-        }
-
+        
         private static string GetTransferFolder()
         {
             return Path.Combine(
@@ -284,13 +313,6 @@ namespace Code.Backend
         #endregion
         
         #region Download Data From Cloud
-
-        public void OnDownloadDataFromCloud()
-        {
-            Debug.Log("Bắt đầu tải dữ liệu từ Cloud về...");
-            StartCoroutine(DownloadDataFromCloud());
-        }
-
         private IEnumerator DownloadDataFromCloud()
         {
             if (!IsAuthenticated())
