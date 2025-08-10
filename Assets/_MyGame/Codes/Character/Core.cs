@@ -522,13 +522,13 @@ public class Core : CoreEventListenerBase
 
     public void AutoLoginAndDownLoadbackUpSaveItem(string userName, string password)
     {
-        backendSync.OnLoginToCloud(CurrentAccountName, password, (success, message) =>
+        backendSync.OnLogin(CurrentAccountName, password, (success, message) =>
         {
             if (success)
             {
                 _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
                 UiPage06_C.Instance.ShowLogMessage("Đăng nhập thành công và tải xuống dữ liệu lưu trữ.");
-                backendSync.OnDownloadDataFromCloud();
+                backendSync.OnDownload();
             }
             else
             {
