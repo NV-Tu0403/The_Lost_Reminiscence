@@ -535,7 +535,10 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass ní.");
             return;
         }
-        _core.RegisterAccount(userName, passWord);
+
+        //_core.RegisterAccount(userName, passWord);
+
+        // gọi trực tiếp hàm đang kí Cloud từ backEnd luôn mà không thông qua Local nữa
 
         foreach (var input in inputs)
         {
@@ -608,14 +611,17 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             return;
         }
 
-        if (_core._userAccountManager.IsSynced(userName)) 
-        {
-            _core.AutoLoginAndDownLoadbackUpSaveItem(userName, passWord);
-        }
-        else
-        {
-            _core.SyncToServer(userName, passWord, email);
-        }
+        //if (_core._userAccountManager.IsSynced(userName)) 
+        //{
+        //    _core.AutoLoginAndDownLoadbackUpSaveItem(userName, passWord);
+        //}
+        //else
+        //{
+        //    _core.SyncToServer(userName, passWord, email);
+        //    Debug.LogError($"[ConnectToServer] Đã gửi yêu cầu đồng bộ đến máy chủ cho người dùng: {userName}");
+        //}
+
+        // gọi trực tiếp hàm đăng nhập Cloud từ backEnd luôn mà không thông qua Local nữa
 
         foreach (var input in inputs)
         {

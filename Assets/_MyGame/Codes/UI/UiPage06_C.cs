@@ -146,10 +146,10 @@ public class UiPage06_C : MonoBehaviour
                 {
                     obj.Pass_text.text = "Enter OTP";
                 }
-                else if (type != AccountStateType.ConectingServer)
-                {
-                    obj.Pass_text.text = "Enter Password";
-                }
+                //else if (type != AccountStateType.ConectingServer)
+                //{
+                //    obj.Pass_text.text = "Enter Password";
+                //}
             }
         }
         catch (Exception e)

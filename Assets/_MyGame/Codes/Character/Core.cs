@@ -522,6 +522,11 @@ public class Core : CoreEventListenerBase
 
     public void AutoLoginAndDownLoadbackUpSaveItem(string userName, string password)
     {
+        //if (CurrentAccountState == AccountStateType.NoConnectToServer.ToString())
+        //{
+        //    UiPage06_C.Instance.ShowLogMessage("chưa kết nối đến máy chủ");
+        //    return;
+        //}
         backendSync.OnLoginToCloud(CurrentAccountName, password, (success, message) =>
         {
             if (success)
