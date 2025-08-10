@@ -59,13 +59,13 @@ namespace Code.Backend
             
             UpdateStatus("Đang đăng ký...");
             SetButtonsState(false, false, false, false, false);
-            
-            StartCoroutine(backendSync.RequestCloudRegister(
+
+            backendSync.OnRegisterCloud(
                 usernameInput.text.Trim(),
                 passwordInput.text.Trim(),
                 emailInput.text.Trim(),
                 OnRegisterCallback
-            ));
+            );
         }
 
         private void OnVerifyOtpClicked()
@@ -75,11 +75,11 @@ namespace Code.Backend
             UpdateStatus("Đang xác thực OTP...");
             SetButtonsState(false, false, false, false, false);
             
-            StartCoroutine(backendSync.VerifyOtp(
+            backendSync.OnVerifyOtp(
                 usernameInput.text.Trim(),
                 otpInput.text.Trim(),
                 OnVerifyOtpCallback
-            ));
+            );
         }
 
         private void OnLoginClicked()
@@ -94,11 +94,11 @@ namespace Code.Backend
                 ? usernameInput.text.Trim() 
                 : emailInput.text.Trim();
 
-            StartCoroutine(backendSync.RequestCloudLogin(
+            backendSync.OnLoginToCloud(
                 loginIdentifier,
                 passwordInput.text.Trim(),
                 OnLoginCallback
-            ));
+            );
         }
 
         private void OnUploadClicked()
@@ -106,7 +106,7 @@ namespace Code.Backend
             UpdateStatus("Đang upload dữ liệu...");
             SetButtonsState(false, false, true, false, false);
             
-            backendSync.OnUploadAllJsonFilesToCloud();
+            backendSync.OnUploadDataToCloud();
             
             // Reset status sau 3 giây
             StartCoroutine(ResetStatusAfterDelay(3f, "Upload hoàn thành!"));
