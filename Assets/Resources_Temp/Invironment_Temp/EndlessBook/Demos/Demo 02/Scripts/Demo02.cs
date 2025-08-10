@@ -418,6 +418,7 @@
                     if (accountState == AccountStateType.NoConnectToServer.ToString()) // connect to server
                     {
                         UiPage06_C.Instance.ActiveObj(false, true, true, true);
+                        // tắt thêm nút Upoad SaveItem
                     }
                     if (accountState == AccountStateType.NoCurrentAccount.ToString()) // register
                     {
@@ -425,7 +426,7 @@
                     }
                     if (accountState == AccountStateType .HaveConnectToServer.ToString()) // nếu 
                     {
-                        CoreEvent.Instance.triggerOverriceSave(); // ghi đè dữ liệu save
+                        CoreEvent.Instance.triggerOverriceSave();
                     }
                     break;
             }
