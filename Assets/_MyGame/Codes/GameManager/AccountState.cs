@@ -1,36 +1,10 @@
 ﻿
 /// <summary>
-/// lúc không tự đăng nhập được hoặc không có tài khoản hiện tại
+/// khi ở Guest
 /// </summary>
-public class NoCurrentAccountState : StateAccount
+public class NoConnectToServer : StateAccount
 {
-    public NoCurrentAccountState(StateMachine stateMachine, CoreEvent coreEvent) : base(stateMachine, coreEvent, AccountStateType.NoCurrentAccount)
-    {
-    }
-
-    public override void HandleAction(UIActionType action)
-    {
-        switch (action)
-        {
-            case UIActionType.Login:
-                //_coreEvent.triggerLogin();
-                //_stateMachine.SetState(new LoggedInState(_stateMachine, _coreEvent));
-                break;
-            case UIActionType.Register:
-                //_coreEvent.triggerRegister();
-                break;
-                //default:
-                //    throw new ArgumentOutOfRangeException(nameof(action), action, null);
-        }
-    }
-}
-
-/// <summary>
-/// Trạng thái khi đã có Current Account (đang chơi) và không kết nối được đến máy chủ.
-/// </summary>
-public class NoConnectToServerState : StateAccount
-{
-    public NoConnectToServerState(StateMachine stateMachine, CoreEvent coreEvent) : base(stateMachine, coreEvent, AccountStateType.NoConnectToServer)
+    public NoConnectToServer(StateMachine stateMachine, CoreEvent coreEvent) : base(stateMachine, coreEvent, AccountStateType.NoConnectToServer)
     {
     }
     public override void HandleAction(UIActionType action)
@@ -69,7 +43,7 @@ public class ConectingServer : StateAccount
 }
 
 /// <summary>
-/// Trạng thái khi đã kết nối đến máy chủ. (đã có Current Account)
+/// đang không ở Guest
 /// </summary>
 public class HaveConnectToServer : StateAccount
 {

@@ -158,23 +158,23 @@ public class Core : CoreEventListenerBase
 
         if (!string.IsNullOrEmpty(baseName))
         {
-            bool isSynced = _userAccountManager.IsBaseNameSynced(baseName);
+            bool isCouldAccount = baseName != "Guest";
 
-            if (isSynced)
+            if (isCouldAccount)
             {
                 //_accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent));
-                _accountStateMachine.SetState(new NoConnectToServerState(_accountStateMachine, _coreEvent)); // tạm thời để test
+                _accountStateMachine.SetState(new HaveConnectToServer(_accountStateMachine, _coreEvent)); // tạm thời để test
                 Debug.Log($"[InitAccountState] Tài khoản '{baseName}' đã đồng bộ → HaveConnectToServer");
             }
             else
             {
-                _accountStateMachine.SetState(new NoConnectToServerState(_accountStateMachine, _coreEvent));
+                _accountStateMachine.SetState(new NoConnectToServer(_accountStateMachine, _coreEvent));
                 Debug.Log($"[InitAccountState] Tài khoản '{baseName}' chưa đồng bộ → NoConnectToServerState");
             }
         }
         else
         {
-            _accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
+            _accountStateMachine.SetState(new NoConnectToServer(_accountStateMachine, _coreEvent));
             Debug.Log($"[InitAccountState] Không có baseName → NoCurrentAccountState");
         }
     }
@@ -418,7 +418,7 @@ public class Core : CoreEventListenerBase
         if (_userAccountManager.Logout(out string errorMessage))
         {
             UiPage06_C.Instance.ShowLogMessage(errorMessage);
-            _accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
+            _accountStateMachine.SetState(new NoConnectToServer(_accountStateMachine, _coreEvent));
             return true;
         }
         else

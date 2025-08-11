@@ -127,29 +127,26 @@ public class UiPage06_C : MonoBehaviour
         {
             foreach (var obj in UpdateTextByState)
             {
-                if (type == AccountStateType.NoCurrentAccount)
+                // nếu không có tài khoản currrent
+                if (type == AccountStateType.NoConnectToServer && Core.Instance.CurrentAccountName == null)
                 {
                     obj.logout_login.text = "Login";
                     obj.connect_register.text = "Register";
                 }
-                if (type == AccountStateType.NoConnectToServer || type == AccountStateType.ConectingServer)
-                {
-                    obj.logout_login.text = "Logout";
-                    obj.connect_register.text = "Connect";
-                }
                 if (type == AccountStateType.HaveConnectToServer)
                 {
                     obj.logout_login.text = "Logout";
-                    obj.connect_register.text = "Override save";
+                    if (ProfessionalSkilMenu.Instance.CurrentbackupOke) obj.connect_register.text = "Override save";
+                    else obj.connect_register.text = "...";
                 }
                 if (type == AccountStateType.ConectingServer)
                 {
                     obj.Pass_text.text = "Enter OTP";
                 }
-                //else if (type != AccountStateType.ConectingServer)
-                //{
-                //    obj.Pass_text.text = "Enter Password";
-                //}
+                else if (type != AccountStateType.ConectingServer)
+                {
+                    obj.Pass_text.text = "Enter Password";
+                }
             }
         }
         catch (Exception e)
