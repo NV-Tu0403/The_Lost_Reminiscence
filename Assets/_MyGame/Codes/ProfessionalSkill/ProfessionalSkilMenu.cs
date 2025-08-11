@@ -123,15 +123,21 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
         else
         {
-            TryAutoLogin();
+            PerformAutoLogin(); // tự động đăng nhập nếu có tài khoản
         }
     }
 
     /// <summary>
     /// Thử tự động đăng nhập 
     /// </summary>
-    private void TryAutoLogin()
+    private void AutoLoginLocal(bool success, string message)
     {
+        //if (success)
+        //{
+        //    Debug.LogError($"[AutoLoginLocal] Auto login failed: {message}");
+        //    UiPage06_C.Instance.ShowLogMessage(message);
+        //    return;
+        //}
         if (_core._userAccountManager.TryAutoLoginLocal(out string Message))
         {
             UiPage06_C.Instance.ShowLogMessage(Message);
@@ -508,6 +514,13 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     #region Nghiệp vụ 3
 
+    private void PerformAutoLogin()
+    {
+        backendSync.OnAutoLogin(AutoLoginLocal);
+        _core.InitAccountState();
+        UiPage06_C.Instance.ActiveObj(true, false, false, false);
+    }
+
     private void PerformRegisterCould()
     {
         TMP_InputField[] inputs = UiPage06_C.Instance.GetInputFieldsByAction(UIActionType.ConnectToServer);
@@ -531,7 +544,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         if (_core.CurrentAccountState == AccountStateType.NoConnectToServer.ToString())
         {
-            backendSync.OnRegisterCloud(userName, passWord, email, (success, message) =>
+            backendSync.OnRegister(userName, passWord, email, (success, message) =>
             {
                 if (success)
                 {
@@ -603,7 +616,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
             if (_core.CurrentAccountState == AccountStateType.NoConnectToServer.ToString())
             {
-                backendSync.OnLoginToCloud(email, passWord, (success, message) =>
+                backendSync.OnLogin(email, passWord, (success, message) =>
                 {
                     if (success)
                     {
@@ -841,7 +854,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             await Task.Delay(300);
 
             // upload file save to cloud
-            backendSync.OnUploadDataToCloud();
+            backendSync.OnUpload();
             mess = $"Item save đã được chuyển vào thư mục Backup: {backupTargetPath}";
             return true;
         }
