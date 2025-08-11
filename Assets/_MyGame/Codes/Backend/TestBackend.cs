@@ -22,10 +22,14 @@ namespace Code.Backend
         public Button loginButton;
         public Button uploadButton;
         public Button downloadButton;
+        public Button logoutButton;
         
         [Header("Status Display")]
         public Text statusText;
 
+        private bool isAutoLoginChecked = false;
+        
+        
         private void Start()
         {
             // Gán sự kiện cho các button
@@ -43,12 +47,26 @@ namespace Code.Backend
                 
             if (downloadButton != null)
                 downloadButton.onClick.AddListener(OnDownloadClicked);
+            
+            if (logoutButton != null)
+                logoutButton.onClick.AddListener(OnLogoutClicked);
 
             // Khởi tạo status
             UpdateStatus("Sẵn sàng test backend - Ready to COOKKKK");
             
-            // Ban đầu chỉ enable register và login
-            SetButtonsState(true, false, true, false, false);
+            // Thử tự động đăng nhập nếu đã lưu thông tin
+            TryAutoLogin();
+
+        }
+        
+        private void TryAutoLogin()
+        {
+            if (isAutoLoginChecked) return;
+    
+            isAutoLoginChecked = true;
+            SetAllButtonsState(false); // Disable tất cả buttons trong khi check
+
+            backendSync.OnAutoLogin(OnAutoLoginCallback);
         }
         
         #region UI Event Handlers
@@ -58,9 +76,9 @@ namespace Code.Backend
             if (!ValidateRegisterInputs()) return;
             
             UpdateStatus("Đang đăng ký...");
-            SetButtonsState(false, false, false, false, false);
+            SetButtonsState(false, false, false, false, false, false);
 
-            backendSync.OnRegisterCloud(
+            backendSync.OnRegister(
                 usernameInput.text.Trim(),
                 passwordInput.text.Trim(),
                 emailInput.text.Trim(),
@@ -73,7 +91,7 @@ namespace Code.Backend
             if (!ValidateOtpInputs()) return;
             
             UpdateStatus("Đang xác thực OTP...");
-            SetButtonsState(false, false, false, false, false);
+            SetButtonsState(false, false, false, false, false, false);
             
             backendSync.OnVerifyOtp(
                 usernameInput.text.Trim(),
@@ -87,14 +105,14 @@ namespace Code.Backend
             if (!ValidateLoginInputs()) return;
 
             UpdateStatus("Đang đăng nhập...");
-            SetButtonsState(false, false, false, false, false);
+            SetButtonsState(false, false, false, false, false, false);
 
             // Xác định gửi username hay email
             string loginIdentifier = !string.IsNullOrWhiteSpace(usernameInput.text) 
                 ? usernameInput.text.Trim() 
                 : emailInput.text.Trim();
 
-            backendSync.OnLoginToCloud(
+            backendSync.OnLogin(
                 loginIdentifier,
                 passwordInput.text.Trim(),
                 OnLoginCallback
@@ -104,9 +122,9 @@ namespace Code.Backend
         private void OnUploadClicked()
         {
             UpdateStatus("Đang upload dữ liệu...");
-            SetButtonsState(false, false, true, false, false);
+            SetButtonsState(false, false, true, false, false, true);
             
-            backendSync.OnUploadDataToCloud();
+            backendSync.OnUpload();
             
             // Reset status sau 3 giây
             StartCoroutine(ResetStatusAfterDelay(3f, "Upload hoàn thành!"));
@@ -115,12 +133,20 @@ namespace Code.Backend
         private void OnDownloadClicked()
         {
             UpdateStatus("Đang download dữ liệu...");
-            SetButtonsState(false, false, true, false, false);
+            SetButtonsState(false, false, true, false, false, true);
             
-            backendSync.OnDownloadDataFromCloud();
+            backendSync.OnDownload();
             
             // Reset status sau 3 giây
             StartCoroutine(ResetStatusAfterDelay(3f, "Download hoàn thành!"));
+        }
+        
+        private void OnLogoutClicked()
+        {
+            UpdateStatus("Đang đăng xuất...");
+            SetAllButtonsState(false);
+
+            backendSync.OnLogout(OnLogoutCallback);
         }
         
         #endregion
@@ -132,13 +158,13 @@ namespace Code.Backend
             if (success)
             {
                 UpdateStatus($"{message}");
-                SetButtonsState(false, true, false, false, false); // Chỉ enable verify OTP
+                SetButtonsState(false, true, false, false, false, false); // Chỉ enable verify OTP
                 Debug.Log("Đăng ký thành công! Hãy nhập OTP từ email.");
             }
             else
             {
                 UpdateStatus($"{message}");
-                SetButtonsState(true, false, true, false, false); // Enable lại register và login
+                SetButtonsState(true, false, true, false, false, false); // Enable lại register và login
                 Debug.LogError($"Đăng ký thất bại: {message}");
             }
         }
@@ -148,13 +174,13 @@ namespace Code.Backend
             if (success)
             {
                 UpdateStatus($"{message}");
-                SetButtonsState(false, false, false, true, true); // Enable upload/download
+                SetButtonsState(false, false, false, true, true, true); // Enable upload/download
                 Debug.Log("Xác thực OTP thành công! Có thể upload/download dữ liệu.");
             }
             else
             {
                 UpdateStatus($"{message}");
-                SetButtonsState(false, true, false, false, false); // Enable lại verify OTP
+                SetButtonsState(false, true, false, false, false, false); // Enable lại verify OTP
                 Debug.LogError($"Xác thực OTP thất bại: {message}");
             }
         }
@@ -164,14 +190,40 @@ namespace Code.Backend
             if (success)
             {
                 UpdateStatus($"{message}");
-                SetButtonsState(false, false, false, true, true); // Enable upload/download
+                SetButtonsState(false, false, false, true, true, true); // Enable upload/download
                 Debug.Log("Đăng nhập thành công!");
             }
             else
             {
                 UpdateStatus($"{message}");
-                SetButtonsState(true, false, true, false, false); // Enable lại register và login
+                SetButtonsState(true, false, true, false, false, false); // Enable lại register và login
                 Debug.LogError($"Đăng nhập thất bại: {message}");
+            }
+        }
+        
+        private void OnAutoLoginCallback(bool success, string message)
+        {
+            if (success)
+            {
+                UpdateStatus($"Auto login: {message}");
+                SetButtonsState(false, false, false, true, true, true); // Enable upload/download/logout
+                Debug.Log("Auto login thành công!");
+            }
+            else
+            {
+                UpdateStatus("Vui lòng đăng nhập");
+                SetButtonsState(true, false, true, false, false, false); // Enable register/login
+                Debug.Log($"Auto login thất bại: {message}");
+            }
+        }
+        
+        private void OnLogoutCallback(bool success, string message)
+        {
+            UpdateStatus(message);
+            if (success)
+            {
+                SetButtonsState(true, false, true, false, false, false); // Enable register/login
+                Debug.Log("Đăng xuất thành công!");
             }
         }
         
@@ -259,7 +311,7 @@ namespace Code.Backend
             Debug.Log($"[TestBackend] {message}");
         }
         
-        private void SetButtonsState(bool register, bool verifyOtp, bool login, bool upload, bool download)
+        private void SetButtonsState(bool register, bool verifyOtp, bool login, bool upload, bool download, bool logout)
         {
             if (registerButton != null)
                 registerButton.interactable = register;
@@ -275,13 +327,21 @@ namespace Code.Backend
                 
             if (downloadButton != null)
                 downloadButton.interactable = download;
+
+            if (logoutButton != null)
+                logoutButton.interactable = logout;
+        }
+        
+        private void SetAllButtonsState(bool state)
+        {
+            SetButtonsState(state, state, state, state, state, state);
         }
         
         private IEnumerator ResetStatusAfterDelay(float delay, string message)
         {
             yield return new WaitForSeconds(delay);
             UpdateStatus(message);
-            SetButtonsState(false, false, false, true, true); // Giữ upload/download enabled
+            SetButtonsState(false, false, false, true, true, true); // Giữ upload/download enabled
         }
         
         // Method để reset form
@@ -294,7 +354,7 @@ namespace Code.Backend
             if (otpInput != null) otpInput.text = "";
             
             UpdateStatus("Form đã được reset");
-            SetButtonsState(true, false, true, false, false);
+            SetButtonsState(true, false, true, false, false, false);
         }
         
         // Method để test với dữ liệu mẫu
