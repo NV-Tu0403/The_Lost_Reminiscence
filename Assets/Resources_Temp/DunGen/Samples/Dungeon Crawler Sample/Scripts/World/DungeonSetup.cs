@@ -1,58 +1,37 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.AI;
+﻿using UnityEngine;
 
 namespace DunGen.DungeonCrawler
 {
-	/// <summary>
-	/// Performs some game-specific logic after the dungeon has been generated.
-	/// Must be attached to the same GameObject as the dungeon generator
-	/// </summary>
-	[RequireComponent(typeof(RuntimeDungeon))]
-	class DungeonSetup : MonoBehaviour
-	{
-		[SerializeField]
-		[Tooltip("The player prefab to spawn once the dungeon is complete")]
-		private GameObject playerPrefab = null;
+    // Script này chỉ dùng để chạy các hàm xử lý hậu kỳ của DunGen
+    // sau khi dungeon được tạo xong, ví dụ như spawn cửa.
+    [RequireComponent(typeof(RuntimeDungeon))]
+    public class DungeonSetup : MonoBehaviour
+    {
+        private RuntimeDungeon runtimeDungeon;
 
-		private PlayerUI playerUI;
-		private RuntimeDungeon runtimeDungeon;
-		private GameObject spawnedPlayerInstance;
-		
-		private void OnEnable()
-		{
-			playerUI = FindObjectOfType<PlayerUI>();
+        private void OnEnable()
+        {
+            runtimeDungeon = GetComponent<RuntimeDungeon>();
+            runtimeDungeon.Generator.OnGenerationStatusChanged += OnDungeonGenerationStatusChanged;
+        }
 
-			runtimeDungeon = GetComponent<RuntimeDungeon>();
-			runtimeDungeon.Generator.OnGenerationStatusChanged += OnDungeonGenerationStatusChanged;
-		}
+        private void OnDisable()
+        {
+            // Luôn hủy đăng ký sự kiện để tránh lỗi
+            if (runtimeDungeon != null && runtimeDungeon.Generator != null)
+                runtimeDungeon.Generator.OnGenerationStatusChanged -= OnDungeonGenerationStatusChanged;
+        }
 
-		private void OnDisable()
-		{
-			runtimeDungeon.Generator.OnGenerationStatusChanged -= OnDungeonGenerationStatusChanged;
-		}
+        private void OnDungeonGenerationStatusChanged(DungeonGenerator generator, GenerationStatus status)
+        {
+            // Chỉ chạy khi dungeon đã hoàn thành
+            if (status != GenerationStatus.Complete)
+                return;
 
-		private void OnDungeonGenerationStatusChanged(DungeonGenerator generator, GenerationStatus status)
-		{
-			// We're only interested in completion events
-			if (status != GenerationStatus.Complete)
-				return;
-
-			// If there's already a player instance, destroy it. We'll spawn a new one
-			if (spawnedPlayerInstance != null)
-				Destroy(spawnedPlayerInstance);
-
-			// Find an object inside the start tile that's marked with the PlayerSpawn component
-			var playerSpawn = generator.CurrentDungeon.MainPathTiles[0].GetComponentInChildren<PlayerSpawn>();
-
-			Vector3 spawnPosition = playerSpawn.transform.position;
-			spawnedPlayerInstance = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
-			playerUI.SetPlayer(spawnedPlayerInstance);
-
-			// All hideable objects are spawned by now,
-			// we can cache some information for later use
-			HideableObject.RefreshHierarchies();
-		}
-	}
+            // Dòng này rất quan trọng, nó gọi lại các hệ thống hậu kỳ của DunGen,
+            // bao gồm cả việc xử lý các vật thể có thể ẩn/hiện như cửa.
+            // Chỉ cần gọi trực tiếp hàm này là đủ.
+            HideableObject.RefreshHierarchies();
+        }
+    }
 }
