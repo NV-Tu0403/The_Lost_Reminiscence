@@ -12,7 +12,7 @@ public enum CoreStateType
 
 public enum AccountStateType
 {
-    NoCurrentAccount,       // hệ thống không tự đăng nhập được
+    NoCurrentAccount,
     NoConnectToServer,      // đã có Account và chưa connect
     ConectingServer,
     HaveConnectToServer,    // đã connect
