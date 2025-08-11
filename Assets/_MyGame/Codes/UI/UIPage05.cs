@@ -69,7 +69,6 @@ public class UIPage05 : MonoBehaviour
         try
         {
             // Xóa các Save Item cũ
-            //Core.Instance.InitAccountState();
             ClearSaveSlots();
             Core.Instance.backendSync.OnDownload();
 

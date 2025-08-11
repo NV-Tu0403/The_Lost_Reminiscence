@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Code.Backend;
 using TMPro;
+using System.Drawing;
 
 /// <summary>
 /// Điều phối các nghiệp vụ chuyên môn.
@@ -67,11 +68,11 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnSyncFileSave += async (path) => await BackUpSaveItemAsync(path);
         e.OnOverriceSave += () => SetBackUpSaveItemAsync(); // ghi đè bản backup lên bản gốc nếu có bản backup hợp lệ.
 
-        e.OnLogin += () => Login();
-        e.OnRegister += () => Register();
-        e.OnLogout += async () => await Logout();
-        e.OnConnectToServer += () => ConnectToServer();
-        e.OnConnectingToServer += () => OnOtp();
+        e.OnLogin += () => PerformLoginCloud();
+        e.OnRegister += () => PerformRegisterCould();
+        e.OnLogout += async () => await PerformLogout();
+        //e.OnConnectToServer += () => PerformLoginCloud ();
+        e.OnConnectingToServer += () => PerformOtp();
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -85,11 +86,12 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnSyncFileSave -= async (path) => await BackUpSaveItemAsync(path);
         e.OnOverriceSave -= () => SetBackUpSaveItemAsync();
 
-        e.OnLogin -= () => Login();
-        e.OnRegister -= () => Register();
-        e.OnLogout -= async () => await Logout();
-        e.OnConnectToServer -= () => ConnectToServer();
-        e.OnConnectingToServer -= () => OnOtp();
+        e.OnLogin -= () => PerformLoginCloud();
+        e.OnRegister -= () => PerformRegisterCould();
+        e.OnLogout -= async () => await PerformLogout();
+        //e.OnConnectToServer -= () => PerformLoginCloud();
+        e.OnConnectingToServer -= () => PerformOtp();
+
     }
 
     #region nghiệp vụ 1
@@ -116,36 +118,33 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         {
             lastSelectedSaveFolder = null;
             // set trạng thái không có tài khoản hiện tại
-            _core._accountStateMachine.SetState(new NoCurrentAccountState(_core._accountStateMachine, _coreEvent));
+            _core._accountStateMachine.SetState(new NoConnectToServer(_core._accountStateMachine, _coreEvent));
             Debug.Log("[Test] No users found. Showing login panel.");
         }
         else
         {
-            TryAutoLogin();
+            PerformAutoLogin(); // tự động đăng nhập nếu có tài khoản
         }
     }
 
     /// <summary>
     /// Thử tự động đăng nhập 
     /// </summary>
-    private void TryAutoLogin()
+    private void AutoLoginLocal(bool success, string message)
     {
-        if (_core._userAccountManager.TryAutoLogin(out string Message))
+        //if (success)
+        //{
+        //    Debug.LogError($"[AutoLoginLocal] Auto login failed: {message}");
+        //    UiPage06_C.Instance.ShowLogMessage(message);
+        //    return;
+        //}
+        if (_core._userAccountManager.TryAutoLoginLocal(out string Message))
         {
             UiPage06_C.Instance.ShowLogMessage(Message);
             lastSelectedSaveFolder = GetValidLastSaveFolder();
             PlayTimeManager.Instance.StartCounting();
 
-            if (!_core._userAccountManager.IsSynced(_core._userAccountManager.currentUserBaseName))
-            {
-                _core._accountStateMachine.SetState(new NoConnectToServerState(_core._accountStateMachine, _coreEvent));
-            }
-            else
-            {
-                //_core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
-                _core._accountStateMachine.SetState(new NoConnectToServerState(_core._accountStateMachine, _coreEvent)); // tạm thời để test
-
-            }
+            _core.InitAccountState();
 
             UiPage06_C.Instance.ActiveObj(true, false, false, false);
         }
@@ -515,84 +514,19 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     #region Nghiệp vụ 3
 
-    private void Register()
+    private void PerformAutoLogin()
     {
-        TMP_InputField[] inputs = UiPage06_C.Instance.GetInputFieldsByAction(UIActionType.Register);
-
-        if (inputs.Length < 2)
-        {
-            //Debug.LogError("Không đủ input field cho đăng ký (cần ít nhất 2).");
-            UiPage06_C.Instance.ShowLogMessage("Không đủ input field cho đăng ký (cần ít nhất 2).");
-            return;
-        }
-
-        string userName = inputs[0].text;
-        string passWord = inputs[1].text;
-
-        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(passWord))
-        {
-            //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
-            UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass ní.");
-            return;
-        }
-        _core.RegisterAccount(userName, passWord);
-
-        foreach (var input in inputs)
-        {
-            input.text = string.Empty;
-        }
-
+        backendSync.OnAutoLogin(AutoLoginLocal);
+        _core.InitAccountState();
+        UiPage06_C.Instance.ActiveObj(true, false, false, false);
     }
 
-    private void Login()
-    {
-        TMP_InputField[] inputs = UiPage06_C.Instance.GetInputFieldsByAction(UIActionType.Login);
-
-        if (inputs.Length < 2)
-        {
-            //Debug.LogError("Không đủ input field cho login (cần ít nhất 2).");
-            UiPage06_C.Instance.ShowLogMessage("Không đủ input field cho login (cần ít nhất 2).");
-            return;
-        }
-
-        string userName = inputs[0].text;
-        string passWord = inputs[1].text;
-
-        if (string.IsNullOrWhiteSpace(userName) /*|| string.IsNullOrWhiteSpace(passWord)*/) // nếu trống tên đăng nhập hoặc mật khẩu
-        {
-            //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu trống.");
-            UiPage06_C.Instance.ShowLogMessage("du ma... đừng để trống name với pass ní..");
-            return;
-        }
-
-        if (_core.LogoutAccount())
-        {
-            _core.LoginAccount(userName, passWord);
-        }
-
-        _coreEvent.triggerGetUserName(userName);
-
-        foreach (var input in inputs)
-        {
-            input.text = string.Empty;
-        }
-    }
-
-    private async Task Logout()
-    {
-        _core.LogoutAccount();
-        lastSelectedSaveFolder = null;
-        selectedSaveFolder = null;
-        await UIPage05.Instance.RefreshSaveSlots();
-    }
-
-    private void ConnectToServer()
+    private void PerformRegisterCould()
     {
         TMP_InputField[] inputs = UiPage06_C.Instance.GetInputFieldsByAction(UIActionType.ConnectToServer);
 
         if (inputs.Length < 3)
         {
-
             UiPage06_C.Instance.ShowLogMessage($"Không đủ input field cho đăng ký (cần ít nhất 3).{inputs.Length}");
             return;
         }
@@ -608,22 +542,109 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             return;
         }
 
-        if (_core._userAccountManager.IsSynced(userName)) 
+        if (_core.CurrentAccountState == AccountStateType.NoConnectToServer.ToString())
         {
-            _core.AutoLoginAndDownLoadbackUpSaveItem(userName, passWord);
+            backendSync.OnRegister(userName, passWord, email, (success, message) =>
+            {
+                if (success)
+                {
+                    _core._accountStateMachine.SetState(new ConectingServer(_core._accountStateMachine, _coreEvent));
+                    _core._userAccountManager.SetupLocalAccount(userName, out string mess);
+                    mess = message;
+                    UiPage06_C.Instance.ShowLogMessage($"Đăng ký OTP thành công. Vui lòng kiểm tra email: {email}");
+                }
+                else
+                {
+                    mess = message;
+                    Debug.LogWarning($"Cloud register failed: {message}");
+                }
+            });
+
+            foreach (var input in inputs)
+            {
+                input.text = string.Empty;
+            }
         }
         else
         {
-            _core.SyncToServer(userName, passWord, email);
-        }
-
-        foreach (var input in inputs)
-        {
-            input.text = string.Empty;
+            UiPage06_C.Instance.ShowLogMessage("Bạn đã đăng nhập vào máy chủ rồi, không cần đăng ký nữa.");
         }
     }
 
-    private void OnOtp()
+    /// <summary>
+    /// kiểm tra các trường Input.
+    /// </summary>
+    private void PerformLoginCloud()
+    {
+        TMP_InputField[] inputs = UiPage06_C.Instance.GetInputFieldsByAction(UIActionType.ConnectToServer);
+
+        if (inputs.Length < 3)
+        {
+            UiPage06_C.Instance.ShowLogMessage($"Không đủ input field cho đăng ký (cần ít nhất 3).{inputs.Length}");
+            return;
+        }
+
+        string userName = inputs[0].text;
+        string passWord = inputs[1].text;
+        string email = inputs[2].text;
+
+        if (!string.IsNullOrWhiteSpace(userName))
+        {
+            if (userName == "Guest")
+            {
+                if (_core._userAccountManager.LoginGuest(userName))
+                {
+                    mess = "Đăng nhập thành công với tài khoản khách.";
+                    return;
+                }
+                else
+                {
+                    Debug.LogError($"[PerformLoginCloud] Auto login failed: ");
+                }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(userName) /*|| string.IsNullOrWhiteSpace(passWord) */|| string.IsNullOrWhiteSpace(email))
+                {
+                    //Debug.LogWarning("Tên đăng nhập hoặc mật khẩu hoặc email trống.");
+                    UiPage06_C.Instance.ShowLogMessage("Tên đăng nhập hoặc mật khẩu hoặc email trống..");
+                    return;
+                }
+            }
+
+
+
+            if (_core.CurrentAccountState == AccountStateType.NoConnectToServer.ToString())
+            {
+                backendSync.OnLogin(email, passWord, (success, message) =>
+                {
+                    if (success)
+                    {
+                        _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
+                        _core._userAccountManager.SetupLocalAccount(userName, out string mess);
+                        UiPage06_C.Instance.ShowLogMessage("Đăng nhập thành công và tải xuống dữ liệu lưu trữ.");
+                        //backendSync.OnDownloadDataFromCloud();
+                        _coreEvent.TriggerAccountChangeState(AccountStateType.HaveConnectToServer);
+                    }
+                    else
+                    {
+                        UiPage06_C.Instance.ShowLogMessage($"Đăng nhập thất bại: {message}");
+                        Debug.LogWarning($"Cloud login failed: {message}");
+                    }
+                });
+            }
+
+            foreach (var input in inputs)
+            {
+                input.text = string.Empty;
+            }
+        }
+    }
+
+    /// <summary>
+    /// kiểm tra các trường Input và gọi hàm backendSync.OnVerifyOtp.
+    /// </summary>
+    private void PerformOtp()
     {
         string userName = _core._userAccountManager.currentUserBaseName;
 
@@ -644,8 +665,20 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             return;
         }
 
-        _core.VerifyOTPAccount(otp, userName);
-        //UiPage06_C.Instance.ActiveObj(false, false, false, true); // chỉ bật trường pass để nhấp OTP
+        backendSync.OnVerifyOtp(userName, otp, (success, message) =>
+        {
+            if (success)
+            {
+                _core._accountStateMachine.SetState(new HaveConnectToServer(_core._accountStateMachine, _coreEvent));
+                UiPage06_C.Instance.ShowLogMessage("Xác thực OTP thành công. Tài khoản đã được đồng bộ với máy chủ.");
+
+            }
+            else
+            {
+                UiPage06_C.Instance.ShowLogMessage($"Xác thực OTP thất bại: {message}");
+                Debug.LogWarning($"OTP verification failed: {message}");
+            }
+        });
 
         foreach (var input in inputs)
         {
@@ -653,6 +686,13 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
     }
 
+    private async Task PerformLogout()
+    {
+        _core.LogoutAccount();
+        lastSelectedSaveFolder = null;
+        selectedSaveFolder = null;
+        await UIPage05.Instance.RefreshSaveSlots();
+    }
 
     #endregion
 
@@ -678,7 +718,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             }
 
 
-          
+
 
             if (CopyDirectory(originalPath, backupPath))
             {
@@ -693,7 +733,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
             Task.Delay(500).Wait();
 
-            if( ClearGetBackupTrayAsync())
+            if (ClearGetBackupTrayAsync())
             {
                 mess += "Đã xóa thư mục GetBackUpTray.";
             }
@@ -764,7 +804,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                     }
                 }
 
-                //mess = "Không tìm thấy bản backup nào khớp với các bản save.";
+                mess = "Không tìm thấy bản backup nào khớp với các bản save.";
                 return (false, null, null);
             });
         }
@@ -813,7 +853,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
             await Task.Delay(300);
 
-            //Core.Instance.backendSync.OnUploadAllJsonFilesToCloud();
+            // upload file save to cloud
+            backendSync.OnUpload();
             mess = $"Item save đã được chuyển vào thư mục Backup: {backupTargetPath}";
             return true;
         }

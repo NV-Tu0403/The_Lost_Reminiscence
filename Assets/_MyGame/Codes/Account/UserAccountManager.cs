@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using UnityEngine;
 
 [System.Serializable]
@@ -12,8 +10,6 @@ public class UserAccount
     public string UserName; //"a_20250525_153959"
     public string BaseName; // "a"
     public string TimeCheckIn; // "20250525_153959"
-    public string PasswordHash;
-    public bool SyncToServer = false; // Mặc định là false
 }
 
 [System.Serializable]
@@ -169,28 +165,6 @@ public class UserAccountManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Kiểm tra theo baseName xem tài khoản có đồng bộ với server chưa.
-    /// </summary>
-    public bool IsBaseNameSynced(string baseName)
-    {
-        if (string.IsNullOrWhiteSpace(baseName))
-            return false;
-
-        var user = userData.Users
-            .Where(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(u => u.TimeCheckIn)
-            .FirstOrDefault();
-
-        if (user == null)
-        {
-            Debug.LogWarning($"[IsBaseNameSynced] Không tìm thấy tài khoản với baseName: {baseName}");
-            return false;
-        }
-
-        return user.SyncToServer;
-    }
-
     private void SaveUserData()
     {
         try
@@ -211,20 +185,6 @@ public class UserAccountManager : MonoBehaviour
         }
     }
 
-    private string HashPassword(string password)
-    {
-        using (SHA256 sha256 = SHA256.Create())
-        {
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password ?? ""));
-            StringBuilder builder = new StringBuilder();
-            foreach (byte b in bytes)
-            {
-                builder.Append(b.ToString("x2"));
-            }
-            return builder.ToString();
-        }
-    }
-
     /// <summary>
     /// Tạo tài khoản Guest mặc định khi không có tài khoản nào.
     /// </summary>
@@ -237,75 +197,52 @@ public class UserAccountManager : MonoBehaviour
         {
             UserName = userName,
             BaseName = baseName,
-            TimeCheckIn = timeCheckIn,
-            PasswordHash = "", // No password for GuestAccount
-            SyncToServer = false
+            TimeCheckIn = timeCheckIn
         });
         userData.LastAccount = userName; // Set GuestAccount as the last account
         Debug.Log($"Created GuestAccount: {userName}");
     }
 
-    public bool CreateAccount(string baseName, string password, out string errorMessage)
+    /// <summary>
+    /// Thiết lập tài khoản Cloud (lưu BaseName và tạo UserName nếu chưa tồn tại).
+    /// Được gọi cùng với hàm đăng nhập/đăng ký thực sự từ script khác.
+    /// </summary>
+    public bool SetupLocalAccount(string baseName, out string errorMessage)
     {
         errorMessage = "";
         if (string.IsNullOrEmpty(baseName))
         {
-            errorMessage = "điền tên vào tk mù!";
-            return false;
-        }
-        if (string.IsNullOrEmpty(password))
-        {
-            errorMessage = "điền pass vào tk khung!";
+            errorMessage = "BaseName cannot be empty.";
             return false;
         }
 
-        if (userData.Users.Any(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase)))
-        {
-            errorMessage = $"UserName '{baseName}' được dùng rồi!";
-            return false;
-        }
-
-        string timeCheckIn = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        string userName = $"{baseName}_{timeCheckIn}";
-        userData.Users.Add(new UserAccount
-        {
-            UserName = userName,
-            BaseName = baseName,
-            TimeCheckIn = timeCheckIn,
-            PasswordHash = HashPassword(password),
-            SyncToServer = false
-        });
-        SaveUserData();
-
-        currentUserBaseName = baseName;
-        Debug.Log($"Created account: {userName}");
-        return true;
-    }
-
-    public bool Login(string baseName, string password, out string errorMessage)
-    {
-        errorMessage = "";
         var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(baseName, StringComparison.OrdinalIgnoreCase));
         if (user == null)
         {
-            errorMessage = $"deo tìm thấy tk '{baseName}'!";
-            return false;
-        }
-
-        if (!string.IsNullOrEmpty(password) && user.PasswordHash != HashPassword(password))
-        {
-            errorMessage = "vl pass sai ròi kìa!";
-            return false;
+            string timeCheckIn = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string userName = $"{baseName}_{timeCheckIn}";
+            userData.Users.Add(new UserAccount
+            {
+                UserName = userName,
+                BaseName = baseName,
+                TimeCheckIn = timeCheckIn
+            });
+            user = userData.Users.Last();
         }
 
         currentUserBaseName = baseName;
         userData.LastAccount = user.UserName;
         SaveUserData();
-        //Debug.Log($"Logged in user: {baseName}");
+        Debug.Log($"Setup Cloud account: {baseName}");
         return true;
     }
 
-    public bool TryAutoLogin(out string errorMessage)
+    /// <summary>
+    /// Tự động đăng nhập vào tài khoản cuối cùng đã sử dụng hoặc GuestAccount nếu không có tài khoản nào.
+    /// </summary>
+    /// <param name="errorMessage"></param>
+    /// <returns></returns>
+    public bool TryAutoLoginLocal(out string errorMessage)
     {
         errorMessage = "";
         if (string.IsNullOrEmpty(userData.LastAccount))
@@ -325,7 +262,6 @@ public class UserAccountManager : MonoBehaviour
         }
 
         var user = userData.Users.FirstOrDefault(u => u.UserName == userData.LastAccount);
-        // nếu LastAccount không tồn tại, thì sẽ tự động đăng nhập vào GuestAccount
         if (user == null)
         {
             // Fall back to GuestAccount if LastAccount is invalid
@@ -342,6 +278,25 @@ public class UserAccountManager : MonoBehaviour
             return true;
         }
 
+        // Kiểm tra không có mạng và LastAccount không phải Guest (coi như AccountCloud)
+        if (Application.internetReachability == NetworkReachability.NotReachable && !user.BaseName.Equals("Guest", StringComparison.OrdinalIgnoreCase))
+        {
+            var guestUser = userData.Users.FirstOrDefault(u => u.BaseName.Equals("Guest", StringComparison.OrdinalIgnoreCase));
+            if (guestUser != null)
+            {
+                currentUserBaseName = guestUser.BaseName;
+                userData.LastAccount = guestUser.UserName;
+                SaveUserData();
+                Debug.Log($"No internet, switched to GuestAccount: {guestUser.BaseName}");
+                return true;
+            }
+            else
+            {
+                errorMessage = "No internet and no GuestAccount available.";
+                return false;
+            }
+        }
+
         // Nếu đã đăng nhập vào một tài khoản khác, thì không cho phép tự động đăng nhập
         if (!string.IsNullOrEmpty(currentUserBaseName))
         {
@@ -354,61 +309,20 @@ public class UserAccountManager : MonoBehaviour
         return true;
     }
 
+    public bool LoginGuest(string Username)
+    {
+        currentUserBaseName = Username;
+        userData.LastAccount = Username;
+        SaveUserData();
+        Debug.Log($"Auto-logged in GuestAccount: {Username}");
+        return true;
+    }
+
     public bool Logout(out string errorMessage)
     {
         errorMessage = "";
         currentUserBaseName = null;
         return true;
-    }
-
-    /// <summary>
-    /// Kiểm tra xem người dùng hiện tại có kết nối với máy chủ chưa.
-    /// trả về true nếu đã đồng bộ, false nếu chưa đồng bộ hoặc không tìm thấy người dùng.
-    /// </summary>
-    /// <returns></returns>
-    public bool IsSynced(string userName)
-    {
-        if (string.IsNullOrEmpty(userName))
-        {
-            Debug.LogWarning("CurrentUserName is null or empty.");
-            return false;
-        }
-        var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(userName, StringComparison.OrdinalIgnoreCase));
-        if (user == null)
-        {
-            Debug.LogWarning($"User '{userName}' not found.");
-            return false;
-        }
-        return user.SyncToServer;
-    }
-
-    /// <summary>
-    /// Đánh dấu người dùng là đã đồng bộ với máy chủ.
-    /// </summary>
-    /// <param name="userName"></param>
-    public bool MarkAsSynced(string userName)
-    {
-        if (string.IsNullOrWhiteSpace(userName))
-        {
-            Debug.LogWarning("UserName is null or empty.");
-            return false;
-        }
-
-        userName = userName.Trim(); // Xử lý dấu cách vô tình
-        var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(userName, StringComparison.OrdinalIgnoreCase));
-
-        if (user != null)
-        {
-            Debug.Log($"[MarkAsSynced] User cần đánh dấu đã đồng bộ là : {user.UserName}");
-            user.SyncToServer = true;
-            SaveUserData();
-            return true;
-        }
-        else
-        {
-            Debug.LogWarning($"[MarkAsSynced] Không tìm thấy user với UserName = '{userName}'");
-            return false;
-        }
     }
 
     public void UpdateLastSession(string lastFileSave, double playTime)
@@ -433,5 +347,26 @@ public class UserAccountManager : MonoBehaviour
     public string GetLastFileSave()
     {
         return userData.LastFileSave;
+    }
+
+    /// <summary>
+    /// Lấy Username đầy đủ (BaseName_TimeCheckIn) để tạo file save.
+    /// </summary>
+    public string GetUsernameForSave()
+    {
+        if (string.IsNullOrEmpty(currentUserBaseName))
+        {
+            Debug.LogWarning("No current user logged in.");
+            return "";
+        }
+
+        var user = userData.Users.FirstOrDefault(u => u.BaseName.Equals(currentUserBaseName, StringComparison.OrdinalIgnoreCase));
+        if (user == null)
+        {
+            Debug.LogWarning($"User with BaseName '{currentUserBaseName}' not found.");
+            return "";
+        }
+
+        return user.UserName;
     }
 }

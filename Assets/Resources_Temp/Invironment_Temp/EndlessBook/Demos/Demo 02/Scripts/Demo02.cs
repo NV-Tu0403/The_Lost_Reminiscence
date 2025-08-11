@@ -4,6 +4,7 @@
     using UnityEngine;
     using echo17.EndlessBook;
     using System.Threading.Tasks;
+    using Microsoft.Win32;
 
     public enum BookActionTypeEnum
     {
@@ -362,7 +363,7 @@
                     break;
                 case UIActionType.SyncFileSave:
                     CoreEvent.Instance.triggerSyncFileSave(ProfessionalSkilMenu.Instance.selectedSaveFolder);
-                  
+
                     break;
             }
         }
@@ -371,61 +372,60 @@
         private void DetectedAccoutFuntion(UIItem item)
         {
             string accountState = Core.Instance.CurrentAccountState;
+
             switch (item.uIActionType)
             {
-                case UIActionType.Confim: // thực hiện Login/ Register/ ConnectToServer tùy AccountStateType
-                    if (accountState == AccountStateType.NoCurrentAccount.ToString())
-                    {
-                        if (isLogin) CoreEvent.Instance.triggerLogin(); // đăng nhập
-                        else CoreEvent.Instance.triggerRegister();      // đăng ký
-                        UiPage06_C.Instance.ActiveObj(true, false, false, false);
-                    }
-                    isLogin = false;
+                case UIActionType.Confim:
 
                     if (accountState == AccountStateType.NoConnectToServer.ToString())
                     {
-                        CoreEvent.Instance.triggerConnectToServer();    // kết nối đến server
-                        UiPage06_C.Instance.ActiveObj(true, true, false, false);
+                        if (isLogin) // nếu nhấn login trước đó 
+                        {
+                            CoreEvent.Instance.triggerLogin(); // đăng nhập tài khoản
+                            UiPage06_C.Instance.ActiveObj(true, false, false, false);
+                        }
+                        else // nếu nhấn register trước đó
+                        {
+                            CoreEvent.Instance.triggerRegister(); // đăng ký tài khoản
+                            UiPage06_C.Instance.ActiveObj(true, true, false, false);
+                        }
+                      
                     }
 
                     if (accountState == AccountStateType.ConectingServer.ToString())
                     {
-                        CoreEvent.Instance.triggerConnectingToServer();
+                        CoreEvent.Instance.triggerConnectingToServer(); // xác nhân OTP
                         UiPage06_C.Instance.ActiveObj(true, false, false, false);
                     }
-         
+
                     break;
 
-                case UIActionType.Cancel:           // xóa data input và tắt panel Input
+                case UIActionType.Cancel:
                     UiPage06_C.Instance.ActiveObj(true, false, false, false);
                     break;
-
-                case UIActionType.Logout:           // bật panel Input, tắt bt này tùy vào AccountStateType
-                    if (accountState == AccountStateType.NoConnectToServer.ToString() || accountState == AccountStateType.HaveConnectToServer.ToString())
+                case UIActionType.Logout:
+                    if (accountState == AccountStateType.NoConnectToServer.ToString())
+                    {
+                        isLogin = true; // đánh dấu là login cloud
+                        UiPage06_C.Instance.ActiveObj(false, true, true, true);
+                    }
+                    else
                     {
                         CoreEvent.Instance.triggerLogout(); // logout
                         UiPage06_C.Instance.ActiveObj(true, false, false, false);
                     }
 
-                    if (accountState == AccountStateType.NoCurrentAccount.ToString())
-                    {
-                        isLogin = !isLogin; // đánh dấu là login
-                        UiPage06_C.Instance.ActiveObj(false, true, false, true);
-                    }
-
                     break;
-                case UIActionType.ConnectToServer:  // bật panel Input, tắt bt này tùy vào AccountStateType
-                    if (accountState == AccountStateType.NoConnectToServer.ToString()) // connect to server
+                case UIActionType.ConnectToServer:
+                    if (accountState == AccountStateType.NoConnectToServer.ToString()) //  register cloud
                     {
+                        isLogin = false; // đánh dấu là register cloud
                         UiPage06_C.Instance.ActiveObj(false, true, true, true);
+                        // tắt thêm nút Upoad SaveItem
                     }
-                    if (accountState == AccountStateType.NoCurrentAccount.ToString()) // register
+                    if (accountState == AccountStateType.HaveConnectToServer.ToString()) // Overrice SaveItem
                     {
-                        UiPage06_C.Instance.ActiveObj(false, true, false, true);
-                    }
-                    if (accountState == AccountStateType .HaveConnectToServer.ToString()) // nếu 
-                    {
-                        CoreEvent.Instance.triggerOverriceSave(); // ghi đè dữ liệu save
+                        CoreEvent.Instance.triggerOverriceSave();
                     }
                     break;
             }

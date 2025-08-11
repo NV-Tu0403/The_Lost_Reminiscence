@@ -46,6 +46,14 @@ public struct UpdateAccountLogPage
     public TMP_Text[] Message;
 }
 
+[Serializable]
+public struct GuestObj
+{
+    public GameObject[] GuestPanelInfoObj;
+
+    public GameObject[] BtSaveObj;
+}
+
 
 public class UiPage06_C : MonoBehaviour
 {
@@ -65,6 +73,19 @@ public class UiPage06_C : MonoBehaviour
         }
     }
 
+    //private void Update()
+    //{
+    //    if (Core.Instance.CurrentAccountName == "Guest")
+    //    {
+    //        SetActiveGuestObj(false, false);
+    //    }
+    //    else if (Core.Instance.CurrentAccountState == AccountStateType.NoConnectToServer.ToString())
+    //    {
+    //        SetActiveGuestObj(true, false);
+    //    }
+
+    //}
+
     [SerializeField] private UIInputItem[] inputItems;
 
     [SerializeField] private UIUpdateTextByState[] UpdateTextByState;
@@ -74,6 +95,8 @@ public class UiPage06_C : MonoBehaviour
     [SerializeField] private UpdateActiveObj[] updateActiveObj;
 
     [SerializeField] private UpdateAccountLogPage[] updateAccountLogPage;
+
+    [SerializeField] private GuestObj[] guestObj;
 
     /// <summary>
     /// Lấy các trường nhập liệu từ UIInputItem theo uIActionType.
@@ -104,24 +127,25 @@ public class UiPage06_C : MonoBehaviour
         {
             foreach (var obj in UpdateTextByState)
             {
-                if (type == AccountStateType.NoCurrentAccount)
+                // nếu không có tài khoản currrent
+                if (type == AccountStateType.NoConnectToServer && Core.Instance.CurrentAccountName == null)
                 {
                     obj.logout_login.text = "Login";
                     obj.connect_register.text = "Register";
                 }
-                if (type == AccountStateType.NoConnectToServer || type == AccountStateType.ConectingServer)
-                {
-                    obj.logout_login.text = "Logout";
-                    obj.connect_register.text = "Connect";
-                }
                 if (type == AccountStateType.HaveConnectToServer)
                 {
                     obj.logout_login.text = "Logout";
-                    obj.connect_register.text = "Override save";
+                    if (ProfessionalSkilMenu.Instance.CurrentbackupOke) obj.connect_register.text = "Override save";
+                    else obj.connect_register.text = "...";
                 }
                 if (type == AccountStateType.ConectingServer)
                 {
                     obj.Pass_text.text = "Enter OTP";
+                }
+                else if (type != AccountStateType.ConectingServer)
+                {
+                    obj.Pass_text.text = "Enter Password";
                 }
             }
         }
@@ -130,7 +154,7 @@ public class UiPage06_C : MonoBehaviour
 
             throw new Exception($"{e.Message}", e);
         }
-        
+
     }
 
     public void UpdateInfo(string userName, string playTime, AccountStateType accountStateType)
@@ -196,34 +220,34 @@ public class UiPage06_C : MonoBehaviour
                         panel.SetActive(PanelInfoObj);
                     }
                 }
-            }
-            if (obj.PanelFuntionObj != null)
-            {
-                foreach (var panel in obj.PanelFuntionObj)
+                if (obj.PanelFuntionObj != null)
                 {
-                    if (panel != null)
+                    foreach (var panel in obj.PanelFuntionObj)
                     {
-                        panel.SetActive(PanelFuntionObj);
+                        if (panel != null)
+                        {
+                            panel.SetActive(PanelFuntionObj);
+                        }
                     }
                 }
-            }
-            if (obj.emailObj != null)
-            {
-                foreach (var connect in obj.emailObj)
+                if (obj.emailObj != null)
                 {
-                    if (connect != null)
+                    foreach (var connect in obj.emailObj)
                     {
-                        connect.SetActive(email);
+                        if (connect != null)
+                        {
+                            connect.SetActive(email);
+                        }
                     }
                 }
-            }
-            if (obj.nameObj != null)
-            {
-                foreach (var otp in obj.nameObj)
+                if (obj.nameObj != null)
                 {
-                    if (otp != null)
+                    foreach (var otp in obj.nameObj)
                     {
-                        otp.SetActive(name);
+                        if (otp != null)
+                        {
+                            otp.SetActive(name);
+                        }
                     }
                 }
             }
@@ -241,6 +265,33 @@ public class UiPage06_C : MonoBehaviour
                 if (msg != null)
                 {
                     msg.text = message;
+                }
+            }
+        }
+    }
+
+    public void SetActiveGuestObj(bool guest, bool BtSave)
+    {
+        foreach (var obj in guestObj)
+        {
+            if (obj.GuestPanelInfoObj != null)
+            {
+                foreach (var panel in obj.GuestPanelInfoObj)
+                {
+                    if (panel != null)
+                    {
+                        panel.SetActive(guest);
+                    }
+                }
+            }
+            if (obj.BtSaveObj != null)
+            {
+                foreach (var bt in obj.BtSaveObj)
+                {
+                    if (bt != null)
+                    {
+                        bt.SetActive(BtSave);
+                    }
                 }
             }
         }
