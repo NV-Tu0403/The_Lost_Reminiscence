@@ -41,7 +41,7 @@ namespace Code.Backend
         // Auto Login
         public void OnAutoLogin(Action<bool, string> callback)
         {
-            var savedToken = PlayerPrefs.GetString(TokenKey, "");
+             var savedToken = PlayerPrefs.GetString(TokenKey, "");
             if (string.IsNullOrEmpty(savedToken))
             {
                 callback(false, "Không có token đã lưu");

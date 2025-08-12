@@ -354,6 +354,7 @@
                     break;
                 case UIActionType.RefreshSaveList:
                     await UIPage05.Instance.RefreshSaveSlots();
+                    Core.Instance.backendSync.OnDownload();
                     break;
                 case UIActionType.SelectSaveItem:
                     await UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.SelectSaveItem);
