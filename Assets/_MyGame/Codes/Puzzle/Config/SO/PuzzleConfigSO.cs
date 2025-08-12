@@ -8,7 +8,7 @@ namespace Script.Puzzle.Config.SO
     {
         
         [Tooltip("Độ cao mà các khối cầu được nâng lên.")]
-        [Range(0.5f, 5f)]
+        [Range(0.5f, 50f)]
         public float raiseHeight = 1.5f;
 
         [Tooltip("Thời gian để nâng mỗi khối cầu.")]
@@ -29,8 +29,8 @@ namespace Script.Puzzle.Config.SO
         public float fallDelayBetweenPieces = 0.2f;
 
         [Tooltip("Khoảng cách mà các khối cầu rơi xuống.")]
-        [Range(1f, 10f)]
-        public float fallDistance = 5f;
+        [Range(1f, 500f)]
+        public float fallDistance = 500f;
 
         [Tooltip("Thời gian để khối cầu rơi xuống.")]
         [Range(0.1f, 3f)]
