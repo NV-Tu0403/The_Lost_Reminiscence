@@ -10,7 +10,7 @@ using System;
 public class SceneController : MonoBehaviour
 {
     public static SceneController Instance { get; private set; }
-    private List<string> loadedScenes = new List<string>();
+    public List<string> loadedScenes = new List<string>();
     private string initialSceneName;
     private static readonly string[] ExcludedScenes = { "Menu" };
 
@@ -47,14 +47,14 @@ public class SceneController : MonoBehaviour
 
     private IEnumerator LoadSceneCoroutine(string sceneName, PlayerCheckPoint playerCheckPoint, Action onComplete)
     {
-        var asyncOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        yield return new WaitUntil(() => asyncOp.isDone);
+        var asyncOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive); // tải scene ở chế độ Additive
+        yield return new WaitUntil(() => asyncOp.isDone); // đợi cho scene được tải xong
 
-        Scene newScene = SceneManager.GetSceneByName(sceneName);
+        Scene newScene = SceneManager.GetSceneByName(sceneName); // lấy scene mới đã được tải
         if (newScene.IsValid())
         {
-            SceneManager.SetActiveScene(newScene);
-            loadedScenes.Add(sceneName);
+            SceneManager.SetActiveScene(newScene); // đặt scene mới là scene hoạt động
+            loadedScenes.Add(sceneName); // thêm scene vào danh sách các scene đã tải
         }
         onComplete?.Invoke();
     }
@@ -76,7 +76,7 @@ public class SceneController : MonoBehaviour
             {
                 var asyncOp = SceneManager.UnloadSceneAsync(sceneName);
                 yield return new WaitUntil(() => asyncOp.isDone);
-                //Debug.Log($"Unloaded scene: {sceneName}");
+                Debug.Log($"Unloaded scene: {sceneName}");
             }
         }
         loadedScenes.RemoveAll(scene => !ExcludedScenes.Contains(scene));

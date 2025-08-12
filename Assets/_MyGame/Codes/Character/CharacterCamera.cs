@@ -30,6 +30,11 @@ public class CharacterCamera : MonoBehaviour
     public float distanceSmoothingSpeed = 10f;
     public float sphereCastRadius = 0.2f;
 
+    private void Awake()
+    {
+        DontDestroyOnLoad(this);
+    }
+
     private void Start()
     {
         mainCamera = GetComponent<Camera>();
