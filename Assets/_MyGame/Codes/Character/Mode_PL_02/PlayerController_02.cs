@@ -116,6 +116,8 @@ public class PlayerController_02 : PlayerEventListenerBase
             _navMeshAgent.updatePosition = useNavMesh; // Chỉ cập nhật vị trí nếu dùng NavMesh
             _navMeshAgent.updateRotation = false; // Tắt xoay tự động để tự xử lý
         }
+
+        DontDestroyOnLoad(this); // Giữ PlayerController_02 không bị hủy khi chuyển cảnh
     }
 
     private void Start()
