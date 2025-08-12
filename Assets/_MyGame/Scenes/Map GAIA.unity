@@ -5690,7 +5690,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9223153338814055006, guid: da8b12f01f481d840a54c0f1eed1bd5e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -9951,6 +9951,16 @@ Terrain:
   m_EnableHeightmapRayTracing: 1
   m_EnableTreesAndDetailsRayTracing: 0
   m_TreeMotionVectorModeOverride: 3
+--- !u!1 &344055715 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8453969684921560244, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
+  m_PrefabInstance: {fileID: 1978835014}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &344055716 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4326398327284925851, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
+  m_PrefabInstance: {fileID: 1978835014}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &346690448
 GameObject:
   m_ObjectHideFlags: 0
@@ -14933,6 +14943,143 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 378934165}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &544268990
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 544268994}
+  - component: {fileID: 544268993}
+  - component: {fileID: 544268992}
+  - component: {fileID: 544268991}
+  m_Layer: 0
+  m_Name: Camera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &544268991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 544268990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+--- !u!81 &544268992
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 544268990}
+  m_Enabled: 1
+--- !u!20 &544268993
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 544268990}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!4 &544268994
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 544268990}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 865.6619, y: 399.79947, z: -18.272463}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &545454709
 GameObject:
@@ -20872,7 +21019,7 @@ MonoBehaviour:
   m_drawPreview: 0
   m_previewRuleIds: 
   m_maxWorldHeight: 293.067
-  m_minWorldHeight: 0
+  m_minWorldHeight: 0.71876097
   m_showSeaLevelinStampPreview: 1
   m_terrainGeneratorPanelUnfolded: 1
   m_worldDesignerPreviewSettingsUnfolded: 0
@@ -43417,6 +43564,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 282393916}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1046472637 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2665874247417771685, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
+  m_PrefabInstance: {fileID: 1978835014}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1047610341
 GameObject:
   m_ObjectHideFlags: 0
@@ -49098,7 +49256,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 903dc0727e869da40b2c88f3b341646f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneName: BossFinal
+  TargetSceneName: 
   portalController: {fileID: 193171175}
 --- !u!65 &1242465433
 BoxCollider:
@@ -55317,7 +55475,7 @@ MonoBehaviour:
       m_warpIterations: 4.9391894
       m_warpStrength: 0.14957476
       m_warpOffset: {x: 622.0008, y: 327.24106, z: -186.68591, w: 0}
-    m_noiseSettings: {fileID: 2031341133}
+    m_noiseSettings: {fileID: 1317716119}
     m_noiseToolSettings:
       worldHeightRemap: {x: 0, y: 0}
       coordSpace: 0
@@ -55682,7 +55840,7 @@ MonoBehaviour:
       m_strength: 1
       m_seaLevel: 12.5
       m_maxWorldHeight: 293.067
-      m_minWorldHeight: 0
+      m_minWorldHeight: 0.71876097
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -55876,7 +56034,7 @@ MonoBehaviour:
       m_strength: 1
       m_seaLevel: 12.5
       m_maxWorldHeight: 293.067
-      m_minWorldHeight: 0
+      m_minWorldHeight: 0.71876097
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -56118,7 +56276,7 @@ MonoBehaviour:
     m_strength: 1
     m_seaLevel: 12.5
     m_maxWorldHeight: 293.067
-    m_minWorldHeight: 0
+    m_minWorldHeight: 0.71876097
     m_xOffSet: 0
     m_zOffSet: 0
     m_xOffSetScalar: 0
@@ -56312,7 +56470,7 @@ MonoBehaviour:
     m_strength: 1
     m_seaLevel: 12.5
     m_maxWorldHeight: 293.067
-    m_minWorldHeight: 0
+    m_minWorldHeight: 0.71876097
     m_xOffSet: 0
     m_zOffSet: 0
     m_xOffSetScalar: 0
@@ -56524,7 +56682,7 @@ MonoBehaviour:
     m_strength: 1
     m_seaLevel: 12.5
     m_maxWorldHeight: 293.067
-    m_minWorldHeight: 0
+    m_minWorldHeight: 0.71876097
     m_xOffSet: 0
     m_zOffSet: 0
     m_xOffSetScalar: 0
@@ -56890,7 +57048,7 @@ MonoBehaviour:
   m_drawPreview: 0
   m_previewRuleIds: 
   m_maxWorldHeight: 293.067
-  m_minWorldHeight: 0
+  m_minWorldHeight: 0.71876097
   m_showSeaLevelinStampPreview: 1
   m_terrainGeneratorPanelUnfolded: 1
   m_worldDesignerPreviewSettingsUnfolded: 0
@@ -57570,6 +57728,30 @@ Transform:
   - {fileID: 216137453}
   m_Father: {fileID: 456256717}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1317716119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transformSettings:
+    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
+    scale: {x: 3.1006794, y: 1, z: 3.1006794}
+    rotation: {x: 0, y: 0, z: 0}
+    flipScaleX: 0
+    flipScaleY: 0
+    flipScaleZ: 0
+  domainSettings:
+    noiseTypeName: Perlin
+    fractalTypeName: Fbm
+    noiseTypeParams: 
+    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1 &1319794042
 GameObject:
   m_ObjectHideFlags: 0
@@ -58918,7 +59100,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4643428589773489116, guid: 6e05527171b80134a8050a128efa748f, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -59255,7 +59437,7 @@ MonoBehaviour:
       m_strength: 1
       m_seaLevel: 12.5
       m_maxWorldHeight: 293.067
-      m_minWorldHeight: 0
+      m_minWorldHeight: 0.71876097
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -59449,7 +59631,7 @@ MonoBehaviour:
       m_strength: 1
       m_seaLevel: 12.5
       m_maxWorldHeight: 293.067
-      m_minWorldHeight: 0
+      m_minWorldHeight: 0.71876097
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -59691,7 +59873,7 @@ MonoBehaviour:
     m_strength: 1
     m_seaLevel: 12.5
     m_maxWorldHeight: 293.067
-    m_minWorldHeight: 0
+    m_minWorldHeight: 0.71876097
     m_xOffSet: 0
     m_zOffSet: 0
     m_xOffSetScalar: 0
@@ -59885,7 +60067,7 @@ MonoBehaviour:
     m_strength: 1
     m_seaLevel: 12.5
     m_maxWorldHeight: 293.067
-    m_minWorldHeight: 0
+    m_minWorldHeight: 0.71876097
     m_xOffSet: 0
     m_zOffSet: 0
     m_xOffSetScalar: 0
@@ -60097,7 +60279,7 @@ MonoBehaviour:
     m_strength: 1
     m_seaLevel: 12.5
     m_maxWorldHeight: 293.067
-    m_minWorldHeight: 0
+    m_minWorldHeight: 0.71876097
     m_xOffSet: 0
     m_zOffSet: 0
     m_xOffSetScalar: 0
@@ -75709,6 +75891,7 @@ Transform:
   - {fileID: 1207375683}
   - {fileID: 1435377328}
   - {fileID: 2014675444}
+  - {fileID: 2127465714}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1788395520
@@ -79219,7 +79402,7 @@ MonoBehaviour:
       m_strength: 1
       m_seaLevel: 12.5
       m_maxWorldHeight: 293.067
-      m_minWorldHeight: 0
+      m_minWorldHeight: 0.71876097
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -79413,7 +79596,7 @@ MonoBehaviour:
       m_strength: 1
       m_seaLevel: 12.5
       m_maxWorldHeight: 293.067
-      m_minWorldHeight: 0
+      m_minWorldHeight: 0.71876097
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -79625,7 +79808,7 @@ MonoBehaviour:
       m_strength: 1
       m_seaLevel: 12.5
       m_maxWorldHeight: 293.067
-      m_minWorldHeight: 0
+      m_minWorldHeight: 0.71876097
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -79870,7 +80053,7 @@ MonoBehaviour:
       m_strength: 1
       m_seaLevel: 12.5
       m_maxWorldHeight: 293.067
-      m_minWorldHeight: 0
+      m_minWorldHeight: 0.71876097
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -80115,7 +80298,7 @@ MonoBehaviour:
       m_strength: 1
       m_seaLevel: 12.5
       m_maxWorldHeight: 293.067
-      m_minWorldHeight: 0
+      m_minWorldHeight: 0.71876097
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -88445,7 +88628,7 @@ MonoBehaviour:
   m_drawPreview: 0
   m_previewRuleIds: 
   m_maxWorldHeight: 293.067
-  m_minWorldHeight: 0
+  m_minWorldHeight: 0.71876097
   m_showSeaLevelinStampPreview: 1
   m_terrainGeneratorPanelUnfolded: 1
   m_worldDesignerPreviewSettingsUnfolded: 0
@@ -89175,30 +89358,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1113480947}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2031341133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  transformSettings:
-    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
-    scale: {x: 3.1006794, y: 1, z: 3.1006794}
-    rotation: {x: 0, y: 0, z: 0}
-    flipScaleX: 0
-    flipScaleY: 0
-    flipScaleZ: 0
-  domainSettings:
-    noiseTypeName: Perlin
-    fractalTypeName: Fbm
-    noiseTypeParams: 
-    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1 &2041957608
 GameObject:
   m_ObjectHideFlags: 0
@@ -90874,6 +91033,17 @@ Transform:
   - {fileID: 355987354}
   m_Father: {fileID: 122161062}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2100791815 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6258967942194538602, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
+  m_PrefabInstance: {fileID: 1978835014}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2108468850
 GameObject:
   m_ObjectHideFlags: 0
@@ -91015,7 +91185,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 346061373114638819, guid: 2afaa3dc385070c4faffef245bdb6959, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5569651862751534631, guid: 2afaa3dc385070c4faffef245bdb6959, type: 3}
       propertyPath: m_LocalPosition.x
@@ -91412,6 +91582,65 @@ Transform:
   - {fileID: 129234022}
   m_Father: {fileID: 765818073}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2127465713
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2127465714}
+  - component: {fileID: 2127465715}
+  m_Layer: 0
+  m_Name: LanguagesManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2127465714
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2127465713}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1786047071}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2127465715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2127465713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffb6459987815fe4dac1ad5d219af98f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  languagePanel: {fileID: 344055715}
+  panelRectTransform: {fileID: 344055716}
+  languageText: {fileID: 2100791815}
+  languageIcon: {fileID: 1046472637}
+  flagIcons:
+  - {fileID: 21300000, guid: 9c1b3e71fb0e11f4885d1b87812e5814, type: 3}
+  - {fileID: 21300000, guid: caf0ca1937653b14ea06859cf09b918f, type: 3}
+  languageNames:
+  - ENG
+  - VNI
+  slideInDuration: 0.5
+  slideOutDuration: 0.5
+  displayDuration: 3
+  hiddenPosition: {x: 400, y: 0}
+  shownPosition: {x: 0, y: 0}
 --- !u!1 &2133364151
 GameObject:
   m_ObjectHideFlags: 0
@@ -92367,3 +92596,4 @@ SceneRoots:
   - {fileID: 2113680821}
   - {fileID: 137172505}
   - {fileID: 6002502500336234984}
+  - {fileID: 544268994}
