@@ -70,7 +70,6 @@ public class UIPage05 : MonoBehaviour
         {
             // Xóa các Save Item cũ
             ClearSaveSlots();
-            Core.Instance.backendSync.OnDownload();
 
             // Lấy danh sách SaveFolder từ SaveGameManager thông qua ProfessionalSkilMenu
             SaveListContext context = ProfessionalSkilMenu.Instance.RefreshSaveList();
