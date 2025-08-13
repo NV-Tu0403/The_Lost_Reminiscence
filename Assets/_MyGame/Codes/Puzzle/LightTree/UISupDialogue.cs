@@ -11,7 +11,7 @@ namespace Code.Puzzle.LightTree
         public GameObject panel;
         public TextMeshProUGUI questionText;
         public Button[] answerButtons; 
-        private SupController _current;
+        private SupController current;
 
         private void Awake()
         {
@@ -21,12 +21,12 @@ namespace Code.Puzzle.LightTree
 
         public void Show(SupController npc)
         {
-            _current = npc;
+            current = npc;
             panel.SetActive(true);
             questionText.text = npc.question;
-            for (int i = 0; i < answerButtons.Length; i++)
+            for (var i = 0; i < answerButtons.Length; i++)
             {
-                int idx = i;
+                var idx = i;
                 answerButtons[i].gameObject.SetActive(i < npc.answers.Length);
                 answerButtons[i].interactable = true;
                 var colors = answerButtons[i].colors;
@@ -45,23 +45,23 @@ namespace Code.Puzzle.LightTree
 
         private void OnAnswer(int idx)
         {
-            if (_current == null) return;
-            bool isCorrect = idx == _current.correctIndex;
+            if (current == null) return;
+            var isCorrect = idx == current.correctIndex;
             if (isCorrect)
             {
-                _current.OnAnswered(true);
+                current.OnAnswered(true);
                 for (int i = 0; i < answerButtons.Length; i++)
                 {
                     answerButtons[i].interactable = false;
                     var colors = answerButtons[i].colors;
-                    colors.normalColor = (i == _current.correctIndex) ? Color.green : Color.white;
+                    colors.normalColor = (i == current.correctIndex) ? Color.green : Color.white;
                     answerButtons[i].colors = colors;
                 }
                 Invoke(nameof(Hide), 1f);
             }
             else
             {
-                _current.OnAnswered(false);
+                current.OnAnswered(false);
                 answerButtons[idx].interactable = false;
                 var colors = answerButtons[idx].colors;
                 colors.normalColor = Color.gray;
@@ -72,7 +72,7 @@ namespace Code.Puzzle.LightTree
         public void Close()
         {
             panel.SetActive(false);
-            _current = null;
+            current = null;
         }
     }
 }

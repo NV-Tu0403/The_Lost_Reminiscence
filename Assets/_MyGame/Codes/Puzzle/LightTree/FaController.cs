@@ -51,7 +51,7 @@ namespace Code.Puzzle.LightTree
             }
         }
 
-        public void ActivateShield()
+        private void ActivateShield()
         {
             _shieldActive = true;
             _shieldTimer = shieldDuration;
@@ -59,14 +59,14 @@ namespace Code.Puzzle.LightTree
             Debug.Log("Shield activated");
         }
 
-        public void DeactivateShield()
+        private void DeactivateShield()
         {
             _shieldActive = false;
             if (shieldObject != null) shieldObject.SetActive(false);
             Debug.Log("Shield deactivated");
         }
 
-        public void ActivateGuide()
+        private void ActivateGuide()
         {
             _guiding = true;
             _guideTimer = guideDuration;

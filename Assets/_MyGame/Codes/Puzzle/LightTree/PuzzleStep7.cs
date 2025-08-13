@@ -1,4 +1,5 @@
 using System;
+using _MyGame.Codes.Puzzle.LightTree;
 using Script.Puzzle.LightTree;
 using UnityEngine;
 
@@ -6,13 +7,13 @@ namespace Code.Puzzle.LightTree
 {
     public class PuzzleStep7 : MonoBehaviour, IPuzzleStep
     {
-        private int _remainingEnemies;
-        private Action _onComplete;
+        private int remainingEnemies;
+        private Action onComplete;
         
         public void StartStep(Action onComplete)
         {
-            _onComplete = onComplete;
-            _remainingEnemies = 0;
+            this.onComplete = onComplete;
+            remainingEnemies = 0;
             
             // Đăng ký DestroyNotifier cho IdController
             CheckDestroyIds();
@@ -21,10 +22,10 @@ namespace Code.Puzzle.LightTree
             CheckDestroySups();
 
             // Kiểm tra trong trường hợp không còn enemy nào từ đầu
-            if (_remainingEnemies == 0)
+            if (remainingEnemies == 0)
             {
                 Debug.Log("[PuzzleStep7] No enemies to track. Step complete.");
-                _onComplete?.Invoke();
+                this.onComplete?.Invoke();
             }
         }
 
@@ -33,13 +34,11 @@ namespace Code.Puzzle.LightTree
             var allSups = FindObjectsByType<SupController>(FindObjectsSortMode.None);
             foreach (var sup in allSups)
             {
-                if (sup != null && sup.gameObject != null)
-                {
-                    _remainingEnemies++;
-                    var notifier = sup.gameObject.GetComponent<DestroyNotifier>() 
-                                   ?? sup.gameObject.AddComponent<DestroyNotifier>();
-                    notifier.onDestroyed += OnEnemyDestroyed;
-                }
+                if (sup == null || sup.gameObject == null) continue;
+                remainingEnemies++;
+                var notifier = sup.gameObject.GetComponent<DestroyNotifier>() 
+                               ?? sup.gameObject.AddComponent<DestroyNotifier>();
+                notifier.onDestroyed += OnEnemyDestroyed;
             }
         }
 
@@ -51,7 +50,7 @@ namespace Code.Puzzle.LightTree
             {
                 if (id != null && id.gameObject != null)
                 {
-                    _remainingEnemies++;
+                    remainingEnemies++;
                     var notifier = id.gameObject.GetComponent<DestroyNotifier>() 
                                    ?? id.gameObject.AddComponent<DestroyNotifier>();
                     notifier.onDestroyed += OnEnemyDestroyed;
@@ -61,13 +60,11 @@ namespace Code.Puzzle.LightTree
 
         private void OnEnemyDestroyed()
         {
-            _remainingEnemies--;
-            Debug.Log($"[PuzzleStep7] Enemy destroyed. Remaining: {_remainingEnemies}");
-            if (_remainingEnemies <= 0)
-            {
-                Debug.Log("[PuzzleStep7] All enemies destroyed. Step complete.");
-                _onComplete?.Invoke();
-            }
+            remainingEnemies--;
+            Debug.Log($"[PuzzleStep7] Enemy destroyed. Remaining: {remainingEnemies}");
+            if (remainingEnemies > 0) return;
+            Debug.Log("[PuzzleStep7] All enemies destroyed. Step complete.");
+            onComplete?.Invoke();
         }
         
         // Phương thức này sẽ được gọi khi người chơi muốn hoàn thành bước này ngay lập tức

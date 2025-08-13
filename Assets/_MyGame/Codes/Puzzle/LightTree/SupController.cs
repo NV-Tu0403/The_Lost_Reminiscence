@@ -47,16 +47,16 @@ namespace Script.Puzzle.LightTree
         // Di chuyển NPC về phía tâm lá chắn nếu đang dẫn lối
         private void MoveSup()
         {
+            var direction = (shieldTarget - transform.position).normalized;
+            var moveSpeed = guiding ? faController.attractSpeed * 2f : faController.attractSpeed;
             if (attractedToShield)
             {
-                float moveSpeed = guiding ? faController.attractSpeed * 2f : faController.attractSpeed;
-                Vector3 direction = (shieldTarget - transform.position).normalized;
                 transform.position += direction * moveSpeed * Time.deltaTime;
             }
         }
 
         // Hàm này sẽ được gọi khi người chơi muốn tương tác với NPC
-        public void ShowQuestion()
+        private void ShowQuestion()
         {
             if (uiSupDialogue != null)
                 uiSupDialogue.Show(this);
@@ -102,11 +102,10 @@ namespace Script.Puzzle.LightTree
         {
             Debug.Log($"NPCSup OnTriggerEnter: {other.gameObject.name}, ShieldActive={faController?.IsShieldActive()}, Guiding={faController?.IsGuiding()}");
             // Chỉ phá hủy khi guiding đang bật và va vào shieldObject
-            if (faController != null && faController.IsShieldActive() && faController.IsGuiding() && other.gameObject == faController.shieldObject)
-            {
-                Debug.Log("NPCSup bị phá hủy bởi shield khi guiding!");
-                Destroy(gameObject);
-            }
+            if (faController == null || !faController.IsShieldActive() || !faController.IsGuiding() ||
+                other.gameObject != faController.shieldObject) return;
+            Debug.Log("NPCSup bị phá hủy bởi shield khi guiding!");
+            Destroy(gameObject);
         }
 
         private void OnDestroy()

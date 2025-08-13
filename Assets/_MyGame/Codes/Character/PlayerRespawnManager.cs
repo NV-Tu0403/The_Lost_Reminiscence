@@ -11,10 +11,13 @@ namespace Code.Character
 
         private Vector3 lastCheckpointPosition;
         private Quaternion lastCheckpointRotation;
-        
+
         // Thêm các component references
         private NavMeshAgent playerNavAgent;
         private Rigidbody playerRigidbody;
+        private GameObject playerObject;
+
+        [SerializeField] private string playerTag = "Player";
 
         private void Awake()
         {
@@ -31,12 +34,21 @@ namespace Code.Character
 
         private void Start()
         {
-            // Cache component references
-            var player = PlayerController.Instance;
-            if (player != null)
+            // Tìm player qua tag
+            FindPlayerByTag();
+        }
+
+        private void FindPlayerByTag()
+        {
+            playerObject = GameObject.FindGameObjectWithTag(playerTag);
+            if (playerObject != null)
             {
-                playerNavAgent = player.GetComponent<NavMeshAgent>();
-                playerRigidbody = player.GetComponent<Rigidbody>();
+                playerNavAgent = playerObject.GetComponent<NavMeshAgent>();
+                playerRigidbody = playerObject.GetComponent<Rigidbody>();
+            }
+            else
+            {
+                Debug.LogWarning($"[PlayerRespawnManager] Không tìm thấy GameObject với tag '{playerTag}'");
             }
         }
 
@@ -48,16 +60,19 @@ namespace Code.Character
 
         private void OnCheckpointEvent(object data)
         {
-            var player = PlayerController.Instance;
-            if (player == null) return;
-            lastCheckpointPosition = player.transform.position;
-            lastCheckpointRotation = player.transform.rotation;
+            if (playerObject == null)
+            {
+                FindPlayerByTag(); // Thử tìm lại nếu null
+                if (playerObject == null) return;
+            }
+            
+            lastCheckpointPosition = playerObject.transform.position;
+            lastCheckpointRotation = playerObject.transform.rotation;
         }
 
         private void OnRespawnEvent(object data)
         {
-            var player = PlayerController.Instance;
-            if (player != null)
+            if (playerObject != null)
             {
                 TeleportWithComponentCheck(lastCheckpointPosition, lastCheckpointRotation);
             }
@@ -65,9 +80,12 @@ namespace Code.Character
 
         public void TeleportToCheckpoint(Vector3 position, Quaternion rotation)
         {
-            var player = PlayerController.Instance;
-            if (player == null) return;
-            
+            if (playerObject == null)
+            {
+                FindPlayerByTag();
+                if (playerObject == null) return;
+            }
+
             TeleportWithComponentCheck(position, rotation);
             lastCheckpointPosition = position;
             lastCheckpointRotation = rotation;
@@ -76,8 +94,7 @@ namespace Code.Character
 
         private void TeleportWithComponentCheck(Vector3 position, Quaternion rotation)
         {
-            var player = PlayerController.Instance;
-            if (player == null) return;
+            if (playerObject == null) return;
 
             // Disable NavMeshAgent nếu có
             if (playerNavAgent != null && playerNavAgent.enabled)
@@ -92,8 +109,8 @@ namespace Code.Character
             }
 
             // Thực hiện teleport
-            player.transform.position = position;
-            player.transform.rotation = rotation;
+            playerObject.transform.position = position;
+            playerObject.transform.rotation = rotation;
 
             // Re-enable components
             if (playerNavAgent != null)
@@ -106,12 +123,10 @@ namespace Code.Character
                 playerNavAgent.enabled = true;
             }
 
-            if (playerRigidbody != null)
-            {
-                playerRigidbody.linearVelocity = Vector3.zero;
-                playerRigidbody.angularVelocity = Vector3.zero;
-                playerRigidbody.isKinematic = false;
-            }
+            if (playerRigidbody == null) return;
+            playerRigidbody.linearVelocity = Vector3.zero;
+            playerRigidbody.angularVelocity = Vector3.zero;
+            playerRigidbody.isKinematic = false;
         }
     }
 }
