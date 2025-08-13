@@ -1,29 +1,54 @@
 ﻿using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Video;
 
 public class CutSceneController : MonoBehaviour
 {
-    private PlayableDirector currentDirector;   // Director hiện tại đang phát CutScene
+    public static CutSceneController Instance { get; private set; }
+
+    [SerializeField] private PlayableDirector currentDirector;   // Director hiện tại đang phát CutScene
+    [SerializeField] private VideoPlayer currentVideoPlayer;
     private int currentIndex = 0;               // Chỉ số hiện tại của CutSceneItem đang phát
     private CutSceneEvent currentCutSceneEvent; // Sự kiện CutScene hiện tại đang được phát
     private float currentTime = 0f;             // Thời gian hiện tại của CutScene đang phát
+    private GameObject currentInstance;         // Theo dõi instance hiện tại
+
+    public Core_CallBack_Event config;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+
+        //config = Resources.Load<Core_CallBack_Event>("Core_CallBack_Event");
+        //if (config == null)
+        //{
+        //    Debug.LogError("Core_CallBack_Event config not found!");
+        //}
+    }
+
+    private void Update()
+    {
+        InvokePointLogic();
+
+        DemoPlayCS();
+    }
 
     /// <summary>
     /// Phát một CutSceneEvent.
     /// </summary>
     /// <param name="cutSceneEvent"></param>
-    public void PlayCutScene(CutSceneEvent cutSceneEvent)
+    public void PlayCutScene(UIActionType actionType)
     {
-        if (cutSceneEvent.cutSceneItems == null || cutSceneEvent.cutSceneItems.Length == 0) return;
+        currentCutSceneEvent = config.GetCutSceneEventByActionType(actionType);
+        if (currentCutSceneEvent.cutSceneItems == null || currentCutSceneEvent.cutSceneItems.Length == 0) return;
 
-        currentCutSceneEvent = cutSceneEvent;
         currentIndex = 0;
         PlayNextCutScene();
     }
 
-    /// <summary>
-    /// Phát CutScene tiếp theo trong danh sách.
-    /// </summary>
     private void PlayNextCutScene()
     {
         if (currentIndex >= currentCutSceneEvent.cutSceneItems.Length) return;
@@ -31,21 +56,39 @@ public class CutSceneController : MonoBehaviour
         var cutSceneItem = currentCutSceneEvent.cutSceneItems[currentIndex];
         if (cutSceneItem.cutSceneObject == null) return;
 
-        currentDirector = cutSceneItem.cutSceneObject.GetComponent<PlayableDirector>();
-        if (currentDirector == null)
+        // Instance Prefab vào scene
+        currentInstance = Instantiate(cutSceneItem.cutSceneObject, Vector3.zero, Quaternion.identity);
+
+        // Kiểm tra và gán PlayableDirector hoặc VideoPlayer
+        currentDirector = currentInstance.GetComponent<PlayableDirector>();
+        currentVideoPlayer = currentInstance.GetComponent<VideoPlayer>();
+
+        if (currentDirector == null && currentVideoPlayer == null)
         {
-            Debug.LogWarning("No PlayableDirector found on " + cutSceneItem.cutSceneObject.name);
+            Debug.LogWarning("No PlayableDirector or VideoPlayer found on " + cutSceneItem.cutSceneObject.name);
+            Destroy(currentInstance);
             return;
         }
 
-        currentDirector.time = 0;
-        currentDirector.Play();
+        // Khởi động Cutscene
+        if (currentDirector != null)
+        {
+            currentDirector.time = 0;
+            currentDirector.Play();
+        }
+        else if (currentVideoPlayer != null)
+        {
+            currentVideoPlayer.time = 0;
+            currentVideoPlayer.Play();
+        }
+
         currentTime = 0f;
     }
 
-    private void Update()
+    private void InvokePointLogic()
     {
-        if (currentDirector == null || currentDirector.state != PlayState.Playing) return;
+        if ((currentDirector == null || currentDirector.state != PlayState.Playing) &&
+            (currentVideoPlayer == null || !currentVideoPlayer.isPlaying)) return;
 
         currentTime += Time.deltaTime;
         float duration = currentCutSceneEvent.cutSceneItems[currentIndex].duration;
@@ -64,12 +107,33 @@ public class CutSceneController : MonoBehaviour
             }
         }
 
-        // Chuyển sang Cutscene tiếp theo khi hoàn thành
+        // Chuyển sang Cutscene tiếp theo khi hoàn thành và hủy instance
         if (currentTime >= duration)
         {
-            currentDirector.Stop();
+            if (currentDirector != null) currentDirector.Stop();
+            if (currentVideoPlayer != null) currentVideoPlayer.Stop();
+            if (currentInstance != null)
+            {
+                Destroy(currentInstance); // Hủy instance khi Cutscene kết thúc
+            }
             currentIndex++;
             PlayNextCutScene();
         }
+    }
+
+    private void DemoPlayCS()
+    {
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            PlayCutScene(UIActionType.NewSession);
+        }
+        //else if (Input.GetKeyDown(KeyCode.I))
+        //{
+        //    PlayCutScene(UIActionType.CutScene_02);
+        //}
+        //else if (Input.GetKeyDown(KeyCode.O))
+        //{
+        //    PlayCutScene(UIActionType.CutScene_03);
+        //}
     }
 }

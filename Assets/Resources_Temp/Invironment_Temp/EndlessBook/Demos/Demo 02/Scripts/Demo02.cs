@@ -308,6 +308,7 @@
                     //CoreEvent.Instance.triggerNewSession();
                     await TurnToPage(7, false);
                     Core.Instance.ActiveMenu(false, false);
+                    //CutSceneController.Instance.PlayCutScene(UIActionType.NewSession);
                     break;
                 case UIActionType.SavePanel:
                     await TurnToPage(item.targetPage, true);

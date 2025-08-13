@@ -25,6 +25,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public BackendSync backendSync;
     private Demo02 _demo02;
     private CameraZoomController cameraZoomController;
+    private CutSceneController cutSceneController;
 
     private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
@@ -50,6 +51,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
 
         _core = Core.Instance;
+        cutSceneController = CutSceneController.Instance;
     }
 
     private void Start()
