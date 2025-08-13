@@ -354,16 +354,14 @@ namespace Code.Procession
                     // Complete main và subprocess trước đó
                     if (m.Status != MainProcess.ProcessStatus.Completed)
                         m.Status = MainProcess.ProcessStatus.Completed;
-                    if (m.SubProcesses != null)
+                    if (m.SubProcesses == null) continue;
+                    foreach (var sub in m.SubProcesses)
                     {
-                        foreach (var sub in m.SubProcesses)
-                        {
-                            sub.Status = MainProcess.ProcessStatus.Completed;
-                            // Nếu là puzzle, force complete để đảm bảo trạng thái vật thể
-                            if (sub.Type == MainProcess.ProcessType.Puzzle)
-                            { 
-                                PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
-                            }
+                        sub.Status = MainProcess.ProcessStatus.Completed;
+                        // Nếu là puzzle, force complete để đảm bảo trạng thái vật thể
+                        if (sub.Type == MainProcess.ProcessType.Puzzle)
+                        { 
+                            PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
                         }
                     }
                 }
@@ -371,18 +369,16 @@ namespace Code.Procession
                 {
                     // Đặt main được chọn là InProgress
                     m.Status = MainProcess.ProcessStatus.InProgress;
-                    if (m.SubProcesses != null)
+                    if (m.SubProcesses == null) continue;
+                    foreach (var sub in m.SubProcesses)
                     {
-                        foreach (var sub in m.SubProcesses)
+                        // Nếu đã complete thì chuyển về InProgress, còn Locked thì mở khóa
+                        // if (sub.Status == MainProcess.ProcessStatus.Completed || sub.Status == MainProcess.ProcessStatus.Locked)
+                        //     sub.Status = MainProcess.ProcessStatus.InProgress;
+                        // Nếu là puzzle, force complete để đảm bảo trạng thái vật thể
+                        if (sub.Type == MainProcess.ProcessType.Puzzle)
                         {
-                            // Nếu đã complete thì chuyển về InProgress, còn Locked thì mở khóa
-                            // if (sub.Status == MainProcess.ProcessStatus.Completed || sub.Status == MainProcess.ProcessStatus.Locked)
-                            //     sub.Status = MainProcess.ProcessStatus.InProgress;
-                            // Nếu là puzzle, force complete để đảm bảo trạng thái vật thể
-                            if (sub.Type == MainProcess.ProcessType.Puzzle)
-                            {
-                                PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
-                            }
+                            PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
                         }
                     }
                 }
@@ -390,11 +386,9 @@ namespace Code.Procession
                 {
                     // Lock main và subprocess sau
                     m.Status = MainProcess.ProcessStatus.Locked;
-                    if (m.SubProcesses != null)
-                    {
-                        foreach (var sub in m.SubProcesses)
-                            sub.Status = MainProcess.ProcessStatus.Locked;
-                    }
+                    if (m.SubProcesses == null) continue;
+                    foreach (var sub in m.SubProcesses)
+                        sub.Status = MainProcess.ProcessStatus.Locked;
                 }
             }
 
@@ -402,7 +396,7 @@ namespace Code.Procession
             TeleportPlayerToFirstCheckpointOfMain(main);
         }
 
-        private void TeleportPlayerToFirstCheckpointOfMain(MainProcess main)
+        private static void TeleportPlayerToFirstCheckpointOfMain(MainProcess main)
         {
             var checkpointSub = main.SubProcesses?
                 .Where(s => s.Type == MainProcess.ProcessType.Checkpoint)
@@ -414,14 +408,12 @@ namespace Code.Procession
                 var checkpointZones = FindObjectsByType<CheckpointZone>(FindObjectsSortMode.None);
                 foreach (var zone in checkpointZones)
                 {
-                    if (zone.eventId == checkpointSub.Id)
-                    {
-                        var pos = zone.transform.position;
-                        var rot = zone.transform.rotation;
-                        Debug.Log($"[ProgressionManager] Teleport player về checkpoint '{checkpointSub.Id}' tại {pos}");
-                        PlayerRespawnManager.Instance.TeleportToCheckpoint(pos, rot);
-                        return;
-                    }
+                    if (zone.eventId != checkpointSub.Id) continue;
+                    var pos = zone.transform.position;
+                    var rot = zone.transform.rotation;
+                    Debug.Log($"[ProgressionManager] Teleport player về checkpoint '{checkpointSub.Id}' tại {pos}");
+                    PlayerRespawnManager.Instance.TeleportToCheckpoint(pos, rot);
+                    return;
                 }
                 Debug.LogWarning($"[ProgressionManager] Không tìm thấy CheckpointZone với eventId '{checkpointSub.Id}' trong scene.");
             }
