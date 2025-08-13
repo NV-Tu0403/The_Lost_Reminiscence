@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
+using static UnityEditor.PlayerSettings;
 
 
 /// <summary>
@@ -20,54 +21,12 @@ public class CheatChangeScene : MonoBehaviour
         }
     }
 
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            StartCoroutine(ChangeScene(TargetSceneName, Vector3.zero));
-            Vector3 Pos = new Vector3(0, 3, 0);
-            SetPlayerTranform(Pos);
+            CoreEvent.Instance.triggerChangeScene(TargetSceneName, Vector3.zero);
         }
-    }
-
-    //private void ChangeScene()
-    //{
-    //    // lâyts tên scene hiện tại
-    //    string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-    //    // Đặt scene hiện tại là BossFinal
-    //    UnityEngine.SceneManagement.SceneManager.SetActiveScene(UnityEngine.SceneManagement.SceneManager.GetSceneByName(TargetSceneName));
-
-
-    //}
-    private IEnumerator ChangeScene(string sceneName, Vector3 playerCheckPoint)
-    {
-        string currentSceneName = SceneManager.GetActiveScene().name;
-        Debug.LogError($"currentSceneName is {currentSceneName} ");
-
-        SceneManager.UnloadSceneAsync(currentSceneName);
-
-        var asyncOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        Scene newScene = SceneManager.GetSceneByName(sceneName);
-        if (newScene.IsValid())
-        {
-            SceneController.Instance.loadedScenes.Add(sceneName);
-            SceneManager.SetActiveScene(newScene);
-        }
-
-
-        yield return new WaitUntil(() => asyncOp.isDone);
-    }
-
-    private bool SetPlayerTranform(Vector3 Pos)
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            player.transform.position = Pos;
-            return true;
-        }
-        return false;
     }
 }
 

@@ -72,6 +72,8 @@ public class CoreEvent : MonoBehaviour
     /// </summary>
     public event Action<string> OnGetUserName;
 
+    public event Action<string, Vector3> OnChangeScene;
+
     #endregion
 
     //--------------------------------------------------------------------------------------------
@@ -126,6 +128,7 @@ public class CoreEvent : MonoBehaviour
 
     public void triggerGetUserName(string userName) => OnGetUserName?.Invoke(userName);
 
+    public void triggerChangeScene(string sceneName, Vector3 pos) => OnChangeScene?.Invoke(sceneName, pos);
 
 
     #endregion
