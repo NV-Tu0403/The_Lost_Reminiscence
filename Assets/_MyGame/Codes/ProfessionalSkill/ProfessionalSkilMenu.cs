@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using Code.Backend;
 using TMPro;
 using System.Drawing;
+using echo17.EndlessBook.Demo02;
 
 /// <summary>
 /// Điều phối các nghiệp vụ chuyên môn.
@@ -22,6 +23,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     private Core _core;
     public BackendSync backendSync;
+    private Demo02 _demo02;
+    private CameraZoomController cameraZoomController;
 
     private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
@@ -73,6 +76,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnLogout += async () => await PerformLogout();
         //e.OnConnectToServer += () => PerformLoginCloud ();
         e.OnConnectingToServer += () => PerformOtp();
+
+        e.OnChangeScene += async (nameScene, pos) => await OnChangeScene(nameScene, pos);
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -91,6 +96,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnLogout -= async () => await PerformLogout();
         //e.OnConnectToServer -= () => PerformLoginCloud();
         e.OnConnectingToServer -= () => PerformOtp();
+
+        e.OnChangeScene -= async (nameScene, pos) => await OnChangeScene(nameScene, pos);
 
     }
 
@@ -183,7 +190,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     /// <returns></returns>
     public SaveListContext RefreshSaveList()
     {
-       
+
         // Kiểm tra null trước khi sử dụng
         if (UserAccountManager.Instance == null)
         {
@@ -509,6 +516,34 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.LogError($"[CaptureScreenshotToFolder] Failed to save screenshot: {ex.Message}");
             onComplete?.Invoke(false);
         }
+    }
+
+    public async Task OnChangeScene(string nameScene, Vector3 posSpawn)
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
+        {
+            Debug.LogError("[OnNewGame] Player not found after loading scene.");
+            return;
+        }
+
+        Debug.Log($"[OnChangeScene] Changing scene to {nameScene} and setting player position to {posSpawn}");
+
+        await _demo02.TurnToPage(5, true);
+        await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
+
+        //await Task.Delay(3000);
+
+        //Core.Instance.ActiveMenu(true, false);
+        //await cameraZoomController.PerformZoomSequence(0, () => OnContinueGame(nameScene), true);
+        //Core.Instance.ActiveMenu(false, false);
+        //if (!cameraZoomController.ZoomState)
+        //{
+        //    await _demo02.TurnToPage(4);
+        //}
+
+        // đặt Player vào posSpawn
+        player.transform.position = posSpawn;
     }
 
     #endregion
