@@ -491,7 +491,7 @@
             book.SetState(state, openCloseTime, OnBookStateChanged);
         }
 
-        protected virtual async Task TurnToPage(int pageNumber, bool isWait = true)
+        public virtual async Task TurnToPage(int pageNumber, bool isWait = true)
         {
             if (isWait) // Nếu cần đợi hoàn thành
                 turnPageTcs = new TaskCompletionSource<bool>();
