@@ -29,7 +29,7 @@ namespace Code.Puzzle.LightTree
             if (spiritSlider != null)
             {
                 if (_smoothCoroutine != null) StopCoroutine(_smoothCoroutine);
-                float value = (float)current / max;
+                var value = (float)current / max;
                 if (instantUpdate)
                 {
                     spiritSlider.value = value;
@@ -48,9 +48,9 @@ namespace Code.Puzzle.LightTree
         // Coroutine để làm mượt quá trình cập nhật thanh Spirit (Sunsilk belike)
         private IEnumerator SmoothSpirit(int target, int max)
         {
-            float start = spiritSlider.value;
-            float end = (float)target / max;
-            float t = 0f;
+            var start = spiritSlider.value;
+            var end = (float)target / max;
+            var t = 0f;
             while (t < 1f)
             {
                 t += Time.deltaTime / smoothDuration;

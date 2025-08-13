@@ -1,22 +1,21 @@
 using Code.Puzzle.LightTree;
-using DuckLe;
 using UnityEngine;
 
-namespace Script.Puzzle.LightTree
+namespace _MyGame.Codes.Puzzle.LightTree
 {
     public class IdController : MonoBehaviour
     {
-        private PlayerController _playerController;
+        private PlayerController_02 playerController;
         
-        [SerializeField] private Code.Puzzle.LightTree.FaController faController;
+        [SerializeField] private FaController faController;
         [SerializeField] private PlayerSpirit playerSpirit;
         [SerializeField] private float speed = 5f;
         [SerializeField] private float timeBetweenHits = 1f; // thời gian giữa các lần trừ máu
         
-        private float _hitCooldown = 0f;
-        private bool _attractedToShield = false;
-        private bool _guiding = false;
-        private Vector3 _shieldTarget;
+        private float hitCooldown;
+        private bool attractedToShield;
+        private bool guiding;
+        private Vector3 shieldTarget;
 
 
         private void Update()
@@ -27,16 +26,16 @@ namespace Script.Puzzle.LightTree
         }
         
         // Thiết lập đối tượng TestController để Id có thể theo dõi
-        public void SetChaseTarget(PlayerController player)
+        public void SetChaseTarget(PlayerController_02 player)
         {
-            _playerController = player;
+            playerController = player;
         }
 
         // Reset trạng thái Id, gọi khi Id bị phá hủy hoặc reset
         public void ResetChase()
         {
-            _playerController = null;
-            _hitCooldown = 0f;
+            playerController = null;
+            hitCooldown = 0f;
         }
         
 
@@ -45,31 +44,31 @@ namespace Script.Puzzle.LightTree
         {
             if (faController != null && faController.IsShieldActive())
             {
-                _attractedToShield = true;
-                _shieldTarget = faController.GetShieldPosition();
+                attractedToShield = true;
+                shieldTarget = faController.GetShieldPosition();
                 // Nếu đang dẫn lối thì lao nhanh vào tâm lá chắn
-                _guiding = faController.IsGuiding();
+                guiding = faController.IsGuiding();
             }
             else
             {
-                _attractedToShield = false;
-                _guiding = false;
+                attractedToShield = false;
+                guiding = false;
             }
         }
 
         // Di chuyển Id về phía người chơi hoặc tâm lá chắn nếu đang dẫn lối
         private void MoveId()
         {
-            if (_attractedToShield)
+            var direction = (shieldTarget - transform.position).normalized;
+            if (attractedToShield)
             {
-                float moveSpeed = _guiding ? faController.attractSpeed * 2f : faController.attractSpeed;
-                Vector3 direction = (_shieldTarget - transform.position).normalized;
-                transform.position += direction * moveSpeed * Time.deltaTime;
+                var moveSpeed = guiding ? faController.attractSpeed * 2f : faController.attractSpeed;
+                transform.position += direction * (moveSpeed * Time.deltaTime);
             }
-            else if (_playerController != null)
+            else if (playerController != null)
             {
-                Vector3 direction = (_playerController.transform.position - transform.position).normalized;
-                transform.position += direction * speed * Time.deltaTime;
+                direction = (playerController.transform.position - transform.position).normalized;
+                transform.position += direction * (speed * Time.deltaTime);
             }
         }
 
@@ -77,8 +76,8 @@ namespace Script.Puzzle.LightTree
         private void UpdateHitCooldown()
         {
             // Giảm cooldown mỗi frame
-            if (_hitCooldown > 0f)
-                _hitCooldown -= Time.deltaTime;
+            if (hitCooldown > 0f)
+                hitCooldown -= Time.deltaTime;
         }
 
         // Xử lý va chạm với người chơi hoặc lá chắn
@@ -93,16 +92,12 @@ namespace Script.Puzzle.LightTree
             }
 
             // Kiểm tra nếu va chạm với nguời chơi thi trừ máu
-            if (_playerController != null && other.gameObject == _playerController.gameObject)
-            {
-                if (_hitCooldown <= 0f)
-                {
-                    Debug.Log("ID triggered by player (OnTriggerStay)");
-                    if (playerSpirit != null)
-                        playerSpirit.ReduceSpirit(1);
-                    _hitCooldown = timeBetweenHits;
-                }
-            }
+            if (playerController == null || other.gameObject != playerController.gameObject) return;
+            if (!(hitCooldown <= 0f)) return;
+            Debug.Log("ID triggered by player (OnTriggerStay)");
+            if (playerSpirit != null)
+                playerSpirit.ReduceSpirit(1);
+            hitCooldown = timeBetweenHits;
         }
 
         // Xử lý va chạm với lá chắn
@@ -113,11 +108,6 @@ namespace Script.Puzzle.LightTree
             {
                 Destroy(gameObject);
             }
-        }
-
-        private void OnDestroy()
-        {
-            //Debug.Log($"[IdController] {gameObject.name} OnDestroy called");
         }
     }
 }

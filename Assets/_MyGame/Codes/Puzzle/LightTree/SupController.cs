@@ -1,23 +1,31 @@
 using Code.Puzzle.LightTree;
 using DuckLe;
 using UnityEngine;
+using UnityEngine.Localization;
 
 namespace Script.Puzzle.LightTree
 {
     public class SupController : MonoBehaviour
     {
-        [Header("Câu hỏi và đáp án")]
-        public string question;
-        public string[] answers; 
-        public int correctIndex; // chỉ số đáp án đúng
+        //[Header("Dialogue")]
+        //public string questionDialogueId; // ID của DialogueNodeSO cho câu hỏi
+        
+        [Header("Localization")]
+        public LocalizedString questionLocalized; // Key localization cho câu hỏi
+        public LocalizedString[] answersLocalized; // Keys localization cho các đáp án
+        
+        [Header("Legacy - Sẽ xóa sau")]
+        [SerializeField] public string question;
+        [SerializeField] public string[] answers; 
+        [SerializeField] public int correctIndex; // chỉ số đáp án đúng
         [SerializeField] private UISupDialogue uiSupDialogue;
-        [SerializeField] private Code.Puzzle.LightTree.FaController faController;
+        [SerializeField] private FaController faController;
         [SerializeField] private PlayerSpirit playerSpirit;
        
         
-        private bool attractedToShield = false;
-        private bool guiding = false;
-        private bool hasAnswered = false; 
+        private bool attractedToShield;
+        private bool guiding;
+        private bool hasAnswered; 
         private Vector3 shieldTarget;
         
 
@@ -47,16 +55,16 @@ namespace Script.Puzzle.LightTree
         // Di chuyển NPC về phía tâm lá chắn nếu đang dẫn lối
         private void MoveSup()
         {
+            var direction = (shieldTarget - transform.position).normalized;
+            var moveSpeed = guiding ? faController.attractSpeed * 2f : faController.attractSpeed;
             if (attractedToShield)
             {
-                float moveSpeed = guiding ? faController.attractSpeed * 2f : faController.attractSpeed;
-                Vector3 direction = (shieldTarget - transform.position).normalized;
-                transform.position += direction * moveSpeed * Time.deltaTime;
+                transform.position += direction * (moveSpeed * Time.deltaTime);
             }
         }
 
         // Hàm này sẽ được gọi khi người chơi muốn tương tác với NPC
-        public void ShowQuestion()
+        private void ShowQuestion()
         {
             if (uiSupDialogue != null)
                 uiSupDialogue.Show(this);
@@ -90,7 +98,7 @@ namespace Script.Puzzle.LightTree
             }
 
             // Đổi từ TestController sang PlayerController
-            if (!hasAnswered && other.GetComponent<PlayerController>() != null)
+            if (!hasAnswered && other.GetComponent<PlayerController_02>() != null)
             {
                 ShowQuestion();
             }
@@ -102,11 +110,10 @@ namespace Script.Puzzle.LightTree
         {
             Debug.Log($"NPCSup OnTriggerEnter: {other.gameObject.name}, ShieldActive={faController?.IsShieldActive()}, Guiding={faController?.IsGuiding()}");
             // Chỉ phá hủy khi guiding đang bật và va vào shieldObject
-            if (faController != null && faController.IsShieldActive() && faController.IsGuiding() && other.gameObject == faController.shieldObject)
-            {
-                Debug.Log("NPCSup bị phá hủy bởi shield khi guiding!");
-                Destroy(gameObject);
-            }
+            if (faController == null || !faController.IsShieldActive() || !faController.IsGuiding() ||
+                other.gameObject != faController.shieldObject) return;
+            Debug.Log("NPCSup bị phá hủy bởi shield khi guiding!");
+            Destroy(gameObject);
         }
 
         private void OnDestroy()

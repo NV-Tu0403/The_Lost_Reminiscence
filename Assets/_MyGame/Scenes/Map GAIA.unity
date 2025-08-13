@@ -9490,6 +9490,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 330bbafb0bd54bdba1da67bf75534721, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  questionLocalized:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  answersLocalized:
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
   question: "M\xE0y ph\xE1t hi\u1EC7n m\u1ED9t th\u1EB1ng nh\xF3c trong qu\xE1 kh\u1EE9
     \u0111\xE3 v\xF4 t\xECnh g\xE2y ra c\xE1i ch\u1EBFt c\u1EE7a em trai n\xF3, nh\u01B0ng
     n\xF3 kh\xF4ng h\u1EC1 bi\u1EBFt m\xECnh l\xE0 nguy\xEAn nh\xE2n. N\u1EBFu m\xE0y
@@ -9505,6 +9531,9 @@ MonoBehaviour:
   uiSupDialogue: {fileID: 1799309729}
   faController: {fileID: 528333567}
   playerSpirit: {fileID: 1040667016}
+  references:
+    version: 2
+    RefIds: []
 --- !u!111 &322961949
 Animation:
   m_ObjectHideFlags: 0
@@ -31801,30 +31830,6 @@ MonoBehaviour:
     m_selectedWorldBiomeMaskGUID: 
     m_growAndShrinkValue: 0
     m_globalSpawnerMaskStackRT: {fileID: 0}
---- !u!114 &779845608
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  transformSettings:
-    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
-    scale: {x: 3.1006794, y: 1, z: 3.1006794}
-    rotation: {x: 0, y: 0, z: 0}
-    flipScaleX: 0
-    flipScaleY: 0
-    flipScaleZ: 0
-  domainSettings:
-    noiseTypeName: Perlin
-    fractalTypeName: Fbm
-    noiseTypeParams: 
-    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1001 &782071188
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -46883,6 +46888,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bc93568288348c4ad98d2316c8c7094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1174550940
 GameObject:
   m_ObjectHideFlags: 0
@@ -49504,6 +49510,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 330bbafb0bd54bdba1da67bf75534721, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  questionLocalized:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  answersLocalized: []
   question: "M\xE0y ph\xE1t hi\u1EC7n m\u1ED9t th\u1EB1ng nh\xF3c trong qu\xE1 kh\u1EE9
     \u0111\xE3 v\xF4 t\xECnh g\xE2y ra c\xE1i ch\u1EBFt c\u1EE7a em trai n\xF3, nh\u01B0ng
     n\xF3 kh\xF4ng h\u1EC1 bi\u1EBFt m\xECnh l\xE0 nguy\xEAn nh\xE2n. N\u1EBFu m\xE0y
@@ -49519,6 +49535,9 @@ MonoBehaviour:
   uiSupDialogue: {fileID: 1799309729}
   faController: {fileID: 528333567}
   playerSpirit: {fileID: 1040667016}
+  references:
+    version: 2
+    RefIds: []
 --- !u!136 &1242479835
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -55623,7 +55642,7 @@ MonoBehaviour:
       m_warpIterations: 4.9391894
       m_warpStrength: 0.14957476
       m_warpOffset: {x: 622.0008, y: 327.24106, z: -186.68591, w: 0}
-    m_noiseSettings: {fileID: 779845608}
+    m_noiseSettings: {fileID: 2029861258}
     m_noiseToolSettings:
       worldHeightRemap: {x: 0, y: 0}
       coordSpace: 0
@@ -73813,6 +73832,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 330bbafb0bd54bdba1da67bf75534721, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  questionLocalized:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  answersLocalized: []
   question: "M\u1ED9t c\xE1nh c\u1EEDa d\u1EABn \u0111\u1EBFn l\u1ED1i tho\xE1t s\u1EBD
     \u0111\xF3ng l\u1EA1i n\u1EBFu kh\xF4ng ai gi\u1EEF c\u1EA7n g\u1EA1t. M\xE0y
     c\xF3 th\u1EC3 \u0111\u1EC3 m\u1ED9t ng\u01B0\u1EDDi v\xF4 danh l\xE0m vi\u1EC7c
@@ -73828,6 +73857,9 @@ MonoBehaviour:
   uiSupDialogue: {fileID: 1799309729}
   faController: {fileID: 528333567}
   playerSpirit: {fileID: 1040667016}
+  references:
+    version: 2
+    RefIds: []
 --- !u!136 &1649537362
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -76281,6 +76313,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 330bbafb0bd54bdba1da67bf75534721, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  questionLocalized:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  answersLocalized:
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  - m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
   question: "M\u1ED9t c\xE1nh c\u1EEDa d\u1EABn \u0111\u1EBFn l\u1ED1i tho\xE1t s\u1EBD
     \u0111\xF3ng l\u1EA1i n\u1EBFu kh\xF4ng ai gi\u1EEF c\u1EA7n g\u1EA1t. M\xE0y
     c\xF3 th\u1EC3 \u0111\u1EC3 m\u1ED9t ng\u01B0\u1EDDi v\xF4 danh l\xE0m vi\u1EC7c
@@ -76296,6 +76354,9 @@ MonoBehaviour:
   uiSupDialogue: {fileID: 1799309729}
   faController: {fileID: 528333567}
   playerSpirit: {fileID: 1040667016}
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &1799281803
 GameObject:
   m_ObjectHideFlags: 0
@@ -89552,6 +89613,30 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1113480947}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2029861258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transformSettings:
+    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
+    scale: {x: 3.1006794, y: 1, z: 3.1006794}
+    rotation: {x: 0, y: 0, z: 0}
+    flipScaleX: 0
+    flipScaleY: 0
+    flipScaleZ: 0
+  domainSettings:
+    noiseTypeName: Perlin
+    fractalTypeName: Fbm
+    noiseTypeParams: 
+    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1 &2041957608
 GameObject:
   m_ObjectHideFlags: 0
