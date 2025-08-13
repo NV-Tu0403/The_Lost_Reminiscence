@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
-using DG.Tweening;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     public class LanguageSelector : MonoBehaviour
     {
@@ -27,8 +27,8 @@ namespace Code.Dialogue
         [SerializeField] private Vector2 hiddenPosition = new Vector2(400f, 0f);
         [SerializeField] private Vector2 shownPosition = Vector2.zero;
         
-        private int currentLanguageIndex = 0;
-        private bool isAnimating = false;
+        private int currentLanguageIndex;
+        private bool isAnimating;
         private Coroutine hideCoroutine;
         private Vector2 originalPosition;
 
