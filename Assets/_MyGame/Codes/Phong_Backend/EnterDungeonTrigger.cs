@@ -1,96 +1,96 @@
 ﻿using UnityEngine;
 using DunGen;
 using DunGen.DungeonCrawler;
-using UnityEngine.AI; // THÊM DÒNG NÀY ĐỂ SỬ DỤNG NAVMESHAGENT
+using UnityEngine.AI;
 
 public class EnterDungeonTrigger : MonoBehaviour
 {
     [Header("DunGen Settings")]
     [Tooltip("Kéo GameObject chứa component RuntimeDungeon vào đây.")]
-    public RuntimeDungeon dungeonGenerator; // Tham chiếu đến trình tạo Dungeon
+    public RuntimeDungeon dungeonGenerator;
 
     [Header("Player Settings")]
-    [Tooltip("Kéo GameObject Player có sẵn trong Scene của bạn vào đây.")]
-    public GameObject playerToTeleport; // Tham chiếu đến nhân vật của bạn
+    [Tooltip("Kéo GameObject Player vào đây, hoặc để trống để script tự tìm theo tag 'Player'.")]
+    public GameObject playerToTeleport; // Biến này vẫn còn để bạn có thể gán thủ công nếu muốn
 
-    private bool hasBeenTriggered = false; // Một biến để đảm bảo trigger chỉ chạy một lần
+    private bool hasBeenTriggered = false;
 
+    // Sử dụng hàm Awake() để tìm người chơi ngay khi scene bắt đầu
+    private void Awake()
+    {
+        // Nếu playerToTeleport chưa được gán trong Inspector
+        if (playerToTeleport == null)
+        {
+            // Tự động tìm GameObject có tag là "Player"
+            playerToTeleport = GameObject.FindGameObjectWithTag("Player");
 
-    // Hàm này được Unity tự động gọi khi có một vật thể khác đi vào Collider (đã bật "Is Trigger")
+            if (playerToTeleport != null)
+            {
+                Debug.Log("EnterDungeonTrigger đã tự động tìm thấy Player: " + playerToTeleport.name);
+            }
+            else
+            {
+                // Báo lỗi nếu không tìm thấy để bạn biết và sửa
+                Debug.LogError("EnterDungeonTrigger không thể tự động tìm thấy Player! Hãy chắc chắn nhân vật của bạn có tag là 'Player'.");
+            }
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        // Kiểm tra xem vật thể đi vào có phải là người chơi không và trigger chưa được kích hoạt
-        if (other.gameObject == playerToTeleport && !hasBeenTriggered)
+        // Kiểm tra xem có phải người chơi đã đi vào không
+        if (playerToTeleport != null && other.gameObject == playerToTeleport && !hasBeenTriggered)
         {
             Debug.Log("Player đã đi vào TriggerZone. Bắt đầu tạo Dungeon...");
 
-            // Đánh dấu là đã kích hoạt để không chạy lại code này
             hasBeenTriggered = true;
-
-            // Vô hiệu hóa Collider này để tránh kích hoạt lại
             GetComponent<Collider>().enabled = false;
 
-            // "Lắng nghe" sự kiện khi trạng thái của việc tạo dungeon thay đổi
             dungeonGenerator.Generator.OnGenerationStatusChanged += OnDungeonGenerated;
-
-            // Bắt đầu quá trình tạo dungeon
             dungeonGenerator.Generate();
         }
     }
 
-    // Hàm này sẽ được gọi bởi sự kiện OnGenerationStatusChanged
     private void OnDungeonGenerated(DungeonGenerator generator, GenerationStatus status)
     {
-        // Chúng ta chỉ quan tâm khi dungeon đã được tạo XONG
         if (status != GenerationStatus.Complete)
         {
-            return; // Nếu chưa xong, không làm gì cả
+            return;
         }
 
         Debug.Log("Dungeon đã tạo xong! Chuẩn bị dịch chuyển người chơi.");
-
-        // Ngừng "lắng nghe" sự kiện để tránh lỗi hoặc gọi lại không cần thiết
         generator.OnGenerationStatusChanged -= OnDungeonGenerated;
 
-        // Tìm điểm spawn trong phòng đầu tiên của dungeon
-        // Đây là cách chính xác để lấy tile đầu tiên trên con đường chính (Main Path)
+        // Đoạn code dịch chuyển người chơi giữ nguyên, không cần thay đổi
         Tile startTile = generator.CurrentDungeon.MainPathTiles[0];
         PlayerSpawn playerSpawnPoint = startTile.GetComponentInChildren<PlayerSpawn>();
 
-        // Nếu tìm thấy điểm spawn
         if (playerSpawnPoint != null)
         {
             Vector3 spawnPosition = playerSpawnPoint.transform.position;
             Debug.Log("Đã tìm thấy PlayerSpawn tại vị trí: " + spawnPosition);
 
-            // --- LOGIC DỊCH CHUYỂN ĐÃ ĐƯỢC NÂNG CẤP ---
-
-            // Ưu tiên dịch chuyển bằng NavMeshAgent nếu có
             NavMeshAgent agent = playerToTeleport.GetComponent<NavMeshAgent>();
             if (agent != null)
             {
-                // Warp là cách dịch chuyển NavMeshAgent tức thời và an toàn nhất
-                bool success = agent.Warp(spawnPosition); 
-                if(success)
+                bool success = agent.Warp(spawnPosition);
+                if (success)
                     Debug.Log("Đã dịch chuyển người chơi bằng NavMeshAgent.Warp()!");
                 else
                     Debug.LogError("NavMeshAgent.Warp() thất bại! Vị trí spawn có thể không nằm trên NavMesh.");
-
-                return; // Kết thúc hàm sau khi dịch chuyển xong
+                return;
             }
 
-            // Nếu không có NavMeshAgent, thử với CharacterController
             CharacterController cc = playerToTeleport.GetComponent<CharacterController>();
             if (cc != null)
             {
-                cc.enabled = false; // Tắt controller
-                playerToTeleport.transform.position = spawnPosition; // Dịch chuyển
-                cc.enabled = true;  // Bật lại controller
+                cc.enabled = false;
+                playerToTeleport.transform.position = spawnPosition;
+                cc.enabled = true;
                 Debug.Log("Đã dịch chuyển người chơi bằng cách tắt/bật CharacterController!");
                 return;
             }
 
-            // Nếu không có cả hai, dùng cách dịch chuyển thông thường
             playerToTeleport.transform.position = spawnPosition;
             Debug.Log("Đã dịch chuyển người chơi bằng transform.position!");
         }
