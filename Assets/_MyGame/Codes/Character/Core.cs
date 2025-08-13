@@ -116,7 +116,6 @@ public class Core : CoreEventListenerBase
 
     public override void RegisterEvent(CoreEvent e)
     {
-
         e.OnNewSession += NewSession;
         e.OnContinueSession += ContinueSession;
         e.OnSavePanel += E_OnSavePanel;

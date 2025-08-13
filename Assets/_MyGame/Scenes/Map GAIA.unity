@@ -31853,13 +31853,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Timeline_2
       objectReference: {fileID: 0}
+    - target: {fileID: 4590440856384076342, guid: b40eef393af7efe47b4c8bd71e7ba476, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5596576697227041909, guid: b40eef393af7efe47b4c8bd71e7ba476, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -18.780003
+      value: -18.78
       objectReference: {fileID: 0}
     - target: {fileID: 5596576697227041909, guid: b40eef393af7efe47b4c8bd71e7ba476, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 16.995026
+      value: 17.52
       objectReference: {fileID: 0}
     - target: {fileID: 5596576697227041909, guid: b40eef393af7efe47b4c8bd71e7ba476, type: 3}
       propertyPath: m_LocalPosition.z
@@ -31867,19 +31871,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5596576697227041909, guid: b40eef393af7efe47b4c8bd71e7ba476, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.6734139
+      value: 0.6761346
       objectReference: {fileID: 0}
     - target: {fileID: 5596576697227041909, guid: b40eef393af7efe47b4c8bd71e7ba476, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.11528338
+      value: -0.098074816
       objectReference: {fileID: 0}
     - target: {fileID: 5596576697227041909, guid: b40eef393af7efe47b4c8bd71e7ba476, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.71975094
+      value: -0.72265863
       objectReference: {fileID: 0}
     - target: {fileID: 5596576697227041909, guid: b40eef393af7efe47b4c8bd71e7ba476, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.12321593
+      value: -0.10482323
       objectReference: {fileID: 0}
     - target: {fileID: 5921715055466503708, guid: b40eef393af7efe47b4c8bd71e7ba476, type: 3}
       propertyPath: m_LocalRotation.w
@@ -55609,7 +55613,7 @@ MonoBehaviour:
       m_warpIterations: 4.9391894
       m_warpStrength: 0.14957476
       m_warpOffset: {x: 622.0008, y: 327.24106, z: -186.68591, w: 0}
-    m_noiseSettings: {fileID: 1966444421}
+    m_noiseSettings: {fileID: 1364132190}
     m_noiseToolSettings:
       worldHeightRemap: {x: 0, y: 0}
       coordSpace: 0
@@ -60944,6 +60948,30 @@ Transform:
   - {fileID: 1362203245}
   m_Father: {fileID: 54686330}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1364132190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transformSettings:
+    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
+    scale: {x: 3.1006794, y: 1, z: 3.1006794}
+    rotation: {x: 0, y: 0, z: 0}
+    flipScaleX: 0
+    flipScaleY: 0
+    flipScaleZ: 0
+  domainSettings:
+    noiseTypeName: Perlin
+    fractalTypeName: Fbm
+    noiseTypeParams: 
+    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1 &1369168367
 GameObject:
   m_ObjectHideFlags: 0
@@ -83194,30 +83222,6 @@ Transform:
   - {fileID: 1306509573}
   m_Father: {fileID: 1777580947}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1966444421
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  transformSettings:
-    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
-    scale: {x: 3.1006794, y: 1, z: 3.1006794}
-    rotation: {x: 0, y: 0, z: 0}
-    flipScaleX: 0
-    flipScaleY: 0
-    flipScaleZ: 0
-  domainSettings:
-    noiseTypeName: Perlin
-    fractalTypeName: Fbm
-    noiseTypeParams: 
-    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1 &1973659308
 GameObject:
   m_ObjectHideFlags: 0

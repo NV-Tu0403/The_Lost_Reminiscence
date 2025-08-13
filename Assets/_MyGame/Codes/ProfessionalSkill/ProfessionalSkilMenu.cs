@@ -25,6 +25,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public BackendSync backendSync;
     private Demo02 _demo02;
     private CameraZoomController cameraZoomController;
+    private CutSceneController cutSceneController;
 
     private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
@@ -37,6 +38,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     public string SceneDefault = "Phong_scene";
 
+    [SerializeField] private GameObject[] CallBackObject;
+
     private string mess = null;
 
     protected override void Awake()
@@ -48,6 +51,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
 
         _core = Core.Instance;
+        cutSceneController = CutSceneController.Instance;
     }
 
     private void Start()
@@ -78,6 +82,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnConnectingToServer += () => PerformOtp();
 
         e.OnChangeScene += async (nameScene, pos) => await OnChangeScene(nameScene, pos);
+
+        
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -98,6 +104,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnConnectingToServer -= () => PerformOtp();
 
         e.OnChangeScene -= async (nameScene, pos) => await OnChangeScene(nameScene, pos);
+
+
 
     }
 
@@ -260,7 +268,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.LogError($"currentUserBaseName == {UserAccountManager.Instance.currentUserBaseName}");
         }
 
-        string newSaveFolder = SaveGameManager.Instance.CreateNewSaveFolder(UserAccountManager.Instance.currentUserBaseName);
+        string newSaveFolder = SaveGameManager.Instance.CreateNewSaveFolder(_core.CurrentAccountName);
 
         selectedSaveFolder = newSaveFolder;
         lastSelectedSaveFolder = newSaveFolder;
@@ -291,7 +299,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 return;
             }
 
-            // Gọi Procession để load dữ lieu tu GameProcession
             ProgressionManager.Instance.InitProgression();
             PlayerCheckPoint.Instance.AssignCameraFromCore();
             PlayerCheckPoint.Instance.SetPlayerTransform(player.transform);
@@ -516,6 +523,29 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.LogError($"[CaptureScreenshotToFolder] Failed to save screenshot: {ex.Message}");
             onComplete?.Invoke(false);
         }
+    }
+
+    private bool CallbackNewGame()
+    {
+        // load CallBackObject ra scene
+        if (CallBackObject == null || CallBackObject.Length == 0)
+        {
+            Debug.LogWarning("[CallbackNewGame] No callback objects found.");
+            return false;
+        }
+        foreach (var obj in CallBackObject)
+        {
+            if (obj != null)
+            {
+                GameObject callbackInstance = Instantiate(obj);
+            }
+            else
+            {
+                Debug.LogWarning("[CallbackNewGame] Found a null callback object.");
+            }
+        }
+        return true;
+
     }
 
     public async Task OnChangeScene(string nameScene, Vector3 posSpawn)
