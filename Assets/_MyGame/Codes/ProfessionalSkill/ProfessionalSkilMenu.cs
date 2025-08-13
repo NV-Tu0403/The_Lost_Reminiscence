@@ -417,7 +417,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     }
 
     public async Task OnQuitSession(string currentSaveFolder)
-    {
+    { 
         if (!string.IsNullOrEmpty(currentSaveFolder))
         {
             try

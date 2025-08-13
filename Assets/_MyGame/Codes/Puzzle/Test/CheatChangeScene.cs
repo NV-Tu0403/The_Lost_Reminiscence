@@ -1,9 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using System.Collections;
-using System.Collections.Generic;
-using static UnityEditor.PlayerSettings;
-
 
 /// <summary>
 /// Change to scene BossFinal
