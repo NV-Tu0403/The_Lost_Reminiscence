@@ -2,6 +2,8 @@ using Script.Puzzle.LightTree;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Components;
 
 namespace Code.Puzzle.LightTree
 {
@@ -23,19 +25,65 @@ namespace Code.Puzzle.LightTree
         {
             current = npc;
             panel.SetActive(true);
-            questionText.text = npc.question;
+            
+            // Sử dụng localization nếu có, fallback về string thô
+            if (npc.questionLocalized != null && !npc.questionLocalized.IsEmpty)
+            {
+                SetLocalizedText(questionText, npc.questionLocalized);
+            }
+            else
+            {
+                questionText.text = npc.question;
+            }
+            
             for (var i = 0; i < answerButtons.Length; i++)
             {
                 var idx = i;
-                answerButtons[i].gameObject.SetActive(i < npc.answers.Length);
+                answerButtons[i].gameObject.SetActive(i < GetAnswerCount(npc));
                 answerButtons[i].interactable = true;
                 var colors = answerButtons[i].colors;
                 colors.normalColor = Color.white;
                 answerButtons[i].colors = colors;
-                answerButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = npc.answers[i];
+                
+                var buttonText = answerButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+                
+                // Sử dụng localization nếu có, fallback về string thô
+                if (npc.answersLocalized != null && i < npc.answersLocalized.Length && 
+                    npc.answersLocalized[i] != null && !npc.answersLocalized[i].IsEmpty)
+                {
+                    SetLocalizedText(buttonText, npc.answersLocalized[i]);
+                }
+                else if (npc.answers != null && i < npc.answers.Length)
+                {
+                    buttonText.text = npc.answers[i];
+                }
+                
                 answerButtons[i].onClick.RemoveAllListeners();
                 answerButtons[i].onClick.AddListener(() => OnAnswer(idx));
             }
+        }
+
+        /// <summary>
+        /// Lấy số lượng đáp án (ưu tiên localized, fallback về legacy)
+        /// </summary>
+        private static int GetAnswerCount(SupController npc)
+        {
+            if (npc.answersLocalized != null && npc.answersLocalized.Length > 0)
+                return npc.answersLocalized.Length;
+            
+            return npc.answers?.Length ?? 0;
+        }
+
+        /// <summary>
+        /// Set text với localization
+        /// </summary>
+        private void SetLocalizedText(TextMeshProUGUI textComponent, LocalizedString localizedString)
+        {
+            localizedString.StringChanged += text => {
+                if (textComponent != null)
+                    textComponent.text = text;
+            };
+            localizedString.RefreshString();
         }
 
         public void Hide()
@@ -50,7 +98,7 @@ namespace Code.Puzzle.LightTree
             if (isCorrect)
             {
                 current.OnAnswered(true);
-                for (int i = 0; i < answerButtons.Length; i++)
+                for (var i = 0; i < answerButtons.Length; i++)
                 {
                     answerButtons[i].interactable = false;
                     var colors = answerButtons[i].colors;
