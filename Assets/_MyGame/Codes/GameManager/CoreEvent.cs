@@ -81,7 +81,9 @@ public class CoreEvent : MonoBehaviour
     #region trigger sự kiện A1
 
     public void triggerNewSession() => OnNewSession?.Invoke();
+
     public void triggerContinueSession() => OnContinueSession?.Invoke();
+
     public void triggerQuitGame() => OnQuitGame?.Invoke();
 
     public void triggerSavePanel() => OnSavePanel?.Invoke();

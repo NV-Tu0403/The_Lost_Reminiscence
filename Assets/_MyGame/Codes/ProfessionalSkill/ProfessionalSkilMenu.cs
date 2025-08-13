@@ -260,7 +260,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.LogError($"currentUserBaseName == {UserAccountManager.Instance.currentUserBaseName}");
         }
 
-        string newSaveFolder = SaveGameManager.Instance.CreateNewSaveFolder(UserAccountManager.Instance.currentUserBaseName);
+        string newSaveFolder = SaveGameManager.Instance.CreateNewSaveFolder(_core.CurrentAccountName);
 
         selectedSaveFolder = newSaveFolder;
         lastSelectedSaveFolder = newSaveFolder;
@@ -291,7 +291,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                 return;
             }
 
-            // Gọi Procession để load dữ lieu tu GameProcession
             ProgressionManager.Instance.InitProgression();
             PlayerCheckPoint.Instance.AssignCameraFromCore();
             PlayerCheckPoint.Instance.SetPlayerTransform(player.transform);
