@@ -102,7 +102,7 @@ namespace Code.Boss
             // Initialize UI với boss controller mới spawn
             if (bossController != null)
             {
-                if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config);
+                if (playerHealthBar != null) playerHealthBar.Initialize(6, bossController.Config);
                 if (bossHealthBar != null) bossHealthBar.Initialize(bossController);
                 if (bossSkillCastBar != null) bossSkillCastBar.Initialize(bossController);
             }
