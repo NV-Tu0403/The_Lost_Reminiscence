@@ -3,7 +3,7 @@ using Code.Procession;
 using Code.Trigger;
 using UnityEngine;
 
-namespace Code.Puzzle.InteractBridge
+namespace _MyGame.Codes.Puzzle.InteractBridge
 {
     public class Step5TriggerZone : TriggerZone
     {
@@ -23,7 +23,7 @@ namespace Code.Puzzle.InteractBridge
             }
             
             // Unlock → Trigger
-            //ProgressionManager.Instance.UnlockProcess(eventId);
+            ProgressionManager.Instance.UnlockProcess(eventId);
             EventExecutor.Instance.TriggerEvent(eventId);
         }
     }

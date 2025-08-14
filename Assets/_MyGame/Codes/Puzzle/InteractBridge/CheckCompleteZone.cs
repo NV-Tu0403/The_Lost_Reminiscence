@@ -1,7 +1,8 @@
+using Code.Puzzle.InteractBridge;
 using Code.Trigger;
 using UnityEngine;
 
-namespace Code.Puzzle.InteractBridge
+namespace _MyGame.Codes.Puzzle.InteractBridge
 {
     public class CheckCompleteZone : TriggerZone
     {
@@ -14,12 +15,7 @@ namespace Code.Puzzle.InteractBridge
 
         protected override void OnTriggered(Collider other)
         {
-            if (puzzleStep5 != null)
-            {
-                // Nếu puzzle đã hoàn thành, thực hiện hành động cần thiết
-               // Debug.Log("Puzzle 5 đã hoàn thành!");
-                puzzleStep5.puzzleCompleted = true;
-            }
+            if (puzzleStep5 != null) puzzleStep5.puzzleCompleted = true;
             else
             // Vô hiệu hóa zone sau khi trigger
             DisableZone();
