@@ -10,12 +10,6 @@ namespace Code.Puzzle
         public static PuzzleManager Instance { get; private set; }
         private Action onFinish;
         private Dictionary<string, IPuzzleStep> _steps;
-        private IPuzzleStep[] steps;
-
-        private void Start()
-        {
-            steps = GetComponentsInChildren<IPuzzleStep>(true);
-        }
 
         private void Awake()
         {
@@ -27,7 +21,7 @@ namespace Code.Puzzle
         private void GetSteps()      
         {
             if (_steps != null) return; 
-            
+            var steps = GetComponentsInChildren<IPuzzleStep>(true);
             _steps = new Dictionary<string, IPuzzleStep>();
             foreach (var step in steps)
             {
