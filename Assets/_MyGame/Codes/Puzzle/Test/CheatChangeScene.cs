@@ -46,6 +46,7 @@ namespace _MyGame.Codes.Puzzle.Test
                 throw;
             }
         }
+
     }
 }
 
