@@ -58,6 +58,7 @@ public class CutSceneController : MonoBehaviour
 
         // Instance Prefab vào scene
         currentInstance = Instantiate(cutSceneItem.cutSceneObject, Vector3.zero, Quaternion.identity);
+        DontDestroyOnLoad( currentInstance); // Giữ instance này khi chuyển cảnh
 
         // Kiểm tra và gán PlayableDirector hoặc VideoPlayer
         currentDirector = currentInstance.GetComponent<PlayableDirector>();
@@ -75,11 +76,13 @@ public class CutSceneController : MonoBehaviour
         {
             currentDirector.time = 0;
             currentDirector.Play();
+            Debug.Log("Playing CutScene with PlayableDirector: " + currentDirector.name);
         }
         else if (currentVideoPlayer != null)
         {
             currentVideoPlayer.time = 0;
             currentVideoPlayer.Play();
+            Debug.Log("Playing CutScene with VideoPlayer: " + currentVideoPlayer.name);
         }
 
         currentTime = 0f;
