@@ -24229,6 +24229,7 @@ GameObject:
   - component: {fileID: 8840481110468833015}
   - component: {fileID: 4107807237777852467}
   - component: {fileID: 3078875903618593508}
+  - component: {fileID: 7223045181854381481}
   m_Layer: 0
   m_Name: CheckComplete
   m_TagString: Untagged
@@ -24245,7 +24246,7 @@ Transform:
   m_GameObject: {fileID: 1689110792024066489}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0.009, y: 0.69, z: -1.883}
+  m_LocalPosition: {x: 0.009, y: 0.69, z: -3.34}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -24286,6 +24287,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventId: PuzzleStep5
   puzzleStep5: {fileID: 6458793318719612662}
+--- !u!114 &7223045181854381481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689110792024066489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e5e6d79907d4814a3b200364b760175, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTarget: {fileID: 5725890598587917528}
+  cameraMoveDuration: 1
+  cameraHoldDuration: 2
+  portalController: {fileID: 3968034818692223209}
+  tree: {fileID: 7315355396863508463}
 --- !u!1 &1712966082860585733
 GameObject:
   m_ObjectHideFlags: 0
@@ -24960,8 +24978,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 12.108531, z: 1}
+  m_Center: {x: 0.0000000039158166, y: 5.55427, z: 0.000000004284741}
 --- !u!114 &7968023012945711130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -77486,7 +77504,7 @@ Transform:
   m_GameObject: {fileID: 5966896317605999137}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -217.8, y: 55.9, z: -27.97}
+  m_LocalPosition: {x: -296.6, y: 81.8, z: -30.8}
   m_LocalScale: {x: 200, y: 50, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -77562,7 +77580,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -77573,7 +77591,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5966896317605999137}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: faf41f98e7a0487f89ab1ac7ec0bdc93, type: 3}
   m_Name: 
