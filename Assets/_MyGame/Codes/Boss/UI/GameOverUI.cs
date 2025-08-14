@@ -29,14 +29,12 @@ namespace Code.Boss
         
         private void SetupText()
         {
-            if (gameOverText != null)
-            {
-                gameOverText.text = "GAME OVER";
-                gameOverText.color = Color.red;
-            }
+            if (gameOverText == null) return;
+            gameOverText.text = "GAME OVER";
+            gameOverText.color = Color.red;
         }
         
-        private void OnRestartClicked()
+        private static void OnRestartClicked()
         {
             Debug.Log("[GameOverUI] Restart button clicked");
             

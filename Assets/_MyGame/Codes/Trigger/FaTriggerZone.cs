@@ -1,13 +1,14 @@
 using Code.GameEventSystem;
 using Code.Procession;
 using Code.Trigger;
-using Script.Procession;
 using UnityEngine;
 
 namespace Script.Trigger
 {
     public class FaTriggerZone : TriggerZone
     {
+        private PortalRound_Controller portal;
+        
         protected override bool IsValidTrigger(Collider other)
         {
             return other.CompareTag("Fa");
@@ -15,17 +16,22 @@ namespace Script.Trigger
 
         protected override void OnTriggered(Collider other)
         {
-            // Kiểm tra điều kiện progression
             if (!ProgressionManager.Instance.CanTrigger(eventId) &&
                 !ProgressionManager.Instance.IsWaitingForEvent(eventId))
             {
                 Debug.Log($"[PlayerTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
                 return;
             }
-            // Unlock → Trigger → Disable zone
+
             ProgressionManager.Instance.UnlockProcess(eventId);
             EventExecutor.Instance.TriggerEvent(eventId);
-            DisableZone();
+
+            
+            if (portal == null)
+            {
+                portal = FindFirstObjectByType<PortalRound_Controller>();
+            }
+            portal.F_TogglePortalRound(true);
         }
     }
 }
