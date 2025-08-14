@@ -551,9 +551,10 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             //player.transform.position = pos;
           
             Debug.Log($"[OnChangeScene] Player transform position: {player.transform.position}");
-            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+           
         });
 
+        PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         return true;
     }
 

@@ -25,7 +25,7 @@ namespace _MyGame.Codes.Puzzle.Test
 
                 if (IvokePotal())
                 {
-                    Debug.LogError($"[CheatChangeScene] chuyển cảnh đến '{targetSceneName}'.");
+                    Debug.Log($"[CheatChangeScene] chuyển cảnh đến '{targetSceneName}'.");
                 }
             }
         }
