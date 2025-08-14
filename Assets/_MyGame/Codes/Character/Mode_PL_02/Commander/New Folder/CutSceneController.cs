@@ -11,7 +11,7 @@ public class CutSceneController : MonoBehaviour
     private int currentIndex = 0;               // Chỉ số hiện tại của CutSceneItem đang phát
     private CutSceneEvent currentCutSceneEvent; // Sự kiện CutScene hiện tại đang được phát
     private float currentTime = 0f;             // Thời gian hiện tại của CutScene đang phát
-    private GameObject currentInstance;         // Theo dõi instance hiện tại
+     [SerializeField] private GameObject currentInstance;         // Theo dõi instance hiện tại
 
     public Core_CallBack_Event config;
 
