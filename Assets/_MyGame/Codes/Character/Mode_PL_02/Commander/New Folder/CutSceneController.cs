@@ -10,8 +10,8 @@ public class CutSceneController : MonoBehaviour
     [SerializeField] private VideoPlayer currentVideoPlayer;
     private int currentIndex = 0;               // Chỉ số hiện tại của CutSceneItem đang phát
     private CutSceneEvent currentCutSceneEvent; // Sự kiện CutScene hiện tại đang được phát
-    private float currentTime = 0f;             // Thời gian hiện tại của CutScene đang phát
-     [SerializeField] private GameObject currentInstance;         // Theo dõi instance hiện tại
+    [SerializeField] private float currentTime = 0f;             // Thời gian hiện tại của CutScene đang phát
+    [SerializeField] private GameObject currentInstance;         // Theo dõi instance hiện tại
 
     public Core_CallBack_Event config;
 
@@ -21,12 +21,6 @@ public class CutSceneController : MonoBehaviour
         {
             Instance = this;
         }
-
-        //config = Resources.Load<Core_CallBack_Event>("Core_CallBack_Event");
-        //if (config == null)
-        //{
-        //    Debug.LogError("Core_CallBack_Event config not found!");
-        //}
     }
 
     private void Update()
@@ -58,7 +52,8 @@ public class CutSceneController : MonoBehaviour
 
         // Instance Prefab vào scene
         currentInstance = Instantiate(cutSceneItem.cutSceneObject, Vector3.zero, Quaternion.identity);
-        DontDestroyOnLoad( currentInstance); // Giữ instance này khi chuyển cảnh
+        DontDestroyOnLoad(currentInstance); // Giữ instance này khi chuyển cảnh
+        Debug.Log("Instantiated CutSceneItem: " + cutSceneItem.cutSceneObject.name);
 
         // Kiểm tra và gán PlayableDirector hoặc VideoPlayer
         currentDirector = currentInstance.GetComponent<PlayableDirector>();
@@ -117,11 +112,17 @@ public class CutSceneController : MonoBehaviour
             if (currentVideoPlayer != null) currentVideoPlayer.Stop();
             if (currentInstance != null)
             {
-                Destroy(currentInstance); // Hủy instance khi Cutscene kết thúc
+                DestroyCutScene(currentInstance);
             }
             currentIndex++;
             PlayNextCutScene();
         }
+    }
+
+    private void DestroyCutScene(GameObject item)
+    {
+        Destroy(item); // Hủy instance khi Cutscene kết thúc
+        Debug.Log("CutScene ended and instance destroyed: " + currentInstance.name);
     }
 
     private void DemoPlayCS()

@@ -1136,11 +1136,11 @@ public class PlayerController_02 : PlayerEventListenerBase
     {
         if (config != null)
         {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
+            //Gizmos.color = Color.red;
+            //Gizmos.DrawWireSphere(transform.position + transform.forward * config.attackRange * 0.5f, config.attackRange);
 
-            Gizmos.color = isGrounded ? Color.green : Color.red;
-            Gizmos.DrawWireSphere(groundCheckPosition, groundCheckRadius);
+            //Gizmos.color = isGrounded ? Color.green : Color.red;
+            //Gizmos.DrawWireSphere(groundCheckPosition, groundCheckRadius);
         }
     }
     #endregion
@@ -1276,6 +1276,7 @@ public class PlayerController_02 : PlayerEventListenerBase
     }
 
     private bool aim = false;
+
     /// <summary>
     /// Thay đổi góc nhìn của camera khi nhấn nút Aim.
     /// </summary>
@@ -1325,6 +1326,7 @@ public class PlayerController_02 : PlayerEventListenerBase
     {
         if (ListBody[SLotBody].childCount > 0)
         {
+            // nếu ListBody[1] có item thì trả item về ListBody[1]
             if (ListBody[SLotBody].childCount > 0 && ListBody[1].childCount > 0)
             {
                 Transform childFromSlot3 = ListBody[SLotBody].GetChild(0);
