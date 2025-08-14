@@ -10,7 +10,13 @@ namespace Code.Puzzle
         public static PuzzleManager Instance { get; private set; }
         private Action onFinish;
         private Dictionary<string, IPuzzleStep> _steps;
-        
+        private IPuzzleStep[] steps;
+
+        private void Start()
+        {
+            steps = GetComponentsInChildren<IPuzzleStep>(true);
+        }
+
         private void Awake()
         {
             if (Instance != null) Destroy(gameObject);
@@ -23,7 +29,6 @@ namespace Code.Puzzle
             if (_steps != null) return; 
             
             _steps = new Dictionary<string, IPuzzleStep>();
-            var steps = GetComponentsInChildren<IPuzzleStep>(true);
             foreach (var step in steps)
             {
                 _steps.Add(step.GetType().Name, step);
