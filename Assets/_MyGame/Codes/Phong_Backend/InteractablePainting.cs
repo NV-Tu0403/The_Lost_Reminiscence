@@ -3,17 +3,13 @@ using System.Collections;
 
 public class InteractablePainting : MonoBehaviour, IInteractable
 {
-    // Bỏ qua `requiredPictureID` vì không cần nữa, nhưng bạn có thể giữ lại nếu muốn dùng sau
-    // [Header("Puzzle Logic")]
-    // [Tooltip("ID của Mảnh Tranh mà khung này cần để hoàn thành.")]
-    // public string requiredPictureID = "Default_ID";
-
     [Header("Effects")]
     [Tooltip("Hiệu ứng tan biến sẽ kéo dài trong bao lâu (giây)")]
     public float dissolveDuration = 1.5f;
 
     private Renderer frameRenderer;
     private Transform pictureSlot;
+    private Renderer pictureRenderer;
     private bool isSolved = false;
 
     private void Awake()
@@ -26,18 +22,18 @@ public class InteractablePainting : MonoBehaviour, IInteractable
         }
     }
 
-    // --- HÀM INTERACT ĐÃ ĐƯỢC CẬP NHẬT THEO YÊU CẦU ---
     public void Interact(PlayerPuzzleInteractor interactor)
     {
         if (isSolved || interactor == null) return;
 
-        // Lấy một bức tranh thật BẤT KỲ từ túi đồ của người chơi
         CollectiblePicture anyRealPicture = interactor.GetAnyRealPicture();
 
         if (anyRealPicture != null)
         {
             Debug.Log("Bạn đã lắp một mảnh tranh thật vào khung!");
             isSolved = true;
+            
+            GetComponent<Collider>().enabled = false;
             
             PlaceAndSolve(anyRealPicture);
             interactor.RemovePicture(anyRealPicture);
@@ -55,20 +51,27 @@ public class InteractablePainting : MonoBehaviour, IInteractable
         picture.transform.rotation = pictureSlot.rotation;
         picture.transform.localScale = pictureSlot.localScale;
         picture.gameObject.SetActive(true);
+        
+        pictureRenderer = picture.GetComponent<Renderer>();
 
         if (PaintingPuzzleController.Instance != null)
         {
-            PaintingPuzzleController.Instance.OnPaintingSolved();
+            // Tự "đăng ký" với Puzzle Controller
+            PaintingPuzzleController.Instance.RegisterSolvedPainting(this);
+            
+            // --- XÓA DÒNG GỌI OnPaintingSolved() Ở ĐÂY ---
         }
-        StartCoroutine(DissolveEffect(picture.GetComponent<Renderer>()));
     }
 
-    private IEnumerator DissolveEffect(Renderer pictureRenderer)
+    public void StartDissolve()
     {
-        GetComponent<Collider>().enabled = false;
-        
+        StartCoroutine(DissolveEffect());
+    }
+
+    private IEnumerator DissolveEffect()
+    {
         Material frameMat = frameRenderer.material;
-        Material pictureMat = pictureRenderer.material;
+        Material pictureMat = (pictureRenderer != null) ? pictureRenderer.material : null;
         float elapsedTime = 0f;
 
         while (elapsedTime < dissolveDuration)
