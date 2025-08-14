@@ -1,8 +1,9 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class MeshTrail : MonoBehaviour
 {
+    public bool alwaysActive = true; // Luôn chạy trail hay không
     public float activeTime = 2f;
 
     [Header("Mesh Related")]
@@ -18,27 +19,38 @@ public class MeshTrail : MonoBehaviour
     public float shaderVarRefreshRate = 0.05f;
 
     private bool isTrailActive;
-
     private SkinnedMeshRenderer[] skinnedMeshRenderers;
-    void Update()
+
+    void Start()
     {
-        if (Input.GetKeyDown(KeyCode.R) && !isTrailActive)
+        if (alwaysActive) // Nếu luôn chạy thì bật trail ngay khi Start
         {
             isTrailActive = true;
             StartCoroutine(ActivateTrail(activeTime));
         }
+    }
 
+    void Update()
+    {
+        // Nếu không luôn chạy, bạn có thể tự kích hoạt theo logic khác (VD: khi chạy nhanh)
+        if (!alwaysActive && !isTrailActive)
+        {
+            isTrailActive = true;
+            StartCoroutine(ActivateTrail(activeTime));
+        }
     }
 
     IEnumerator ActivateTrail(float timeActive)
     {
-        while (timeActive > 0)
+        while (alwaysActive || timeActive > 0)
         {
-            timeActive -= meshRefreshRate;
-            
+            if (!alwaysActive)
+                timeActive -= meshRefreshRate;
+
             if (skinnedMeshRenderers == null)
                 skinnedMeshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
-            for(int i = 0; i < skinnedMeshRenderers.Length; i++)
+
+            for (int i = 0; i < skinnedMeshRenderers.Length; i++)
             {
                 GameObject obj = new GameObject();
                 obj.transform.SetPositionAndRotation(positionToSpawn.position, positionToSpawn.rotation);
@@ -50,10 +62,9 @@ public class MeshTrail : MonoBehaviour
                 skinnedMeshRenderers[i].BakeMesh(mesh);
 
                 mf.mesh = mesh;
-                mr.material = mat;
+                mr.material = new Material(mat); // tạo bản copy tránh ảnh hưởng material gốc
 
                 StartCoroutine(AnimateMaterialFloat(mr.material, 0, shaderVarRate, shaderVarRefreshRate));
-
                 Destroy(obj, meshDestroyDelay);
             }
 
