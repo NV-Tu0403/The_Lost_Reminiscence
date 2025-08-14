@@ -1276,6 +1276,7 @@ public class PlayerController_02 : PlayerEventListenerBase
     }
 
     private bool aim = false;
+
     /// <summary>
     /// Thay đổi góc nhìn của camera khi nhấn nút Aim.
     /// </summary>
