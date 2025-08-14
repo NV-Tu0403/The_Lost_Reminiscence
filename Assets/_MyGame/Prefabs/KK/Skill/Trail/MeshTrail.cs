@@ -1,8 +1,9 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class MeshTrail : MonoBehaviour
 {
+    public bool alwaysActive = true; // Luôn chạy trail hay không
     public float activeTime = 2f;
 
     [Header("Mesh Related")]
@@ -18,27 +19,41 @@ public class MeshTrail : MonoBehaviour
     public float shaderVarRefreshRate = 0.05f;
 
     private bool isTrailActive;
-
     private SkinnedMeshRenderer[] skinnedMeshRenderers;
-    void Update()
+
+    void Start()
     {
-        if (Input.GetKeyDown(KeyCode.R) && !isTrailActive)
+        if (alwaysActive) // Nếu luôn chạy thì bật trail ngay khi Start
         {
             isTrailActive = true;
             StartCoroutine(ActivateTrail(activeTime));
         }
+    }
 
+    void Update()
+    {
+        // Nếu không luôn chạy, bạn có thể tự kích hoạt theo logic khác (VD: khi chạy nhanh)
+        if (!alwaysActive && !isTrailActive)
+        {
+            isTrailActive = true;
+            StartCoroutine(ActivateTrail(activeTime));
+        }
     }
 
     IEnumerator ActivateTrail(float timeActive)
     {
-        while (timeActive > 0)
+        while (alwaysActive || timeActive > 0)
         {
-            timeActive -= meshRefreshRate;
-            
+            if (!alwaysActive)
+                timeActive -= meshRefreshRate;
+
+            // Lấy cả SkinnedMeshRenderer và MeshRenderer
             if (skinnedMeshRenderers == null)
                 skinnedMeshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
-            for(int i = 0; i < skinnedMeshRenderers.Length; i++)
+            MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
+
+            // Với SkinnedMeshRenderer (nhân vật rig xương)
+            for (int i = 0; i < skinnedMeshRenderers.Length; i++)
             {
                 GameObject obj = new GameObject();
                 obj.transform.SetPositionAndRotation(positionToSpawn.position, positionToSpawn.rotation);
@@ -50,11 +65,30 @@ public class MeshTrail : MonoBehaviour
                 skinnedMeshRenderers[i].BakeMesh(mesh);
 
                 mf.mesh = mesh;
-                mr.material = mat;
-
+                mr.material = new Material(mat);
                 StartCoroutine(AnimateMaterialFloat(mr.material, 0, shaderVarRate, shaderVarRefreshRate));
 
                 Destroy(obj, meshDestroyDelay);
+            }
+
+            // Với MeshRenderer thường (không rig)
+            for (int i = 0; i < meshRenderers.Length; i++)
+            {
+                var mfOriginal = meshRenderers[i].GetComponent<MeshFilter>();
+                if (mfOriginal != null && mfOriginal.sharedMesh != null)
+                {
+                    GameObject obj = new GameObject();
+                    obj.transform.SetPositionAndRotation(positionToSpawn.position, positionToSpawn.rotation);
+
+                    MeshRenderer mr = obj.AddComponent<MeshRenderer>();
+                    MeshFilter mf = obj.AddComponent<MeshFilter>();
+
+                    mf.mesh = mfOriginal.sharedMesh;
+                    mr.material = new Material(mat);
+                    StartCoroutine(AnimateMaterialFloat(mr.material, 0, shaderVarRate, shaderVarRefreshRate));
+
+                    Destroy(obj, meshDestroyDelay);
+                }
             }
 
             yield return new WaitForSeconds(meshRefreshRate);
@@ -62,6 +96,7 @@ public class MeshTrail : MonoBehaviour
 
         isTrailActive = false;
     }
+
 
     IEnumerator AnimateMaterialFloat(Material mat, float goal, float rate, float refreshRate)
     {
