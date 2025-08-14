@@ -1,26 +1,29 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
-/// <summary>
-/// Change to scene BossFinal
-public class CheatChangeScene : MonoBehaviour
+namespace _MyGame.Codes.Puzzle.Test
 {
-    [SerializeField] private string TargetSceneName;
-    [SerializeField] private Portal_Controller portalController;
 
-    private void Update()
+    public class CheatChangeScene : MonoBehaviour
     {
-        if (!Input.GetKeyDown(KeyCode.F12)) return;
-        if (portalController != null)
+        [FormerlySerializedAs("TargetSceneName")] [SerializeField] private string targetSceneName;
+        [SerializeField] private Portal_Controller portalController;
+
+        private void Update()
         {
-            portalController.TogglePortal(true);
+            if (!Input.GetKeyDown(KeyCode.F12)) return;
+            if (portalController != null)
+            {
+                portalController.TogglePortal(true);
+            }
         }
-    }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
+        private void OnTriggerEnter(Collider other)
         {
-            CoreEvent.Instance.triggerChangeScene(TargetSceneName, Vector3.zero);
+            if (other.CompareTag("Player"))
+            {
+                CoreEvent.Instance.triggerChangeScene(targetSceneName, Vector3.zero);
+            }
         }
     }
 }

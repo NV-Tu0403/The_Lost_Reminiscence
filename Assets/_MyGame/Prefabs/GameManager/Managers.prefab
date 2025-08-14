@@ -375,7 +375,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3896521726838421243}
   - component: {fileID: 6188812583557850473}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Audio RuneBlast
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -581,7 +581,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4922312927939196544}
   - component: {fileID: 8791516711890488360}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Audio Rift
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -886,7 +886,7 @@ GameObject:
   - component: {fileID: 3976476897178240807}
   - component: {fileID: 981174833566480083}
   - component: {fileID: 4967203488710166660}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Light Bridge (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7114,6 +7114,133 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8333385329293152749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &857227048202816451
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7654416460538619528}
+  - component: {fileID: 7876868899826024125}
+  - component: {fileID: 5329526717234335007}
+  - component: {fileID: 2170715042082209532}
+  - component: {fileID: 1452331157779406032}
+  m_Layer: 0
+  m_Name: Puzzle_Teleport
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7654416460538619528
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 857227048202816451}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -272.6, y: 66.8, z: -24.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2718054185597924698}
+  m_Father: {fileID: 8117754421026876106}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &7876868899826024125
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 857227048202816451}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &5329526717234335007
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 857227048202816451}
+  m_Enabled: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &2170715042082209532
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 857227048202816451}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 10, y: 20, z: 200}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1452331157779406032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 857227048202816451}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e5e6d79907d4814a3b200364b760175, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTarget: {fileID: 2718054185597924698}
+  cameraMoveDuration: 1
+  cameraHoldDuration: 2
+  portalController: {fileID: 3968034818692223209}
+  tree: {fileID: 7315355396863508463}
 --- !u!1 &865309301879965649
 GameObject:
   m_ObjectHideFlags: 0
@@ -7927,7 +8054,7 @@ GameObject:
   - component: {fileID: 8589436298522856209}
   - component: {fileID: 3200251860675396900}
   - component: {fileID: 8861936443090826739}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Light Bridge (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -23822,7 +23949,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 903dc0727e869da40b2c88f3b341646f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetSceneName: 
+  targetSceneName: 
   portalController: {fileID: 8363140443142138455}
 --- !u!1 &1585538483794427091
 GameObject:
@@ -24245,7 +24372,7 @@ Transform:
   m_GameObject: {fileID: 1689110792024066489}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0.009, y: 0.69, z: -1.883}
+  m_LocalPosition: {x: 0.009, y: 0.69, z: -1.91}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -24881,13 +25008,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2008828664934045192}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.10524173, w: 0.9944467}
-  m_LocalPosition: {x: -3.12, y: -40.19, z: -4.3}
+  m_LocalRotation: {x: 0.035239432, y: 0.003729369, z: -0.10517562, w: 0.99382216}
+  m_LocalPosition: {x: 19.51, y: -45.91, z: -4.3}
   m_LocalScale: {x: 4.9734, y: 0.47365606, z: 4.9734}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5950247715304230019}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -12.082}
+  m_LocalEulerAnglesHint: {x: 4.062, y: 0, z: -12.082}
 --- !u!33 &3561128726893912006
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -24960,8 +25087,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 12.108531, z: 1}
+  m_Center: {x: 0.0000000039158166, y: 5.55427, z: 0.000000004284741}
 --- !u!114 &7968023012945711130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25444,6 +25571,7 @@ Transform:
   - {fileID: 2854149136342009236}
   - {fileID: 1778502079471718784}
   - {fileID: 5359136345380310890}
+  - {fileID: 7654416460538619528}
   - {fileID: 7315355396863508463}
   - {fileID: 7964254946274648993}
   m_Father: {fileID: 1284715240989053074}
@@ -25599,7 +25727,7 @@ GameObject:
   - component: {fileID: 7351471871508989785}
   - component: {fileID: 2056033858981988483}
   - component: {fileID: 677620740381982979}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Particle Moon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -30532,7 +30660,7 @@ GameObject:
   - component: {fileID: 2115599251978625971}
   - component: {fileID: 3304409684200542896}
   - component: {fileID: 6228918080689465275}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Light Bridge (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40875,12 +41003,12 @@ GameObject:
   - component: {fileID: 7315355396863508463}
   - component: {fileID: 3968034818692223209}
   m_Layer: 0
-  m_Name: PortalGate (1)
+  m_Name: GateTeleBoss
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7315355396863508463
 Transform:
   m_ObjectHideFlags: 0
@@ -40889,8 +41017,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2333307300676102701}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: -683.8, y: 131, z: -11.6}
+  m_LocalRotation: {x: -0, y: 0.9998417, z: 0.017794324, w: 0}
+  m_LocalPosition: {x: -331, y: 60, z: -28.1}
   m_LocalScale: {x: 7.697589, y: 7.697589, z: 7.697589}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -40899,7 +41027,7 @@ Transform:
   - {fileID: 6627646954158957522}
   - {fileID: 6349972059532265650}
   m_Father: {fileID: 8117754421026876106}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -2.039, y: 180, z: 0}
 --- !u!114 &3968034818692223209
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41295,6 +41423,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 588262663692807535}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2466961305149226329
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2718054185597924698}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2718054185597924698
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2466961305149226329}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -28.3, y: 11.7, z: -3.9}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7654416460538619528}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2480810225140320540
 GameObject:
@@ -47598,7 +47757,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5587242608427816349}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: BrigdePiece
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -48662,7 +48821,7 @@ GameObject:
   - component: {fileID: 6084037118209581610}
   - component: {fileID: 6686039067653376717}
   - component: {fileID: 4588372074330596602}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: RiftBase
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -58954,7 +59113,7 @@ GameObject:
   - component: {fileID: 3933333405849995117}
   - component: {fileID: 6995269437382336858}
   - component: {fileID: 2723989436748779662}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Particle Flares
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -64470,7 +64629,7 @@ GameObject:
   - component: {fileID: 5038614351586047447}
   - component: {fileID: 6890496463038085890}
   - component: {fileID: 3944937850519613727}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Light_Rift
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -64591,7 +64750,7 @@ GameObject:
   - component: {fileID: 5827437949158923005}
   - component: {fileID: 1092210932554882099}
   - component: {fileID: 5184354156590666962}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Particle Orbs
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -77476,7 +77635,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5725890598587917528
 Transform:
   m_ObjectHideFlags: 0
@@ -77486,7 +77645,7 @@ Transform:
   m_GameObject: {fileID: 5966896317605999137}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -217.8, y: 55.9, z: -27.97}
+  m_LocalPosition: {x: -296.6, y: 81.8, z: -30.8}
   m_LocalScale: {x: 200, y: 50, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -77562,7 +77721,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -77573,7 +77732,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5966896317605999137}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: faf41f98e7a0487f89ab1ac7ec0bdc93, type: 3}
   m_Name: 
@@ -78199,7 +78358,6 @@ MonoBehaviour:
   - {fileID: 1454535675442903874}
   countdownText: {fileID: 6545990635048533160}
   countdownCanvas: {fileID: 104348973256911585}
-  playerResetPoint: {fileID: 680214699148034261}
   puzzleCompleted: 0
 --- !u!1 &6127115431677248009
 GameObject:
@@ -85512,7 +85670,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4059005392004772969}
   - component: {fileID: 2601043786552025990}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: PF_Rift
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -85528,7 +85686,7 @@ Transform:
   m_GameObject: {fileID: 6656151780545596690}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.0783001, z: 0}
+  m_LocalPosition: {x: 0, y: -0.99, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -87873,7 +88031,7 @@ GameObject:
   - component: {fileID: 9068539592170977316}
   - component: {fileID: 4798513064259945923}
   - component: {fileID: 7442180244637171924}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Particle RuneBlast
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93306,7 +93464,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3718905299475109580}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94397,7 +94555,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &295147246162458030
 Transform:
   m_ObjectHideFlags: 0
@@ -94407,7 +94565,7 @@ Transform:
   m_GameObject: {fileID: 7594013853758783698}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.5, z: -0.5, w: 0.5}
-  m_LocalPosition: {x: -1.1, y: -42.1, z: 6.9}
+  m_LocalPosition: {x: 5.6, y: -42.1, z: 6.9}
   m_LocalScale: {x: 20, y: 1, z: 20}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -95101,7 +95259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 903dc0727e869da40b2c88f3b341646f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetSceneName: BossFinal
+  targetSceneName: BossFinal
   portalController: {fileID: 3968034818692223209}
 --- !u!1 &7731676352826319814
 GameObject:
@@ -96146,7 +96304,7 @@ GameObject:
   - component: {fileID: 735382984970004436}
   - component: {fileID: 3163510852487165830}
   - component: {fileID: 6006175911741381331}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Light Bridge (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -96591,7 +96749,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3929263584654158733}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Audio
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -96789,7 +96947,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5825610929193201491}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Effects
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97529,7 +97687,7 @@ GameObject:
   - component: {fileID: 2303392227496039086}
   - component: {fileID: 9081441183958159584}
   - component: {fileID: 1145886625297120224}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Particle Sparks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -113654,7 +113812,7 @@ GameObject:
   - component: {fileID: 7859795054148231821}
   - component: {fileID: 8341300973314373284}
   - component: {fileID: 8514067739972221698}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Particle Runes
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -123679,7 +123837,7 @@ GameObject:
   - component: {fileID: 1499827186085069684}
   - component: {fileID: 2606657011788651389}
   - component: {fileID: 4688680689226885579}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Light Bridge (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -123931,6 +124089,10 @@ PrefabInstance:
     - target: {fileID: 4021997373628375561, guid: 95d714395c23deb4cb8df7c028841cab, type: 3}
       propertyPath: m_Name
       value: BossSpawning
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021997373628375561, guid: 95d714395c23deb4cb8df7c028841cab, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
