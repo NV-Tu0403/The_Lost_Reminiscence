@@ -24,10 +24,11 @@ public class Core : CoreEventListenerBase
     #region biến cần thiết
 
     #region Lộc thêm cờ để kiểm soát trạng thái của game
-    public bool IsCutscenePlaying { get; set; } = false;
-    public bool IsDialoguePlaying { get; set; } = false;
-    public bool IsDevMode { get; set; } = false;
-
+    public bool IsCutscenePlaying { get; set; } 
+    public bool IsDialoguePlaying { get; set; } 
+    public bool IsTimelinePlaying { get; set; }
+    public bool IsDevMode { get; set; }
+    
     #endregion
 
     public bool IsOffline { get; private set; } = true;
