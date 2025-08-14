@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 namespace Code.Boss.States.Phase2
@@ -9,7 +10,7 @@ namespace Code.Boss.States.Phase2
     {
         private float cookTimer;
         private bool memoryFragmentDropped = false;
-
+        
         public override void Enter()
         {
             cookTimer = 0f;
@@ -47,6 +48,10 @@ namespace Code.Boss.States.Phase2
         
         private void DropMemoryFragment()
         {
+            // Trigger defeat notification trước khi drop memory fragment
+            BossEventSystem.Trigger(BossEventType.ShowDefeatNotification, 
+                new BossEventData("Ngươi!!! Hãy đợi đó! Ta sẽ trở lại!"));
+            
             // Spawn memory fragment prefab từ BossConfig tại vị trí boss
             if (Config.memoryFragmentPrefab != null)
             {

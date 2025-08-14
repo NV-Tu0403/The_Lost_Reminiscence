@@ -114,6 +114,9 @@ namespace Code.Boss
         // Player events
         PlayerDefeated,
         PlayerHealthReset,
+        
+        // UI Notification Events
+        ShowDefeatNotification, // Hiển thị thông báo boss bị đánh bại
     }
 
     /// <summary>
