@@ -24,14 +24,15 @@ namespace Code.Boss
         private bool hasTriggered = false;
         private BossController spawnedBoss;
         private BossGameManager bossGameManager;
+        private Rift_Controller riftController;
         
         private void Start()
         {
             // Đảm bảo collider là trigger
-            var collider = GetComponent<Collider>();
-            if (collider != null)
+            var component = GetComponent<Collider>();
+            if (component != null)
             {
-                collider.isTrigger = true;
+                component.isTrigger = true;
             }
             else
             {
@@ -41,8 +42,8 @@ namespace Code.Boss
             // Tạo BossGameManager nếu chưa có
             if (BossGameManager.Instance == null)
             {
-                var gameManagerGO = new GameObject("BossGameManager");
-                bossGameManager = gameManagerGO.AddComponent<BossGameManager>();
+                var gameManagerGo = new GameObject("BossGameManager");
+                bossGameManager = gameManagerGo.AddComponent<BossGameManager>();
             }
             else
             {
@@ -53,12 +54,10 @@ namespace Code.Boss
         private void OnTriggerEnter(Collider other)
         {
             if (hasTriggered && triggerOnce) return;
-            
-            if (other.CompareTag(playerTag))
-            {
-                Debug.Log("[BossTriggerZone] Player entered boss area - Starting boss fight!");
-                StartBossFight();
-            }
+
+            if (!other.CompareTag(playerTag)) return;
+            Debug.Log("[BossTriggerZone] Player entered boss area - Starting boss fight!");
+            StartBossFight();
         }
         
         private void StartBossFight()
@@ -71,6 +70,10 @@ namespace Code.Boss
                 Instantiate(triggerEffectPrefab, transform.position, Quaternion.identity);
             }
             
+            // Spawn effects
+            if (riftController == null) riftController = FindFirstObjectByType<Rift_Controller>();
+            riftController.F_ToggleRift(true);
+                
             // Spawn boss
             SpawnBoss();
             
@@ -89,19 +92,19 @@ namespace Code.Boss
                 return;
             }
             
-            Vector3 spawnPosition = bossSpawnPoint != null ? bossSpawnPoint.position : transform.position;
-            Quaternion spawnRotation = bossSpawnPoint != null ? bossSpawnPoint.rotation : Quaternion.identity;
+            var spawnPosition = bossSpawnPoint != null ? bossSpawnPoint.position : transform.position;
+            var spawnRotation = bossSpawnPoint != null ? bossSpawnPoint.rotation : Quaternion.identity;
             
             // Play spawn effect và destroy sau 3 giây
             if (bossSpawnEffectPrefab != null)
             {
-                GameObject spawnEffect = Instantiate(bossSpawnEffectPrefab, spawnPosition, spawnRotation);
+                var spawnEffect = Instantiate(bossSpawnEffectPrefab, spawnPosition, spawnRotation);
                 Destroy(spawnEffect, 3f); // Tự động destroy effect sau 3 giây
             }
             
             // Spawn boss
-            GameObject bossGO = Instantiate(bossPrefab, spawnPosition, spawnRotation);
-            spawnedBoss = bossGO.GetComponent<BossController>();
+            var bossGo = Instantiate(bossPrefab, spawnPosition, spawnRotation);
+            spawnedBoss = bossGo.GetComponent<BossController>();
             
             if (spawnedBoss == null)
             {
@@ -123,15 +126,13 @@ namespace Code.Boss
         
         private void SetupBossUI()
         {
-            if (bossGameManager != null && spawnedBoss != null)
-            {
-                // Update BossGameManager references
-                var bossControllerField = bossGameManager.GetType().GetField("bossController", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                bossControllerField?.SetValue(bossGameManager, spawnedBoss);
+            if (bossGameManager == null || spawnedBoss == null) return;
+            // Update BossGameManager references
+            var bossControllerField = bossGameManager.GetType().GetField("bossController", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            bossControllerField?.SetValue(bossGameManager, spawnedBoss);
                 
-                Debug.Log("[BossTriggerZone] Boss UI setup completed!");
-            }
+            Debug.Log("[BossTriggerZone] Boss UI setup completed!");
         }
         
         /// <summary>
@@ -222,12 +223,10 @@ namespace Code.Boss
             Gizmos.DrawWireCube(transform.position, transform.localScale);
             
             // Vẽ boss spawn point
-            if (bossSpawnPoint != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(bossSpawnPoint.position, 1f);
-                Gizmos.DrawLine(transform.position, bossSpawnPoint.position);
-            }
+            if (bossSpawnPoint == null) return;
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(bossSpawnPoint.position, 1f);
+            Gizmos.DrawLine(transform.position, bossSpawnPoint.position);
         }
     }
 }
