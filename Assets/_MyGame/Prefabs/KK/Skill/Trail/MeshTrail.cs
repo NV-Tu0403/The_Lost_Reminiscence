@@ -47,9 +47,12 @@ public class MeshTrail : MonoBehaviour
             if (!alwaysActive)
                 timeActive -= meshRefreshRate;
 
+            // Lấy cả SkinnedMeshRenderer và MeshRenderer
             if (skinnedMeshRenderers == null)
                 skinnedMeshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
+            MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
 
+            // Với SkinnedMeshRenderer (nhân vật rig xương)
             for (int i = 0; i < skinnedMeshRenderers.Length; i++)
             {
                 GameObject obj = new GameObject();
@@ -62,10 +65,30 @@ public class MeshTrail : MonoBehaviour
                 skinnedMeshRenderers[i].BakeMesh(mesh);
 
                 mf.mesh = mesh;
-                mr.material = new Material(mat); // tạo bản copy tránh ảnh hưởng material gốc
-
+                mr.material = new Material(mat);
                 StartCoroutine(AnimateMaterialFloat(mr.material, 0, shaderVarRate, shaderVarRefreshRate));
+
                 Destroy(obj, meshDestroyDelay);
+            }
+
+            // Với MeshRenderer thường (không rig)
+            for (int i = 0; i < meshRenderers.Length; i++)
+            {
+                var mfOriginal = meshRenderers[i].GetComponent<MeshFilter>();
+                if (mfOriginal != null && mfOriginal.sharedMesh != null)
+                {
+                    GameObject obj = new GameObject();
+                    obj.transform.SetPositionAndRotation(positionToSpawn.position, positionToSpawn.rotation);
+
+                    MeshRenderer mr = obj.AddComponent<MeshRenderer>();
+                    MeshFilter mf = obj.AddComponent<MeshFilter>();
+
+                    mf.mesh = mfOriginal.sharedMesh;
+                    mr.material = new Material(mat);
+                    StartCoroutine(AnimateMaterialFloat(mr.material, 0, shaderVarRate, shaderVarRefreshRate));
+
+                    Destroy(obj, meshDestroyDelay);
+                }
             }
 
             yield return new WaitForSeconds(meshRefreshRate);
@@ -73,6 +96,7 @@ public class MeshTrail : MonoBehaviour
 
         isTrailActive = false;
     }
+
 
     IEnumerator AnimateMaterialFloat(Material mat, float goal, float rate, float refreshRate)
     {
