@@ -9,8 +9,8 @@ namespace _MyGame.Codes.Timeline
 {
     public class TimelineManager : MonoBehaviour
     {
-        [Header("UI")]
-        public Button skipButton;
+        //[Header("UI")]
+        //public Button skipButton;
 
         [Header("Spawn Settings")]
         [Tooltip("Thư mục Resources chứa prefab timeline")]
@@ -33,13 +33,13 @@ namespace _MyGame.Codes.Timeline
         private PlayerLocker.Snapshot playerSnapshot;
         private bool playerWasActive;
 
-        private void Awake()
-        {
-            if (!skipButton) return;
-            skipButton.onClick.AddListener(SkipTimeline);
-            skipButton.gameObject.SetActive(false); // ẩn nút khi chưa chạy timeline
-
-        }
+        // private void Awake()
+        // {
+        //     if (!skipButton) return;
+        //     skipButton.onClick.AddListener(SkipTimeline);
+        //     skipButton.gameObject.SetActive(false); // ẩn nút khi chưa chạy timeline
+        //
+        // }
 
         private void OnEnable()  => EventBus.Subscribe("StartTimeline", OnStartTimelineEvent);
         private void OnDisable() => EventBus.Unsubscribe("StartTimeline", OnStartTimelineEvent);
@@ -75,22 +75,22 @@ namespace _MyGame.Codes.Timeline
             PlayerCheck();
             
             // Hiện thị nút Skip, Mouse cursor
-            ActiveMethod();
+           //ActiveMethod();
 
             // 5) Play
             PlayTimelines();
         }
 
-        private void ActiveMethod()
-        {
-            if (skipButton && !skipButton.gameObject.activeSelf)
-            {
-                skipButton.gameObject.SetActive(true);
-            }
-            Core.Instance.IsTimelinePlaying = true;
-            Core.Instance.ActiveMouseCursor(true);
-            Debug.Log("[TimelineManager] Hiện thị nút Skip và kích hoạt mouse cursor.");
-        }
+        // private void ActiveMethod()
+        // {
+        //     if (skipButton && !skipButton.gameObject.activeSelf)
+        //     {
+        //         skipButton.gameObject.SetActive(true);
+        //     }
+        //     Core.Instance.IsTimelinePlaying = true;
+        //     Core.Instance.ActiveMouseCursor(true);
+        //     Debug.Log("[TimelineManager] Hiện thị nút Skip và kích hoạt mouse cursor.");
+        // }
 
         private void PlayTimelines()
         {
@@ -188,16 +188,16 @@ namespace _MyGame.Codes.Timeline
 
         private void CleanupAndFinish()
         {
-            // Ẩn nút Skip nếu có
-            if (skipButton && skipButton.gameObject.activeSelf)
-            {
-                skipButton.gameObject.SetActive(false);
-            }
-            
-            // Tắt mouse cursor
-            Core.Instance.ActiveMouseCursor(false);
-            Core.Instance.IsTimelinePlaying = false;
-            
+            // // Ẩn nút Skip nếu có
+            // if (skipButton && skipButton.gameObject.activeSelf)
+            // {
+            //     skipButton.gameObject.SetActive(false);
+            // }
+            //
+            // // Tắt mouse cursor
+            // Core.Instance.ActiveMouseCursor(false);
+            // Core.Instance.IsTimelinePlaying = false;
+            //
             // Khôi phục/hiện lại Player
             if (player)
             {
