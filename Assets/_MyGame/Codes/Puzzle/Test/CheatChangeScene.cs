@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace _MyGame.Codes.Puzzle.Test
@@ -6,7 +6,7 @@ namespace _MyGame.Codes.Puzzle.Test
 
     public class CheatChangeScene : MonoBehaviour
     {
-        [FormerlySerializedAs("TargetSceneName")] [SerializeField] private string targetSceneName;
+        [FormerlySerializedAs("TargetSceneName")][SerializeField] private string targetSceneName;
         [SerializeField] private Portal_Controller portalController;
 
         private void Update()
@@ -22,7 +22,28 @@ namespace _MyGame.Codes.Puzzle.Test
         {
             if (other.CompareTag("Player"))
             {
-                CoreEvent.Instance.triggerChangeScene(targetSceneName, Vector3.zero);
+
+                if (IvokePotal())
+                {
+                    Debug.Log($"[CheatChangeScene] chuyển cảnh đến '{targetSceneName}'.");
+                    Destroy(gameObject); // Xóa đối tượng sau khi chuyển cảnh
+                }
+            }
+        }
+
+        private bool IvokePotal()
+        {
+            try
+            {
+                Vector3 pos = new Vector3(0, 20, 0);
+                CoreEvent.Instance.triggerChangeScene(targetSceneName, pos);
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[CheatChangeScene] Lỗi khi chuyển cảnh: {e.Message}");
+                return false;
+                throw;
             }
         }
     }

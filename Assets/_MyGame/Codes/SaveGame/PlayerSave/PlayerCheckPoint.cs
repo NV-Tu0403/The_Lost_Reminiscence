@@ -232,7 +232,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             }
         }
 
-        Vector3 targetPos = new Vector3(0, 3, 0);
+        Vector3 targetPos = new Vector3(0, 20, 0);
 
         // Kiểm tra NavMeshAgent trước
         if (playerTransform.TryGetComponent(out NavMeshAgent navAgent))
