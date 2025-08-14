@@ -75,7 +75,7 @@ namespace _MyGame.Codes.Timeline
             PlayerCheck();
             
             // Hiện thị nút Skip, Mouse cursor
-           //ActiveMethod();
+            //ActiveMethod();
 
             // 5) Play
             PlayTimelines();
@@ -147,7 +147,6 @@ namespace _MyGame.Codes.Timeline
             Debug.LogError("[TimelineManager] Instantiate trả về null.");
             FinishEarly();
             return true;
-
         }
 
         private bool LoadPrefabs(string timelineId, out GameObject prefab)
