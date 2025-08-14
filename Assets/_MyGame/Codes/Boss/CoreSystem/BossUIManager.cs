@@ -1,4 +1,4 @@
-using TMPro;
+using _MyGame.Codes.Boss.UI;
 using UnityEngine;
 
 namespace Code.Boss
