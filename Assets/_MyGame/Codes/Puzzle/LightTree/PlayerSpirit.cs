@@ -48,11 +48,9 @@ namespace Code.Puzzle.LightTree
             // Cập nhật UI
             if (uiSpirit != null) uiSpirit.SetSpirit(currentSpirits, maxSpirits); // Vẫn dùng smooth khi giảm
             // Phát event khi máu về 0
-            if (currentSpirits == 0)
-            {
-                Debug.Log("[PlayerSpirit] Spirit depleted, invoking OnSpiritDepleted event");
-                OnSpiritDepleted?.Invoke();
-            }
+            if (currentSpirits != 0) return;
+            Debug.Log("[PlayerSpirit] Spirit depleted, invoking OnSpiritDepleted event");
+            OnSpiritDepleted?.Invoke();
         }
         
         public void ResetSpirit()

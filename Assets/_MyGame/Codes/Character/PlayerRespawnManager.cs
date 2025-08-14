@@ -1,5 +1,6 @@
 using Code.GameEventSystem;
 using UnityEngine;
+using UnityEngine.AI;
 using DuckLe;
 
 namespace Code.Character
@@ -8,8 +9,15 @@ namespace Code.Character
     {
         public static PlayerRespawnManager Instance { get; private set; }
 
-        private Vector3 _lastCheckpointPosition;
-        private Quaternion _lastCheckpointRotation;
+        private Vector3 lastCheckpointPosition;
+        private Quaternion lastCheckpointRotation;
+
+        // Thêm các component references
+        private NavMeshAgent playerNavAgent;
+        private Rigidbody playerRigidbody;
+        private GameObject playerObject;
+
+        [SerializeField] private string playerTag = "Player";
 
         private void Awake()
         {
@@ -19,11 +27,29 @@ namespace Code.Character
                 return;
             }
             Instance = this;
-            //DontDestroyOnLoad(gameObject);
 
             EventBus.Subscribe("Respawn", OnRespawnEvent);
             EventBus.Subscribe("Checkpoint", OnCheckpointEvent);
-            //Debug.Log("[PlayerRespawnManager] Subscribed to Respawn and Checkpoint events.");
+        }
+
+        private void Start()
+        {
+            // Tìm player qua tag
+            FindPlayerByTag();
+        }
+
+        private void FindPlayerByTag()
+        {
+            playerObject = GameObject.FindGameObjectWithTag(playerTag);
+            if (playerObject != null)
+            {
+                playerNavAgent = playerObject.GetComponent<NavMeshAgent>();
+                playerRigidbody = playerObject.GetComponent<Rigidbody>();
+            }
+            else
+            {
+                Debug.LogWarning($"[PlayerRespawnManager] Không tìm thấy GameObject với tag '{playerTag}'");
+            }
         }
 
         private void OnDestroy()
@@ -32,39 +58,75 @@ namespace Code.Character
             EventBus.Unsubscribe("Checkpoint", OnCheckpointEvent);
         }
 
-        // Lưu lại vị trí checkpoint khi player đi qua CheckpointZone
         private void OnCheckpointEvent(object data)
         {
-            var player = PlayerController.Instance;
-            if (player != null)
+            if (playerObject == null)
             {
-                _lastCheckpointPosition = player.transform.position;
-                _lastCheckpointRotation = player.transform.rotation;
+                FindPlayerByTag(); // Thử tìm lại nếu null
+                if (playerObject == null) return;
             }
+            
+            lastCheckpointPosition = playerObject.transform.position;
+            lastCheckpointRotation = playerObject.transform.rotation;
         }
 
-        // Xử lý respawn khi nhận sự kiện
         private void OnRespawnEvent(object data)
         {
-            var player = PlayerController.Instance;
-            if (player != null)
+            if (playerObject != null)
             {
-                player.Teleport(_lastCheckpointPosition, _lastCheckpointRotation);
-                // TODO: Thêm hiệu ứng respawn, reset trạng thái, v.v.
+                TeleportWithComponentCheck(lastCheckpointPosition, lastCheckpointRotation);
             }
         }
 
-        // Thêm hàm này để cho phép teleport đến checkpoint bất kỳ
         public void TeleportToCheckpoint(Vector3 position, Quaternion rotation)
         {
-            var player = PlayerController.Instance;
-            if (player != null)
+            if (playerObject == null)
             {
-                player.Teleport(position, rotation);
-                _lastCheckpointPosition = position;
-                _lastCheckpointRotation = rotation;
-                Debug.Log("[PlayerRespawnManager] Teleported player to checkpoint (DevMode skip).");
+                FindPlayerByTag();
+                if (playerObject == null) return;
             }
+
+            TeleportWithComponentCheck(position, rotation);
+            lastCheckpointPosition = position;
+            lastCheckpointRotation = rotation;
+            Debug.Log("[PlayerRespawnManager] Teleported player to checkpoint (DevMode skip).");
+        }
+
+        private void TeleportWithComponentCheck(Vector3 position, Quaternion rotation)
+        {
+            if (playerObject == null) return;
+
+            // Disable NavMeshAgent nếu có
+            if (playerNavAgent != null && playerNavAgent.enabled)
+            {
+                playerNavAgent.enabled = false;
+            }
+
+            // Disable Rigidbody physics nếu có
+            if (playerRigidbody != null)
+            {
+                playerRigidbody.isKinematic = true;
+            }
+
+            // Thực hiện teleport
+            playerObject.transform.position = position;
+            playerObject.transform.rotation = rotation;
+
+            // Re-enable components
+            if (playerNavAgent != null)
+            {
+                // Warp NavMeshAgent đến vị trí mới trước khi enable
+                if (NavMesh.SamplePosition(position, out NavMeshHit hit, 1.0f, NavMesh.AllAreas))
+                {
+                    playerNavAgent.Warp(hit.position);
+                }
+                playerNavAgent.enabled = true;
+            }
+
+            if (playerRigidbody == null) return;
+            playerRigidbody.linearVelocity = Vector3.zero;
+            playerRigidbody.angularVelocity = Vector3.zero;
+            playerRigidbody.isKinematic = false;
         }
     }
 }

@@ -1,5 +1,5 @@
 using System;
-using Script.Puzzle;
+using _MyGame.Codes.Puzzle.LightTree;
 using Script.Puzzle.LightTree;
 using UnityEngine;
 
@@ -59,7 +59,7 @@ namespace Code.Puzzle.LightTree
         private void HandlePlayerDead()
         {
             // Reset player về respawnPoint
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            var playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj != null && respawnPoint != null)
                 playerObj.transform.position = respawnPoint.position;
             // Reset Id và Sup
@@ -75,7 +75,7 @@ namespace Code.Puzzle.LightTree
         }
 
         // Hàm reset Id và sup về vị trí ban đầu và trạng thái mặc định
-        public void ResetIdAndSup()
+        private void ResetIdAndSup()
         {
             if (ids != null && idStartPositions != null)
             {
@@ -88,38 +88,39 @@ namespace Code.Puzzle.LightTree
                     }
                 }
             }
-            if (sups != null && supStartPositions != null)
+
+            if (sups == null || supStartPositions == null) return;
             {
                 for (int i = 0; i < sups.Length; i++)
                 {
-                    if (sups[i] != null)
-                    {
-                        sups[i].transform.position = supStartPositions[i];
-                        sups[i].ResetState();
-                    }
+                    if (sups[i] == null) continue;
+                    sups[i].transform.position = supStartPositions[i];
+                    sups[i].ResetState();
                 }
             }
         }
 
         // Gọi từ TriggerZone khi người chơi chết ở zone tương ứng
-        public void NotifyPlayerDiedInZone(int zoneIndex)
+        private void NotifyPlayerDiedInZone(int zoneIndex)
         {
-            if (zoneIndex == 1)
-                diedInZone1 = true;
-            else if (zoneIndex == 2)
-                diedInZone2 = true;
-            
+            switch (zoneIndex)
+            {
+                case 1:
+                    diedInZone1 = true;
+                    break;
+                case 2:
+                    diedInZone2 = true;
+                    break;
+            }
+
             CheckBothZonesDied();
         }
 
         // Kiểm tra nếu đã chết ở cả 2 zone thì gọi event tiếp theo
         private void CheckBothZonesDied()
         {
-            if (diedInZone1 && diedInZone2)
-            {
-                if (_onComplete != null)
-                    _onComplete.Invoke();
-            }
+            if (!diedInZone1 || !diedInZone2) return;
+            _onComplete?.Invoke();
         }
         
 

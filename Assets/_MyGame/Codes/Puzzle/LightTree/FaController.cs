@@ -10,66 +10,64 @@ namespace Code.Puzzle.LightTree
         public float shieldRadius = 3f;
         public float shieldDuration = 5f;
         public float attractSpeed = 8f;
-        private bool _shieldActive = false;
-        private float _shieldTimer = 0f;
+        private bool shieldActive = false;
+        private float shieldTimer = 0f;
 
         [Header("Guide Signal Settings")]
         public bool canGuide = false;
         public float guideDuration = 2f;
-        private bool _guiding = false;
-        private float _guideTimer = 0f;
+        private bool guiding = false;
+        private float guideTimer = 0f;
         
         public event Action OnSkillUsed;
 
         private void Update()
         {
             // Đếm thời gian lá chắn
-            if (_shieldActive)
+            if (shieldActive)
             {
-                _shieldTimer -= Time.deltaTime;
-                if (_shieldTimer <= 0f)
+                shieldTimer -= Time.deltaTime;
+                if (shieldTimer <= 0f)
                 {
                     DeactivateShield();
                 }
             }
             // Đếm thời gian dẫn lối
-            if (_guiding)
+            if (!guiding) return;
+            guideTimer -= Time.deltaTime;
+            if (guideTimer <= 0f)
             {
-                _guideTimer -= Time.deltaTime;
-                if (_guideTimer <= 0f)
-                {
-                    _guiding = false;
-                }
+                guiding = false;
             }
         }
 
         private void LateUpdate()
         {
-            if (_shieldActive && shieldObject != null)
+            if (shieldActive && shieldObject != null)
             {
                 shieldObject.transform.position = transform.position;
             }
         }
 
-        public void ActivateShield()
+        private void ActivateShield()
         {
-            _shieldActive = true;
-            _shieldTimer = shieldDuration;
+            shieldActive = true;
+            shieldTimer = shieldDuration;
             if (shieldObject != null) shieldObject.SetActive(true);
             Debug.Log("Shield activated");
         }
 
-        public void DeactivateShield()
+        private void DeactivateShield()
         {
-            _shieldActive = false;
+            shieldActive = false;
             if (shieldObject != null) shieldObject.SetActive(false);
             Debug.Log("Shield deactivated");
         }
 
-        public void ActivateGuide()
+        private void ActivateGuide()
         {
-            _guiding = true;
-            _guideTimer = guideDuration;
+            guiding = true;
+            guideTimer = guideDuration;
             Debug.Log("Guide activated");
             OnSkillUsed?.Invoke(); // Phát event khi dùng kỹ năng
         }
@@ -78,7 +76,7 @@ namespace Code.Puzzle.LightTree
         // Test methods to simulate skill usage
         public void TestActivateShield()
         {
-            if (!_shieldActive)
+            if (!shieldActive)
             {
                 ActivateShield();
             }
@@ -86,14 +84,14 @@ namespace Code.Puzzle.LightTree
         
         public void TestActivateGuide()
         {
-            if (_shieldActive && !_guiding && canGuide)
+            if (shieldActive && !guiding && canGuide)
             {
                 ActivateGuide();
             }
         }
 
-        public bool IsShieldActive() => _shieldActive;
-        public bool IsGuiding() => _guiding;
+        public bool IsShieldActive() => shieldActive;
+        public bool IsGuiding() => guiding;
         public Vector3 GetShieldPosition() => shieldObject != null ? shieldObject.transform.position : transform.position;
         
         public float GetShieldRadius() => shieldRadius;
