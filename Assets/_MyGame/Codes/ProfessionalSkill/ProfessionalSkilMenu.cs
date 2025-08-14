@@ -81,7 +81,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         //e.OnConnectToServer += () => PerformLoginCloud ();
         e.OnConnectingToServer += () => PerformOtp();
 
-        e.OnChangeScene += async (nameScene, pos) => await OnChangeScene(nameScene, pos);
+        //e.OnChangeScene += async (nameScene, pos) => await OnChangeScene(nameScene, pos);
+        e.OnChangeScene +=  (nameScene, pos) =>  OnChangeScene(nameScene, pos);
 
 
     }
@@ -103,7 +104,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         //e.OnConnectToServer -= () => PerformLoginCloud();
         e.OnConnectingToServer -= () => PerformOtp();
 
-        e.OnChangeScene -= async (nameScene, pos) => await OnChangeScene(nameScene, pos);
+        e.OnChangeScene -= (nameScene, pos) => OnChangeScene(nameScene, pos);
 
 
 
@@ -525,35 +526,45 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
     }
 
-    public async Task OnChangeScene(string nameScene, Vector3 posSpawn)
+    public bool OnChangeScene(string nameScene, Vector3 posSpawn)
     {
 
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        //GameObject player = GameObject.FindGameObjectWithTag("Player");
+        Transform player = GameObject.FindGameObjectWithTag("Player")?.transform;
         if (player == null)
         {
             Debug.LogError("[OnNewGame] Player not found after loading scene.");
-            return;
+            return false;
         }
 
         cutSceneController.PlayCutScene(UIActionType.ContinueSession);
-        await Task.Delay(3000);
+        //await Task.Delay(3000);
 
         SceneController.Instance.UnloadAllAdditiveScenes(() =>
             mess = $"Đã unload scene {nameScene} thành công."
         );
-        await Task.Delay(3000);
+        //await Task.Delay(3000);
 
         SceneController.Instance.LoadAdditiveScene(nameScene, PlayerCheckPoint.Instance, () =>
         {
-            mess = $"Đã load scene {nameScene} thành công.";
-            Debug.Log($"[OnChangeScene] Scene {nameScene} loaded successfully.");
-            // đặt Player vào posSpawn
-            player.transform.position = posSpawn;
-            Debug.Log($"[OnChangeScene] Player position set to {posSpawn}");
-
-            return;
+            //Vector3 pos = new Vector3(0, 20, 0);
+            //player.transform.position = pos;
+          
+            Debug.Log($"[OnChangeScene] Player transform position: {player.transform.position}");
+            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         });
 
+        return true;
+    }
+
+    private IEnumerator WaitPlayerAndApply(GameObject player, Vector3 pos)
+    {
+        Transform p = null;
+        while (p == null)
+        {
+            p = GameObject.FindGameObjectWithTag("Player")?.transform;
+            yield return null;
+        }
 
     }
 
