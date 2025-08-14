@@ -11,7 +11,7 @@ public class CutSceneController : MonoBehaviour
     private int currentIndex = 0;               // Chỉ số hiện tại của CutSceneItem đang phát
     private CutSceneEvent currentCutSceneEvent; // Sự kiện CutScene hiện tại đang được phát
     private float currentTime = 0f;             // Thời gian hiện tại của CutScene đang phát
-    private GameObject currentInstance;         // Theo dõi instance hiện tại
+     [SerializeField] private GameObject currentInstance;         // Theo dõi instance hiện tại
 
     public Core_CallBack_Event config;
 
@@ -58,6 +58,7 @@ public class CutSceneController : MonoBehaviour
 
         // Instance Prefab vào scene
         currentInstance = Instantiate(cutSceneItem.cutSceneObject, Vector3.zero, Quaternion.identity);
+        DontDestroyOnLoad( currentInstance); // Giữ instance này khi chuyển cảnh
 
         // Kiểm tra và gán PlayableDirector hoặc VideoPlayer
         currentDirector = currentInstance.GetComponent<PlayableDirector>();
@@ -75,11 +76,13 @@ public class CutSceneController : MonoBehaviour
         {
             currentDirector.time = 0;
             currentDirector.Play();
+            Debug.Log("Playing CutScene with PlayableDirector: " + currentDirector.name);
         }
         else if (currentVideoPlayer != null)
         {
             currentVideoPlayer.time = 0;
             currentVideoPlayer.Play();
+            Debug.Log("Playing CutScene with VideoPlayer: " + currentVideoPlayer.name);
         }
 
         currentTime = 0f;

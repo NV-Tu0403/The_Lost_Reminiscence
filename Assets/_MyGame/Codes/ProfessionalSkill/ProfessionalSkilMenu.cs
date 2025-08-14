@@ -83,7 +83,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         e.OnChangeScene += async (nameScene, pos) => await OnChangeScene(nameScene, pos);
 
-        
+
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -424,7 +424,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     }
 
     public async Task OnQuitSession(string currentSaveFolder)
-    { 
+    {
         if (!string.IsNullOrEmpty(currentSaveFolder))
         {
             try
@@ -525,31 +525,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
     }
 
-    private bool CallbackNewGame()
-    {
-        // load CallBackObject ra scene
-        if (CallBackObject == null || CallBackObject.Length == 0)
-        {
-            Debug.LogWarning("[CallbackNewGame] No callback objects found.");
-            return false;
-        }
-        foreach (var obj in CallBackObject)
-        {
-            if (obj != null)
-            {
-                GameObject callbackInstance = Instantiate(obj);
-            }
-            else
-            {
-                Debug.LogWarning("[CallbackNewGame] Found a null callback object.");
-            }
-        }
-        return true;
-
-    }
-
     public async Task OnChangeScene(string nameScene, Vector3 posSpawn)
     {
+
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player == null)
         {
@@ -557,23 +535,26 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             return;
         }
 
-        Debug.Log($"[OnChangeScene] Changing scene to {nameScene} and setting player position to {posSpawn}");
+        cutSceneController.PlayCutScene(UIActionType.ContinueSession);
+        await Task.Delay(3000);
 
-        await _demo02.TurnToPage(5, true);
-        await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
+        SceneController.Instance.UnloadAllAdditiveScenes(() =>
+            mess = $"Đã unload scene {nameScene} thành công."
+        );
+        await Task.Delay(3000);
 
-        //await Task.Delay(3000);
+        SceneController.Instance.LoadAdditiveScene(nameScene, PlayerCheckPoint.Instance, () =>
+        {
+            mess = $"Đã load scene {nameScene} thành công.";
+            Debug.Log($"[OnChangeScene] Scene {nameScene} loaded successfully.");
+            // đặt Player vào posSpawn
+            player.transform.position = posSpawn;
+            Debug.Log($"[OnChangeScene] Player position set to {posSpawn}");
 
-        //Core.Instance.ActiveMenu(true, false);
-        //await cameraZoomController.PerformZoomSequence(0, () => OnContinueGame(nameScene), true);
-        //Core.Instance.ActiveMenu(false, false);
-        //if (!cameraZoomController.ZoomState)
-        //{
-        //    await _demo02.TurnToPage(4);
-        //}
+            return;
+        });
 
-        // đặt Player vào posSpawn
-        player.transform.position = posSpawn;
+
     }
 
     #endregion
