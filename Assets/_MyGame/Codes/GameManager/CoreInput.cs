@@ -15,9 +15,17 @@ public class CoreInput : CoreEventListenerBase
         base.Awake();
     }
 
+    private void Start()
+    {
+        // Đăng ký sự kiện để tìm player và đặt vị trí
+        FindPlayer();
+       
+    }
+
     private void Update()
     {
         Mapping();
+        SetPlayerToZeroPosition();
     }
 
     public override void RegisterEvent(CoreEvent e)
@@ -106,5 +114,42 @@ public class CoreInput : CoreEventListenerBase
         }
 
         Core.Instance?.HandleAction(action);
+    }
+
+    private Transform player;
+    // hàm tìm player theo tag Player
+    public void FindPlayer()
+    {
+        player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        if (player == null)
+        {
+            Debug.LogWarning("[CoreInput] Player not found with tag 'Player'.");
+        }
+        else
+        {
+            Debug.Log("[CoreInput] Player found.");
+        }
+    }
+
+    // hàm khi nhấn nút v thì đặt player vào tọa độ 0,0,0
+    public void SetPlayerToZeroPosition()
+    {
+        if (player == null)
+        {
+            FindPlayer(); // Tìm player nếu chưa có
+        }
+
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            if (player != null)
+            {
+                player.transform.position = Vector3.zero;
+                Debug.Log("[CoreInput] Player position set to (0, 0, 0)");
+            }
+            else
+            {
+                Debug.LogWarning("[CoreInput] Player is null. Cannot set position.");
+            }
+        }
     }
 }
