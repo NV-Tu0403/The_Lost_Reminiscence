@@ -3982,30 +3982,6 @@ MonoBehaviour:
     m_selectedWorldBiomeMaskGUID: 
     m_growAndShrinkValue: 0
     m_globalSpawnerMaskStackRT: {fileID: 0}
---- !u!114 &512793052
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  transformSettings:
-    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
-    scale: {x: 3.1006794, y: 1, z: 3.1006794}
-    rotation: {x: 0, y: 0, z: 0}
-    flipScaleX: 0
-    flipScaleY: 0
-    flipScaleZ: 0
-  domainSettings:
-    noiseTypeName: Perlin
-    fractalTypeName: Fbm
-    noiseTypeParams: 
-    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1 &529677742
 GameObject:
   m_ObjectHideFlags: 0
@@ -14249,7 +14225,7 @@ MonoBehaviour:
       m_warpIterations: 4.9391894
       m_warpStrength: 0.14957476
       m_warpOffset: {x: 622.0008, y: 327.24106, z: -186.68591, w: 0}
-    m_noiseSettings: {fileID: 512793052}
+    m_noiseSettings: {fileID: 1536364676}
     m_noiseToolSettings:
       worldHeightRemap: {x: 0, y: 0}
       coordSpace: 0
@@ -18182,7 +18158,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: f6d555fe733ee1d4caabedc68b196f6f, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 64242a1f53cec5d47a003e7c80ef31ee, type: 2}
   m_BuildHeightMesh: 0
 --- !u!114 &1503242286
 MonoBehaviour:
@@ -19147,6 +19123,30 @@ MonoBehaviour:
     m_selectedWorldBiomeMaskGUID: 
     m_growAndShrinkValue: 0
     m_globalSpawnerMaskStackRT: {fileID: 0}
+--- !u!114 &1536364676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transformSettings:
+    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
+    scale: {x: 3.1006794, y: 1, z: 3.1006794}
+    rotation: {x: 0, y: 0, z: 0}
+    flipScaleX: 0
+    flipScaleY: 0
+    flipScaleZ: 0
+  domainSettings:
+    noiseTypeName: Perlin
+    fractalTypeName: Fbm
+    noiseTypeParams: 
+    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1001 &1560339079
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -19206,8 +19206,39 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8462952587985855686, guid: c0b84d98839ae1c42bb6fc759082341a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1560339081}
   m_SourcePrefab: {fileID: 100100000, guid: c0b84d98839ae1c42bb6fc759082341a, type: 3}
+--- !u!1 &1560339080 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8462952587985855686, guid: c0b84d98839ae1c42bb6fc759082341a, type: 3}
+  m_PrefabInstance: {fileID: 1560339079}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &1560339081
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560339080}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1564027215
 GameObject:
   m_ObjectHideFlags: 0
@@ -24632,30 +24663,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1321574999473504933, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1321574999473504933, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1749245586642610286, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1749245586642610286, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3355240276762645448, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3355240276762645448, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3799560528786548644, guid: 56f939efe25e0754c881da3ff7bdf028, type: 3}
       propertyPath: m_Name
       value: Canvas
@@ -25366,6 +25373,22 @@ PrefabInstance:
     - target: {fileID: 1284715240989053074, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5056048350338534211, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
+      propertyPath: m_Size.y
+      value: 12.108531
+      objectReference: {fileID: 0}
+    - target: {fileID: 5056048350338534211, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
+      propertyPath: m_Center.x
+      value: 0.0000000039158166
+      objectReference: {fileID: 0}
+    - target: {fileID: 5056048350338534211, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
+      propertyPath: m_Center.y
+      value: 5.55427
+      objectReference: {fileID: 0}
+    - target: {fileID: 5056048350338534211, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
+      propertyPath: m_Center.z
+      value: 0.000000004284741
       objectReference: {fileID: 0}
     - target: {fileID: 5460443890991060376, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
       propertyPath: skipButton
