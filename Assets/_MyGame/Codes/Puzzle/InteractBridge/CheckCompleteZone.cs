@@ -15,11 +15,14 @@ namespace _MyGame.Codes.Puzzle.InteractBridge
 
         protected override void OnTriggered(Collider other)
         {
-            if (puzzleStep5 != null) puzzleStep5.puzzleCompleted = true;
-            else
-            // Vô hiệu hóa zone sau khi trigger
+            Debug.Log("[CheckCompleteZone] Triggered by " + other.name);
+            if (puzzleStep5 != null)
+            {
+                puzzleStep5.puzzleCompleted = true;
+                puzzleStep5._onComplete?.Invoke();
+                
+            }
             DisableZone();
-            puzzleStep5.countdownCanvas.enabled = false;
         }
     }
 }
