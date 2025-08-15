@@ -1,4 +1,5 @@
 using System;
+using _MyGame.Codes.Boss.UI;
 using Tu_Develop.Import.Scripts;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -31,8 +32,11 @@ namespace Code.Boss
         // Events for external systems
         public System.Action<int> OnBossPhaseChanged;
         public System.Action OnBossDefeated;
-        public System.Action<int> OnPlayerHealthChanged;
+        public System.Action<int> OnPlayerHealthChanged; // Giờ sẽ pass currentHealth thay vì damage
         public System.Action OnBossFightStarted;
+
+        // Thêm field để track current health
+        private int currentPlayerHealth = 3; 
 
         private void Awake()
         {
@@ -102,7 +106,10 @@ namespace Code.Boss
             // Initialize UI với boss controller mới spawn
             if (bossController != null)
             {
-                if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config);
+                // Reset current health khi bắt đầu boss fight
+                currentPlayerHealth = 3;
+                
+                if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config); 
                 if (bossHealthBar != null) bossHealthBar.Initialize(bossController);
                 if (bossSkillCastBar != null) bossSkillCastBar.Initialize(bossController);
             }
@@ -142,7 +149,17 @@ namespace Code.Boss
         private void OnPlayerTakeDamageEvent(BossEventData data)
         {
             var damage = data.intValue;
-            OnPlayerHealthChanged?.Invoke(damage);
+            // Trừ máu tại đây, không để PlayerHealthBar trừ
+            currentPlayerHealth = Mathf.Max(0, currentPlayerHealth - damage);
+            
+            // Pass current health (không phải damage) cho UI
+            OnPlayerHealthChanged?.Invoke(currentPlayerHealth);
+            
+            // Check player defeated
+            if (currentPlayerHealth <= 0)
+            {
+                BossEventSystem.Trigger(BossEventType.PlayerDefeated);
+            }
         }
 
         private void OnPlayerDefeatedEvent(BossEventData data)
@@ -258,8 +275,11 @@ namespace Code.Boss
         
         private void ResetPlayerHealth()
         {
-            // Trigger event to reset player health
-            BossEventSystem.Trigger(BossEventType.PlayerHealthReset, new BossEventData(3));
+            // Reset current health tracking
+            currentPlayerHealth = 3; // Sửa từ 6 về 3
+            
+            // Trigger event to reset player health UI
+            BossEventSystem.Trigger(BossEventType.PlayerHealthReset, new BossEventData(3)); // Sửa từ 6 về 3
             Debug.Log("[BossGameManager] Player health reset");
         }
         #endregion

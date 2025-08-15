@@ -1,3 +1,4 @@
+using _MyGame.Codes.Boss.UI;
 using UnityEngine;
 
 namespace Code.Boss
@@ -11,6 +12,8 @@ namespace Code.Boss
         private BossHealthBar bossHealthBar;
         private BossSkillCastBar skillCastBar;
         private PlayerHealthBar playerHealthBar;
+        private Notification defeatNotification;
+        
         
         public BossUIManager(BossController controller)
         {
@@ -60,6 +63,17 @@ namespace Code.Boss
             else
             {
                 Debug.LogWarning("PlayerHealthBar not found in scene! Please add PlayerHealthBar component to a UI GameObject.");
+            }
+
+            // Tìm BossDefeatNotification trong scene
+            defeatNotification = Object.FindFirstObjectByType<Notification>();
+            if (defeatNotification != null)
+            {
+                Debug.Log("Boss Defeat Notification found and initialized");
+            }
+            else
+            {
+                Debug.LogWarning("BossDefeatNotification not found in scene! Please add BossDefeatNotification component to a UI GameObject.");
             }
         }
 
