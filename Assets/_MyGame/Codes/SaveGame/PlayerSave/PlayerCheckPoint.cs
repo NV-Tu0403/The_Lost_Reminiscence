@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Tu_Develop.Import.Scripts;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
@@ -113,7 +112,9 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         Quaternion rot = playerTransform.rotation;
         Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position},\n" +
                   $"\nRotation (Euler): {rot.eulerAngles}");
+        //_lastLoadedData = null;
         return JsonUtility.ToJson(data, true);
+
     }
 
     public void LoadFromJson(string json)
@@ -247,7 +248,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         else if (playerTransform.TryGetComponent(out Rigidbody rb))
         {
             rb.linearVelocity = Vector3.zero;
-            rb.MovePosition(targetPos);
+            rb.MovePosition(targetPos + new Vector3(0, 5, 0));
         }
         // Nếu không có NavMeshAgent hoặc Rigidbody
         else
