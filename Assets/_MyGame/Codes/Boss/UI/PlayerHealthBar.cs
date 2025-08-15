@@ -2,9 +2,9 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.SceneManagement;
+using Code.Boss;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.UI
 {
     /// <summary>
     /// Thanh máu người chơi ở giữa dưới màn hình
@@ -65,25 +65,28 @@ namespace Code.Boss
 
         private void RegisterEvents()
         {
-            BossEventSystem.Subscribe(BossEventType.PlayerTakeDamage, OnPlayerTakeDamage);
+
             BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeated);
             BossEventSystem.Subscribe(BossEventType.PlayerHealthReset, OnPlayerHealthReset);
+            
+            // Subscribe vào BossGameManager event để update UI
+            if (BossGameManager.Instance != null)
+            {
+                BossGameManager.Instance.OnPlayerHealthChanged += OnPlayerHealthChangedFromManager;
+            }
         }
-
-        private void OnPlayerTakeDamage(BossEventData data)
+        
+        // Chỉ cập nhật UI dựa trên current health từ BossGameManager
+        private void OnPlayerHealthChangedFromManager(int currentHealth)
         {
-            var damage = data.intValue;
-            currentHealth = Mathf.Max(0, currentHealth - damage);
+            // BossGameManager đã trừ máu rồi, chúng ta chỉ cập nhật UI với giá trị hiện tại
+            this.currentHealth = currentHealth;
             if (healthSlider != null)
             {
                 AnimateHealthChange(currentHealth);
             }
             UpdateHealthText();
-            // Check if player is defeated
-            if (currentHealth <= 0)
-            {
-                OnPlayerDefeated();
-            }
+            // Không cần check defeated ở đây vì BossGameManager đã xử lý
         }
 
         private void UpdateHealthText()
@@ -108,9 +111,14 @@ namespace Code.Boss
 
         private void OnDestroy()
         {
-            BossEventSystem.Unsubscribe(BossEventType.PlayerTakeDamage, OnPlayerTakeDamage);
             BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeated);
             BossEventSystem.Unsubscribe(BossEventType.PlayerHealthReset, OnPlayerHealthReset);
+            
+            // Unsubscribe từ BossGameManager event
+            if (BossGameManager.Instance != null)
+            {
+                BossGameManager.Instance.OnPlayerHealthChanged -= OnPlayerHealthChangedFromManager;
+            }
         }
 
         private void OnPlayerHealthReset(BossEventData data)
