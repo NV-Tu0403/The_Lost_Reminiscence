@@ -2,12 +2,12 @@
 using Code.Checkpoint;
 using Code.Cutscene;
 using Code.Dialogue;
+using Code.GameEventSystem;
 using Code.Puzzle;
 using Code.Timeline;
-using Duckle;
 using UnityEngine;
 
-namespace Code.GameEventSystem
+namespace _MyGame.Codes.GameEventSystem
 {
     public class EventExecutor : MonoBehaviour
     {

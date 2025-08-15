@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using _MyGame.Codes.GameEventSystem;
 using Code.GameEventSystem;
 using DG.Tweening;
 using TMPro;

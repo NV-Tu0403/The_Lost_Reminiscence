@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using Code.Procession;
+using _MyGame.Codes.Procession;
 using Script.Procession.Conditions;
 using Script.Procession.Reward.ScriptableObjects;
 
@@ -50,9 +50,9 @@ public class MainProcessSO
     {
         var mainProcess = new MainProcess
         {
-            Id          = Id,
-            Type        = Type,
-            Name        = Name,
+            id          = Id,
+            type        = Type,
+            name        = Name,
             Description = Description,
             Order       = Order,
             SubProcesses= SubProcesses.ConvertAll(so => so.ToSubProcess()),

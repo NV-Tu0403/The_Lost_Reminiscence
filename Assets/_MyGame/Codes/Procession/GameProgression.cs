@@ -4,7 +4,7 @@ using Script.Procession.Conditions;
 using Script.Procession.Reward.Base;
 using UnityEngine.Serialization;
 
-namespace Code.Procession
+namespace _MyGame.Codes.Procession
 {
     /// <summary>
     /// Lớp chính chứa toàn bộ dữ liệu tiến trình (Game Progression)
@@ -27,17 +27,16 @@ namespace Code.Procession
         public enum ProcessType { Chapter, Quest, Dialogue, Cutscene, Puzzle, Checkpoint, Event , Timeline}
         public enum ProcessStatus { Locked, InProgress, Completed }
         public enum TriggerType { Manual, Automatic }
-    
-        public string Id;
+        public string id;
     
 
         // Loại tiến trình (gọi ra dropdown trong Inspector nếu SO sử dụng enum trực tiếp)
-        public ProcessType Type;
+        public ProcessType type;
 
         // Trạng thái hiện tại (mặc định là Locked)
         public ProcessStatus Status = ProcessStatus.Locked;
 
-        public string Name;
+        public string name;
         public string Description;
 
         // Thứ tự xuất hiện (nhỏ → lớn)

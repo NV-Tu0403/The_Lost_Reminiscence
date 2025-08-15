@@ -1,14 +1,14 @@
-﻿﻿using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using _MyGame.Codes.GameEventSystem;
 using Code.Character;
 using Code.GameEventSystem;
 using Code.Puzzle;
 using Code.Trigger;
 using Script.Procession.Reward.Base;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace Code.Procession
+namespace _MyGame.Codes.Procession
 {
     public class ProgressionManager : MonoBehaviour, ISaveable
     {
@@ -117,7 +117,7 @@ namespace Code.Procession
                 if (main.SubProcesses.All(s2 => s2.Status == MainProcess.ProcessStatus.Completed))
                 {
                     main.Status = MainProcess.ProcessStatus.Completed;
-                    Debug.Log($"[ProgressionManager] MainProcess '{main.Id}' marked Completed.");
+                    Debug.Log($"[ProgressionManager] MainProcess '{main.id}' marked Completed.");
                     GrantRewards(main.Rewards);
                 }
 
@@ -131,7 +131,7 @@ namespace Code.Procession
         // Đánh dấu hoàn thành MainProcess nếu tìm thấy, trả về true nếu thành công
         private bool TryCompleteMainProcess(string eventId)
         {
-            var mainMatch = progression.mainProcesses.Find(m => m.Id == eventId);
+            var mainMatch = progression.mainProcesses.Find(m => m.id == eventId);
             if (mainMatch == null || mainMatch.Status == MainProcess.ProcessStatus.Completed) return false;
             mainMatch.Status = MainProcess.ProcessStatus.Completed;
             Debug.Log($"[ProgressionManager] MainProcess '{eventId}' marked Completed (direct).");
@@ -146,7 +146,7 @@ namespace Code.Procession
         /// </summary>
         public object GetProcessData(string id)
         {
-            var mainProcess = progression.mainProcesses.Find(p => p.Id == id);
+            var mainProcess = progression.mainProcesses.Find(p => p.id == id);
             if (mainProcess != null) return mainProcess;
             foreach (var subProcess in progression.mainProcesses
                          .Select(main => main.SubProcesses?
@@ -165,8 +165,8 @@ namespace Code.Procession
         /// </summary>
         public void UnlockProcess(string id)
         {
-            var mainProcess = progression.mainProcesses.Find(p => p.Id == id);
-            if (mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.Locked)
+            var mainProcess = progression.mainProcesses.Find(p => p.id == id);
+            if (mainProcess is { Status: MainProcess.ProcessStatus.Locked })
             {
                 mainProcess.Status = MainProcess.ProcessStatus.InProgress;
                 Debug.Log($"[ProgressionManager] Unlocked MainProcess '{id}'");
@@ -196,13 +196,13 @@ namespace Code.Procession
             foreach (var sub in progression.mainProcesses
                          .Select(main => main.SubProcesses?
                              .Find(s => s.Id == id))
-                         .Where(sub => sub != null && sub.Status == MainProcess.ProcessStatus.Locked))
+                         .Where(sub => sub is { Status: MainProcess.ProcessStatus.Locked }))
             {
                 return sub.Conditions == null || sub.Conditions.All(c => c.IsSatisfied(true));
             }
 
-            var top = progression.mainProcesses.Find(m => m.Id == id);
-            return top != null && top.Status == MainProcess.ProcessStatus.Locked;
+            var top = progression.mainProcesses.Find(m => m.id == id);
+            return top is { Status: MainProcess.ProcessStatus.Locked };
         }
 
         // Kiểm tra event (SubProcess hoặc MainProcess) đã hoàn thành chưa
@@ -216,8 +216,8 @@ namespace Code.Procession
                 return sub.Status == MainProcess.ProcessStatus.Completed;
             }
 
-            var mainProcess = progression.mainProcesses.Find(m => m.Id == eventId);
-            return mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.Completed;
+            var mainProcess = progression.mainProcesses.Find(m => m.id == eventId);
+            return mainProcess is { Status: MainProcess.ProcessStatus.Completed };
         }
 
         public bool IsWaitingForEvent(string eventId)
@@ -230,8 +230,8 @@ namespace Code.Procession
                 return sub.Status == MainProcess.ProcessStatus.InProgress;
             }
 
-            var mainProcess = progression.mainProcesses.Find(m => m.Id == eventId);
-            return mainProcess != null && mainProcess.Status == MainProcess.ProcessStatus.InProgress;
+            var mainProcess = progression.mainProcesses.Find(m => m.id == eventId);
+            return mainProcess is { Status: MainProcess.ProcessStatus.InProgress };
         }
 
         #region === Xử lí sau ===
@@ -251,15 +251,19 @@ namespace Code.Procession
         /// </summary>
         private void GrantReward(Reward reward)
         {
-            if (reward == null) return;
-            if (reward is ItemReward itemReward && itemReward.ItemType == "Loot")
+            switch (reward)
             {
-                var loot = lootDatabase.GetLootConfig(itemReward.ItemName);
-                Debug.Log(loot != null
-                    ? $"[ProgressionManager] Granted {itemReward.Amount} x {loot.Name} (Power:{loot.Power})"
-                    : $"[ProgressionManager] Loot {itemReward.ItemName} not found!");
+                case null:
+                    return;
+                case ItemReward { ItemType: "Loot" } itemReward:
+                {
+                    var loot = lootDatabase.GetLootConfig(itemReward.ItemName);
+                    Debug.Log(loot != null
+                        ? $"[ProgressionManager] Granted {itemReward.Amount} x {loot.Name} (Power:{loot.Power})"
+                        : $"[ProgressionManager] Loot {itemReward.ItemName} not found!");
+                    break;
+                }
             }
-
             reward.Grant();
         }
 
@@ -271,26 +275,22 @@ namespace Code.Procession
             foreach (var main in progression.mainProcesses)
             {
                 var subProcess = main.SubProcesses?.Find(s => s.Id == id);
-                if (subProcess != null && subProcess.Status != MainProcess.ProcessStatus.Completed)
+                if (subProcess == null || subProcess.Status == MainProcess.ProcessStatus.Completed) continue;
+                var allConditionsMet = subProcess.Conditions == null ||
+                                       subProcess.Conditions.All(c => c.IsSatisfied(data));
+                if (!allConditionsMet) continue;
+                subProcess.Status = MainProcess.ProcessStatus.Completed;
+                GrantRewards(subProcess.Rewards);
+                Debug.Log($"[ProgressionManager] SubProcess '{id}' completed by conditions.");
+                if (main.SubProcesses.All(s2 => s2.Status == MainProcess.ProcessStatus.Completed))
                 {
-                    bool allConditionsMet = subProcess.Conditions == null ||
-                                            subProcess.Conditions.All(c => c.IsSatisfied(data));
-                    if (allConditionsMet)
-                    {
-                        subProcess.Status = MainProcess.ProcessStatus.Completed;
-                        GrantRewards(subProcess.Rewards);
-                        Debug.Log($"[ProgressionManager] SubProcess '{id}' completed by conditions.");
-                        if (main.SubProcesses.All(s2 => s2.Status == MainProcess.ProcessStatus.Completed))
-                        {
-                            main.Status = MainProcess.ProcessStatus.Completed;
-                            GrantRewards(main.Rewards);
-                            Debug.Log($"[ProgressionManager] MainProcess '{main.Id}' completed by sub-conditions.");
-                        }
-
-                        isDirty = true;
-                        return true;
-                    }
+                    main.Status = MainProcess.ProcessStatus.Completed;
+                    GrantRewards(main.Rewards);
+                    Debug.Log($"[ProgressionManager] MainProcess '{main.id}' completed by sub-conditions.");
                 }
+
+                isDirty = true;
+                return true;
             }
 
             return false;
@@ -301,7 +301,7 @@ namespace Code.Procession
         // /// </summary>
         private bool UpdateProcessStatus(string id, MainProcess.ProcessStatus newStatus)
         {
-            var mainProcess = progression.mainProcesses.Find(p => p.Id == id);
+            var mainProcess = progression.mainProcesses.Find(p => p.id == id);
             if (mainProcess != null)
             {
                 mainProcess.Status = newStatus;
@@ -310,16 +310,15 @@ namespace Code.Procession
                 return true;
             }
 
-            foreach (var main in progression.mainProcesses)
+            foreach (var subProcess in progression.mainProcesses
+                         .Select(main => main.SubProcesses?
+                             .Find(s => s.Id == id))
+                         .Where(subProcess => subProcess != null))
             {
-                var subProcess = main.SubProcesses?.Find(s => s.Id == id);
-                if (subProcess != null)
-                {
-                    subProcess.Status = newStatus;
-                    Debug.Log($"[ProgressionManager] Updated SubProcess {id} → {newStatus}");
-                    isDirty = true;
-                    return true;
-                }
+                subProcess.Status = newStatus;
+                Debug.Log($"[ProgressionManager] Updated SubProcess {id} → {newStatus}");
+                isDirty = true;
+                return true;
             }
 
             return false;
@@ -339,7 +338,7 @@ namespace Code.Procession
         /// </summary>
         public void JumpToMainProcess(string mainProcessId)
         {
-            var main = progression.mainProcesses.Find(mp => mp.Id == mainProcessId);
+            var main = progression.mainProcesses.Find(mp => mp.id == mainProcessId);
             if (main == null)
             {
                 Debug.LogWarning($"[ProgressionManager] MainProcess '{mainProcessId}' not found!");
@@ -411,7 +410,7 @@ namespace Code.Procession
             }
             else
             {
-                Debug.LogWarning($"[ProgressionManager] MainProcess '{main.Id}' không có checkpoint để teleport.");
+                Debug.LogWarning($"[ProgressionManager] MainProcess '{main.id}' không có checkpoint để teleport.");
             }
         }
 
