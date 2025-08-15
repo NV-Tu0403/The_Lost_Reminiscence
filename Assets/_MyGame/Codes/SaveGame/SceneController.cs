@@ -16,6 +16,8 @@ public sealed class SceneController : MonoBehaviour
 {
     public static SceneController Instance { get; private set; }
 
+    [SerializeField] private ScenePreloader scenePreloader;
+
     [Header("Exclude & options")]
     [SerializeField] private List<string> excludedScenes = new List<string> { "BookMenu" };
     [SerializeField] private bool setNewLoadedSceneActive = true;
@@ -55,6 +57,8 @@ public sealed class SceneController : MonoBehaviour
 
         SceneManager.sceneLoaded += OnSceneLoaded;
         SceneManager.sceneUnloaded += OnSceneUnloaded;
+
+        StartCoroutine(PreloadScene());
     }
 
     private void Start()
@@ -353,6 +357,22 @@ public sealed class SceneController : MonoBehaviour
     #endregion
 
     #region Helpers
+
+
+    private IEnumerator PreloadScene()
+    {
+        var allScenes = new List<string>();
+        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+        {
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            allScenes.Add(name);
+        }
+
+
+        yield return StartCoroutine(scenePreloader.PreloadScenesAndRelease(allScenes));
+
+    }
 
     /// <summary>
     /// Kiểm tra tên scene hợp lệ trước khi load.

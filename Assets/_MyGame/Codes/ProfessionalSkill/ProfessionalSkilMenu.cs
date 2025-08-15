@@ -28,7 +28,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     private Demo02 _demo02;
     private CameraZoomController cameraZoomController;
     private CutSceneController cutSceneController;
-    [SerializeField] private ScenePreloader scenePreloader;
 
     private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
@@ -65,9 +64,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
         RegisterSaveables();
         CheckUserAccounts();
-
-
-        StartCoroutine(PreloadScene());
     }
 
     public override void RegisterEvent(CoreEvent e)
@@ -610,21 +606,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         return true;
-    }
-
-    private IEnumerator PreloadScene()
-    {
-        var allScenes = new List<string>();
-        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
-        {
-            string path = SceneUtility.GetScenePathByBuildIndex(i);
-            string name = System.IO.Path.GetFileNameWithoutExtension(path);
-            allScenes.Add(name);
-        }
-
-
-        yield return StartCoroutine(scenePreloader.PreloadScenesAndRelease(allScenes));
-
     }
 
     #endregion
