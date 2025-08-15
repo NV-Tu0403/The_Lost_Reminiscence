@@ -1,6 +1,5 @@
 using _MyGame.Codes.GameEventSystem;
 using UnityEngine;
-using Code.GameEventSystem;
 using Duckle;
 using DuckLe;
 

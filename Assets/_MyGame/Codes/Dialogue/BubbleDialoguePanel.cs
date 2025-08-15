@@ -4,7 +4,6 @@ using _MyGame.Codes.GameEventSystem;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
-using Code.GameEventSystem;
 
 namespace Code.Dialogue
 {

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using _MyGame.Codes.Procession;
-using Code.GameEventSystem;
 using UnityEngine;
 
 // Script này quản lý các sự kiện trong game,
@@ -116,7 +115,7 @@ namespace _MyGame.Codes.GameEventSystem
             var nextEventId = eventSequence[currentEventIndex];
             if (!ProgressionManager.Instance.CanTrigger(nextEventId)) return;
 
-            if (ProgressionManager.Instance.GetProcessData(nextEventId) is SubProcess { Trigger: MainProcess.TriggerType.Automatic })
+            if (ProgressionManager.Instance.GetProcessData(nextEventId) is SubProcess { trigger: MainProcess.TriggerType.Automatic })
             {
                 //Debug.Log($"[EventManager] Auto triggering next event: {nextEventId}");
                 EventExecutor.Instance.TriggerEvent(nextEventId);

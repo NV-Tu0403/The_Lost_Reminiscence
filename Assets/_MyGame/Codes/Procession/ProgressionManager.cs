@@ -2,7 +2,6 @@
 using System.Linq;
 using _MyGame.Codes.GameEventSystem;
 using Code.Character;
-using Code.GameEventSystem;
 using Code.Puzzle;
 using Code.Trigger;
 using Script.Procession.Reward.Base;
@@ -22,7 +21,6 @@ namespace _MyGame.Codes.Procession
         private GameProgression progression;
 
         // Đánh dấu dữ liệu đã thay đổi
-        private bool isDirty = false;
 
 
         #region public methods for save/load
@@ -73,12 +71,12 @@ namespace _MyGame.Codes.Procession
             }
 
             sequence.AddRange(from main in progression.mainProcesses
-                .OrderBy(mp => mp.Order) 
-                where main.SubProcesses != null 
+                .OrderBy(mp => mp.order) 
+                where main.subProcesses != null 
                 from sub 
-                    in main.SubProcesses
-                        .OrderBy(sp => sp.Order) 
-                select sub.Id);
+                    in main.subProcesses
+                        .OrderBy(sp => sp.order) 
+                select sub.id);
 
             Debug.Log($"[ProgressionManager] Built event sequence: {sequence.Count} events");
             return sequence;
@@ -101,7 +99,7 @@ namespace _MyGame.Codes.Procession
                 Debug.LogWarning($"[ProgressionManager] Event '{eventId}' not found in any process");
             }
 
-            isDirty = true;
+            IsDirty = true;
         }
 
         // Đánh dấu hoàn thành SubProcess nếu tìm thấy, trả về true nếu thành công
@@ -109,19 +107,19 @@ namespace _MyGame.Codes.Procession
         {
             foreach (var main in progression.mainProcesses)
             {
-                var sub = main.SubProcesses?.Find(s => s.Id == eventId);
-                if (sub == null || sub.Status == MainProcess.ProcessStatus.Completed) continue;
-                sub.Status = MainProcess.ProcessStatus.Completed;
+                var sub = main.subProcesses?.Find(s => s.id == eventId);
+                if (sub == null || sub.status == MainProcess.ProcessStatus.Completed) continue;
+                sub.status = MainProcess.ProcessStatus.Completed;
                 Debug.Log($"[ProgressionManager] SubProcess '{eventId}' marked Completed.");
                 GrantRewards(sub.Rewards);
-                if (main.SubProcesses.All(s2 => s2.Status == MainProcess.ProcessStatus.Completed))
+                if (main.subProcesses.All(s2 => s2.status == MainProcess.ProcessStatus.Completed))
                 {
-                    main.Status = MainProcess.ProcessStatus.Completed;
+                    main.status = MainProcess.ProcessStatus.Completed;
                     Debug.Log($"[ProgressionManager] MainProcess '{main.id}' marked Completed.");
                     GrantRewards(main.Rewards);
                 }
 
-                isDirty = true;
+                IsDirty = true;
                 return true;
             }
 
@@ -132,11 +130,11 @@ namespace _MyGame.Codes.Procession
         private bool TryCompleteMainProcess(string eventId)
         {
             var mainMatch = progression.mainProcesses.Find(m => m.id == eventId);
-            if (mainMatch == null || mainMatch.Status == MainProcess.ProcessStatus.Completed) return false;
-            mainMatch.Status = MainProcess.ProcessStatus.Completed;
+            if (mainMatch == null || mainMatch.status == MainProcess.ProcessStatus.Completed) return false;
+            mainMatch.status = MainProcess.ProcessStatus.Completed;
             Debug.Log($"[ProgressionManager] MainProcess '{eventId}' marked Completed (direct).");
             GrantRewards(mainMatch.Rewards);
-            isDirty = true;
+            IsDirty = true;
             return true;
 
         }
@@ -149,8 +147,8 @@ namespace _MyGame.Codes.Procession
             var mainProcess = progression.mainProcesses.Find(p => p.id == id);
             if (mainProcess != null) return mainProcess;
             foreach (var subProcess in progression.mainProcesses
-                         .Select(main => main.SubProcesses?
-                             .Find(s => s.Id == id))
+                         .Select(main => main.subProcesses?
+                             .Find(s => s.id == id))
                          .Where(subProcess => subProcess != null))
             {
                 return subProcess;
@@ -166,22 +164,22 @@ namespace _MyGame.Codes.Procession
         public void UnlockProcess(string id)
         {
             var mainProcess = progression.mainProcesses.Find(p => p.id == id);
-            if (mainProcess is { Status: MainProcess.ProcessStatus.Locked })
+            if (mainProcess is { status: MainProcess.ProcessStatus.Locked })
             {
-                mainProcess.Status = MainProcess.ProcessStatus.InProgress;
+                mainProcess.status = MainProcess.ProcessStatus.InProgress;
                 Debug.Log($"[ProgressionManager] Unlocked MainProcess '{id}'");
-                isDirty = true;
+                IsDirty = true;
                 return;
             }
 
             foreach (var subProcess in progression.mainProcesses
-                         .Select(main => main.SubProcesses?
-                             .Find(s => s.Id == id))
-                         .Where(subProcess => subProcess is { Status: MainProcess.ProcessStatus.Locked }))
+                         .Select(main => main.subProcesses?
+                             .Find(s => s.id == id))
+                         .Where(subProcess => subProcess is { status: MainProcess.ProcessStatus.Locked }))
             {
-                subProcess.Status = MainProcess.ProcessStatus.InProgress;
+                subProcess.status = MainProcess.ProcessStatus.InProgress;
                 Debug.Log($"[ProgressionManager] Unlocked SubProcess '{id}'");
-                isDirty = true;
+                IsDirty = true;
                 return;
             }
 
@@ -194,44 +192,44 @@ namespace _MyGame.Codes.Procession
         public bool CanTrigger(string id)
         {
             foreach (var sub in progression.mainProcesses
-                         .Select(main => main.SubProcesses?
-                             .Find(s => s.Id == id))
-                         .Where(sub => sub is { Status: MainProcess.ProcessStatus.Locked }))
+                         .Select(main => main.subProcesses?
+                             .Find(s => s.id == id))
+                         .Where(sub => sub is { status: MainProcess.ProcessStatus.Locked }))
             {
                 return sub.Conditions == null || sub.Conditions.All(c => c.IsSatisfied(true));
             }
 
             var top = progression.mainProcesses.Find(m => m.id == id);
-            return top is { Status: MainProcess.ProcessStatus.Locked };
+            return top is { status: MainProcess.ProcessStatus.Locked };
         }
 
         // Kiểm tra event (SubProcess hoặc MainProcess) đã hoàn thành chưa
         public bool IsEventCompleted(string eventId)
         {
             foreach (var sub in progression.mainProcesses
-                         .Select(main => main.SubProcesses?
-                             .Find(s => s.Id == eventId))
+                         .Select(main => main.subProcesses?
+                             .Find(s => s.id == eventId))
                          .Where(sub => sub != null))
             {
-                return sub.Status == MainProcess.ProcessStatus.Completed;
+                return sub.status == MainProcess.ProcessStatus.Completed;
             }
 
             var mainProcess = progression.mainProcesses.Find(m => m.id == eventId);
-            return mainProcess is { Status: MainProcess.ProcessStatus.Completed };
+            return mainProcess is { status: MainProcess.ProcessStatus.Completed };
         }
 
         public bool IsWaitingForEvent(string eventId)
         {
             foreach (var sub in progression.mainProcesses
-                         .Select(main => main.SubProcesses?.
-                             Find(s => s.Id == eventId))
+                         .Select(main => main.subProcesses?.
+                             Find(s => s.id == eventId))
                          .Where(sub => sub != null))
             {
-                return sub.Status == MainProcess.ProcessStatus.InProgress;
+                return sub.status == MainProcess.ProcessStatus.InProgress;
             }
 
             var mainProcess = progression.mainProcesses.Find(m => m.id == eventId);
-            return mainProcess is { Status: MainProcess.ProcessStatus.InProgress };
+            return mainProcess is { status: MainProcess.ProcessStatus.InProgress };
         }
 
         #region === Xử lí sau ===
@@ -274,22 +272,22 @@ namespace _MyGame.Codes.Procession
         {
             foreach (var main in progression.mainProcesses)
             {
-                var subProcess = main.SubProcesses?.Find(s => s.Id == id);
-                if (subProcess == null || subProcess.Status == MainProcess.ProcessStatus.Completed) continue;
+                var subProcess = main.subProcesses?.Find(s => s.id == id);
+                if (subProcess == null || subProcess.status == MainProcess.ProcessStatus.Completed) continue;
                 var allConditionsMet = subProcess.Conditions == null ||
                                        subProcess.Conditions.All(c => c.IsSatisfied(data));
                 if (!allConditionsMet) continue;
-                subProcess.Status = MainProcess.ProcessStatus.Completed;
+                subProcess.status = MainProcess.ProcessStatus.Completed;
                 GrantRewards(subProcess.Rewards);
                 Debug.Log($"[ProgressionManager] SubProcess '{id}' completed by conditions.");
-                if (main.SubProcesses.All(s2 => s2.Status == MainProcess.ProcessStatus.Completed))
+                if (main.subProcesses.All(s2 => s2.status == MainProcess.ProcessStatus.Completed))
                 {
-                    main.Status = MainProcess.ProcessStatus.Completed;
+                    main.status = MainProcess.ProcessStatus.Completed;
                     GrantRewards(main.Rewards);
                     Debug.Log($"[ProgressionManager] MainProcess '{main.id}' completed by sub-conditions.");
                 }
 
-                isDirty = true;
+                IsDirty = true;
                 return true;
             }
 
@@ -304,20 +302,20 @@ namespace _MyGame.Codes.Procession
             var mainProcess = progression.mainProcesses.Find(p => p.id == id);
             if (mainProcess != null)
             {
-                mainProcess.Status = newStatus;
+                mainProcess.status = newStatus;
                 Debug.Log($"[ProgressionManager] Updated MainProcess {id} → {newStatus}");
-                isDirty = true;
+                IsDirty = true;
                 return true;
             }
 
             foreach (var subProcess in progression.mainProcesses
-                         .Select(main => main.SubProcesses?
-                             .Find(s => s.Id == id))
+                         .Select(main => main.subProcesses?
+                             .Find(s => s.id == id))
                          .Where(subProcess => subProcess != null))
             {
-                subProcess.Status = newStatus;
+                subProcess.status = newStatus;
                 Debug.Log($"[ProgressionManager] Updated SubProcess {id} → {newStatus}");
-                isDirty = true;
+                IsDirty = true;
                 return true;
             }
 
@@ -347,39 +345,39 @@ namespace _MyGame.Codes.Procession
 
             foreach (var m in progression.mainProcesses)
             {
-                if (m.Order < main.Order)
+                if (m.order < main.order)
                 {
                     // Complete main và subprocess trước đó
-                    if (m.Status != MainProcess.ProcessStatus.Completed)
-                        m.Status = MainProcess.ProcessStatus.Completed;
-                    if (m.SubProcesses == null) continue;
-                    foreach (var sub in m.SubProcesses)
+                    if (m.status != MainProcess.ProcessStatus.Completed)
+                        m.status = MainProcess.ProcessStatus.Completed;
+                    if (m.subProcesses == null) continue;
+                    foreach (var sub in m.subProcesses)
                     {
-                        sub.Status = MainProcess.ProcessStatus.Completed;
+                        sub.status = MainProcess.ProcessStatus.Completed;
                         // Nếu là puzzle, force complete để đảm bảo trạng thái vật thể
-                        if (sub.Type == MainProcess.ProcessType.Puzzle)
+                        if (sub.type == MainProcess.ProcessType.Puzzle)
                         { 
-                            PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
+                            PuzzleManager.Instance.ForceCompletePuzzle(sub.id);
                         }
                     }
                 }
-                else if (m.Order == main.Order)
+                else if (m.order == main.order)
                 {
                     // Đặt main được chọn là InProgress
-                    m.Status = MainProcess.ProcessStatus.InProgress;
-                    if (m.SubProcesses == null) continue;
-                    foreach (var sub in m.SubProcesses.Where(sub => sub.Type == MainProcess.ProcessType.Puzzle))
+                    m.status = MainProcess.ProcessStatus.InProgress;
+                    if (m.subProcesses == null) continue;
+                    foreach (var sub in m.subProcesses.Where(sub => sub.type == MainProcess.ProcessType.Puzzle))
                     {
-                        PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
+                        PuzzleManager.Instance.ForceCompletePuzzle(sub.id);
                     }
                 }
                 else // m.Order > main.Order
                 {
                     // Lock main và subprocess sau
-                    m.Status = MainProcess.ProcessStatus.Locked;
-                    if (m.SubProcesses == null) continue;
-                    foreach (var sub in m.SubProcesses)
-                        sub.Status = MainProcess.ProcessStatus.Locked;
+                    m.status = MainProcess.ProcessStatus.Locked;
+                    if (m.subProcesses == null) continue;
+                    foreach (var sub in m.subProcesses)
+                        sub.status = MainProcess.ProcessStatus.Locked;
                 }
             }
 
@@ -389,9 +387,9 @@ namespace _MyGame.Codes.Procession
 
         private static void TeleportPlayerToFirstCheckpointOfMain(MainProcess main)
         {
-            var checkpointSub = main.SubProcesses?
-                .Where(s => s.Type == MainProcess.ProcessType.Checkpoint)
-                .OrderBy(s => s.Order)
+            var checkpointSub = main.subProcesses?
+                .Where(s => s.type == MainProcess.ProcessType.Checkpoint)
+                .OrderBy(s => s.order)
                 .FirstOrDefault();
 
             if (checkpointSub != null)
@@ -399,14 +397,14 @@ namespace _MyGame.Codes.Procession
                 var checkpointZones = FindObjectsByType<CheckpointZone>(FindObjectsSortMode.None);
                 foreach (var zone in checkpointZones)
                 {
-                    if (zone.eventId != checkpointSub.Id) continue;
+                    if (zone.eventId != checkpointSub.id) continue;
                     var pos = zone.transform.position;
                     var rot = zone.transform.rotation;
-                    Debug.Log($"[ProgressionManager] Teleport player về checkpoint '{checkpointSub.Id}' tại {pos}");
+                    Debug.Log($"[ProgressionManager] Teleport player về checkpoint '{checkpointSub.id}' tại {pos}");
                     PlayerRespawnManager.Instance.TeleportToCheckpoint(pos, rot);
                     return;
                 }
-                Debug.LogWarning($"[ProgressionManager] Không tìm thấy CheckpointZone với eventId '{checkpointSub.Id}' trong scene.");
+                Debug.LogWarning($"[ProgressionManager] Không tìm thấy CheckpointZone với eventId '{checkpointSub.id}' trong scene.");
             }
             else
             {
@@ -420,12 +418,12 @@ namespace _MyGame.Codes.Procession
         private void SyncPuzzleStatesWithProgression()
         {
             if (progression?.mainProcesses == null) return;
-            foreach (var sub in from main in progression.mainProcesses where main.SubProcesses != null 
-                     from sub in main.SubProcesses 
-                     where sub.Type == MainProcess.ProcessType.Puzzle && sub.Status == MainProcess.ProcessStatus.Completed 
+            foreach (var sub in from main in progression.mainProcesses where main.subProcesses != null 
+                     from sub in main.subProcesses 
+                     where sub.type == MainProcess.ProcessType.Puzzle && sub.status == MainProcess.ProcessStatus.Completed 
                      select sub)
             {
-                PuzzleManager.Instance.ForceCompletePuzzle(sub.Id);
+                PuzzleManager.Instance.ForceCompletePuzzle(sub.id);
             }
         }
         #endregion
@@ -447,7 +445,7 @@ namespace _MyGame.Codes.Procession
         {
             if (string.IsNullOrEmpty(json)) return;
             progression = JsonUtility.FromJson<GameProgression>(json);
-            isDirty = false;
+            IsDirty = false;
         }
 
         // Chỉ lưu nếu progression khác null
@@ -457,7 +455,7 @@ namespace _MyGame.Codes.Procession
         }
 
         // Đánh dấu dữ liệu đã thay đổi
-        public bool IsDirty => isDirty;
+        public bool IsDirty { get; private set; }
 
         // Hook trước khi lưu (có thể thêm logic nếu cần)
         public void BeforeSave() { }

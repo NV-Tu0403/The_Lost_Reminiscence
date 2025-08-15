@@ -1,5 +1,5 @@
 ﻿using System;
-using Code.GameEventSystem;
+using _MyGame.Codes.GameEventSystem;
 using Script.Procession.Reward.ScriptableObjects;
 using UnityEditor;
 using UnityEngine;

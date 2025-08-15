@@ -53,11 +53,11 @@ public class MainProcessSO
             id          = Id,
             type        = Type,
             name        = Name,
-            Description = Description,
-            Order       = Order,
-            SubProcesses= SubProcesses.ConvertAll(so => so.ToSubProcess()),
+            description = Description,
+            order       = Order,
+            subProcesses= SubProcesses.ConvertAll(so => so.ToSubProcess()),
             Rewards     = Rewards.ConvertAll(so => so.ToReward()),
-            Status      = Status
+            status      = Status
         };
         //Debug.Log($"[MainProcessSO] Converted MainProcess '{Id}': {mainProcess.SubProcesses.Count} SubProcesses, {mainProcess.Rewards.Count} Rewards");
         return mainProcess;
@@ -87,15 +87,15 @@ public class SubProcessSO
     {
         var subProcess = new SubProcess
         {
-            Id         = Id,
-            Type       = Type,
-            Name       = Name,
-            Description= Description,
-            Order      = Order,
-            Trigger    = Trigger,
+            id         = Id,
+            type       = Type,
+            name       = Name,
+            description= Description,
+            order      = Order,
+            trigger    = Trigger,
             Conditions = Conditions.ConvertAll(so => so.ToCondition()),
             Rewards    = Rewards.ConvertAll(so => so.ToReward()),
-            Status     = Status
+            status     = Status
         };
         // Debug.Log($"[SubProcessSO] Converted SubProcess '{Id}': {subProcess.Conditions.Count} Conditions, {subProcess.Rewards.Count} Rewards");
         return subProcess;

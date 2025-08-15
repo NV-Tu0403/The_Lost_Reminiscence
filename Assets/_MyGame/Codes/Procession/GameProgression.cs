@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Script.Procession.Conditions;
 using Script.Procession.Reward.Base;
-using UnityEngine.Serialization;
 
 namespace _MyGame.Codes.Procession
 {
@@ -34,16 +33,16 @@ namespace _MyGame.Codes.Procession
         public ProcessType type;
 
         // Trạng thái hiện tại (mặc định là Locked)
-        public ProcessStatus Status = ProcessStatus.Locked;
+        public ProcessStatus status = ProcessStatus.Locked;
 
         public string name;
-        public string Description;
+        public string description;
 
         // Thứ tự xuất hiện (nhỏ → lớn)
-        public int Order;
+        public int order;
 
         // Danh sách tiến trình con (SubProcesses)
-        public List<SubProcess> SubProcesses;
+        public List<SubProcess> subProcesses;
 
         // Danh sách phần thưởng khi MainProcess hoàn thành
         public List<Reward> Rewards;
@@ -56,21 +55,19 @@ namespace _MyGame.Codes.Procession
     [Serializable]
     public class SubProcess
     {
-        public string Id;
+        public string id;
 
         // Sử dụng cùng enum ProcessType từ MainProcess
-        public MainProcess.ProcessType Type;
+        public MainProcess.ProcessType type;
 
         // Trạng thái hiện tại (mặc định là Locked)
-        public MainProcess.ProcessStatus Status = MainProcess.ProcessStatus.Locked;
-
-        public string Name;
-        public string Description;
-    
-        public MainProcess.TriggerType Trigger;
+        public MainProcess.ProcessStatus status = MainProcess.ProcessStatus.Locked;
+        public string name;
+        public string description;
+        public MainProcess.TriggerType trigger;
     
         // Thứ tự trong MainProcess
-        public int Order;
+        public int order;
 
         // Danh sách điều kiện (Condition) để SubProcess được coi là hoàn thành
         public List<Condition> Conditions;

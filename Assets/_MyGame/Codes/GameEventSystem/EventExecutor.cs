@@ -2,7 +2,6 @@
 using Code.Checkpoint;
 using Code.Cutscene;
 using Code.Dialogue;
-using Code.GameEventSystem;
 using Code.Puzzle;
 using Code.Timeline;
 using UnityEngine;
@@ -54,7 +53,7 @@ namespace _MyGame.Codes.GameEventSystem
         public void TriggerEvent(string eventId)
         {
             // 1. Tìm dữ liệu trong EventDatabase
-            BaseEventData data = database.GetEventById(eventId);
+            var data = database.GetEventById(eventId);
             if (data == null)
             {
                 Debug.LogWarning($"[EventExecutor] Không tìm thấy eventId = '{eventId}' trong EventDatabase!");
