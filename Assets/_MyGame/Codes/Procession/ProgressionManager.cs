@@ -28,6 +28,7 @@ namespace _MyGame.Codes.Procession
         //Hàm public để UI gọi khi NewGame hoặc ContinueGame
         public void InitProgression()
         {
+            LoadProgression(); // Load progression từ SO hoặc JSON
             var sequence = BuildEventSequence();
             EventManager.Instance.Init(sequence);
         }
@@ -41,9 +42,8 @@ namespace _MyGame.Codes.Procession
                 Destroy(gameObject);
                 return;
             }
-
             Instance = this;
-            LoadProgression(); // Load progression từ SO hoặc JSON
+            //LoadProgression(); // Load progression từ SO hoặc JSON
         }
 
         private void LoadProgression()
@@ -54,7 +54,6 @@ namespace _MyGame.Codes.Procession
                 Debug.Log("[ProgressionManager] Loaded from SO");
                 return;
             }
-
             Debug.LogError("ProgressionDataSO is null!");
         }
 

@@ -352,7 +352,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             // Nếu Player có thể chưa ready, dùng coroutine chờ tối đa 3s:
             StartCoroutine(WaitForPlayerThenApply(3f));
 
-            //ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
+            ProgressionManager.Instance.AfterLoad();
         };
 
         SceneController.Instance.OnSceneFullyReady += onFullyReady;
