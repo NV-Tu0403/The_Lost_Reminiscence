@@ -1,4 +1,4 @@
-namespace Code.GameEventSystem
+namespace _MyGame.Codes.GameEventSystem
 {
     public interface IEventAction
     {

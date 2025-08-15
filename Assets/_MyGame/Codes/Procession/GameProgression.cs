@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using Script.Procession.Conditions;
 using Script.Procession.Reward.Base;
-using UnityEngine.Serialization;
 
-namespace Code.Procession
+namespace _MyGame.Codes.Procession
 {
     /// <summary>
     /// Lớp chính chứa toàn bộ dữ liệu tiến trình (Game Progression)
@@ -27,24 +26,23 @@ namespace Code.Procession
         public enum ProcessType { Chapter, Quest, Dialogue, Cutscene, Puzzle, Checkpoint, Event , Timeline}
         public enum ProcessStatus { Locked, InProgress, Completed }
         public enum TriggerType { Manual, Automatic }
-    
-        public string Id;
+        public string id;
     
 
         // Loại tiến trình (gọi ra dropdown trong Inspector nếu SO sử dụng enum trực tiếp)
-        public ProcessType Type;
+        public ProcessType type;
 
         // Trạng thái hiện tại (mặc định là Locked)
-        public ProcessStatus Status = ProcessStatus.Locked;
+        public ProcessStatus status = ProcessStatus.Locked;
 
-        public string Name;
-        public string Description;
+        public string name;
+        public string description;
 
         // Thứ tự xuất hiện (nhỏ → lớn)
-        public int Order;
+        public int order;
 
         // Danh sách tiến trình con (SubProcesses)
-        public List<SubProcess> SubProcesses;
+        public List<SubProcess> subProcesses;
 
         // Danh sách phần thưởng khi MainProcess hoàn thành
         public List<Reward> Rewards;
@@ -57,21 +55,19 @@ namespace Code.Procession
     [Serializable]
     public class SubProcess
     {
-        public string Id;
+        public string id;
 
         // Sử dụng cùng enum ProcessType từ MainProcess
-        public MainProcess.ProcessType Type;
+        public MainProcess.ProcessType type;
 
         // Trạng thái hiện tại (mặc định là Locked)
-        public MainProcess.ProcessStatus Status = MainProcess.ProcessStatus.Locked;
-
-        public string Name;
-        public string Description;
-    
-        public MainProcess.TriggerType Trigger;
+        public MainProcess.ProcessStatus status = MainProcess.ProcessStatus.Locked;
+        public string name;
+        public string description;
+        public MainProcess.TriggerType trigger;
     
         // Thứ tự trong MainProcess
-        public int Order;
+        public int order;
 
         // Danh sách điều kiện (Condition) để SubProcess được coi là hoàn thành
         public List<Condition> Conditions;

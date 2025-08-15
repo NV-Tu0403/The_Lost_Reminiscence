@@ -1,5 +1,5 @@
 using System;
-using Code.GameEventSystem;
+using _MyGame.Codes.GameEventSystem;
 using UnityEngine;
 
 namespace Code.Cutscene

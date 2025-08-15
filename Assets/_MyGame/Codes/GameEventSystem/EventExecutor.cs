@@ -4,10 +4,9 @@ using Code.Cutscene;
 using Code.Dialogue;
 using Code.Puzzle;
 using Code.Timeline;
-using Duckle;
 using UnityEngine;
 
-namespace Code.GameEventSystem
+namespace _MyGame.Codes.GameEventSystem
 {
     public class EventExecutor : MonoBehaviour
     {
@@ -54,7 +53,7 @@ namespace Code.GameEventSystem
         public void TriggerEvent(string eventId)
         {
             // 1. Tìm dữ liệu trong EventDatabase
-            BaseEventData data = database.GetEventById(eventId);
+            var data = database.GetEventById(eventId);
             if (data == null)
             {
                 Debug.LogWarning($"[EventExecutor] Không tìm thấy eventId = '{eventId}' trong EventDatabase!");

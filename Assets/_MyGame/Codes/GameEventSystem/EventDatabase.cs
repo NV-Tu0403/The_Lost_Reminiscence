@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Duckle;
 using UnityEngine;
 
-namespace Code.GameEventSystem
+namespace _MyGame.Codes.GameEventSystem
 {
     [CreateAssetMenu(fileName = "EventDatabase", menuName = "Events/EventDatabase")]
     public class EventDatabase : ScriptableObject
