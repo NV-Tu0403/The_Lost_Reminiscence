@@ -127,7 +127,7 @@ public class CoreInput : CoreEventListenerBase
         }
         else
         {
-            Debug.Log("[CoreInput] Player found.");
+            //Debug.Log("[CoreInput] Player found.");
         }
     }
 

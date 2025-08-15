@@ -11,11 +11,13 @@ using Code.Backend;
 using TMPro;
 using System.Drawing;
 using echo17.EndlessBook.Demo02;
+using Unity.AppUI.UI;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Điều phối các nghiệp vụ chuyên môn.
 /// Đăng kí Logic nghiệp vụ cho các Event ở đây, có thể gọi trigger các sự kiện từ đây (cẩn thận tránh lặp vô hạn).
-/// * KHÔNG ĐƯỢC ĐĂNG KÍ HOẶC CHỨA LOGIC CHANGECORESTATE Ở ĐÂY.
+/// 
 /// </summary>
 public class ProfessionalSkilMenu : CoreEventListenerBase
 {
@@ -26,6 +28,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     private Demo02 _demo02;
     private CameraZoomController cameraZoomController;
     private CutSceneController cutSceneController;
+    [SerializeField] private ScenePreloader scenePreloader;
 
     private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
@@ -62,6 +65,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         }
         RegisterSaveables();
         CheckUserAccounts();
+
+
+        StartCoroutine(PreloadScene());
     }
 
     public override void RegisterEvent(CoreEvent e)
@@ -82,7 +88,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         e.OnConnectingToServer += () => PerformOtp();
 
         //e.OnChangeScene += async (nameScene, pos) => await OnChangeScene(nameScene, pos);
-        e.OnChangeScene +=  (nameScene, pos) =>  OnChangeScene(nameScene, pos);
+        e.OnChangeScene += (nameScene, pos) => OnChangeScene(nameScene, pos);
 
 
     }
@@ -289,24 +295,36 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             return null;
         }
 
-        // Load scene và chờ callback khi load xong
-        SceneController.Instance.LoadAdditiveScene(SceneDefault, PlayerCheckPoint.Instance, () =>
+        string sceneToLoad = SceneDefault;
+
+        Action<string> onFullyReady = null;
+        onFullyReady = (loadedSceneName) =>
         {
-            //Đảm bảo Player đã tồn tại sau khi load scene
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player == null)
+            if (!string.Equals(loadedSceneName, sceneToLoad, StringComparison.Ordinal)) return;
+
+            // unsubscribe ngay lập tức
+            SceneController.Instance.OnSceneFullyReady -= onFullyReady;
+
+            // đảm bảo Player có tồn tại; nếu không, log + thử chờ ngắn (optional)
+            var playerGO = GameObject.FindGameObjectWithTag("Player");
+            if (playerGO == null)
             {
-                Debug.LogError("[OnNewGame] Player not found after loading scene.");
+                Debug.LogError("[OnNewGame] Player not found after scene fully ready.");
                 return;
             }
 
             ProgressionManager.Instance.InitProgression();
+
             PlayerCheckPoint.Instance.AssignCameraFromCore();
-            PlayerCheckPoint.Instance.SetPlayerTransform(player.transform);
-            //Đặt vị trí mặc định
+            PlayerCheckPoint.Instance.SetPlayerTransform(playerGO.transform);
             PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+
             SaveGameManager.Instance.SaveToFolder(newSaveFolder);
-        });
+        };
+
+        // subscribe và load
+        SceneController.Instance.OnSceneFullyReady += onFullyReady;
+        SceneController.Instance.LoadAdditiveScene(sceneToLoad);
         return newSaveFolder;
     }
 
@@ -325,18 +343,45 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             Debug.LogError($"[OnContinueGame] Invalid scene name '{PlayerCheckPoint.Instance.CurrentMap}', loading default scene '{sceneToLoad}' instead.");
         }
 
-        SceneController.Instance.LoadAdditiveScene(sceneToLoad, PlayerCheckPoint.Instance, () =>
+        Action<string> onFullyReady = null;
+        onFullyReady = (loadedSceneName) =>
         {
+            if (!string.Equals(loadedSceneName, sceneToLoad, StringComparison.Ordinal)) return;
+            SceneController.Instance.OnSceneFullyReady -= onFullyReady;
+
             PlayTimeManager.Instance.StartCounting();
             MapStateSave.Instance.ApplyMapState();
             PlayerCheckPoint.Instance.AssignCameraFromCore();
-            PlayerCheckPoint.Instance.StartCoroutine(WaitUntilPlayerAndApply());
-            Debug.Log($" Player transform position: {gameObject.transform.position}");
 
-            // Đồng bộ hóa dữ liệu vật thể
-            ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
+            // Nếu Player có thể chưa ready, dùng coroutine chờ tối đa 3s:
+            StartCoroutine(WaitForPlayerThenApply(3f));
 
-        });
+            //ProgressionManager.Instance.SyncPuzzleStatesWithProgression();
+        };
+
+        SceneController.Instance.OnSceneFullyReady += onFullyReady;
+        SceneController.Instance.LoadAdditiveScene(sceneToLoad);
+    }
+
+    private IEnumerator WaitForPlayerThenApply(float timeoutSeconds)
+    {
+        float start = Time.realtimeSinceStartup;
+        Transform player = null;
+        while ((Time.realtimeSinceStartup - start) < timeoutSeconds)
+        {
+            player = GameObject.FindGameObjectWithTag("Player")?.transform;
+            if (player != null) break;
+            yield return null;
+        }
+
+        if (player == null)
+        {
+            Debug.LogError("[WaitForPlayerThenApply] Player not found after waiting.");
+            yield break;
+        }
+
+        //PlayerCheckPoint.Instance.SetPlayerTransform(player);
+        PlayerCheckPoint.Instance.ApplyLoadedPosition();
     }
 
     /// <summary>
@@ -440,9 +485,10 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
                         SceneController.Instance.UnloadAllAdditiveScenes(() =>
                         {
                             mess = "Đã lưu thành công và chuẩn bị thoát khỏi phiên chơi.";
-                            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+
                         });
 
+                        PlayerCheckPoint.Instance.ResetPlayerPositionWord();
                         // Gọi lại load ảnh tại đây – sau khi ảnh mới đã được chụp xong
                         RefreshSaveImage(currentSaveFolder);
                         Core.Instance.ActiveMenu(true, true); // bật lại menu (hoàn thành QuitSesion)
@@ -528,44 +574,56 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     public bool OnChangeScene(string nameScene, Vector3 posSpawn)
     {
-
-        //GameObject player = GameObject.FindGameObjectWithTag("Player");
         Transform player = GameObject.FindGameObjectWithTag("Player")?.transform;
         if (player == null)
         {
-            Debug.LogError("[OnNewGame] Player not found after loading scene.");
+            Debug.LogError("[OnChangeScene] Player not found before change.");
             return false;
         }
 
         cutSceneController.PlayCutScene(UIActionType.ContinueSession);
-        //await Task.Delay(3000);
 
+        // Unload other additive scenes first (non-blocking callback)
         SceneController.Instance.UnloadAllAdditiveScenes(() =>
-            mess = $"Đã unload scene {nameScene} thành công."
-        );
-        //await Task.Delay(3000);
-
-        SceneController.Instance.LoadAdditiveScene(nameScene, PlayerCheckPoint.Instance, () =>
         {
-            //Vector3 pos = new Vector3(0, 20, 0);
-            //player.transform.position = pos;
-          
-            Debug.Log($"[OnChangeScene] Player transform position: {player.transform.position}");
-           
+            Debug.Log($"[OnChangeScene] Unloaded previous additive scenes.");
         });
+
+        Action<string> onFullyReady = null;
+        onFullyReady = (loadedSceneName) =>
+        {
+            if (!string.Equals(loadedSceneName, nameScene, StringComparison.Ordinal)) return;
+            SceneController.Instance.OnSceneFullyReady -= onFullyReady;
+
+            // Move persistent player into the newly loaded scene, then set position
+            var newScene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(nameScene);
+            if (newScene.IsValid())
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(player.gameObject, newScene);
+
+            player.position = posSpawn;
+
+            Debug.Log($"[OnChangeScene] Player moved and set pos: {player.position}");
+        };
+
+        SceneController.Instance.OnSceneFullyReady += onFullyReady;
+        SceneController.Instance.LoadAdditiveScene(nameScene);
 
         PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         return true;
     }
 
-    private IEnumerator WaitPlayerAndApply(GameObject player, Vector3 pos)
+    private IEnumerator PreloadScene()
     {
-        Transform p = null;
-        while (p == null)
+        var allScenes = new List<string>();
+        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
         {
-            p = GameObject.FindGameObjectWithTag("Player")?.transform;
-            yield return null;
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            allScenes.Add(name);
         }
+
+
+        yield return StartCoroutine(scenePreloader.PreloadScenesAndRelease(allScenes));
 
     }
 
@@ -1095,4 +1153,5 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     }
 
     #endregion
+
 }

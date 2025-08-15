@@ -178,7 +178,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-            rb.position = loadedPos;
+            rb.position = loadedPos + new Vector3 (0,5,0);
             rb.rotation = loadedRot;
             Debug.LogWarning($"[PlayerCheckPoint] Applied position with Rigidbody - Position: {loadedPos}, Rotation: {loadedRot}");
         }
@@ -255,12 +255,12 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             playerTransform.position = targetPos;
         }
 
-        //// Lưu dữ liệu checkpoint
-        //_lastLoadedData = new PlayerCheckPointData
-        //{
-        //    mapName = CurrentMap,
-        //    position = new SerializableVector3(playerTransform.position)
-        //};
+        // Lưu dữ liệu checkpoint
+        _lastLoadedData = new PlayerCheckPointData
+        {
+            mapName = CurrentMap,
+            position = new SerializableVector3(playerTransform.position)
+        };
 
         _lastLoadedData = null;
         _isDirty = true;
@@ -292,7 +292,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         else if (playerTransform.TryGetComponent(out Rigidbody rb))
         {
             rb.linearVelocity = Vector3.zero;
-            rb.MovePosition(targetPos);
+            rb.MovePosition(targetPos + new Vector3(0, 5, 0)) ;
         }
         // Nếu không có NavMeshAgent hoặc Rigidbody
         else

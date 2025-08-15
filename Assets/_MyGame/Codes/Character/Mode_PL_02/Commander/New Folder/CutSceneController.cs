@@ -1,19 +1,22 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Video;
 
 public class CutSceneController : MonoBehaviour
-{
+{    
+
     public static CutSceneController Instance { get; private set; }
 
-    [SerializeField] private PlayableDirector currentDirector;   // Director hiện tại đang phát CutScene
-    [SerializeField] private VideoPlayer currentVideoPlayer;
-    private int currentIndex = 0;               // Chỉ số hiện tại của CutSceneItem đang phát
-    private CutSceneEvent currentCutSceneEvent; // Sự kiện CutScene hiện tại đang được phát
-    [SerializeField] private float currentTime = 0f;             // Thời gian hiện tại của CutScene đang phát
-    [SerializeField] private GameObject currentInstance;         // Theo dõi instance hiện tại
-
     public Core_CallBack_Event config;
+    [SerializeField] private List<GameObject> CutSceneItemTemp = new List<GameObject>();
+
+    [SerializeField] private PlayableDirector currentDirector;
+    [SerializeField] private VideoPlayer currentVideoPlayer;
+    private int currentIndex = 0;                               // Chỉ số hiện tại của CutSceneItem đang phát
+    private CutSceneEvent currentCutSceneEvent;                 // Sự kiện CutScene hiện tại đang được phát
+    [SerializeField] private float currentTime = 0f;            // Thời gian hiện tại của CutScene đang phát
+    [SerializeField] private GameObject currentInstance;        // Theo dõi instance hiện tại
 
     private void Awake()
     {
@@ -28,6 +31,11 @@ public class CutSceneController : MonoBehaviour
         InvokePointLogic();
 
         DemoPlayCS();
+    }
+
+    private void LateUpdate()
+    {
+       ClearCutSceneItemTemp();
     }
 
     /// <summary>
@@ -105,24 +113,38 @@ public class CutSceneController : MonoBehaviour
             }
         }
 
-        // Chuyển sang Cutscene tiếp theo khi hoàn thành và hủy instance
+        // Khi Cutscene hoàn thành, dừng và thêm vào CutSceneItemTemp
         if (currentTime >= duration)
         {
             if (currentDirector != null) currentDirector.Stop();
             if (currentVideoPlayer != null) currentVideoPlayer.Stop();
             if (currentInstance != null)
             {
-                DestroyCutScene(currentInstance);
+                CutSceneItemTemp.Add(currentInstance); // Thêm vào mảng tạm
             }
             currentIndex++;
             PlayNextCutScene();
         }
     }
 
-    private void DestroyCutScene(GameObject item)
+    /// <summary>
+    /// xóa tất cả các item trong CutSceneItemTemp
+    /// </summary>
+    public void ClearCutSceneItemTemp()
     {
-        Destroy(item); // Hủy instance khi Cutscene kết thúc
-        Debug.Log("CutScene ended and instance destroyed: " + currentInstance.name);
+        if (CutSceneItemTemp.Count > 0)
+        {
+            foreach (var item in CutSceneItemTemp)
+            {
+                if (item != null)
+                {
+                    Destroy(item); // Hủy từng instance
+                }
+            }
+            CutSceneItemTemp.Clear(); // Xóa mảng
+            Debug.Log("CutSceneItemTemp cleared.");
+        }
+        return;
     }
 
     private void DemoPlayCS()
@@ -131,13 +153,5 @@ public class CutSceneController : MonoBehaviour
         {
             PlayCutScene(UIActionType.NewSession);
         }
-        //else if (Input.GetKeyDown(KeyCode.I))
-        //{
-        //    PlayCutScene(UIActionType.CutScene_02);
-        //}
-        //else if (Input.GetKeyDown(KeyCode.O))
-        //{
-        //    PlayCutScene(UIActionType.CutScene_03);
-        //}
     }
 }
