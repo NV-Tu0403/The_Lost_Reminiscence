@@ -175,7 +175,7 @@ public class Core : CoreEventListenerBase
         else
         {
             _accountStateMachine.SetState(new NoConnectToServer(_accountStateMachine, _coreEvent));
-            Debug.Log($"[InitAccountState] Không có baseName → NoCurrentAccountState");
+            //Debug.Log($"[InitAccountState] Không có baseName → NoCurrentAccountState");
         }
     }
 

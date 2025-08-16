@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace Code.GameEventSystem
+namespace _MyGame.Codes.GameEventSystem
 {
     public static class EventBus
     {
-        private static Dictionary<string, Action<object>> eventTable = new();
+        private static readonly Dictionary<string, Action<object>> eventTable = new();
 
         /// <summary>
         /// Đăng ký một callback để lắng nghe sự kiện với eventKey.
@@ -38,7 +37,7 @@ namespace Code.GameEventSystem
         /// </summary>
         public static void Publish(string eventKey, object data = null)
         {
-            if (eventTable.ContainsKey(eventKey)) eventTable[eventKey]?.Invoke(data);
+            if (eventTable.TryGetValue(eventKey, out var value)) value?.Invoke(data);
         }
 
         /// <summary>

@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using Code.Procession;
+using _MyGame.Codes.Procession;
 using UnityEngine;
 
 // Script này quản lý các sự kiện trong game,
 // bao gồm cả việc khởi chạy các sự kiện như cắt cảnh, thay đổi bản đồ, đối thoại, v.v.
 
-namespace Code.GameEventSystem
+namespace _MyGame.Codes.GameEventSystem
 {
     public class EventManager : MonoBehaviour
     {
@@ -31,10 +31,10 @@ namespace Code.GameEventSystem
         /// <summary>
         /// Khởi tạo chuỗi sự kiện và đăng ký lắng nghe các sự kiện.
         /// </summary>
-        /// <param name="eventSequence">Danh sách các eventId sẽ được xử lý theo thứ tự.</param>
-        public void Init(List<string> eventSequence)
+        /// <param name="sequence">Danh sách các eventId sẽ được xử lý theo thứ tự.</param>
+        public void Init(List<string> sequence)
         {
-            this.eventSequence = eventSequence;
+            this.eventSequence = sequence;
             currentEventIndex = 0;
 
             RegisterEventBusListeners();
@@ -58,7 +58,7 @@ namespace Code.GameEventSystem
         /// <param name="eventData">Dữ liệu sự kiện vừa hoàn thành.</param>
         private void OnEventFinished(object eventData)
         {
-            string eventId = (eventData as BaseEventData)?.eventId ?? eventData?.ToString();
+            var eventId = (eventData as BaseEventData)?.eventId ?? eventData?.ToString();
 
             if (string.IsNullOrEmpty(eventId))
             {
@@ -85,7 +85,7 @@ namespace Code.GameEventSystem
             }
             else
             {
-                int idx = eventSequence.IndexOf(eventId);
+                var idx = eventSequence.IndexOf(eventId);
                 if (idx >= 0) currentEventIndex = idx + 1;
             }
         }
@@ -97,7 +97,7 @@ namespace Code.GameEventSystem
         {
             if (eventSequence.Count == 0) return;
 
-            string firstEventId = eventSequence[0];
+            var firstEventId = eventSequence[0];
             if (ProgressionManager.Instance.CanTrigger(firstEventId))
             {
                 //Debug.Log($"[EventManager] Auto trigger first event: {firstEventId}");
@@ -112,11 +112,10 @@ namespace Code.GameEventSystem
         {
             if (currentEventIndex >= eventSequence.Count) return;
 
-            string nextEventId = eventSequence[currentEventIndex];
+            var nextEventId = eventSequence[currentEventIndex];
             if (!ProgressionManager.Instance.CanTrigger(nextEventId)) return;
 
-            var processData = ProgressionManager.Instance.GetProcessData(nextEventId) as SubProcess;
-            if (processData != null && processData.Trigger == MainProcess.TriggerType.Automatic)
+            if (ProgressionManager.Instance.GetProcessData(nextEventId) is SubProcess { trigger: MainProcess.TriggerType.Automatic })
             {
                 //Debug.Log($"[EventManager] Auto triggering next event: {nextEventId}");
                 EventExecutor.Instance.TriggerEvent(nextEventId);

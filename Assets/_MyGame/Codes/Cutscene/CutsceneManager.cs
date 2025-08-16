@@ -1,5 +1,5 @@
 using System;
-using Code.GameEventSystem;
+using _MyGame.Codes.GameEventSystem;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -34,8 +34,8 @@ namespace Code.Cutscene
         }
         
         private void OnStartCutsceneEvent(object data)
-        { var eventData = data as BaseEventData;
-            if (eventData == null) return;
+        {
+            if (data is not BaseEventData eventData) return;
             StartCutscene(eventData.eventId, eventData.OnFinish);
         }
 

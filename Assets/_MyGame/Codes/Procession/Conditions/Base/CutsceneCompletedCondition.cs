@@ -1,4 +1,4 @@
-using Code.Procession;
+using _MyGame.Codes.Procession;
 
 namespace Script.Procession.Conditions
 {

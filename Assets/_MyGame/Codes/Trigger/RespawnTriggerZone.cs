@@ -1,4 +1,4 @@
-using Code.GameEventSystem;
+using _MyGame.Codes.GameEventSystem;
 using UnityEngine;
 
 namespace Code.Trigger
