@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using _MyGame.Codes.GameEventSystem;
+using _MyGame.Codes.Trigger;
 using Code.Character;
 using Code.Puzzle;
-using Code.Trigger;
 using Script.Procession.Reward.Base;
 using UnityEngine;
 

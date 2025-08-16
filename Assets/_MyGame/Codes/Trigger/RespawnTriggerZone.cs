@@ -1,7 +1,7 @@
 using _MyGame.Codes.GameEventSystem;
 using UnityEngine;
 
-namespace Code.Trigger
+namespace _MyGame.Codes.Trigger
 {
     public class RespawnTriggerZone : TriggerZone
     {
