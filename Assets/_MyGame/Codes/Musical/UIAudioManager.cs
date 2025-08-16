@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Tu_Develop.Musical
+namespace _MyGame.Codes.Musical
 {
     /// <summary>
     /// Quản lý giao diện điều khiển âm thanh (volume và mute) trong menu setting của game.
