@@ -18,7 +18,6 @@ public class Core : CoreEventListenerBase
     public StateMachine _stateMachine;
     public StateMachine _accountStateMachine;
     public UserAccountManager _userAccountManager;
-    private CameraZoomController _cameraZoomController;
     public BackendSync backendSync;
 
     #region biến cần thiết
@@ -82,7 +81,7 @@ public class Core : CoreEventListenerBase
         InitAccountState();
         //_accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
         //TryInitializeCamera();
-        _cameraZoomController = CameraZoomController.Instance;
+        //_cameraZoomController = CameraZoomController.Instance;
     }
 
     private void Start()

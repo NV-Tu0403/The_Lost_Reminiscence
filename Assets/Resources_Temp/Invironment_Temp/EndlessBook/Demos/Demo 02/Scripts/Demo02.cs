@@ -4,7 +4,7 @@
     using UnityEngine;
     using echo17.EndlessBook;
     using System.Threading.Tasks;
-    using Microsoft.Win32;
+    using System.Collections;
 
     public enum BookActionTypeEnum
     {
@@ -302,7 +302,7 @@
             switch (item.uIActionType)
             {
                 case UIActionType.NewSession:
-                    await TurnToPage(item.targetPage, false);
+                    await TurnToPage(item.targetPage, true);
                     Core.Instance.ActiveMenu(true, false);
                     await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerNewSession(), true);
                     //CoreEvent.Instance.triggerNewSession();
@@ -320,13 +320,21 @@
                     break;
 
                 case UIActionType.QuitGame:
-#if UNITY_EDITOR
-                    UnityEditor.EditorApplication.isPlaying = false;
-#else
-                    Application.Quit();
-#endif
+                    ClosedFront();
+
+                    StartCoroutine(QuitAfterDelay(2f));
                     break;
             }
+        }
+        private IEnumerator QuitAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+    Application.Quit();
+#endif
         }
 
         /// <summary>
