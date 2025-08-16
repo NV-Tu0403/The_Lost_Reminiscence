@@ -9,7 +9,6 @@ using System.Text.RegularExpressions;
 using Code.Backend;
 using TMPro;
 using _MyGame.Codes.Procession;
-using echo17.EndlessBook.Demo02;
 
 
 /// <summary>
@@ -25,8 +24,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public BackendSync backendSync;
     private CutSceneController cutSceneController;
 
-    private PlayerController_02 playerController_02;
-
     private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
     public string SelectedSaveImagePath;
@@ -36,7 +33,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public string CurrentOriginalSavePath; // đường dẫn đến thư mục gốc của bản backup hiện tại
     public bool CurrentbackupOke; // đánh dấu xem bản backup hiện tại có hợp lệ hay không
 
-    public string SceneDefault = "Phong_scene";
+    public string SceneDefault = "MainScene";
 
     [SerializeField] private GameObject[] CallBackObject;
 
