@@ -380,13 +380,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             yield break;
         }
 
-        playerController_02._navMeshAgent.enabled = false;
-        playerController_02._playerInput.enabled = false;
-
         PlayerCheckPoint.Instance.ApplyLoadedPositionStrict();
-
-        playerController_02._navMeshAgent.enabled = true;
-        playerController_02._playerInput.enabled = true;
     }
 
     /// <summary>
