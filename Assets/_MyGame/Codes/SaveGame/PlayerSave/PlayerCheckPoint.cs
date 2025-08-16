@@ -153,6 +153,12 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         }
     }
 
+    public void SetCharacterCamera(Transform camTransform, Camera cam)
+    {
+        characterCameraTransform = camTransform;
+        characterCamera = cam;
+    }
+
     public void ApplyLoadedPosition()
     {
         if (_lastLoadedData == null || playerTransform == null)
@@ -164,24 +170,23 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         Vector3 loadedPos = _lastLoadedData.position.ToVector3();
         Quaternion loadedRot = _lastLoadedData.playerRotation.ToQuaternion();
 
-        // Nếu có NavMeshAgent
-        if (playerTransform.TryGetComponent(out NavMeshAgent agent))
+        if (playerTransform.TryGetComponent(out Rigidbody rb))
+        {
+            playerTransform.gameObject.SetActive(false);
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.position = loadedPos;
+            rb.rotation = loadedRot;
+            playerTransform.gameObject.SetActive(true);
+            Debug.Log($"[PlayerCheckPoint] Applied position with Rigidbody - Position: {rb.position}, Rotation: {loadedRot}");
+        }
+        else if (playerTransform.TryGetComponent(out NavMeshAgent agent))
         {
             agent.enabled = false;
             playerTransform.position = loadedPos;
             agent.enabled = true;
             agent.Warp(loadedPos);
-            //agent.Warp(loadedPos);
-            Debug.LogWarning($"[PlayerCheckPoint] Applied position with NavMeshAgent - Position: {loadedPos}, Rotation: {loadedRot}");
-        }
-        // Nếu có Rigidbody
-        else if (playerTransform.TryGetComponent(out Rigidbody rb))
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            rb.position = loadedPos + new Vector3 (0,5,0);
-            rb.rotation = loadedRot;
-            Debug.LogWarning($"[PlayerCheckPoint] Applied position with Rigidbody - Position: {loadedPos}, Rotation: {loadedRot}");
+            Debug.Log($"[PlayerCheckPoint] Applied position with NavMeshAgent - Position: {loadedPos}, Rotation: {loadedRot}");
         }
         else
         {
@@ -211,18 +216,16 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         Quaternion rot = playerTransform.rotation;
         Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}," + $"\nRotation (Euler): {rot.eulerAngles}");
 
-        _lastLoadedData = null;
-    }
+        if (rb.position != loadedPos)
+        {
+            playerTransform.position = loadedPos;
+        }
 
-    public void SetCharacterCamera(Transform camTransform, Camera cam)
-    {
-        characterCameraTransform = camTransform;
-        characterCamera = cam;
+        _lastLoadedData = null;
     }
 
     public void ResetPlayerPositionWord()
     {
-        // Tìm Player nếu chưa có
         if (playerTransform == null)
         {
             playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
@@ -234,9 +237,12 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         }
 
         Vector3 targetPos = new Vector3(0, 20, 0);
-
-        // Kiểm tra NavMeshAgent trước
-        if (playerTransform.TryGetComponent(out NavMeshAgent navAgent))
+        if (playerTransform.TryGetComponent(out Rigidbody rb))
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.MovePosition(targetPos + new Vector3(0, 5, 0));
+        }
+        else if (playerTransform.TryGetComponent(out NavMeshAgent navAgent))
         {
             // Tạm thời vô hiệu hóa NavMeshAgent để set vị trí
             navAgent.enabled = false;
@@ -244,13 +250,6 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             navAgent.enabled = true;
             navAgent.Warp(targetPos);
         }
-        // Nếu có Rigidbody
-        else if (playerTransform.TryGetComponent(out Rigidbody rb))
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.MovePosition(targetPos + new Vector3(0, 5, 0));
-        }
-        // Nếu không có NavMeshAgent hoặc Rigidbody
         else
         {
             playerTransform.position = targetPos;
@@ -293,7 +292,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         else if (playerTransform.TryGetComponent(out Rigidbody rb))
         {
             rb.linearVelocity = Vector3.zero;
-            rb.MovePosition(targetPos + new Vector3(0, 5, 0)) ;
+            rb.MovePosition(targetPos + new Vector3(0, 5, 0));
         }
         // Nếu không có NavMeshAgent hoặc Rigidbody
         else

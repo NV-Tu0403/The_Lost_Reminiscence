@@ -376,7 +376,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             yield break;
         }
 
-        PlayerCheckPoint.Instance.SetPlayerTransform(PlayerCheckPoint.Instance.PlayerTransform);
+        //PlayerCheckPoint.Instance.SetPlayerTransform(PlayerCheckPoint.Instance.PlayerTransform);
         PlayerCheckPoint.Instance.ApplyLoadedPosition();
 
         //Debug.Log($"[Continue Session] Load Position: {PlayerCheckPoint.Instance.PlayerTransform.position}");
@@ -598,10 +598,10 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
             // Move persistent player into the newly loaded scene, then set position
             var newScene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(nameScene);
-            if (newScene.IsValid())
-                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(player.gameObject, newScene);
+            //if (newScene.IsValid())
+            //    UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(player.gameObject, newScene);
 
-            player.position = posSpawn;
+            //player.position = posSpawn;
 
             Debug.Log($"[OnChangeScene] Player moved and set pos: {player.position}");
         };
