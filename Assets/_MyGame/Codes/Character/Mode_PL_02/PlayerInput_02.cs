@@ -13,7 +13,7 @@ public class PlayerInput_02 : MonoBehaviour
 
     public bool isInputLocked = false;
 
-    private Vector3 dir;
+    public Vector3 dir;
 
     private float _lastSpacePressTime;
     private int _spacePressCount;

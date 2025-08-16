@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public struct CoreInputType
@@ -19,7 +20,7 @@ public class CoreInput : CoreEventListenerBase
     {
         // Đăng ký sự kiện để tìm player và đặt vị trí
         FindPlayer();
-       
+
     }
 
     private void Update()
@@ -131,25 +132,25 @@ public class CoreInput : CoreEventListenerBase
         }
     }
 
-    // hàm khi nhấn nút v thì đặt player vào tọa độ 0,0,0
     public void SetPlayerToZeroPosition()
     {
         if (player == null)
         {
-            FindPlayer(); // Tìm player nếu chưa có
+            Debug.LogWarning("[CoreInput] Player is not assigned. Call FindPlayer() first.");
+            return;
         }
 
         if (Input.GetKeyDown(KeyCode.V))
         {
-            if (player != null)
-            {
-                player.transform.position = Vector3.zero;
-                Debug.Log("[CoreInput] Player position set to (0, 0, 0)");
-            }
-            else
-            {
-                Debug.LogWarning("[CoreInput] Player is null. Cannot set position.");
-            }
+            player.gameObject.SetActive(false);
+
+            player.position = Vector3.zero;
+            player.rotation = Quaternion.identity;
+
+            player.gameObject.SetActive(true);
         }
+
+        //Debug.Log("[CoreInput] Player moved to (0,0,0).");
     }
+
 }
