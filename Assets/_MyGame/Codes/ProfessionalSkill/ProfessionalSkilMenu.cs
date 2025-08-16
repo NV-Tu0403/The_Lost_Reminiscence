@@ -349,14 +349,14 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             MapStateSave.Instance.ApplyMapState();
             PlayerCheckPoint.Instance.AssignCameraFromCore();
 
-            // Nếu Player có thể chưa ready, dùng coroutine chờ tối đa 3s:
             StartCoroutine(WaitForPlayerThenApply(3f));
-
             ProgressionManager.Instance.AfterLoad();
         };
 
         SceneController.Instance.OnSceneFullyReady += onFullyReady;
         SceneController.Instance.LoadAdditiveScene(sceneToLoad);
+
+        Debug.Log($"[Continue Session] Load Position: {PlayerCheckPoint.Instance.PlayerTransform.position}");
     }
 
     private IEnumerator WaitForPlayerThenApply(float timeoutSeconds)
@@ -376,8 +376,11 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             yield break;
         }
 
-        //PlayerCheckPoint.Instance.SetPlayerTransform(player);
+        PlayerCheckPoint.Instance.SetPlayerTransform(PlayerCheckPoint.Instance.PlayerTransform);
         PlayerCheckPoint.Instance.ApplyLoadedPosition();
+
+        //Debug.Log($"[Continue Session] Load Position: {PlayerCheckPoint.Instance.PlayerTransform.position}");
+
     }
 
     /// <summary>
@@ -392,6 +395,8 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             return;
         }
 
+        selectedSaveFolder = null;
+        lastSelectedSaveFolder = null;
         selectedSaveFolder = folderPath;
         lastSelectedSaveFolder = folderPath;
 
