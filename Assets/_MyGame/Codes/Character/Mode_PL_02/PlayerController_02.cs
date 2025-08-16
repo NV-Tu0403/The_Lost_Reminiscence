@@ -27,13 +27,13 @@ public class PlayerController_02 : PlayerEventListenerBase
     public PlayerInput_02 _playerInput;
     public Timer throwTimer = new Timer();
 
-    public CharacterStateType CurrentPlayerState;           // Trạng thái hiện tại của người chơi
+    public CharacterStateType CurrentPlayerState;        // Trạng thái hiện tại của người chơi
     public IUsable CurrentUsable { get; set; }
 
     [Header("Body")]
-    public GameObject FacePlayer;                           // mặt người chơi (tạm thời)
-    [SerializeField] private List<Transform> ListBody;      //   Danh sách các slot vũ khí
-    public GameObject ListSlot;                             // Danh sách Slot (tạm thời)
+    public GameObject FacePlayer;                          // mặt người chơi (tạm thời)
+    [SerializeField] private List<Transform> ListBody;     //  Danh sách các slot vũ khí
+    public GameObject ListSlot;                            // Danh sách Slot (tạm thời)
 
 
     [Header("Slot Settings")]
@@ -56,20 +56,20 @@ public class PlayerController_02 : PlayerEventListenerBase
     /// <summary>
     /// Lộc thêm 2 biến để giảm tốc độ di chuyển player
     /// </summary>
-    private float originalSpeed;                // Lưu tốc độ gốc
-    private bool isSpeedReduced = false;        // Kiểm tra xem tốc độ có đang bị giảm không
+    private float originalSpeed;           // Lưu tốc độ gốc
+    private bool isSpeedReduced = false;    // Kiểm tra xem tốc độ có đang bị giảm không
     
     [SerializeField] private float JumpMomentumBoost = 2f;
-    [SerializeField] private float dashForce = 15f;         // lực dash
-    [SerializeField] private float dashDuration = 0.3f;     // thời gian dash
+    [SerializeField] private float dashForce = 15f;       // lực dash
+    [SerializeField] private float dashDuration = 0.3f;   // thời gian dash
     [SerializeField] private float dashMomentumBoost = 1.3f;// nhân vận tốc ngang
 
     [Header("Character action Settings")]
     //[SerializeField] private string movementMode = "Rigidbody";
-    public int previousIndex = -1;                          // Lưu chỉ mục trước đó của item được trang bị
-    public Coroutine deactivateCoroutine;                   // Coroutine để hủy kích hoạt item sau khi ném
+    public int previousIndex = -1;                      // Lưu chỉ mục trước đó của item được trang bị
+    public Coroutine deactivateCoroutine;               // Coroutine để hủy kích hoạt item sau khi ném
     [SerializeField] private GameObject markerPrefab;       // Prefab dùng để đánh dấu (test)
-    [SerializeField] private Material laserMaterial;        // Material cho laser line (test)
+    [SerializeField] private Material laserMaterial;      // Material cho laser line (test)
     [SerializeField] private float laserWidth = 0.02f;      // Độ rộng của laser line (test)
     private GameObject currentMarker;
     private LineRenderer laserLine;
@@ -1444,5 +1444,72 @@ public class PlayerController_02 : PlayerEventListenerBase
         Debug.Log($"[PlayerController] Speed restored to {N_speed}");
     }
     #endregion
-}
+    // =================================================================
+    // THAY THẾ HÀM TELEPORTTO CŨ BẰNG PHIÊN BẢN MỚI DƯỚI ĐÂY
+    // =================================================================
+    public void TeleportTo(Vector3 destination)
+    {
+        // Bắt đầu một coroutine để xử lý việc dịch chuyển một cách an toàn, tránh xung đột giữa các frame
+        StartCoroutine(TeleportCoroutine(destination));
+    }
 
+    private IEnumerator TeleportCoroutine(Vector3 destination)
+    {
+        Debug.Log($"[PlayerController_02] Bắt đầu coroutine dịch chuyển đến: {destination}");
+
+        // --- BƯỚC 1: Vô hiệu hóa các hệ thống điều khiển ---
+        if (_playerInput != null)
+        {
+            _playerInput.enabled = false; // Vô hiệu hóa hoàn toàn script Input!
+        }
+        
+        if (_navMeshAgent != null && _navMeshAgent.enabled)
+        {
+            _navMeshAgent.enabled = false; // Vô hiệu hóa NavMeshAgent
+        }
+
+        // --- BƯỚC 2: Chờ đến chu kỳ vật lý tiếp theo ---
+        // Điều này đảm bảo mọi tính toán vật lý đang diễn ra được hoàn tất.
+        yield return new WaitForFixedUpdate();
+
+        // --- BƯỚC 3: Thực hiện dịch chuyển và reset trạng thái vật lý ---
+        if (_rigidbody != null)
+        {
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+            // Di chuyển Rigidbody đến vị trí mới. Đây là cách an toàn cho các đối tượng vật lý.
+            _rigidbody.position = destination; 
+        }
+        else
+        {
+            // Fallback nếu không có Rigidbody
+            transform.position = destination; 
+        }
+
+        // --- BƯỚC 4: Kích hoạt lại các hệ thống theo đúng thứ tự ---
+        
+        // Chờ thêm một frame để vị trí mới được "ổn định" trước khi bật lại AI và Input.
+        yield return null; 
+    
+        if (_navMeshAgent != null)
+        {
+            _navMeshAgent.enabled = true;
+            // Sử dụng Warp để ép NavMeshAgent đồng bộ với vị trí mới. Đây là cách đáng tin cậy nhất.
+            if (_navMeshAgent.Warp(destination))
+            {
+                Debug.Log("[PlayerController_02] NavMeshAgent.Warp() thành công.");
+            }
+            else
+            {
+                Debug.LogError("[PlayerController_02] Dịch chuyển thất bại! Vị trí mới không nằm trên NavMesh. Hãy kiểm tra lại cấu hình NavMesh Bake.");
+            }
+        }
+    
+        if (_playerInput != null)
+        {
+            _playerInput.enabled = true; // Bật lại script Input
+        }
+
+        Debug.Log("[PlayerController_02] Quá trình dịch chuyển đã hoàn tất.");
+    }
+}

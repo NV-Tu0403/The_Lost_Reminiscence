@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using DunGen;
 using DunGen.DungeonCrawler;
-using UnityEngine.AI;
-using System.Collections; // Cần thêm namespace này để sử dụng Coroutine
+using System.Collections;
 
 public class EnterDungeonTrigger : MonoBehaviour
 {
@@ -65,8 +64,8 @@ public class EnterDungeonTrigger : MonoBehaviour
             Vector3 spawnPosition = playerSpawnPoint.transform.position;
             Debug.Log("Đã tìm thấy PlayerSpawn tại vị trí: " + spawnPosition);
 
-            // Bắt đầu một Coroutine để dịch chuyển người chơi sau một khoảng trễ nhỏ
-            StartCoroutine(TeleportPlayerCoroutine(spawnPosition));
+            // Bắt đầu Coroutine để gọi hàm dịch chuyển từ PlayerController
+            StartCoroutine(TeleportPlayerWithController(spawnPosition));
         }
         else
         {
@@ -74,44 +73,22 @@ public class EnterDungeonTrigger : MonoBehaviour
         }
     }
 
-    // Coroutine để xử lý dịch chuyển
-    private IEnumerator TeleportPlayerCoroutine(Vector3 spawnPosition)
+    // Coroutine mới để gọi hàm TeleportTo từ PlayerController
+    private IEnumerator TeleportPlayerWithController(Vector3 spawnPosition)
     {
-        // Chờ đến cuối frame hiện tại để đảm bảo NavMesh đã được đăng ký hoàn toàn
+        // Chờ đến cuối frame để đảm bảo NavMesh đã được bake và đăng ký hoàn toàn
         yield return new WaitForEndOfFrame();
 
-        NavMeshAgent agent = playerToTeleport.GetComponent<NavMeshAgent>();
-        if (agent != null)
+        PlayerController_02 playerController = playerToTeleport.GetComponent<PlayerController_02>();
+
+        if (playerController != null)
         {
-            // Tắt agent đi trước khi warp để tránh lỗi, sau đó bật lại
-            agent.enabled = false;
-            playerToTeleport.transform.position = spawnPosition;
-            agent.enabled = true;
-
-            // Kiểm tra lại xem agent có thực sự nằm trên NavMesh không sau khi di chuyển
-            if (agent.isOnNavMesh)
-            {
-                Debug.Log("Đã dịch chuyển người chơi thành công và agent đang ở trên NavMesh!");
-            }
-            else
-            {
-                Debug.LogError("Dịch chuyển thất bại, người chơi không nằm trên NavMesh sau khi di chuyển. Hãy kiểm tra lại vị trí PlayerSpawn và cấu hình NavMesh.");
-            }
-            yield break; // Thoát khỏi coroutine
+            // Yêu cầu player controller tự dịch chuyển chính nó
+            playerController.TeleportTo(spawnPosition);
         }
-
-        // Fallback cho trường hợp không có NavMeshAgent
-        CharacterController cc = playerToTeleport.GetComponent<CharacterController>();
-        if (cc != null)
+        else
         {
-            cc.enabled = false;
-            playerToTeleport.transform.position = spawnPosition;
-            cc.enabled = true;
-            Debug.Log("Đã dịch chuyển người chơi bằng cách tắt/bật CharacterController!");
-            yield break;
+            Debug.LogError("Không tìm thấy component 'PlayerController_02' trên Player. Không thể dịch chuyển!");
         }
-
-        playerToTeleport.transform.position = spawnPosition;
-        Debug.Log("Đã dịch chuyển người chơi bằng transform.position!");
     }
 }
