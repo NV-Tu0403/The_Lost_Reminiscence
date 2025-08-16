@@ -8,11 +8,9 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Code.Backend;
 using TMPro;
-using System.Drawing;
 using _MyGame.Codes.Procession;
 using echo17.EndlessBook.Demo02;
-using Unity.AppUI.UI;
-using UnityEngine.SceneManagement;
+
 
 /// <summary>
 /// Điều phối các nghiệp vụ chuyên môn.
@@ -25,9 +23,9 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
     private Core _core;
     public BackendSync backendSync;
-    private Demo02 _demo02;
-    private CameraZoomController cameraZoomController;
     private CutSceneController cutSceneController;
+
+    private PlayerController_02 playerController_02;
 
     private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
@@ -257,7 +255,13 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             yield return null;
         }
 
-        PlayerCheckPoint.Instance.ApplyLoadedPosition();
+        if (PlayerCheckPoint.Instance.ApplyLoadedPositionStrict())
+        {
+            Debug.Log($" Player posion: {p.position}");
+        }else
+        {
+            StartCoroutine( WaitUntilPlayerAndApply() );
+        }
     }
     #endregion
 
@@ -376,11 +380,13 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             yield break;
         }
 
-        //PlayerCheckPoint.Instance.SetPlayerTransform(PlayerCheckPoint.Instance.PlayerTransform);
-        PlayerCheckPoint.Instance.ApplyLoadedPosition();
+        playerController_02._navMeshAgent.enabled = false;
+        playerController_02._playerInput.enabled = false;
 
-        //Debug.Log($"[Continue Session] Load Position: {PlayerCheckPoint.Instance.PlayerTransform.position}");
+        PlayerCheckPoint.Instance.ApplyLoadedPositionStrict();
 
+        playerController_02._navMeshAgent.enabled = true;
+        playerController_02._playerInput.enabled = true;
     }
 
     /// <summary>

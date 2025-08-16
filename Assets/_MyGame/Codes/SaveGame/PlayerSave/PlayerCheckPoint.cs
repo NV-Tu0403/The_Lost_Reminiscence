@@ -159,42 +159,152 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         characterCamera = cam;
     }
 
-    public void ApplyLoadedPosition()
+    public bool ApplyLoadedPositionStrict()
     {
         if (_lastLoadedData == null || playerTransform == null)
         {
             Debug.LogWarning("[PlayerCheckPoint] Cannot apply position, missing data or player.");
-            return;
+            return false;
         }
 
         Vector3 loadedPos = _lastLoadedData.position.ToVector3();
         Quaternion loadedRot = _lastLoadedData.playerRotation.ToQuaternion();
+        const float epsilonPos = 0.0001f;  // độ chính xác vị trí
+        const float epsilonRot = 0.01f;    // độ chính xác góc (dot quaternion ~ 1.0)
 
-        if (playerTransform.TryGetComponent(out Rigidbody rb))
+        bool success = false;
+
+        // ——— 1) NavMeshAgent ———
+        if (playerTransform.TryGetComponent(out NavMeshAgent agent))
         {
-            playerTransform.gameObject.SetActive(false);
+            // Tắt auto-rotation để không bị agent ghi đè rotation mong muốn
+            bool originalUpdateRotation = agent.updateRotation;
+            agent.updateRotation = false;
+
+            // Cách 1: Warp (đặt cứng theo navmesh)
+            bool warped = agent.Warp(loadedPos);
+            playerTransform.rotation = loadedRot;
+            Physics.SyncTransforms();
+
+            success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
+
+            // Cách 2 (fallback): disable/enable rồi set cứng, sau đó Warp để đồng bộ nội bộ của agent
+            if (!success)
+            {
+                agent.enabled = false;
+                playerTransform.SetPositionAndRotation(loadedPos, loadedRot);
+                Physics.SyncTransforms();
+                agent.enabled = true;
+                agent.Warp(loadedPos); // đồng bộ nextPosition/đồ thị
+                Physics.SyncTransforms();
+                success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
+            }
+
+            agent.updateRotation = originalUpdateRotation;
+
+            if (!success)
+            {
+                Debug.LogError($"[PlayerCheckPoint] Failed to place with NavMeshAgent. pos={playerTransform.position} rot={playerTransform.rotation.eulerAngles}");
+                return false;
+            }
+
+            Debug.Log($"[PlayerCheckPoint] Applied (NavMeshAgent) at {playerTransform.position}, rot={playerTransform.rotation.eulerAngles}");
+        }
+        // ——— 2) Rigidbody ———
+        else if (playerTransform.TryGetComponent(out Rigidbody rb))
+        {
+            // Lưu trạng thái và làm “cứng” vật lý để teleport an toàn
+            bool originalKinematic = rb.isKinematic;
+            Vector3 originalVelocity = rb.linearVelocity;
+            Vector3 originalAngular = rb.angularVelocity;
+
+            rb.isKinematic = true;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+
+            // Cách 1: Đặt trực tiếp lên Rigidbody (chính thống cho physics body)
             rb.position = loadedPos;
             rb.rotation = loadedRot;
-            playerTransform.gameObject.SetActive(true);
-            Debug.Log($"[PlayerCheckPoint] Applied position with Rigidbody - Position: {rb.position}, Rotation: {loadedRot}");
+            Physics.SyncTransforms();
+
+            success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
+
+            // Cách 2 (fallback mạnh tay): tắt active, set transform, bật lại
+            if (!success)
+            {
+                bool originalActive = playerTransform.gameObject.activeSelf;
+                playerTransform.gameObject.SetActive(false);
+                playerTransform.SetPositionAndRotation(loadedPos, loadedRot);
+                Physics.SyncTransforms();
+                playerTransform.gameObject.SetActive(originalActive);
+                Physics.SyncTransforms();
+
+                success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
+            }
+
+            // Khôi phục trạng thái Rigidbody
+            rb.isKinematic = originalKinematic;
+            // Không khôi phục velocity để tránh “bay” khỏi vị trí vừa đặt; nếu cần:
+            // rb.velocity = originalVelocity;
+            // rb.angularVelocity = originalAngular;
+            rb.Sleep();
+
+            if (!success)
+            {
+                Debug.LogError($"[PlayerCheckPoint] Failed to place with Rigidbody. pos={playerTransform.position} rot={playerTransform.rotation.eulerAngles}");
+                return false;
+            }
+
+            Debug.Log($"[PlayerCheckPoint] Applied (Rigidbody) at {playerTransform.position}, rot={playerTransform.rotation.eulerAngles}");
         }
-        else if (playerTransform.TryGetComponent(out NavMeshAgent agent))
+        // ——— 3) CharacterController ———
+        else if (playerTransform.TryGetComponent(out CharacterController cc))
         {
-            agent.enabled = false;
-            playerTransform.position = loadedPos;
-            agent.enabled = true;
-            agent.Warp(loadedPos);
-            Debug.Log($"[PlayerCheckPoint] Applied position with NavMeshAgent - Position: {loadedPos}, Rotation: {loadedRot}");
+            cc.enabled = false;
+            playerTransform.SetPositionAndRotation(loadedPos, loadedRot);
+            Physics.SyncTransforms();
+            cc.enabled = true;
+
+            success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
+
+            if (!success)
+            {
+                Debug.LogError($"[PlayerCheckPoint] Failed to place with CharacterController. pos={playerTransform.position} rot={playerTransform.rotation.eulerAngles}");
+                return false;
+            }
+
+            Debug.Log($"[PlayerCheckPoint] Applied (CharacterController) at {playerTransform.position}, rot={playerTransform.rotation.eulerAngles}");
         }
+        // ——— 4) Transform thuần ———
         else
         {
-            playerTransform.position = loadedPos;
-            playerTransform.position = loadedPos;
-            playerTransform.rotation = loadedRot;
+            playerTransform.SetPositionAndRotation(loadedPos, loadedRot);
+            Physics.SyncTransforms();
+
+            success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
+            if (!success)
+            {
+                // Fallback mạnh tay
+                bool originalActive = playerTransform.gameObject.activeSelf;
+                playerTransform.gameObject.SetActive(false);
+                playerTransform.SetPositionAndRotation(loadedPos, loadedRot);
+                Physics.SyncTransforms();
+                playerTransform.gameObject.SetActive(originalActive);
+                Physics.SyncTransforms();
+
+                success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
+            }
+
+            if (!success)
+            {
+                Debug.LogError($"[PlayerCheckPoint] Failed to place (Transform). pos={playerTransform.position} rot={playerTransform.rotation.eulerAngles}");
+                return false;
+            }
+
+            Debug.Log($"[PlayerCheckPoint] Applied (Transform) at {playerTransform.position}, rot={playerTransform.rotation.eulerAngles}");
         }
 
+        // ——— Camera ———
         if (characterCameraTransform != null && characterCamera != null)
         {
             if (characterCamera.TryGetComponent(out CharacterCamera camLogic))
@@ -213,15 +323,17 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             }
         }
 
-        Quaternion rot = playerTransform.rotation;
-        Debug.Log($"[PlayerCheckPoint] Saving - Map: {CurrentMap}, Position: {playerTransform.position}," + $"\nRotation (Euler): {rot.eulerAngles}");
+        _lastLoadedData = null; // chỉ xóa khi đã chắc chắn thành công
+        return true;
 
-        if (rb.position != loadedPos)
+        // ——— helper cục bộ ———
+        static bool IsAtTarget(Transform t, Vector3 pos, Quaternion rot, float epsPos, float epsRot)
         {
-            playerTransform.position = loadedPos;
+            bool okPos = (t.position - pos).sqrMagnitude <= epsPos * epsPos;
+            float dot = Mathf.Abs(Quaternion.Dot(t.rotation, rot));
+            bool okRot = (1f - dot) <= epsRot; // dot ~1 nghĩa là rất gần nhau
+            return okPos && okRot;
         }
-
-        _lastLoadedData = null;
     }
 
     public void ResetPlayerPositionWord()

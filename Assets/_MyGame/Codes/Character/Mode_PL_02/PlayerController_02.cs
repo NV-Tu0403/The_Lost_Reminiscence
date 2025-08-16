@@ -27,8 +27,7 @@ public class PlayerController_02 : PlayerEventListenerBase
     public PlayerInput_02 _playerInput;
     public Timer throwTimer = new Timer();
 
-    public CharacterStateType CurrentPlayerState;        // Trạng thái hiện tại của người chơi
-    public IUsable CurrentUsable { get; set; }
+
 
     [Header("Body")]
     public GameObject FacePlayer;                          // mặt người chơi (tạm thời)
@@ -45,20 +44,23 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     [Header("Currrent character setting")]
     private Vector3 lastRotationDirection = Vector3.forward;
+    public IUsable CurrentUsable { get; set; }
+    public CharacterStateType CurrentPlayerState; 
+    public bool isGrounded = true;
     [SerializeField] private bool useNavMesh = false;
-    [SerializeField] private bool isGrounded = true;
+
 
     [Header("Nav character Settings")]
     [SerializeField] private float N_speed = 1.3f;
     [SerializeField] private float airDrag = 1f;
     [SerializeField] private float extraGravity = 30f;
-    
+
     /// <summary>
     /// Lộc thêm 2 biến để giảm tốc độ di chuyển player
     /// </summary>
     private float originalSpeed;           // Lưu tốc độ gốc
     private bool isSpeedReduced = false;    // Kiểm tra xem tốc độ có đang bị giảm không
-    
+
     [SerializeField] private float JumpMomentumBoost = 2f;
     [SerializeField] private float dashForce = 15f;       // lực dash
     [SerializeField] private float dashDuration = 0.3f;   // thời gian dash
@@ -138,7 +140,7 @@ public class PlayerController_02 : PlayerEventListenerBase
 
     public void Update()
     {
-        if(Input.GetKeyDown(KeyCode.N))
+        if (Input.GetKeyDown(KeyCode.N))
         {
             useNavMesh = !useNavMesh;
             if (useNavMesh)
@@ -171,7 +173,7 @@ public class PlayerController_02 : PlayerEventListenerBase
     {
         if (_navMeshAgent != null && isGrounded)
         {
-            EnableNavMeshAgent();
+            EnableNavMeshAgent(true);
         }
 
     }
@@ -716,11 +718,11 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
     }
 
-    private void EnableNavMeshAgent()
+    public void EnableNavMeshAgent(bool check)
     {
         if (_navMeshAgent != null)
         {
-            _navMeshAgent.enabled = true;
+            _navMeshAgent.enabled = check;
 
         }
     }
@@ -1416,7 +1418,7 @@ public class PlayerController_02 : PlayerEventListenerBase
         }
     }
     #endregion
-    
+
     #region Lộc thêm để giảm tốc độ di chuyển của player
     /// <summary>
     /// Giảm tốc độ di chuyển của player (dùng cho fear zone effect)
@@ -1444,9 +1446,8 @@ public class PlayerController_02 : PlayerEventListenerBase
         Debug.Log($"[PlayerController] Speed restored to {N_speed}");
     }
     #endregion
-    // =================================================================
-    // THAY THẾ HÀM TELEPORTTO CŨ BẰNG PHIÊN BẢN MỚI DƯỚI ĐÂY
-    // =================================================================
+
+
     public void TeleportTo(Vector3 destination)
     {
         // Bắt đầu một coroutine để xử lý việc dịch chuyển một cách an toàn, tránh xung đột giữa các frame
@@ -1462,7 +1463,7 @@ public class PlayerController_02 : PlayerEventListenerBase
         {
             _playerInput.enabled = false; // Vô hiệu hóa hoàn toàn script Input!
         }
-        
+
         if (_navMeshAgent != null && _navMeshAgent.enabled)
         {
             _navMeshAgent.enabled = false; // Vô hiệu hóa NavMeshAgent
@@ -1478,19 +1479,19 @@ public class PlayerController_02 : PlayerEventListenerBase
             _rigidbody.linearVelocity = Vector3.zero;
             _rigidbody.angularVelocity = Vector3.zero;
             // Di chuyển Rigidbody đến vị trí mới. Đây là cách an toàn cho các đối tượng vật lý.
-            _rigidbody.position = destination; 
+            _rigidbody.position = destination;
         }
         else
         {
             // Fallback nếu không có Rigidbody
-            transform.position = destination; 
+            transform.position = destination;
         }
 
         // --- BƯỚC 4: Kích hoạt lại các hệ thống theo đúng thứ tự ---
-        
+
         // Chờ thêm một frame để vị trí mới được "ổn định" trước khi bật lại AI và Input.
-        yield return null; 
-    
+        yield return null;
+
         if (_navMeshAgent != null)
         {
             _navMeshAgent.enabled = true;
@@ -1504,7 +1505,7 @@ public class PlayerController_02 : PlayerEventListenerBase
                 Debug.LogError("[PlayerController_02] Dịch chuyển thất bại! Vị trí mới không nằm trên NavMesh. Hãy kiểm tra lại cấu hình NavMesh Bake.");
             }
         }
-    
+
         if (_playerInput != null)
         {
             _playerInput.enabled = true; // Bật lại script Input
@@ -1513,3 +1514,6 @@ public class PlayerController_02 : PlayerEventListenerBase
         Debug.Log("[PlayerController_02] Quá trình dịch chuyển đã hoàn tất.");
     }
 }
+
+
+
