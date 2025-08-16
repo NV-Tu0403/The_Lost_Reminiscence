@@ -449,6 +449,7 @@ GameObject:
   - component: {fileID: 6296599119666814536}
   - component: {fileID: 1380643300660799149}
   - component: {fileID: 2739410649994622816}
+  - component: {fileID: 2541664176965055168}
   m_Layer: 6
   m_Name: PL_f2
   m_TagString: Player
@@ -542,6 +543,7 @@ MonoBehaviour:
   _camera: {fileID: 0}
   _playerController: {fileID: 0}
   isInputLocked: 0
+  dir: {x: 0, y: 0, z: 0}
   lastAnimationTime: 0
   isOnCooldown: 0
 --- !u!114 &7869715670427333634
@@ -559,7 +561,6 @@ MonoBehaviour:
   checkInterval: 0.01
   config: {fileID: 11400000, guid: 3e48c8610ae09694b8d564d7d749c0e1, type: 2}
   _playerInput: {fileID: 0}
-  CurrentPlayerState: 0
   FacePlayer: {fileID: 8087231924178536207}
   ListBody:
   - {fileID: 181701157510574171}
@@ -574,8 +575,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 640
   RightHandObject: {fileID: 0}
-  useNavMesh: 0
+  CurrentPlayerState: 0
   isGrounded: 1
+  useNavMesh: 0
   N_speed: 0.8
   airDrag: 1
   extraGravity: 1
@@ -672,6 +674,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   puzzleHealth: 3
+--- !u!114 &2541664176965055168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4643428589773489116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddcabb6eb3cca2c45aaab9459d1445a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerFootstep:
+    Guid:
+      Data1: -1618930977
+      Data2: 1193551412
+      Data3: -916259189
+      Data4: 1156847395
+    Path: event:/Player/Hill_Grass_Footstep
+  playerController: {fileID: 0}
+  fadeTime: 0.5
 --- !u!1 &6201501219786059066
 GameObject:
   m_ObjectHideFlags: 0
