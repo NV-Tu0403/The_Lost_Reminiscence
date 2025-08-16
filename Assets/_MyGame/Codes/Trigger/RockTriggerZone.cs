@@ -1,13 +1,36 @@
+using _MyGame.Codes.GameEventSystem;
+using _MyGame.Codes.Procession;
 using UnityEngine;
 
-namespace _MyGame.Codes.Trigger
+namespace Code.Trigger
 {
     public class RockTriggerZone : TriggerZone
     {
         private Runestone_Controller runestoneController;
         
-        protected override bool IsValidTrigger(Collider other) {return other.CompareTag("Bullet");}
-        protected override void OnTriggered(Collider other) { HandleCustomTrigger(afterProgression: PlayEffect); }
+        protected override bool IsValidTrigger(Collider other)
+        {
+            return other.CompareTag("Bullet");
+        }
+
+        protected override void OnTriggered(Collider other)
+        {
+            // Kiểm tra điều kiện progression
+            if (!ProgressionManager.Instance.CanTrigger(eventId) &&
+                !ProgressionManager.Instance.IsWaitingForEvent(eventId))
+            {
+                Debug.Log($"[RockTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
+                return;
+            }
+            
+            // Unlock → Trigger → Disable zone
+            ProgressionManager.Instance.UnlockProcess(eventId);
+            EventExecutor.Instance.TriggerEvent(eventId);
+            DisableZone();
+            
+            // Enable Effect
+            PlayEffect();
+        }
 
         private void PlayEffect()
         {
@@ -20,6 +43,7 @@ namespace _MyGame.Codes.Trigger
                     return;
                 }
             }
+
             runestoneController.ToggleRuneStone(true);
         }
     }

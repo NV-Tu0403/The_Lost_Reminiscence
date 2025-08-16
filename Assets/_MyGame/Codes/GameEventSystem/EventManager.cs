@@ -70,10 +70,6 @@ namespace _MyGame.Codes.GameEventSystem
 
             ProgressionManager.Instance.HandleEventFinished(eventId);
             UpdateEventIndex(eventId);
-            
-            // Thông báo cho SimpleGuidanceManager về event completed
-            EventBus.Publish("event_completed", eventData);
-            
             TryTriggerNextEvent();
         }
 

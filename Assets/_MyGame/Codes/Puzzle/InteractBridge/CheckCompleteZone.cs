@@ -1,5 +1,5 @@
-using _MyGame.Codes.Trigger;
 using Code.Puzzle.InteractBridge;
+using Code.Trigger;
 using UnityEngine;
 
 namespace _MyGame.Codes.Puzzle.InteractBridge
