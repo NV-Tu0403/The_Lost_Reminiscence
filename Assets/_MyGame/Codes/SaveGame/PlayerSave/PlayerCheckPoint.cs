@@ -174,21 +174,20 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
         bool success = false;
 
-        // ——— 1) NavMeshAgent ———
         if (playerTransform.TryGetComponent(out NavMeshAgent agent))
         {
             // Tắt auto-rotation để không bị agent ghi đè rotation mong muốn
             bool originalUpdateRotation = agent.updateRotation;
             agent.updateRotation = false;
 
-            // Cách 1: Warp (đặt cứng theo navmesh)
+            // Warp (đặt cứng theo navmesh)
             bool warped = agent.Warp(loadedPos);
             playerTransform.rotation = loadedRot;
             Physics.SyncTransforms();
 
             success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
 
-            // Cách 2 (fallback): disable/enable rồi set cứng, sau đó Warp để đồng bộ nội bộ của agent
+            // (fallback): disable/enable rồi set cứng, sau đó Warp để đồng bộ nội bộ của agent
             if (!success)
             {
                 agent.enabled = false;
@@ -210,7 +209,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
             Debug.Log($"[PlayerCheckPoint] Applied (NavMeshAgent) at {playerTransform.position}, rot={playerTransform.rotation.eulerAngles}");
         }
-        // ——— 2) Rigidbody ———
+
         else if (playerTransform.TryGetComponent(out Rigidbody rb))
         {
             // Lưu trạng thái và làm “cứng” vật lý để teleport an toàn
@@ -222,14 +221,14 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
-            // Cách 1: Đặt trực tiếp lên Rigidbody (chính thống cho physics body)
+            // Đặt trực tiếp lên Rigidbody
             rb.position = loadedPos;
             rb.rotation = loadedRot;
             Physics.SyncTransforms();
 
             success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
 
-            // Cách 2 (fallback mạnh tay): tắt active, set transform, bật lại
+            // (fallback ): tắt active, set transform, bật lại
             if (!success)
             {
                 bool originalActive = playerTransform.gameObject.activeSelf;
@@ -244,9 +243,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
             // Khôi phục trạng thái Rigidbody
             rb.isKinematic = originalKinematic;
-            // Không khôi phục velocity để tránh “bay” khỏi vị trí vừa đặt; nếu cần:
-            // rb.velocity = originalVelocity;
-            // rb.angularVelocity = originalAngular;
+
             rb.Sleep();
 
             if (!success)
@@ -257,7 +254,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
             Debug.Log($"[PlayerCheckPoint] Applied (Rigidbody) at {playerTransform.position}, rot={playerTransform.rotation.eulerAngles}");
         }
-        // ——— 3) CharacterController ———
+        // CharacterController 
         else if (playerTransform.TryGetComponent(out CharacterController cc))
         {
             cc.enabled = false;
@@ -275,7 +272,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
 
             Debug.Log($"[PlayerCheckPoint] Applied (CharacterController) at {playerTransform.position}, rot={playerTransform.rotation.eulerAngles}");
         }
-        // ——— 4) Transform thuần ———
+        // Transform thuần 
         else
         {
             playerTransform.SetPositionAndRotation(loadedPos, loadedRot);
@@ -284,7 +281,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             success = IsAtTarget(playerTransform, loadedPos, loadedRot, epsilonPos, epsilonRot);
             if (!success)
             {
-                // Fallback mạnh tay
+                // Fallback 
                 bool originalActive = playerTransform.gameObject.activeSelf;
                 playerTransform.gameObject.SetActive(false);
                 playerTransform.SetPositionAndRotation(loadedPos, loadedRot);
@@ -304,7 +301,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             Debug.Log($"[PlayerCheckPoint] Applied (Transform) at {playerTransform.position}, rot={playerTransform.rotation.eulerAngles}");
         }
 
-        // ——— Camera ———
+        //  Camera 
         if (characterCameraTransform != null && characterCamera != null)
         {
             if (characterCamera.TryGetComponent(out CharacterCamera camLogic))
@@ -326,7 +323,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
         _lastLoadedData = null; // chỉ xóa khi đã chắc chắn thành công
         return true;
 
-        // ——— helper cục bộ ———
+        // helper cục bộ
         static bool IsAtTarget(Transform t, Vector3 pos, Quaternion rot, float epsPos, float epsRot)
         {
             bool okPos = (t.position - pos).sqrMagnitude <= epsPos * epsPos;

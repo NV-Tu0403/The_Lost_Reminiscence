@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections;
 using System;
+using _MyGame.Codes.Backend;
 using Code.Backend;
 using UnityEngine.Experimental.GlobalIllumination;
 
@@ -18,7 +19,6 @@ public class Core : CoreEventListenerBase
     public StateMachine _stateMachine;
     public StateMachine _accountStateMachine;
     public UserAccountManager _userAccountManager;
-    private CameraZoomController _cameraZoomController;
     public BackendSync backendSync;
 
     #region biến cần thiết
@@ -82,7 +82,7 @@ public class Core : CoreEventListenerBase
         InitAccountState();
         //_accountStateMachine.SetState(new NoCurrentAccountState(_accountStateMachine, _coreEvent));
         //TryInitializeCamera();
-        _cameraZoomController = CameraZoomController.Instance;
+        //_cameraZoomController = CameraZoomController.Instance;
     }
 
     private void Start()

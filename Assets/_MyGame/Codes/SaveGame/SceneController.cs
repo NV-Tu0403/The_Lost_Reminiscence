@@ -94,7 +94,7 @@ public sealed class SceneController : MonoBehaviour
 
         if (IsExcluded(sceneName))
         {
-            Debug.LogWarning($"[SceneController] Bỏ qua scene bị exclude: {sceneName}");
+            Debug.Log($"[SceneController] Bỏ qua scene bị exclude: {sceneName}");
             onComplete?.Invoke();
             return;
         }

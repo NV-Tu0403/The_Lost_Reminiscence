@@ -53,7 +53,7 @@ namespace _MyGame.Codes.UI.DevMode
                 gameObject.SetActive(true);
                 
             if (loadingText != null)
-                loadingText.text = "Đang tải";
+                loadingText.text = "Đang chẩn bị tài nguyên";
                 
             // Khởi tạo dots
             InitializeDots();
@@ -253,7 +253,7 @@ namespace _MyGame.Codes.UI.DevMode
         private void OnLoadingComplete()
         {
             if (loadingText != null)
-                loadingText.text = "Hoàn thành!";
+                loadingText.text = "...";
             
             // Hiển thị tất cả dots khi hoàn thành
             for (int i = 0; i < loadingDots.Length; i++)

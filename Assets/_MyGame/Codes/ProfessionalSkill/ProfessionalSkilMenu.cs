@@ -6,10 +6,10 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using _MyGame.Codes.Backend;
 using Code.Backend;
 using TMPro;
 using _MyGame.Codes.Procession;
-using echo17.EndlessBook.Demo02;
 
 
 /// <summary>
@@ -25,8 +25,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public BackendSync backendSync;
     private CutSceneController cutSceneController;
 
-    private PlayerController_02 playerController_02;
-
     private string lastSelectedSaveFolder;
     public string selectedSaveFolder;
     public string SelectedSaveImagePath;
@@ -36,7 +34,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
     public string CurrentOriginalSavePath; // đường dẫn đến thư mục gốc của bản backup hiện tại
     public bool CurrentbackupOke; // đánh dấu xem bản backup hiện tại có hợp lệ hay không
 
-    public string SceneDefault = "Phong_scene";
+    public string SceneDefault = "MainScene";
 
     [SerializeField] private GameObject[] CallBackObject;
 
@@ -380,13 +378,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             yield break;
         }
 
-        playerController_02._navMeshAgent.enabled = false;
-        playerController_02._playerInput.enabled = false;
-
         PlayerCheckPoint.Instance.ApplyLoadedPositionStrict();
-
-        playerController_02._navMeshAgent.enabled = true;
-        playerController_02._playerInput.enabled = true;
     }
 
     /// <summary>
