@@ -3,25 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Serialization;
 
 namespace _MyGame.Codes.Backend
 {
     public class BackendSync : MonoBehaviour
     {
-        [Header("Backend")] [SerializeField] private string apiBaseUrl = "https://backend-datn-iwqa.onrender.com/api";
-
+        [SerializeField] private string apiBaseUrl = "https://backend-datn-iwqa.onrender.com/api";
+       
         // PlayerPrefs key cho token
         private const string TokenKey = "SavedJWTToken";
 
         // RUNTIME
         private string jwtToken;
         public bool IsLoggedIn => !string.IsNullOrEmpty(jwtToken);
-
-
+        
         #region Public API
 
         public void OnRegister(string userName, string password, string email, Action<bool, string> callback)
@@ -68,8 +65,7 @@ namespace _MyGame.Codes.Backend
             PlayerPrefs.Save();
             callback(true, "Đăng xuất thành công!");
         }
-
-
+        
         #endregion
 
         #region Auth / Account
@@ -119,18 +115,18 @@ namespace _MyGame.Codes.Backend
                 if (success)
                 {
                     var result = JsonConvert.DeserializeObject<ValidateTokenResponse>(response);
-                    jwtToken = token;
+                    jwtToken = token; // Set runtime token
                     callback(true, $"Chào mừng trở lại, {result.user.username}!");
                 }
                 else
                 {
                     PlayerPrefs.DeleteKey(TokenKey);
+                    PlayerPrefs.Save();
+                    jwtToken = null; // Clear runtime token
                     callback(false, "Token hết hạn, vui lòng đăng nhập lại");
                 }
             }));
         }
-
-
 
         #endregion
 
@@ -153,7 +149,6 @@ namespace _MyGame.Codes.Backend
             // Quét tất cả file trong saveDir
             var allFiles = Directory.GetFiles(saveDir, "*.*", SearchOption.AllDirectories);
             var filesList = new List<object>();
-            var uploadedCount = 0;
             var totalFiles = allFiles.Length;
             var anyError = false;
 
@@ -170,15 +165,14 @@ namespace _MyGame.Codes.Backend
                             var content = File.ReadAllText(filePath);
                             var obj = JsonConvert.DeserializeObject<object>(content);
                             filesList.Add(new { fileName, data = obj, fileType = "json", cloudinaryUrl = "" });
-                            uploadedCount++;
                         }
                         catch (Exception e)
                         {
                             anyError = true;
                             Debug.LogError($"Đọc JSON lỗi: {fileName} | {e.Message}");
                         }
-
                         break;
+                        
                     case ".png":
                     case ".jpg":
                     case ".jpeg":
@@ -186,7 +180,6 @@ namespace _MyGame.Codes.Backend
                     {
                         var ok = false;
                         string url = null;
-
                         // Upload ảnh tới backend (backend sẽ đẩy lên Cloudinary)
                         yield return StartCoroutine(UploadImageToBackend(filePath, folderName,
                             MakeRelativePath(saveDir, filePath).Replace("\\", "/"), (success, cdnUrl) =>
@@ -195,23 +188,17 @@ namespace _MyGame.Codes.Backend
                                 url = cdnUrl;
                             }));
 
-                        if (ok)
-                        {
-                            filesList.Add(new { fileName, data = (object)null, fileType = "image", cloudinaryUrl = url });
-                            Debug.Log($"Uploaded image: {fileName}");
-                        }
+                        if (ok) filesList.Add(new { fileName, data = (object)null, fileType = "image", cloudinaryUrl = url });
                         else
                         {
                             anyError = true;
-                            Debug.LogError($"Failed to upload image: {fileName}");
+                            Debug.LogError($"❌ Failed to upload image: {fileName}");
                         }
 
-                        uploadedCount++;
                         break;
                     }
                     default:
                         // Bỏ qua các định dạng khác
-                        uploadedCount++;
                         break;
                 }
 
@@ -224,46 +211,49 @@ namespace _MyGame.Codes.Backend
                 folderPath = folderName,
                 files = filesList
             });
-
+            
             var saveOk = false;
             yield return StartCoroutine(SendRequest("POST", "/save", payload, true, (success, response) =>
             {
                 saveOk = success;
-                if (!success) Debug.LogError($"Upload JSON (save) thất bại: {response}");
+                if (success)
+                {
+                    Debug.Log("✅ Save request successful!");
+                }
+                else
+                {
+                    Debug.LogError($"❌ Upload JSON (save) thất bại: {response}");
+                }
             }));
 
-            if (saveOk && !anyError)
+            if (!saveOk || anyError) yield break;
             {
                 // Chỉ xoá khi tất cả đều OK
                 try
                 {
                     Directory.Delete(saveDir, true);
-                    Debug.Log($"Upload thành công {uploadedCount}/{totalFiles} files! Đã xoá thư mục local.");
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning("Xoá thư mục local lỗi: " + e.Message);
+                    Debug.LogWarning("⚠️ Xoá thư mục local lỗi: " + e.Message);
                 }
-            }
-            else
-            {
-                Debug.LogWarning(
-                    $"Upload hoàn tất với lỗi. Thành công {uploadedCount}/{totalFiles}. KHÔNG xoá thư mục local.");
             }
         }
 
         private IEnumerator DownloadData()
         {
+            Debug.Log("📥 Starting download...");
             yield return StartCoroutine(SendRequest("GET", "/load", null, true, (success, response) =>
             {
                 if (success)
                 {
+                    Debug.Log("✅ Download request successful, parsing data...");
                     var cloudData = JsonConvert.DeserializeObject<CloudSaveData>(response);
                     StartCoroutine(SaveDataToLocal(cloudData));
                 }
                 else
                 {
-                    Debug.LogError($"Download thất bại: {response}");
+                    Debug.LogError($"❌ Download thất bại: {response}");
                 }
             }));
         }
@@ -277,6 +267,7 @@ namespace _MyGame.Codes.Backend
             foreach (var file in cloudData.files)
             {
                 var filePath = Path.Combine(saveFolder, file.fileName);
+                Debug.Log($"📄 Processing file: {file.fileName} (type: {file.fileType})");
 
                 switch (file.fileType)
                 {
@@ -291,17 +282,21 @@ namespace _MyGame.Codes.Backend
                         var ok = false;
                         yield return StartCoroutine(DownloadFileRaw(file.cloudinaryUrl, filePath,
                             (success) => ok = success));
-                        if (!ok) Debug.LogError($"Failed to download image: {file.fileName}");
+                        if (ok)
+                        {
+                            Debug.Log($"Image downloaded: {file.fileName}");
+                        }
+                        else
+                        {
+                            Debug.LogError($"Failed to download image: {file.fileName}");
+                        }
                         break;
                     }
                 }
 
                 yield return null;
             }
-
-            Debug.Log($"Download hoàn thành! Lưu {cloudData.files.Count} files");
         }
-
 
         #endregion
 
@@ -317,6 +312,7 @@ namespace _MyGame.Codes.Backend
             }
             catch (Exception e)
             {
+                Debug.LogError($"❌ Read file error: {e.Message}");
                 cb(false, "Read file error: " + e.Message);
                 yield break;
             }
@@ -330,7 +326,16 @@ namespace _MyGame.Codes.Backend
             try
             {
                 if (!string.IsNullOrEmpty(jwtToken))
+                {
                     req.SetRequestHeader("Authorization", "Bearer " + jwtToken);
+                    Debug.Log("🔐 Authorization header added");
+                }
+                else
+                {
+                    Debug.LogError("❌ JWT Token is missing!");
+                    cb(false, "JWT Token is missing");
+                    yield break;
+                }
 
                 req.timeout = 30;
                 yield return req.SendWebRequest();
@@ -339,24 +344,31 @@ namespace _MyGame.Codes.Backend
                 {
                     try
                     {
-                        var resp = JsonConvert.DeserializeObject<CloudinaryUploadResponse>(req.downloadHandler.text,
-                            new JsonSerializerSettings
-                            {
-                                ContractResolver = new DefaultContractResolver
-                                    { NamingStrategy = new SnakeCaseNamingStrategy() }
-                            });
+                        Debug.Log($"🔄 Attempting to parse response...");
+                        var resp = JsonConvert.DeserializeObject<BackendImageUploadResponse>(req.downloadHandler.text);
 
-                        var url = !string.IsNullOrEmpty(resp.secureURL) ? resp.secureURL : resp.url;
-                        if (!string.IsNullOrEmpty(url)) cb(true, url);
-                        else cb(false, "Malformed response");
+                        if (resp.success && !string.IsNullOrEmpty(resp.cloudinaryUrl))
+                        {
+                            Debug.Log($"🎉 Image upload successful! Returning URL: {resp.cloudinaryUrl}");
+                            cb(true, resp.cloudinaryUrl);
+                        }
+                        else
+                        {
+                            Debug.LogError($"❌ Upload failed: {resp.message}");
+                            cb(false, resp.message ?? "Upload failed");
+                        }
                     }
                     catch (Exception ex)
                     {
+                        Debug.LogError($"❌ Parse response error: {ex.Message}");
+                        Debug.LogError($"📋 Raw response: {req.downloadHandler.text}");
                         cb(false, "Parse response error: " + ex.Message);
                     }
                 }
                 else
                 {
+                    Debug.LogError($"❌ Request failed: {req.error}");
+                    Debug.LogError($"📋 Response: {req.downloadHandler?.text}");
                     cb(false, req.downloadHandler?.text ?? req.error);
                 }
             }
@@ -383,12 +395,13 @@ namespace _MyGame.Codes.Backend
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError("Write file error: " + e.Message);
+                        Debug.LogError($"❌ Write file error: {e.Message}");
                         cb(false);
                     }
                 }
                 else
                 {
+                    Debug.LogError($"❌ Download failed: {www.error}");
                     cb(false);
                 }
             }
@@ -437,21 +450,37 @@ namespace _MyGame.Codes.Backend
             {
                 www = new UnityWebRequest(url, method);
                 if (data != null)
+                {
                     www.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(data));
+                }
                 www.downloadHandler = new DownloadHandlerBuffer();
                 www.SetRequestHeader("Content-Type", "application/json");
             }
 
-            if (needAuth && !string.IsNullOrEmpty(jwtToken))
-                www.SetRequestHeader("Authorization", "Bearer " + jwtToken);
+            switch (needAuth)
+            {
+                case true when !string.IsNullOrEmpty(jwtToken):
+                    www.SetRequestHeader("Authorization", "Bearer " + jwtToken);
+                    break;
+                case true:
+                    Debug.LogError("❌ Auth required but no token available!");
+                    break;
+            }
 
             www.timeout = 30;
             yield return www.SendWebRequest();
 
+            Debug.Log($"📡 Response: {www.responseCode} - {www.result}");
+
             if (www.result == UnityWebRequest.Result.Success)
+            {
                 callback(true, www.downloadHandler.text);
+            }
             else
+            {
+                Debug.LogError($"❌ Request failed: {www.downloadHandler?.text ?? www.error}");
                 callback(false, www.downloadHandler?.text ?? www.error);
+            }
 
             www.Dispose();
         }
@@ -487,15 +516,14 @@ namespace _MyGame.Codes.Backend
         }
         
         [Serializable]
-        public class CloudinaryUploadResponse
+        public class BackendImageUploadResponse
         {
-            [FormerlySerializedAs("public_id")] public string publicID;
-            public string url;
-            [FormerlySerializedAs("secure_url")] public string secureURL;
-            public int width;
-            public int height;
-            public string format;
-            public int bytes;
+            public bool success;
+            public string message;
+            public string cloudinaryUrl;
+            public string publicId;
+            public string folder;
+            public string originalName;
         }
         #endregion
     }
