@@ -320,9 +320,8 @@
                     break;
 
                 case UIActionType.QuitGame:
-                    ClosedFront();
-
-                    StartCoroutine(QuitAfterDelay(2f));
+                    ClosedBack();
+                    StartCoroutine(QuitAfterDelay(3f));
                     break;
             }
         }

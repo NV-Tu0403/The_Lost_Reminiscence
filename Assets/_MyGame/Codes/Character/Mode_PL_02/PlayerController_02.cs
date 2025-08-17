@@ -381,7 +381,8 @@ public class PlayerController_02 : PlayerEventListenerBase
                 }
                 else
                 {
-                    Debug.LogWarning($"Weapons component not found on {RightHandObject.name}!");
+                    //Debug.LogWarning($"Weapons component not found on {RightHandObject.name}!");
+                    mess = "Weapons component not found on {RightHandObject.name}!";
                 }
             }
             else
