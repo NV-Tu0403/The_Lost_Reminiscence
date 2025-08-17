@@ -36,7 +36,7 @@ public class PlayerInput_02 : MonoBehaviour
         InitializeCamera();
     }
 
-    void Update()
+    private void FixedUpdate()
     {
         _camera = _characterCamera.mainCamera;
         dir = GetMoveInput();
@@ -46,6 +46,11 @@ public class PlayerInput_02 : MonoBehaviour
         {
             _playerController.PerformMoveInput(actionType, dir);
         }
+    }
+
+    void Update()
+    {
+
 
         GetAttackInput();
         GetObjInListSlot();
