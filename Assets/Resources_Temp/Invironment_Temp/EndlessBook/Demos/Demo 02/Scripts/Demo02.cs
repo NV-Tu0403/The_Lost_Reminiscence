@@ -3,6 +3,8 @@
     using System.Linq;
     using UnityEngine;
     using echo17.EndlessBook;
+    using System.Threading.Tasks;
+    using System.Collections;
 
     public enum BookActionTypeEnum
     {
@@ -29,6 +31,9 @@
         public float pagesFlippingSoundDelay;
         public TouchPad touchPad;
         public UIPageView[] uiPageViews;
+        public CameraZoomController cameraZoomController;
+
+        private TaskCompletionSource<bool> turnPageTcs;
 
         void Start()
         {
@@ -168,12 +173,15 @@
                     ToggleUIPageView(pageNumberLastVisible + 1, false);
                     ToggleUIPageView(pageNumberLastVisible + 2, false);
                     break;
+
             }
+
+            turnPageTcs?.TrySetResult(true); // Báo hiệu đã xong
         }
 
-        protected virtual void TableOfContentsDetected()
+        protected virtual async void TableOfContentsDetected()
         {
-            TurnToPage(tableOfContentsPageNumber);
+            await TurnToPage(tableOfContentsPageNumber, true);
         }
 
         protected virtual void TouchPadTouchDownDetected(TouchPad.PageEnum page, Vector2 hitPointNormalized)
@@ -281,6 +289,7 @@
 
             DeTectedMainMenu(item);
             DeTectedSave(item);
+            DetectedAccoutFuntion(item);
             DetectedPauseSession(item);
         }
 
@@ -288,67 +297,150 @@
         /// Xử lý các hành động từ menu chính như New Game, Continue, SavePanel, Quit.
         /// </summary>
         /// <param name="item"></param>
-        private void DeTectedMainMenu(UIItem item)
+        private async void DeTectedMainMenu(UIItem item)
         {
             switch (item.uIActionType)
             {
                 case UIActionType.NewSession:
-                    TurnToPage(item.targetPage);
-                    CoreEvent.Instance.triggerNewSession();
+                    await TurnToPage(item.targetPage, true);
+                    Core.Instance.ActiveMenu(true, false);
+                    await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerNewSession(), true);
+                    //CoreEvent.Instance.triggerNewSession();
+                    await TurnToPage(7, false);
+                    Core.Instance.ActiveMenu(false, false);
+                    //CutSceneController.Instance.PlayCutScene(UIActionType.NewSession);
                     break;
                 case UIActionType.SavePanel:
-                    TurnToPage(item.targetPage);
+                    await TurnToPage(item.targetPage, true);
                     CoreEvent.Instance.triggerSavePanel();
                     break;
                 case UIActionType.TutorialSession:
-                    TurnToPage(item.targetPage);
+                    await TurnToPage(item.targetPage, false);
                     CoreEvent.Instance.triggerNewSession();
                     break;
 
                 case UIActionType.QuitGame:
-#if UNITY_EDITOR
-                    UnityEditor.EditorApplication.isPlaying = false;
-#else
-                    Application.Quit();
-#endif
+                    ClosedBack();
+                    StartCoroutine(QuitAfterDelay(3f));
                     break;
             }
+        }
+        private IEnumerator QuitAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+    Application.Quit();
+#endif
         }
 
         /// <summary>
         /// Xử lý các hành động từ menu lưu game như Select, Delete, Duplicate.
         /// </summary>
         /// <param name="item"></param>
-        private void DeTectedSave(UIItem item)
+        private async void DeTectedSave(UIItem item)
         {
             //Debug.LogWarning($"[Demo02] DeTectedSave: {item.uIActionType} - {item.targetRenderer.gameObject.name}");
             switch (item.uIActionType)
             {
                 case UIActionType.Back:
-                    TurnToPage(item.targetPage);
+                    await TurnToPage(item.targetPage, true);
                     break;
                 case UIActionType.ContinueSession:
                     if (!string.IsNullOrWhiteSpace(ProfessionalSkilMenu.Instance.selectedSaveFolder))// Iem tà đạo (CHƯA CÓ TG FIX)
                     {
-                        TurnToPage(item.targetPage);
-                        CoreEvent.Instance.triggerContinueSession();
+                        Core.Instance.ActiveMenu(true, false);
+                        await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerContinueSession(), true);
+                        Core.Instance.ActiveMenu(false, false);
+                        if (!cameraZoomController.ZoomState)
+                        {
+                            await TurnToPage(item.targetPage, false);
+                        }
                     }
                     break;
                 case UIActionType.RefreshSaveList:
-                    UIPage05.Instance.RefreshSaveSlots();
+                    await UIPage05.Instance.RefreshSaveSlots();
+                    Core.Instance.backendSync.OnDownload();
                     break;
                 case UIActionType.SelectSaveItem:
-                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.SelectSaveItem);
+                    await UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.SelectSaveItem);
                     break;
                 case UIActionType.DeleteSaveItem:
-                    UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.DeleteSaveItem);
+                    await UIPage05.Instance.GetFolderPathBySlotName(item.targetRenderer.gameObject.name, UIActionType.DeleteSaveItem);
                     break;
-                case UIActionType.DuplicateSaveItem:
+                case UIActionType.SyncFileSave:
+                    CoreEvent.Instance.triggerSyncFileSave(ProfessionalSkilMenu.Instance.selectedSaveFolder);
+
                     break;
             }
         }
 
-        private void DetectedPauseSession(UIItem item)
+        private bool isLogin = default;   //(cách này hơi tà đạo nhưng giờ iem làm biếng quá)
+        private void DetectedAccoutFuntion(UIItem item)
+        {
+            string accountState = Core.Instance.CurrentAccountState;
+
+            switch (item.uIActionType)
+            {
+                case UIActionType.Confim:
+
+                    if (accountState == AccountStateType.NoConnectToServer.ToString())
+                    {
+                        if (isLogin) // nếu nhấn login trước đó 
+                        {
+                            CoreEvent.Instance.triggerLogin(); // đăng nhập tài khoản
+                            UiPage06_C.Instance.ActiveObj(true, false, false, false);
+                        }
+                        else // nếu nhấn register trước đó
+                        {
+                            CoreEvent.Instance.triggerRegister(); // đăng ký tài khoản
+                            UiPage06_C.Instance.ActiveObj(true, true, false, false);
+                        }
+                      
+                    }
+
+                    if (accountState == AccountStateType.ConectingServer.ToString())
+                    {
+                        CoreEvent.Instance.triggerConnectingToServer(); // xác nhân OTP
+                        UiPage06_C.Instance.ActiveObj(true, false, false, false);
+                    }
+
+                    break;
+
+                case UIActionType.Cancel:
+                    UiPage06_C.Instance.ActiveObj(true, false, false, false);
+                    break;
+                case UIActionType.Logout:
+                    if (accountState == AccountStateType.NoConnectToServer.ToString())
+                    {
+                        isLogin = true; // đánh dấu là login cloud
+                        UiPage06_C.Instance.ActiveObj(false, true, true, true);
+                    }
+                    else
+                    {
+                        CoreEvent.Instance.triggerLogout(); // logout
+                        UiPage06_C.Instance.ActiveObj(true, false, false, false);
+                    }
+
+                    break;
+                case UIActionType.ConnectToServer:
+                    if (accountState == AccountStateType.NoConnectToServer.ToString()) //  register cloud
+                    {
+                        isLogin = false; // đánh dấu là register cloud
+                        UiPage06_C.Instance.ActiveObj(false, true, true, true);
+                        // tắt thêm nút Upoad SaveItem
+                    }
+                    if (accountState == AccountStateType.HaveConnectToServer.ToString()) // Overrice SaveItem
+                    {
+                        CoreEvent.Instance.triggerOverriceSave();
+                    }
+                    break;
+            }
+        }
+
+        private async void DetectedPauseSession(UIItem item)
         {
             switch (item.uIActionType)
             {
@@ -356,8 +448,8 @@
                     CoreEvent.Instance.triggerResumedSession();
                     break;
                 case UIActionType.QuitSesion:
-                    TurnToPage(item.targetPage);
-                    CoreEvent.Instance.triggerQuitSession();
+                    await TurnToPage(item.targetPage, true);
+                    await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
                     break;
             }
         }
@@ -407,8 +499,11 @@
             book.SetState(state, openCloseTime, OnBookStateChanged);
         }
 
-        protected virtual void TurnToPage(int pageNumber)
+        public virtual async Task TurnToPage(int pageNumber, bool isWait = true)
         {
+            if (isWait) // Nếu cần đợi hoàn thành
+                turnPageTcs = new TaskCompletionSource<bool>();
+
             var newLeftPageNumber = pageNumber % 2 == 0 ? pageNumber - 1 : pageNumber;
 
             if (Mathf.Abs(newLeftPageNumber - book.CurrentLeftPageNumber) > 2)
@@ -418,11 +513,21 @@
             }
 
             book.TurnToPage(pageNumber, groupPageTurnType, groupPageTurnTime,
-                            openTime: openCloseTime,
-                            onCompleted: OnBookStateChanged,
-                            onPageTurnStart: OnPageTurnStart,
-                            onPageTurnEnd: OnPageTurnEnd);
+                openTime: openCloseTime,
+                onCompleted: OnBookStateChanged,
+                onPageTurnStart: OnPageTurnStart,
+                onPageTurnEnd: OnPageTurnEnd); // << Hook ở đây
+
+            if (isWait)
+                await turnPageTcs.Task; // Chờ cho đến khi trang lật xong
         }
+
+        // Callback khi trang lật xong
+        //private void OnPageTurnEnd()
+        //{
+        //    // Thực hiện các xử lý nội bộ nếu cần
+        //    turnPageTcs?.TrySetResult(true); // Báo hiệu đã xong
+        //}
 
         public bool debugMode = false; // Thêm để debug
     }
