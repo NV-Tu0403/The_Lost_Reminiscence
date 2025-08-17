@@ -1,5 +1,6 @@
 using _MyGame.Codes.GameEventSystem;
 using _MyGame.Codes.Procession;
+using _MyGame.Codes.Trigger;
 using Code.Trigger;
 using UnityEngine;
 

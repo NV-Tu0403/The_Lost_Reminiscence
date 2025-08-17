@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using _MyGame.Codes.GameEventSystem;
 using _MyGame.Codes.Procession;
@@ -18,7 +19,7 @@ namespace _MyGame.Codes.Guidance
         [SerializeField] private bool autoShowNextGuide = true; // Tự động hiển thị guide cho event tiếp theo
 
         // Dictionary lưu trữ tất cả GuideObject đã đăng ký
-        private Dictionary<string, GuideObject> registeredGuides = new Dictionary<string, GuideObject>();
+        private readonly Dictionary<string, GuideObject> registeredGuides = new Dictionary<string, GuideObject>();
         private string currentActiveGuideId = "";
 
         private void Awake()
@@ -51,7 +52,6 @@ namespace _MyGame.Codes.Guidance
             if (!string.IsNullOrEmpty(nextEventId))
             {
                 ShowGuide(nextEventId);
-                Debug.Log($"[GuidanceManager] Initial guidance shown for: {nextEventId}");
             }
         }
 
@@ -67,26 +67,17 @@ namespace _MyGame.Codes.Guidance
             }
 
             // Duyệt qua tất cả registered guides để tìm event có thể trigger và có TriggerType = Manual
-            foreach (var eventId in registeredGuides.Keys)
+            foreach (var eventId 
+                     in from eventId 
+                         in registeredGuides.Keys 
+                     where !ProgressionManager.Instance.IsEventCompleted(eventId) 
+                     where ProgressionManager.Instance.CanTrigger(eventId) 
+                           || ProgressionManager.Instance.IsWaitingForEvent(eventId) 
+                     let processData = ProgressionManager.Instance.GetProcessData(eventId) 
+                     where processData is SubProcess { trigger: MainProcess.TriggerType.Manual } 
+                     select eventId)
             {
-                // Kiểm tra event đã completed chưa
-                if (ProgressionManager.Instance.IsEventCompleted(eventId))
-                    continue;
-
-                // Kiểm tra event có thể trigger được không
-                if (!ProgressionManager.Instance.CanTrigger(eventId) &&
-                    !ProgressionManager.Instance.IsWaitingForEvent(eventId))
-                    continue;
-
-                // Lấy process data để kiểm tra TriggerType
-                var processData = ProgressionManager.Instance.GetProcessData(eventId);
-                
-                // Chỉ hiển thị guidance cho SubProcess có TriggerType = Manual
-                if (processData is SubProcess subProcess && subProcess.trigger == MainProcess.TriggerType.Manual)
-                {
-                    Debug.Log($"[GuidanceManager] Found next Manual event: {eventId}");
-                    return eventId;
-                }
+                return eventId;
             }
 
             return "";
@@ -107,8 +98,6 @@ namespace _MyGame.Codes.Guidance
             
             // Ẩn guide ban đầu
             guideObject.Hide();
-            
-            Debug.Log($"[GuidanceManager] Registered guide for event: {eventId}");
         }
 
         /// <summary>
@@ -116,17 +105,13 @@ namespace _MyGame.Codes.Guidance
         /// </summary>
         public void UnregisterGuide(string eventId)
         {
-            if (registeredGuides.ContainsKey(eventId))
-            {
-                registeredGuides.Remove(eventId);
-                Debug.Log($"[GuidanceManager] Unregistered guide for event: {eventId}");
-            }
+            if (!registeredGuides.Remove(eventId)) return;
         }
 
         /// <summary>
         /// Hiển thị guide cho một event cụ thể
         /// </summary>
-        public void ShowGuide(string eventId)
+        private void ShowGuide(string eventId)
         {
             if (!enableGuidance) return;
 
@@ -149,25 +134,21 @@ namespace _MyGame.Codes.Guidance
         /// <summary>
         /// Ẩn guide cho một event cụ thể
         /// </summary>
-        public void HideGuide(string eventId)
+        private void HideGuide(string eventId)
         {
-            if (registeredGuides.TryGetValue(eventId, out var guideObject))
+            if (!registeredGuides.TryGetValue(eventId, out var guideObject)) return;
+            guideObject.Hide();
+                
+            if (currentActiveGuideId == eventId)
             {
-                guideObject.Hide();
-                
-                if (currentActiveGuideId == eventId)
-                {
-                    currentActiveGuideId = "";
-                }
-                
-                Debug.Log($"[GuidanceManager] Hidden guide for: {eventId}");
+                currentActiveGuideId = "";
             }
         }
 
         /// <summary>
         /// Ẩn guide hiện tại đang active
         /// </summary>
-        public void HideCurrentGuide()
+        private void HideCurrentGuide()
         {
             if (!string.IsNullOrEmpty(currentActiveGuideId))
             {
@@ -176,25 +157,11 @@ namespace _MyGame.Codes.Guidance
         }
 
         /// <summary>
-        /// Ẩn tất cả guides
-        /// </summary>
-        public void HideAllGuides()
-        {
-            foreach (var guide in registeredGuides.Values)
-            {
-                guide.Hide();
-            }
-            currentActiveGuideId = "";
-            Debug.Log("[GuidanceManager] Hidden all guides");
-        }
-
-        /// <summary>
         /// Được gọi khi player tương tác với TriggerZone
         /// </summary>
         public void OnPlayerInteraction(string eventId)
         {
             HideGuide(eventId);
-            Debug.Log($"[GuidanceManager] Player interacted with: {eventId}");
         }
 
         /// <summary>
@@ -206,88 +173,22 @@ namespace _MyGame.Codes.Guidance
             if (eventData == null) return;
             
             var completedEventId = eventData.eventId;
-            Debug.Log($"[GuidanceManager] Event completed: {completedEventId}");
-            
             // Ẩn guide của event vừa completed
             HideGuide(completedEventId);
             
             // Tự động hiển thị guide cho event tiếp theo
-            if (autoShowNextGuide)
+            if (!autoShowNextGuide) return;
+            var nextEventId = FindNextManualEvent();
+            if (!string.IsNullOrEmpty(nextEventId)) ShowGuide(nextEventId);
+            else
             {
-                var nextEventId = FindNextManualEvent();
-                if (!string.IsNullOrEmpty(nextEventId))
-                {
-                    ShowGuide(nextEventId);
-                    Debug.Log($"[GuidanceManager] Auto showing next guide: {nextEventId}");
-                }
-                else
-                {
-                    Debug.Log("[GuidanceManager] No more manual events to guide");
-                }
+                Debug.Log("[GuidanceManager] No more manual events to guide");
             }
-        }
-
-        /// <summary>
-        /// Enable/disable guidance system
-        /// </summary>
-        public void SetGuidanceEnabled(bool enabled)
-        {
-            enableGuidance = enabled;
-            if (!enabled)
-            {
-                HideAllGuides();
-            }
-        }
-
-        /// <summary>
-        /// API public để show guide từ bên ngoài (dùng cho manual control)
-        /// </summary>
-        public void ShowGuideForEvent(string eventId)
-        {
-            ShowGuide(eventId);
         }
 
         private void OnDestroy()
         {
             EventBus.Unsubscribe("event_completed", OnEventCompleted);
         }
-
-        #if UNITY_EDITOR
-        [Header("Debug")]
-        [SerializeField] private bool showDebugInfo = true;
-        
-        private void OnGUI()
-        {
-            if (!showDebugInfo) return;
-            
-            GUILayout.BeginArea(new Rect(10, 10, 300, 250));
-            GUILayout.Label($"Current Active Guide: {currentActiveGuideId}");
-            GUILayout.Label($"Registered Guides: {registeredGuides.Count}");
-            GUILayout.Label($"Guidance Enabled: {enableGuidance}");
-            GUILayout.Label($"Auto Show Next: {autoShowNextGuide}");
-            
-            if (GUILayout.Button("Hide All Guides"))
-            {
-                HideAllGuides();
-            }
-            
-            if (GUILayout.Button("Find Next Manual Event"))
-            {
-                var nextEvent = FindNextManualEvent();
-                Debug.Log($"Next manual event: {nextEvent}");
-            }
-            
-            if (GUILayout.Button("Show Next Guide"))
-            {
-                var nextEventId = FindNextManualEvent();
-                if (!string.IsNullOrEmpty(nextEventId))
-                {
-                    ShowGuide(nextEventId);
-                }
-            }
-            
-            GUILayout.EndArea();
-        }
-        #endif
     }
 }

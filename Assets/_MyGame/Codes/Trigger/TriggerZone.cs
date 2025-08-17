@@ -1,7 +1,7 @@
-using UnityEngine;
 using _MyGame.Codes.Guidance;
+using UnityEngine;
 
-namespace Code.Trigger
+namespace _MyGame.Codes.Trigger
 {
     public abstract class TriggerZone : MonoBehaviour
     {

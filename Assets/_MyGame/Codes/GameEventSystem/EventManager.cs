@@ -72,7 +72,7 @@ namespace _MyGame.Codes.GameEventSystem
             UpdateEventIndex(eventId);
             
             // QUAN TRỌNG: Thông báo cho GuidanceManager về event completed
-            Debug.Log($"[EventManager] Publishing event_completed for: {eventId}");
+            // Debug.Log($"[EventManager] Publishing event_completed for: {eventId}");
             EventBus.Publish("event_completed", eventData);
             
             TryTriggerNextEvent();

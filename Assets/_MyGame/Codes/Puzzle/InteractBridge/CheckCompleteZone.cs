@@ -1,3 +1,4 @@
+using _MyGame.Codes.Trigger;
 using Code.Puzzle.InteractBridge;
 using Code.Trigger;
 using UnityEngine;
