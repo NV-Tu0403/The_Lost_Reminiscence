@@ -31,7 +31,7 @@ public class ScreenshotDisplayer : CoreEventListenerBase
         }
         else
         {
-            Debug.LogWarning($"[ScreenshotDisplayer] Default screenshot not found at: {defaultPath}");
+            Debug.Log($"[ScreenshotDisplayer] Default screenshot not found at: {defaultPath}");
         }
     }
 

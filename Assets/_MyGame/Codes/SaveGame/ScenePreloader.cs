@@ -94,7 +94,7 @@ public class ScenePreloader : MonoBehaviour
 
                 if (!finished)
                 {
-                    Debug.LogWarning($"[ScenePreloader] Timeout waiting for scene '{scene}' to become fully ready after {perSceneTimeout}s. Continuing.");
+                    Debug.Log($"[ScenePreloader] Timeout waiting for scene '{scene}' to become fully ready after {perSceneTimeout}s. Continuing.");
                 }
                 else
                 {
