@@ -9,7 +9,8 @@ namespace DunGen.Demo
 
 		private void Start()
 		{
-			RuntimeDungeon runtimeDungeon = Component.FindObjectOfType<RuntimeDungeon>();
+			// ĐÃ SỬA LẠI DÒNG NÀY CHO CHÍNH XÁC
+			RuntimeDungeon runtimeDungeon = UnityEngine.Object.FindAnyObjectByType<RuntimeDungeon>();
 
 			if (runtimeDungeon != null)
 				transform.forward = -runtimeDungeon.Generator.UpVector;
