@@ -50,12 +50,12 @@ namespace Dungen.Adapters
 #if NAVMESHCOMPONENTS_SHOW_NAVMESHDATA_REF
 			m_NavMeshData = serializedObject.FindProperty("navMeshData");
 #endif
-			NavMeshVisualizationSettings.showNavigation++;
+			// NavMeshVisualizationSettings.showNavigation++; // ĐÃ XÓA DÒNG NÀY
 		}
 
 		private void OnDisable()
 		{
-			NavMeshVisualizationSettings.showNavigation--;
+			// NavMeshVisualizationSettings.showNavigation--; // ĐÃ XÓA DÒNG NÀY
 		}
 
 		public override void OnInspectorGUI()

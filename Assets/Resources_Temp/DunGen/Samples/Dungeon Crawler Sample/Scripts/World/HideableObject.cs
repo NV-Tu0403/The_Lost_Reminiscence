@@ -37,7 +37,8 @@ namespace DunGen.DungeonCrawler
 			hideableObjectsMap.Clear();
 
 			// Re-populate map of colliders
-			foreach (var obj in FindObjectsOfType<HideableObject>())
+			// ĐÃ SỬA DÒNG NÀY
+			foreach (var obj in FindObjectsByType<HideableObject>(FindObjectsSortMode.None))
 				if(obj.Collider != null)
 					hideableObjectsMap[obj.Collider] = obj;
 

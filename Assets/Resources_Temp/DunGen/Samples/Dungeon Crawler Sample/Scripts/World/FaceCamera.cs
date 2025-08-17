@@ -10,7 +10,8 @@ namespace DunGen.DungeonCrawler
 		private void LateUpdate()
 		{
 			if (playerCamera == null)
-				playerCamera = FindObjectOfType<CameraController>();
+				// ĐÃ SỬA DÒNG NÀY
+				playerCamera = FindAnyObjectByType<CameraController>();
 
 			if (playerCamera != null)
 			{

@@ -222,7 +222,8 @@ namespace DunGen.Adapters
 			}
 
 			// Collect sprites
-			foreach (var spriteRenderer in FindObjectsOfType<SpriteRenderer>())
+			// ĐÃ SỬA DÒNG NÀY
+			foreach (var spriteRenderer in FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None))
 			{
 				var sprite = spriteRenderer.sprite;
 				var mesh = GetMesh(sprite);
@@ -251,7 +252,8 @@ namespace DunGen.Adapters
 				area = 0
 			};
 
-			foreach (var tilemap in FindObjectsOfType<Tilemap>())
+			// ĐÃ SỬA DÒNG NÀY
+			foreach (var tilemap in FindObjectsByType<Tilemap>(FindObjectsSortMode.None))
 			{
 				for (int x = tilemap.cellBounds.xMin; x < tilemap.cellBounds.xMax; x++)
 				{

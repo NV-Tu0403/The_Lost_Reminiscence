@@ -66,13 +66,16 @@ namespace DunGen
 		{
 			overlappingTiles.Clear();
 
-			foreach (var tile in FindObjectsOfType<Tile>())
+			// ĐÃ SỬA DÒNG NÀY
+			foreach (var tile in FindObjectsByType<Tile>(FindObjectsSortMode.None))
 				if (tile.Placement.Bounds.Contains(transform.position))
 				{
 					OnTileEntered(tile);
 					break;
 				}
 		}
+
+
 
 		protected virtual void OnTileChangedEvent(Tile previousTile, Tile newTile) { }
 
