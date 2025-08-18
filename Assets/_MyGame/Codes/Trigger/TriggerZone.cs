@@ -1,4 +1,6 @@
 using _MyGame.Codes.Guidance;
+using _MyGame.Codes.GameEventSystem; 
+using _MyGame.Codes.Procession;      
 using UnityEngine;
 
 namespace _MyGame.Codes.Trigger
@@ -9,6 +11,42 @@ namespace _MyGame.Codes.Trigger
         
         protected virtual void DisableZone() => gameObject.SetActive(false);
         protected abstract bool IsValidTrigger(Collider other);
+
+        protected bool CanProgress()
+        {
+            if (string.IsNullOrEmpty(eventId)) return false;
+            if (ProgressionManager.Instance == null || EventExecutor.Instance == null)
+            {
+                Debug.LogWarning($"[{GetType().Name}] ProgressionManager hoặc EventExecutor chưa sẵn sàng.");
+                return false;
+            }
+
+            if (ProgressionManager.Instance.CanTrigger(eventId) ||
+                ProgressionManager.Instance.IsWaitingForEvent(eventId)) return true;
+            Debug.Log($"[{GetType().Name}] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
+            return false;
+        }
+        
+        protected void ExecuteProgression(bool unlockProcess, bool disableAfterTrigger)
+        {
+            if (unlockProcess)
+            {
+                ProgressionManager.Instance.UnlockProcess(eventId);
+            }
+            EventExecutor.Instance.TriggerEvent(eventId);
+            if (disableAfterTrigger)
+            {
+                DisableZone();
+            }
+        }
+
+        // New convenience wrapper
+        protected bool TryExecuteProgression(bool unlockProcess, bool disableAfterTrigger)
+        {
+            if (!CanProgress()) return false;
+            ExecuteProgression(unlockProcess, disableAfterTrigger);
+            return true;
+        }
 
         protected virtual void OnTriggerEnter(Collider other)
         {

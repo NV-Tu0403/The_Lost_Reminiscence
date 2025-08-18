@@ -1,9 +1,6 @@
-using _MyGame.Codes.GameEventSystem;
-using _MyGame.Codes.Procession;
-using _MyGame.Codes.Trigger;
 using UnityEngine;
 
-namespace Code.Trigger
+namespace _MyGame.Codes.Trigger
 {
     public class RockTriggerZone : TriggerZone
     {
@@ -16,21 +13,10 @@ namespace Code.Trigger
 
         protected override void OnTriggered(Collider other)
         {
-            // Kiểm tra điều kiện progression
-            if (!ProgressionManager.Instance.CanTrigger(eventId) &&
-                !ProgressionManager.Instance.IsWaitingForEvent(eventId))
+            if (TryExecuteProgression(true, true))
             {
-                Debug.Log($"[RockTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
-                return;
+                PlayEffect();
             }
-            
-            // Unlock → Trigger → Disable zone
-            ProgressionManager.Instance.UnlockProcess(eventId);
-            EventExecutor.Instance.TriggerEvent(eventId);
-            DisableZone();
-            
-            // Enable Effect
-            PlayEffect();
         }
 
         private void PlayEffect()

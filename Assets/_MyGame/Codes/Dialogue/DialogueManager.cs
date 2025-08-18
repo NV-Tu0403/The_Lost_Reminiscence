@@ -18,8 +18,16 @@ namespace Code.Dialogue
         /// - Chứa tham chiếu tới FullDialoguePanel và BubbleDialoguePanel.
         /// - Ẩn panel khi khởi tạo.
         /// </summary>
+        public static DialogueManager Instance { get; private set; }
+        
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
             if (fullDialoguePanel != null) fullDialoguePanel.gameObject.SetActive(false);
             if (bubbleDialoguePanel != null) bubbleDialoguePanel.gameObject.SetActive(false);
             if (storyDialoguePanel != null) storyDialoguePanel.gameObject.SetActive(false);
@@ -124,6 +132,29 @@ namespace Code.Dialogue
         {
             if (data is not BaseEventData eventData) return;
             StartDialogue(eventData.eventId, eventData.OnFinish);
+        }
+
+        // Public API cho tutorial gọi bubble persistent
+        public void ShowBubbleTutorial(string dialogueId)
+        {
+            if (string.IsNullOrEmpty(dialogueId) || bubbleDialoguePanel == null) return;
+            Addressables.LoadAssetAsync<DialogueNodeSo>(dialogueId).Completed += handle =>
+            {
+                if (handle.Status == AsyncOperationStatus.Succeeded)
+                {
+                    bubbleDialoguePanel.ShowDialoguePersistent(handle.Result);
+                }
+                else
+                {
+                    Debug.LogWarning($"[DialogueManager] Không load được dialogue (tutorial) id={dialogueId}");
+                }
+            };
+        }
+        
+        public void HideBubbleTutorial()
+        {
+            if (bubbleDialoguePanel == null) return;
+            bubbleDialoguePanel.HideManually();
         }
     }
 }

@@ -1,7 +1,6 @@
 using _MyGame.Codes.GameEventSystem;
 using _MyGame.Codes.Procession;
 using _MyGame.Codes.Trigger;
-using Code.Trigger;
 using UnityEngine;
 
 namespace _MyGame.Codes.Puzzle.InteractBridge
@@ -15,17 +14,7 @@ namespace _MyGame.Codes.Puzzle.InteractBridge
 
         protected override void OnTriggered(Collider other)
         {
-            // Kiểm tra điều kiện progression
-            if (!ProgressionManager.Instance.CanTrigger(eventId) &&
-                !ProgressionManager.Instance.IsWaitingForEvent(eventId))
-            {
-                Debug.Log($"[Step5TriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
-                return;
-            }
-            
-            // Unlock → Trigger
-            ProgressionManager.Instance.UnlockProcess(eventId);
-            EventExecutor.Instance.TriggerEvent(eventId);
+            TryExecuteProgression(true, false);
         }
     }
 }

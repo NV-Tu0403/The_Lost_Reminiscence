@@ -1,10 +1,6 @@
-using _MyGame.Codes.GameEventSystem;
-using _MyGame.Codes.Procession;
-using _MyGame.Codes.Trigger;
-using Code.Trigger;
 using UnityEngine;
 
-namespace Script.Trigger
+namespace _MyGame.Codes.Trigger
 {
     public class FaTriggerZone : TriggerZone
     {
@@ -17,22 +13,19 @@ namespace Script.Trigger
 
         protected override void OnTriggered(Collider other)
         {
-            if (!ProgressionManager.Instance.CanTrigger(eventId) &&
-                !ProgressionManager.Instance.IsWaitingForEvent(eventId))
-            {
-                Debug.Log($"[PlayerTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
-                return;
-            }
-
-            ProgressionManager.Instance.UnlockProcess(eventId);
-            EventExecutor.Instance.TriggerEvent(eventId);
-
-            
+            if (!TryExecuteProgression(true, false)) return;
             if (portal == null)
             {
                 portal = FindFirstObjectByType<PortalRound_Controller>();
             }
-            portal.F_TogglePortalRound(true);
+            if (portal != null)
+            {
+                portal.F_TogglePortalRound(true);
+            }
+            else
+            {
+                Debug.LogWarning("[FaTriggerZone] Không tìm thấy PortalRound_Controller trong scene.");
+            }
         }
     }
 }
