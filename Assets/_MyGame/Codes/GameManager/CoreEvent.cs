@@ -74,6 +74,10 @@ public class CoreEvent : MonoBehaviour
 
     public event Action<string, Vector3> OnChangeScene;
 
+    public event Action OnOpenBook;
+
+    public event Action OnEndSession;
+
     #endregion
 
     //--------------------------------------------------------------------------------------------
@@ -132,6 +136,9 @@ public class CoreEvent : MonoBehaviour
 
     public void triggerChangeScene(string sceneName, Vector3 pos) => OnChangeScene?.Invoke(sceneName, pos);
 
+    public void triggerOpenBook() => OnOpenBook?.Invoke();
+
+    public void TriggerEndSession() => OnEndSession?.Invoke();
 
     #endregion
 }
