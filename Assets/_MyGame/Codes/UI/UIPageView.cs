@@ -1,9 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using echo17.EndlessBook;
-using echo17.EndlessBook.Demo02;
 using TMPro;
-using static echo17.EndlessBook.EndlessBook;
+
 
 
 /// <summary>

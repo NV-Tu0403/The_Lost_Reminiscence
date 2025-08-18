@@ -14,7 +14,7 @@
 
     public delegate void BookActionDelegate(BookActionTypeEnum actionType, int actionValue);
 
-    public class Demo02 : MonoBehaviour
+    public class Demo02 : CoreEventListenerBase
     {
         protected bool audioOn = false;
         protected bool flipping = false;
@@ -329,6 +329,7 @@
                     break;
             }
         }
+
         private IEnumerator QuitAfterDelay(float delay)
         {
             yield return new WaitForSeconds(delay);
@@ -467,6 +468,14 @@
             }
         }
 
+        private async void OnEndSesion()
+        {
+            await Task.Delay(2000);
+            await TurnToPage(5, true);
+            await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
+
+        }
+
         private async void DetectedSetting(UIItem item)
         {
             switch (item.uIActionType)
@@ -552,6 +561,18 @@
 
             if (isWait)
                 await turnPageTcs.Task; // Chờ cho đến khi trang lật xong
+        }
+
+        public override void RegisterEvent(CoreEvent e)
+        {
+            e.OnOpenBook += OpenFront;
+            e.OnEndSession += OnEndSesion;
+        }
+
+        public override void UnregisterEvent(CoreEvent e)
+        {
+            e.OnOpenBook -= OpenFront;
+            e.OnEndSession -= OnEndSesion;
         }
 
         // Callback khi trang lật xong

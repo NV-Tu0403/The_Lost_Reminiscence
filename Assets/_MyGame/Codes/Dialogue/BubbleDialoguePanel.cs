@@ -21,6 +21,9 @@ namespace Code.Dialogue
         private Coroutine typingCoroutine;
         private CanvasGroup canvasGroup;
         private const float TypewriterDelay = 0.05f;
+
+        private bool isPersistent; // new flag
+        private DialogueNodeSo currentNode; // cache if needed
         
         private void Awake()
         {
@@ -35,11 +38,30 @@ namespace Code.Dialogue
         /// </summary>
         public void ShowDialogue(DialogueNodeSo node, Action onEnd)
         {
-            EventBus.Publish("StartDialogue"); // Đảm bảo phát event này khi panel hiện lên
+            isPersistent = false;
+            InternalShow(node, onEnd, false);
+        }
+
+        /// <summary>
+        /// Hiển thị bubble dialogue bền vững:
+        /// - Bật panel, không gán callback kết thúc.
+        /// - Hiển thị text với hiệu ứng typewriter.
+        /// - Không tự động ẩn, chờ gọi HideManually().
+        /// </summary>
+        public void ShowDialoguePersistent(DialogueNodeSo node)
+        {
+            isPersistent = true;
+            InternalShow(node, null, true);
+        }
+
+        private void InternalShow(DialogueNodeSo node, Action onEnd, bool persistent)
+        {
+            EventBus.Publish("StartDialogue");
             gameObject.SetActive(true);
             onDialogueEnd = onEnd;
+            currentNode = node;
             ShowAnimation();
-            ShowNode(node);
+            ShowNode(node, persistent);
         }
 
         /// <summary>
@@ -47,16 +69,16 @@ namespace Code.Dialogue
         /// - Nếu node null thì kết thúc.
         /// - Dừng hiệu ứng cũ nếu có, bắt đầu hiệu ứng mới.
         /// </summary>
-        private void ShowNode(DialogueNodeSo node)
+        private void ShowNode(DialogueNodeSo node, bool persistent)
         {
             if (node == null)
             {
-                EndDialogue();
+                if (!isPersistent) EndDialogue();
                 return;
             }
             if (typingCoroutine != null)
                 StopCoroutine(typingCoroutine);
-            typingCoroutine = StartCoroutine(TypewriterCoroutine(node));
+            typingCoroutine = StartCoroutine(TypewriterCoroutine(node, persistent));
         }
 
         /// <summary>
@@ -64,11 +86,24 @@ namespace Code.Dialogue
         /// - Lấy text từ LocalizedString và chạy hiệu ứng gõ chữ.
         /// - Sau khi gõ xong, tự động ẩn bubble sau 2 giây.
         /// </summary>
-        private IEnumerator TypewriterCoroutine(DialogueNodeSo node)
+        private IEnumerator TypewriterCoroutine(DialogueNodeSo node, bool persistent)
         {
             yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
-            yield return new WaitForSeconds(timeToHide);
-            EndDialogue();
+            if (!persistent)
+            {
+                yield return new WaitForSeconds(timeToHide);
+                EndDialogue();
+            }
+        }
+
+        // New manual hide for persistent
+        public void HideManually()
+        {
+            if (!gameObject.activeSelf) return;
+            if (isPersistent)
+            {
+                EndDialogue();
+            }
         }
 
         private void EndDialogue()
