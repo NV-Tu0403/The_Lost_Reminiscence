@@ -1,6 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
-using _MyGame.Codes.Guidance;
+using _MyGame.Codes.Trigger;
 
 namespace _MyGame.Codes.Guidance
 {
@@ -32,7 +32,7 @@ namespace _MyGame.Codes.Guidance
         private Vector3 originalScale;
         private Tween floatTween;
         private Tween scaleTween;
-        private bool isVisible = false;
+        private bool isVisible;
 
         public string EventId => eventId;
 
@@ -58,7 +58,7 @@ namespace _MyGame.Codes.Guidance
         private void AutoGetEventIdFromParent()
         {
             // Tìm TriggerZone trong parent hierarchy
-            var triggerZone = GetComponentInParent<Code.Trigger.TriggerZone>();
+            var triggerZone = GetComponentInParent<TriggerZone>();
             if (triggerZone != null && !string.IsNullOrEmpty(triggerZone.eventId))
             {
                 eventId = triggerZone.eventId;
@@ -105,7 +105,7 @@ namespace _MyGame.Codes.Guidance
                 transform.localScale = Vector3.zero;
                 scaleTween = transform.DOScale(originalScale, showDuration)
                     .SetEase(showEase)
-                    .OnComplete(() => StartFloatingAnimation());
+                    .OnComplete(StartFloatingAnimation);
             }
             else
             {
@@ -174,12 +174,10 @@ namespace _MyGame.Codes.Guidance
         private void StopAllAnimations()
         {
             StopFloatingAnimation();
-            
-            if (scaleTween != null)
-            {
-                scaleTween.Kill();
-                scaleTween = null;
-            }
+
+            if (scaleTween == null) return;
+            scaleTween.Kill();
+            scaleTween = null;
         }
 
         /// <summary>
@@ -229,7 +227,7 @@ namespace _MyGame.Codes.Guidance
             // Tự động lấy eventId từ parent trong editor nếu được bật
             if (autoGetEventIdFromParent && Application.isPlaying == false)
             {
-                var triggerZone = GetComponentInParent<Code.Trigger.TriggerZone>();
+                var triggerZone = GetComponentInParent<TriggerZone>();
                 if (triggerZone != null && !string.IsNullOrEmpty(triggerZone.eventId))
                 {
                     eventId = triggerZone.eventId;
