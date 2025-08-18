@@ -2,7 +2,6 @@ using FMOD.Studio; // Thêm namespace cho EventInstance và STOP_MODE
 using FMODUnity;   // Thêm namespace cho EventReference và RuntimeUtils
 using UnityEngine;
 using System.Collections;
-using STOP_MODE = FMOD.Studio.STOP_MODE;
 
 namespace _MyGame.Codes.Musical
 {
@@ -39,19 +38,6 @@ namespace _MyGame.Codes.Musical
             if (_ambientInstance.isValid())
             {
                 _ambientInstance.set3DAttributes(transform.position.To3DAttributes());
-            }
-        }
-
-        private void OnDestroy()
-        {
-            // Fade out trước khi dừng
-            if (_ambientInstance.isValid())
-            {
-                StartCoroutine(FadeAudio(fadeOutTime, 0f, () =>
-                {
-                    _ambientInstance.stop(STOP_MODE.ALLOWFADEOUT);
-                    _ambientInstance.release();
-                }));
             }
         }
 
