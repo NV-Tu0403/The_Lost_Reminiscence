@@ -71,7 +71,8 @@ namespace DunGen.Demo
 
 		public static void Log(string format, params object[] args)
 		{
-			var component = Component.FindObjectOfType<ScreenText>();
+			// ĐÃ SỬA LẠI DÒNG NÀY CHO CHÍNH XÁC
+			var component = UnityEngine.Object.FindAnyObjectByType<ScreenText>();
 
 			if (component == null)
 				return;

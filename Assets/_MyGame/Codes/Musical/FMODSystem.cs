@@ -1,10 +1,10 @@
+using System.Collections.Generic;
 using FMOD.Studio;
 using FMODUnity;
 using UnityEngine;
-using System.Collections.Generic;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
-namespace Tu_Develop.Musical
+namespace _MyGame.Codes.Musical
 {
     /// <summary>
     /// Hệ thống quản lý âm thanh trung tâm sử dụng FMOD cho toàn bộ game.

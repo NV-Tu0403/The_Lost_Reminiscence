@@ -75,7 +75,8 @@ namespace DunGen.DungeonCrawler
 
 		public void Interact()
 		{
-			var player = FindObjectOfType<ClickToMove>();
+			// ĐÃ SỬA DÒNG NÀY
+			var player = FindAnyObjectByType<ClickToMove>();
 			float distanceToPlayer = (transform.position - player.transform.position).magnitude;
 
 			// If we're in range to open the chest, just open it...

@@ -46,7 +46,8 @@ namespace DunGen.DungeonCrawler
 
 		public void Interact()
 		{
-			var player = FindObjectOfType<ClickToMove>();
+			// ĐÃ SỬA DÒNG NÀY
+			var player = FindAnyObjectByType<ClickToMove>();
 			float distanceToPlayer = (transform.position - player.transform.position).magnitude;
 
 			// If we're in range to use the obelisk, just do it...
@@ -82,7 +83,8 @@ namespace DunGen.DungeonCrawler
 
 			player.Agent.speed *= speedMultiplier;
 
-			var playerUI = FindObjectOfType<PlayerUI>();
+			// ĐÃ SỬA DÒNG NÀY
+			var playerUI = FindAnyObjectByType<PlayerUI>();
 			playerUI.ShowMessage("Movement Speed Increased");
 
 			if (particlesPrefab != null)

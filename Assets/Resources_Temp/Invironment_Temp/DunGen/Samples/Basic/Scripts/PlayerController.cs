@@ -32,7 +32,8 @@ namespace DunGen.Demo
 		{
 			movementController = GetComponent<CharacterController>();
 			playerCamera = GetComponentInChildren<Camera>();
-			gen = GameObject.FindObjectOfType<Generator>();
+			// ĐÃ SỬA LẠI DÒNG NÀY CHO CHÍNH XÁC
+			gen = UnityEngine.Object.FindAnyObjectByType<Generator>();
 			overheadCamera = GameObject.Find("Overhead Camera").GetComponent<Camera>();
 
 			isControlling = true;
@@ -126,7 +127,7 @@ namespace DunGen.Demo
 			overheadCamera.transform.position = new Vector3(transform.position.x, overheadCamera.transform.position.y, transform.position.z);
 
 #if UNITY_4
-        Screen.lockCursor = isControlling;
+        Screen.lockCursor = isControlling;
 #else
 			Cursor.lockState = (isControlling) ? CursorLockMode.Locked : CursorLockMode.None;
 			Cursor.visible = !isControlling;
