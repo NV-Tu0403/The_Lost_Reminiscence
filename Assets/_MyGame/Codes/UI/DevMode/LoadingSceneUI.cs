@@ -53,7 +53,7 @@ namespace _MyGame.Codes.UI.DevMode
                 gameObject.SetActive(true);
                 
             if (loadingText != null)
-                loadingText.text = "Đang chẩn bị tài nguyên";
+                loadingText.text = "Đang chuẩn bị tài nguyên";
                 
             // Khởi tạo dots
             InitializeDots();

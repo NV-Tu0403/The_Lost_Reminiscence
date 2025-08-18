@@ -58,6 +58,9 @@ public enum UIActionType
     Confim,
     Cancel,
 
+    Setting,
+    LanguageChange
+
 }
 
 public enum KeyCoreInputType
