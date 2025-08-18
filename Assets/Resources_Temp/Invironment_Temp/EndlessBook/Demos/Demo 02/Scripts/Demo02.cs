@@ -291,6 +291,7 @@
             DeTectedSave(item);
             DetectedAccoutFuntion(item);
             DetectedPauseSession(item);
+            DetectedSetting(item);
         }
 
         /// <summary>
@@ -318,7 +319,10 @@
                     await TurnToPage(item.targetPage, false);
                     CoreEvent.Instance.triggerNewSession();
                     break;
+                case UIActionType.Setting:
+                    await TurnToPage(item.targetPage, true);
 
+                    break;
                 case UIActionType.QuitGame:
                     ClosedBack();
                     StartCoroutine(QuitAfterDelay(3f));
@@ -374,6 +378,10 @@
                     CoreEvent.Instance.triggerSyncFileSave(ProfessionalSkilMenu.Instance.selectedSaveFolder);
 
                     break;
+                case UIActionType.Setting:
+                    await TurnToPage(item.targetPage, true);
+
+                    break;
             }
         }
 
@@ -398,7 +406,7 @@
                             CoreEvent.Instance.triggerRegister(); // đăng ký tài khoản
                             UiPage06_C.Instance.ActiveObj(true, true, false, false);
                         }
-                      
+
                     }
 
                     if (accountState == AccountStateType.ConectingServer.ToString())
@@ -447,9 +455,33 @@
                 case UIActionType.ResumeSession:
                     CoreEvent.Instance.triggerResumedSession();
                     break;
+                case UIActionType.Setting:
+                    await TurnToPage(item.targetPage, true);
+
+                    break;
+
                 case UIActionType.QuitSesion:
                     await TurnToPage(item.targetPage, true);
                     await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
+                    break;
+            }
+        }
+
+        private async void DetectedSetting(UIItem item)
+        {
+            switch (item.uIActionType)
+            {
+                //case UIActionType.ResumeSession:
+                //    CoreEvent.Instance.triggerResumedSession();
+                //    break;
+                //case UIActionType.Setting:
+                //    await TurnToPage(item.targetPage, true);
+
+                //    break;
+
+                case UIActionType.Back:
+                    await TurnToPage(item.targetPage, true);
+                    //await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
                     break;
             }
         }
