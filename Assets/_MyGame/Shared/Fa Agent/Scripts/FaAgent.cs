@@ -177,23 +177,6 @@ namespace Tu_Develop.Import.Scripts
             if (faBha && faBha.BlackboardReference != null)
             {
                // 1. Setup IdleConfig
-               if (idleConfigBlackboard != null && idleConfigDialogue != null)
-               {
-                   // Set dialogue đầu tiên
-                   var result = idleConfigBlackboard.SetVariableValue("Dialogues", idleConfigDialogue.dialogueSets[0].dialogues);
-                   if (!result)
-                   {
-                       Debug.LogError("Không thể gán biến 'Dialogues' trên Blackboard!");
-                   }
-                   else
-                   {
-                       Debug.Log("Đã gán biến 'Dialogues' thành công.");
-                   }
-               }
-               else
-               {
-                   Debug.LogWarning("Chưa gán IdleConfig Blackboard hoặc Dialogue!");
-               }
                // 2. Setup PuzzleConfig
                // 3. Setup CombatConfig
                // 4. Setup PlayerInformation
