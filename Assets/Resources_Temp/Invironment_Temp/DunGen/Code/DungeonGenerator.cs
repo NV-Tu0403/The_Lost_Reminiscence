@@ -361,7 +361,8 @@ namespace DunGen
 			// Let DungenCharacters know that they should re-check the Tile they're in
 			if (charactersShouldRecheckTile)
 			{
-				foreach (var character in Component.FindObjectsOfType<DungenCharacter>())
+				// ĐÃ SỬA LẠI DÒNG NÀY CHO CHÍNH XÁC
+				foreach (var character in UnityEngine.Object.FindObjectsByType<DungenCharacter>(FindObjectsSortMode.None))
 					character.ForceRecheckTile();
 			}
 		}

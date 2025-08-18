@@ -79,7 +79,8 @@ namespace DunGen
 
 		protected virtual void OnEnable()
 		{
-			var runtimeDungeon = FindObjectOfType<RuntimeDungeon>();
+			// ĐÃ SỬA DÒNG NÀY
+			var runtimeDungeon = FindAnyObjectByType<RuntimeDungeon>();
 
 			if (runtimeDungeon != null)
 			{
@@ -438,7 +439,8 @@ namespace DunGen
 
 		protected Tile FindCurrentTile()
 		{
-			var dungeon = FindObjectOfType<Dungeon>();
+			// ĐÃ SỬA DÒNG NÀY
+			var dungeon = FindAnyObjectByType<Dungeon>();
 
 			if (dungeon == null)
 				return null;

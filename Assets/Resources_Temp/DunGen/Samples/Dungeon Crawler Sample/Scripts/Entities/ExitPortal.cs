@@ -28,7 +28,8 @@ namespace DunGen.DungeonCrawler
 
 		public void Interact()
 		{
-			var player = FindObjectOfType<ClickToMove>();
+			// ĐÃ SỬA DÒNG NÀY
+			var player = FindAnyObjectByType<ClickToMove>();
 			float distanceToPlayer = (transform.position - player.transform.position).magnitude;
 
 			// If we're in range to use the portal, just do it...
@@ -57,7 +58,8 @@ namespace DunGen.DungeonCrawler
 			// Reset the cursor so it's not permanently set to the portal cursor
 			Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
 
-			var runtimeDungeon = FindObjectOfType<RuntimeDungeon>();
+			// ĐÃ SỬA DÒNG NÀY
+			var runtimeDungeon = FindAnyObjectByType<RuntimeDungeon>();
 			runtimeDungeon.Generate();
 		}
 	}

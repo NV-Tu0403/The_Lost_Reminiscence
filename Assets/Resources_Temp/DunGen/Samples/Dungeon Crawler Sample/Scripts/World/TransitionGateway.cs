@@ -28,6 +28,7 @@ namespace DunGen.DungeonCrawler
 			isLocked = true;
 		}
 
+
 		private void OnTriggerEnter(Collider other)
 		{
 			if (!isLocked)
@@ -52,7 +53,8 @@ namespace DunGen.DungeonCrawler
 			}
 			else
 			{
-				var playerUI = FindObjectOfType<PlayerUI>();
+				// ĐÃ SỬA DÒNG NÀY
+				var playerUI = FindAnyObjectByType<PlayerUI>();
 				playerUI.ShowMessage("Missing graveyard key");
 			}
 		}
