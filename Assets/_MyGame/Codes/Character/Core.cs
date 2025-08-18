@@ -130,6 +130,8 @@ public class Core : CoreEventListenerBase
         e.OnAccountChangeState += UpdateAccountState;
 
         e.OnQuitGame += QuitGame;
+
+        e.OnEndSession += PauseSession;
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -147,6 +149,8 @@ public class Core : CoreEventListenerBase
         e.OnAccountChangeState -= UpdateAccountState;
 
         e.OnQuitGame -= QuitGame;
+
+        e.OnEndSession -= PauseSession;
     }
 
     /// <summary>

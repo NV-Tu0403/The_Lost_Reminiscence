@@ -269,6 +269,7 @@ namespace _MyGame.Codes.UI.DevMode
             if (hideAfterComplete)
             {
                 StartCoroutine(HideLoadingScreen());
+                StartCoroutine(WaitOpentBook());
             }
         }
         
@@ -280,6 +281,12 @@ namespace _MyGame.Codes.UI.DevMode
                 loadingPanel.SetActive(false);
             else
                 gameObject.SetActive(false);
+        }
+
+        private IEnumerator WaitOpentBook()
+        {
+            yield return new WaitForSeconds(1f);
+            CoreEvent.Instance.triggerOpenBook();
         }
         
         public void HideLoading()
