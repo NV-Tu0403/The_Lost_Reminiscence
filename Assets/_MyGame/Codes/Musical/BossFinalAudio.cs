@@ -1,16 +1,37 @@
 using UnityEngine;
+using FMODUnity;
+using FMOD.Studio;
 
-public class BossFinalAudio : MonoBehaviour
+namespace _MyGame.Codes.Musical
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public class BossFinalAudio : MonoBehaviour
     {
-        
-    }
+        [SerializeField] private EventReference mapBGMEvent;
+        private EventInstance _bgmInstance;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        private void Start()
+        {
+            _bgmInstance = RuntimeManager.CreateInstance(mapBGMEvent);
+            _bgmInstance.start();
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.H))
+            {
+                _bgmInstance.setParameterByName("FieldOfAge", 0f);
+            }
+
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                _bgmInstance.setParameterByName("FieldOfAge", 1f);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            _bgmInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+            _bgmInstance.release();
+        }
     }
 }
