@@ -5,6 +5,7 @@ using System;
 using _MyGame.Codes.Backend;
 using Code.Backend;
 using UnityEngine.Experimental.GlobalIllumination;
+using UnityEditor;
 
 /// <summary>
 /// Trung tâm điều phối toàn bộ các State của Core game.
@@ -91,6 +92,7 @@ public class Core : CoreEventListenerBase
         InitAccountState();
         SetUpCamera();
         StartCoroutine(ActiveObjMenu(true));
+        MainMenu.SetActive(false);
         //StartCoroutine(RetryUpdateAccountState());
     }
 
@@ -132,6 +134,8 @@ public class Core : CoreEventListenerBase
         e.OnQuitGame += QuitGame;
 
         e.OnEndSession += PauseSession;
+
+        e.OnOpenBook += OnActivemenu;
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -151,6 +155,9 @@ public class Core : CoreEventListenerBase
         e.OnQuitGame -= QuitGame;
 
         e.OnEndSession -= PauseSession;
+
+        e.OnOpenBook -= OnActivemenu; 
+
     }
 
     /// <summary>
@@ -595,6 +602,11 @@ public class Core : CoreEventListenerBase
     }
 
     #endregion
+
+    private void OnActivemenu()
+    {
+        MainMenu.SetActive(true);
+    }
 }
 
 /// <summary>
