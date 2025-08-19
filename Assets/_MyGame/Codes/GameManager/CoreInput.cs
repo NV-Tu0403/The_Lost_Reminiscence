@@ -18,15 +18,14 @@ public class CoreInput : CoreEventListenerBase
 
     private void Start()
     {
-        // Đăng ký sự kiện để tìm player và đặt vị trí
-        FindPlayer();
+        //FindPlayer();
 
     }
 
     private void Update()
     {
         Mapping();
-        SetPlayerToZeroPosition();
+        //SetPlayerToZeroPosition();
     }
 
     public override void RegisterEvent(CoreEvent e)
