@@ -2294,6 +2294,30 @@ RenderTexture:
   m_Dimension: 2
   m_VolumeDepth: 1
   m_ShadowSamplingMode: 2
+--- !u!114 &364022144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transformSettings:
+    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
+    scale: {x: 3.1006794, y: 1, z: 3.1006794}
+    rotation: {x: 0, y: 0, z: 0}
+    flipScaleX: 0
+    flipScaleY: 0
+    flipScaleZ: 0
+  domainSettings:
+    noiseTypeName: Perlin
+    fractalTypeName: Fbm
+    noiseTypeParams: 
+    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1 &395164482
 GameObject:
   m_ObjectHideFlags: 0
@@ -4073,30 +4097,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6017553635385313747, guid: fc321b752e7902240b9e7cc5029a9aff, type: 3}
   m_PrefabInstance: {fileID: 516614966}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &520237175
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  transformSettings:
-    translation: {x: -37.48242, y: 191.38945, z: 1192.8092}
-    scale: {x: 3.1006794, y: 1, z: 3.1006794}
-    rotation: {x: 0, y: 0, z: 0}
-    flipScaleX: 0
-    flipScaleY: 0
-    flipScaleZ: 0
-  domainSettings:
-    noiseTypeName: Perlin
-    fractalTypeName: Fbm
-    noiseTypeParams: 
-    fractalTypeParams: '{"warpOffsets":{"x":622.0007934570313,"y":327.2410583496094,"z":-186.6859130859375,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.4892474412918091,"frequency":1.0,"persistence":0.5,"lacunarity":1.1132447719573975,"warpIterations":4.939189434051514,"warpStrength":0.14957475662231446,"warpEnabled":true,"warpExpanded":true}'
 --- !u!1 &529677742
 GameObject:
   m_ObjectHideFlags: 0
@@ -4406,8 +4406,8 @@ MonoBehaviour:
   m_spawnRuleStampsToggleAllState: 1
   m_drawPreview: 0
   m_previewRuleIds: 
-  m_maxWorldHeight: 146.30692
-  m_minWorldHeight: 0.35938048
+  m_maxWorldHeight: 144.8069
+  m_minWorldHeight: 0
   m_showSeaLevelinStampPreview: 1
   m_terrainGeneratorPanelUnfolded: 1
   m_worldDesignerPreviewSettingsUnfolded: 0
@@ -14960,7 +14960,7 @@ MonoBehaviour:
       m_warpIterations: 4.9391894
       m_warpStrength: 0.14957476
       m_warpOffset: {x: 622.0008, y: 327.24106, z: -186.68591, w: 0}
-    m_noiseSettings: {fileID: 520237175}
+    m_noiseSettings: {fileID: 364022144}
     m_noiseToolSettings:
       worldHeightRemap: {x: 0, y: 0}
       coordSpace: 0
@@ -15324,8 +15324,8 @@ MonoBehaviour:
       m_imageMaskLocation: 1
       m_strength: 1
       m_seaLevel: 3.125
-      m_maxWorldHeight: 146.30692
-      m_minWorldHeight: 0.35938048
+      m_maxWorldHeight: 144.8069
+      m_minWorldHeight: 0
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -15518,8 +15518,8 @@ MonoBehaviour:
       m_imageMaskLocation: 1
       m_strength: 1
       m_seaLevel: 3.125
-      m_maxWorldHeight: 146.30692
-      m_minWorldHeight: 0.35938048
+      m_maxWorldHeight: 144.8069
+      m_minWorldHeight: 0
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -15760,8 +15760,8 @@ MonoBehaviour:
     m_imageMaskLocation: 0
     m_strength: 1
     m_seaLevel: 3.125
-    m_maxWorldHeight: 146.30692
-    m_minWorldHeight: 0.35938048
+    m_maxWorldHeight: 144.8069
+    m_minWorldHeight: 0
     m_xOffSet: 0
     m_zOffSet: 0
     m_xOffSetScalar: 0
@@ -15954,8 +15954,8 @@ MonoBehaviour:
     m_imageMaskLocation: 0
     m_strength: 1
     m_seaLevel: 3.125
-    m_maxWorldHeight: 146.30692
-    m_minWorldHeight: 0.35938048
+    m_maxWorldHeight: 144.8069
+    m_minWorldHeight: 0
     m_xOffSet: 0
     m_zOffSet: 0
     m_xOffSetScalar: 0
@@ -16166,8 +16166,8 @@ MonoBehaviour:
     m_imageMaskLocation: 0
     m_strength: 1
     m_seaLevel: 3.125
-    m_maxWorldHeight: 146.30692
-    m_minWorldHeight: 0.35938048
+    m_maxWorldHeight: 144.8069
+    m_minWorldHeight: 0
     m_xOffSet: 0
     m_zOffSet: 0
     m_xOffSetScalar: 0
@@ -16500,8 +16500,8 @@ MonoBehaviour:
   m_spawnRuleStampsToggleAllState: 1
   m_drawPreview: 0
   m_previewRuleIds: 
-  m_maxWorldHeight: 146.30692
-  m_minWorldHeight: 0.35938048
+  m_maxWorldHeight: 144.8069
+  m_minWorldHeight: 0
   m_showSeaLevelinStampPreview: 1
   m_terrainGeneratorPanelUnfolded: 1
   m_worldDesignerPreviewSettingsUnfolded: 0
@@ -19989,6 +19989,11 @@ MonoBehaviour:
     m_selectedWorldBiomeMaskGUID: 
     m_growAndShrinkValue: 0
     m_globalSpawnerMaskStackRT: {fileID: 0}
+--- !u!4 &1526297798 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5359136345380310890, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
+  m_PrefabInstance: {fileID: 2069487949}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1556991804
 GameObject:
   m_ObjectHideFlags: 0
@@ -23221,8 +23226,8 @@ MonoBehaviour:
       m_imageMaskLocation: 1
       m_strength: 1
       m_seaLevel: 3.125
-      m_maxWorldHeight: 146.30692
-      m_minWorldHeight: 0.35938048
+      m_maxWorldHeight: 144.8069
+      m_minWorldHeight: 0
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -23415,8 +23420,8 @@ MonoBehaviour:
       m_imageMaskLocation: 1
       m_strength: 1
       m_seaLevel: 3.125
-      m_maxWorldHeight: 146.30692
-      m_minWorldHeight: 0.35938048
+      m_maxWorldHeight: 144.8069
+      m_minWorldHeight: 0
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -23627,8 +23632,8 @@ MonoBehaviour:
       m_imageMaskLocation: 1
       m_strength: 1
       m_seaLevel: 3.125
-      m_maxWorldHeight: 146.30692
-      m_minWorldHeight: 0.35938048
+      m_maxWorldHeight: 144.8069
+      m_minWorldHeight: 0
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -23872,8 +23877,8 @@ MonoBehaviour:
       m_imageMaskLocation: 1
       m_strength: 1
       m_seaLevel: 3.125
-      m_maxWorldHeight: 146.30692
-      m_minWorldHeight: 0.35938048
+      m_maxWorldHeight: 144.8069
+      m_minWorldHeight: 0
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -24117,8 +24122,8 @@ MonoBehaviour:
       m_imageMaskLocation: 1
       m_strength: 1
       m_seaLevel: 3.125
-      m_maxWorldHeight: 146.30692
-      m_minWorldHeight: 0.35938048
+      m_maxWorldHeight: 144.8069
+      m_minWorldHeight: 0
       m_xOffSet: 0
       m_zOffSet: 0
       m_xOffSetScalar: 0
@@ -25140,6 +25145,114 @@ MonoBehaviour:
   m_worldDesignerPreviewTiles: 0
   m_worldDesignerRenderedStamps: 0
   m_worldMapStamperSettings: []
+--- !u!1 &1938776081
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1938776085}
+  - component: {fileID: 1938776084}
+  - component: {fileID: 1938776083}
+  - component: {fileID: 1938776082}
+  m_Layer: 0
+  m_Name: Sphere
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!135 &1938776082
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1938776081}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1938776083
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1938776081}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 2774d4b83429e9d42a53ff55fcf4c55d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1938776084
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1938776081}
+  m_Mesh: {fileID: 4300000, guid: d69b679e463399d4eb6c611d9d0534ff, type: 2}
+--- !u!4 &1938776085
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1938776081}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -156.69998, y: -173.6, z: 40.98767}
+  m_LocalScale: {x: 323.8689, y: 323.8689, z: -323.8689}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1526297798}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1939569381
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26549,6 +26662,18 @@ PrefabInstance:
       propertyPath: autoShowNextGuide
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1582020488397018763, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -181
+      objectReference: {fileID: 0}
+    - target: {fileID: 1582020488397018763, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -172.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1582020488397018763, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.7
+      objectReference: {fileID: 0}
     - target: {fileID: 2444274001816335147, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
       propertyPath: m_LocalScale.x
       value: 20
@@ -26655,6 +26780,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7021283866030819313, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6051432907303404712}
+    - targetCorrespondingSourceObject: {fileID: 5359136345380310890, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1938776085}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a4a8f31706167d3408baaea89e86dec7, type: 3}
 --- !u!4 &2069487950 stripped
