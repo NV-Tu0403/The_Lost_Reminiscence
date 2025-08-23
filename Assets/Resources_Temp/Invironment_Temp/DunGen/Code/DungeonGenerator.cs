@@ -1025,14 +1025,14 @@ namespace DunGen
 			});
 
 			// Apply any post-process to be run BEFORE built-in post-processing is run
-			foreach (var step in postProcessSteps)
-			{
-				if (ShouldSkipFrame(false))
-					yield return null;
+			foreach (var step in postProcessSteps.ToList()) // <--- THÊM .ToList()
+{
+    if (ShouldSkipFrame(false))
+        yield return null;
 
-				if (step.Phase == PostProcessPhase.BeforeBuiltIn)
-					step.PostProcessCallback(this);
-			}
+    if (step.Phase == PostProcessPhase.AfterBuiltIn)
+        step.PostProcessCallback(this);
+}
 
 
 			// Waiting one frame so objects are in their expected state
@@ -1064,14 +1064,14 @@ namespace DunGen
 
 
 			// Apply any post-process to be run AFTER built-in post-processing is run
-			foreach (var step in postProcessSteps)
-			{
-				if (ShouldSkipFrame(false))
-					yield return null;
+			foreach (var step in postProcessSteps.ToList()) // <--- THÊM .ToList()
+{
+    if (ShouldSkipFrame(false))
+        yield return null;
 
-				if (step.Phase == PostProcessPhase.AfterBuiltIn)
-					step.PostProcessCallback(this);
-			}
+    if (step.Phase == PostProcessPhase.BeforeBuiltIn)
+        step.PostProcessCallback(this);
+}
 
 
 			// Finalise
