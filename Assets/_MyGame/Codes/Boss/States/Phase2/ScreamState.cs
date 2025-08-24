@@ -1,6 +1,6 @@
 using _MyGame.Codes.Boss.CoreSystem;
 using _MyGame.Codes.Boss.States.Phase2;
-using Code.Boss.States.Shared;
+using _MyGame.Codes.Boss.States.Shared;
 using DG.Tweening;
 using UnityEngine;
 

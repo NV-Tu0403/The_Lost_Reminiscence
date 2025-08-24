@@ -1,10 +1,10 @@
 using _MyGame.Codes.Boss.CoreSystem;
+using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using DG.Tweening;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.UI
 {
     public class Notification : MonoBehaviour
     {

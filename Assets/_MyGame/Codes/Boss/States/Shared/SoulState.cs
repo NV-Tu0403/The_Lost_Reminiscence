@@ -1,9 +1,10 @@
 using _MyGame.Codes.Boss.CoreSystem;
 using _MyGame.Codes.Boss.States.Phase1;
 using _MyGame.Codes.Boss.States.Phase2;
+using Code.Boss;
 using UnityEngine;
 
-namespace Code.Boss.States.Shared
+namespace _MyGame.Codes.Boss.States.Shared
 {
     /// <summary>
     /// Soul State: Teleport và spawn soul (dùng cho cả Phase 1 và Phase 2)

@@ -1,9 +1,9 @@
 using _MyGame.Codes.Boss.CoreSystem;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.UI
 {
     /// <summary>
     /// UI Game Over với nút restart

@@ -1,5 +1,5 @@
 using _MyGame.Codes.Boss.CoreSystem;
-using Code.Boss.States.Shared;
+using _MyGame.Codes.Boss.States.Shared;
 using UnityEngine;
 
 namespace Code.Boss

@@ -1,10 +1,10 @@
+using System.Collections;
+using _MyGame.Codes.Boss.CoreSystem;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
-using _MyGame.Codes.Boss.CoreSystem;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.UI
 {
     /// <summary>
     /// Thanh máu của Boss ở giữa trên màn hình

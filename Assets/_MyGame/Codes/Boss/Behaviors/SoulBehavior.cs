@@ -1,7 +1,7 @@
 using _MyGame.Codes.Boss.CoreSystem;
 using UnityEngine;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.Behaviors
 {
     /// <summary>
     /// Hành vi của Soul (dục hồn) - đuổi nhanh theo người chơi

@@ -1,14 +1,11 @@
 using System.Collections.Generic;
-using _MyGame.Codes.Boss.CoreSystem;
 using _MyGame.Codes.Boss.States.Phase1;
 using _MyGame.Codes.Boss.States.Phase2;
+using Code.Boss;
 using UnityEngine;
 using UnityEngine.AI;
-using Code.Boss.States.Phase1;
-using Code.Boss.States.Phase2;
-using Code.Boss.States.Shared;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Controller chính của Boss - quản lý FSM, health, phases
