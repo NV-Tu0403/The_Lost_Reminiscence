@@ -2,7 +2,7 @@ using _MyGame.Codes.Boss.CoreSystem;
 using _MyGame.Codes.Boss.States.Shared;
 using UnityEngine;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.Behaviors
 {
    /// <summary>
     /// Hành vi của Decoy (bóng ảo) - di chuyển chậm theo người chơi

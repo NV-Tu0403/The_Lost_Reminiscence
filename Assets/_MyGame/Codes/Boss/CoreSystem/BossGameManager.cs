@@ -2,6 +2,7 @@ using _MyGame.Codes.Boss.UI;
 using Code.Boss;
 using Tu_Develop.Import.Scripts;
 using UnityEngine;
+using _MyGame.Codes.GameEventSystem; // for EventBus and BaseEventData
 
 namespace _MyGame.Codes.Boss.CoreSystem
 {
@@ -138,6 +139,18 @@ namespace _MyGame.Codes.Boss.CoreSystem
         {
             OnBossDefeated?.Invoke();
             Debug.Log("[BossGameManager] Boss has been defeated!");
+            
+            // Start defeat timeline via EventBus; credits will be handled externally
+            var cfg = bossController != null ? bossController.Config : null;
+            if (cfg != null && !string.IsNullOrEmpty(cfg.bossDefeatTimelineId))
+            {
+                var evt = new BaseEventData
+                {
+                    eventId = cfg.bossDefeatTimelineId,
+                    OnFinish = () => { /* No-op: external system will handle credits/next steps */ }
+                };
+                EventBus.Publish("StartTimeline", evt);
+            }
         }
 
         private void OnPlayerTakeDamageEvent(BossEventData data)
@@ -185,7 +198,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
         #region Fa Agent Integration
         private void OnRequestRadarSkill(BossEventData data)
         {
-            Debug.Log("[BossGameManager] Requesting Fa to use Radar skill to destroy souls");
+            //Debug.Log("[BossGameManager] Requesting Fa to use Radar skill to destroy souls");
             if (faAgent != null)
             {
                 faAgent.UseGuideSignal();
@@ -199,7 +212,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
         private void OnRequestOtherSkill(BossEventData data)
         {
             var skillName = data.stringValue ?? "Unknown";
-            Debug.Log($"[BossGameManager] Requesting Fa to use skill: {skillName}");
+            //Debug.Log($"[BossGameManager] Requesting Fa to use skill: {skillName}");
             if (faAgent != null)
             {
                 switch (skillName)
@@ -252,27 +265,23 @@ namespace _MyGame.Codes.Boss.CoreSystem
         
         private void ResetBossSystem()
         {
-            if (bossController != null)
-            {
-                Destroy(bossController.gameObject);
-                bossController = null;
-                Debug.Log("[BossGameManager] Boss destroyed for restart");
-            }
+            if (bossController == null) return;
+            Destroy(bossController.gameObject);
+            bossController = null;
+            Debug.Log("[BossGameManager] Boss destroyed for restart");
         }
         
         private void ResetTriggerZone()
         {
-            if (bossTriggerZone != null)
-            {
-                bossTriggerZone.ResetTrigger();
-                Debug.Log("[BossGameManager] Trigger zone reset");
-            }
+            if (bossTriggerZone == null) return;
+            bossTriggerZone.ResetTrigger();
+            Debug.Log("[BossGameManager] Trigger zone reset");
         }
         
         private void ResetPlayerHealth()
         {
             // Reset current health tracking
-            currentPlayerHealth = 3; // Sửa từ 6 về 3
+            currentPlayerHealth = 3; 
             
             // Trigger event to reset player health UI
             BossEventSystem.Trigger(BossEventType.PlayerHealthReset, new BossEventData(3)); // Sửa từ 6 về 3

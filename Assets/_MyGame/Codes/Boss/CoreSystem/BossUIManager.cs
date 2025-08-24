@@ -13,7 +13,6 @@ namespace _MyGame.Codes.Boss.CoreSystem
         private BossHealthBar bossHealthBar;
         private BossSkillCastBar skillCastBar;
         private PlayerHealthBar playerHealthBar;
-        private Notification defeatNotification;
         
         
         public BossUIManager(BossController controller)
@@ -35,7 +34,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             if (bossHealthBar != null)
             {
                 bossHealthBar.Initialize(bossController);
-                Debug.Log("Boss Health Bar found and initialized");
+                //Debug.Log("Boss Health Bar found and initialized");
             }
             else
             {
@@ -47,7 +46,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             if (skillCastBar != null)
             {
                 skillCastBar.Initialize(bossController);
-                Debug.Log("Boss Skill Cast Bar found and initialized");
+                //Debug.Log("Boss Skill Cast Bar found and initialized");
             }
             else
             {
@@ -59,22 +58,11 @@ namespace _MyGame.Codes.Boss.CoreSystem
             if (playerHealthBar != null)
             {
                 playerHealthBar.Initialize(3, bossController.Config); 
-                Debug.Log("Player Health Bar found and initialized");
+                //Debug.Log("Player Health Bar found and initialized");
             }
             else
             {
                 Debug.LogWarning("PlayerHealthBar not found in scene! Please add PlayerHealthBar component to a UI GameObject.");
-            }
-
-            // Tìm BossDefeatNotification trong scene
-            defeatNotification = Object.FindFirstObjectByType<Notification>();
-            if (defeatNotification != null)
-            {
-                Debug.Log("Boss Defeat Notification found and initialized");
-            }
-            else
-            {
-                Debug.LogWarning("BossDefeatNotification not found in scene! Please add BossDefeatNotification component to a UI GameObject.");
             }
         }
     }

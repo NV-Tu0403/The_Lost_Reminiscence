@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1016c87441e64061965782ec09223da2, type: 3}
   m_Name: BossConfig
   m_EditorClassIdentifier: 
-  debugStartPhase: -1
+  debugStartPhase: 1
   bossPrefab: {fileID: 5269891598529851197, guid: 40e5c8d66dfa4fa4cb8e1683f3efc4d7, type: 3}
   memoryFragmentPrefab: {fileID: 3379688147068269452, guid: d78c026d18f76ad44907990070d66ec2, type: 3}
   memoryFragmentEffectPrefab: {fileID: 4434058322546012910, guid: 84cf0d67f04a69548961e9411d2d1826, type: 3}
@@ -86,41 +86,28 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  audioConfig:
-    mockLaughSound: {fileID: 8300000, guid: c3628c0ff6c97c54d9d6933731417f46, type: 3}
-    decoySpawnSound: {fileID: 8300000, guid: c0624300f5222c248818b32e128c2c8a, type: 3}
-    soulSpawnSound: {fileID: 8300000, guid: 7cc78cceb499ca14a9b780dc387b4f37, type: 3}
-    screamSound: {fileID: 8300000, guid: d28cff1848444fb4995c3f44d4235576, type: 3}
-    fearZoneSound: {fileID: 8300000, guid: 7051f3e715e53484cbdb4d4fbc6c723f, type: 3}
-    heartbeatSound: {fileID: 8300000, guid: 07533406d64caed44bf43550e60e0831, type: 3}
-    phaseChangeSound: {fileID: 8300000, guid: c3628c0ff6c97c54d9d6933731417f46, type: 3}
-    damageSound: {fileID: 8300000, guid: c747e62359494344e953ac4bbf8e5f51, type: 3}
-    defeatSound: {fileID: 8300000, guid: 90d9c1c9179d3694eaf57804f467a19a, type: 3}
-    masterVolume: 1
-    sfxVolume: 0.8
-    ambientVolume: 0.6
   fmodAudioConfig:
     mockLaughEvent:
       Guid:
-        Data1: 0
-        Data2: 0
-        Data3: 0
-        Data4: 0
-      Path: 
+        Data1: 76896810
+        Data2: 1104230554
+        Data3: 314454185
+        Data4: 1587913038
+      Path: event:/Boss/MockLaugh
     decoySpawnEvent:
       Guid:
-        Data1: 0
-        Data2: 0
-        Data3: 0
-        Data4: 0
-      Path: 
+        Data1: -797396443
+        Data2: 1130376046
+        Data3: 662777521
+        Data4: 24246442
+      Path: event:/Boss/DecoySpawn
     soulSpawnEvent:
       Guid:
-        Data1: 0
-        Data2: 0
-        Data3: 0
-        Data4: 0
-      Path: 
+        Data1: 1566379530
+        Data2: 1162855036
+        Data3: 1405419685
+        Data4: 995344404
+      Path: event:/Boss/SoulSpawn
     screamEvent:
       Guid:
         Data1: 0
@@ -158,8 +145,9 @@ MonoBehaviour:
       Path: 
     defeatEvent:
       Guid:
-        Data1: 0
-        Data2: 0
-        Data3: 0
-        Data4: 0
-      Path: 
+        Data1: 365789841
+        Data2: 1281886696
+        Data3: -1982585213
+        Data4: -1539455075
+      Path: event:/Boss/Dead
+  bossDefeatTimelineId: Timeline_End

@@ -273,14 +273,14 @@ namespace _MyGame.Codes.Boss.CoreSystem
             }
         }
 
-        public void PlaySound(AudioClip clip, float volume = 1f)
-        {
-            // Legacy AudioClip path (kept for backward compatibility)
-            if (audioSource && clip)
-            {
-                audioSource.PlayOneShot(clip, volume * bossConfig.audioConfig.masterVolume);
-            }
-        }
+        // public void PlaySound(AudioClip clip, float volume = 1f)
+        // {
+        //     // Legacy AudioClip path (kept for backward compatibility)
+        //     if (audioSource && clip)
+        //     {
+        //         audioSource.PlayOneShot(clip, volume * bossConfig.audioConfig.masterVolume);
+        //     }
+        // }
 
         // --- FMOD Helpers ---
         public void PlayFMODOneShot(EventReference evt)
