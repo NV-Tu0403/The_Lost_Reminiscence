@@ -123,7 +123,7 @@ namespace _MyGame.Codes.Guidance
             {
                 guideObject.Show();
                 currentActiveGuideId = eventId;
-                Debug.Log($"[GuidanceManager] Showing guide for: {eventId}");
+                //Debug.Log($"[GuidanceManager] Showing guide for: {eventId}");
             }
             else
             {
@@ -180,10 +180,10 @@ namespace _MyGame.Codes.Guidance
             if (!autoShowNextGuide) return;
             var nextEventId = FindNextManualEvent();
             if (!string.IsNullOrEmpty(nextEventId)) ShowGuide(nextEventId);
-            else
-            {
-                Debug.Log("[GuidanceManager] No more manual events to guide");
-            }
+            // else
+            // {
+            //     Debug.Log("[GuidanceManager] No more manual events to guide");
+            // }
         }
 
         private void OnDestroy()

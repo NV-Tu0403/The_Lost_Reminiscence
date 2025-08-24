@@ -62,7 +62,7 @@ namespace _MyGame.Codes.Guidance
             if (triggerZone != null && !string.IsNullOrEmpty(triggerZone.eventId))
             {
                 eventId = triggerZone.eventId;
-                Debug.Log($"[GuideObject] Auto-setup eventId from parent TriggerZone: {eventId}");
+                //Debug.Log($"[GuideObject] Auto-setup eventId from parent TriggerZone: {eventId}");
             }
             else
             {
@@ -225,13 +225,11 @@ namespace _MyGame.Codes.Guidance
             hideDuration = Mathf.Max(0.1f, hideDuration);
             
             // Tự động lấy eventId từ parent trong editor nếu được bật
-            if (autoGetEventIdFromParent && Application.isPlaying == false)
+            if (!autoGetEventIdFromParent || Application.isPlaying) return;
+            var triggerZone = GetComponentInParent<TriggerZone>();
+            if (triggerZone != null && !string.IsNullOrEmpty(triggerZone.eventId))
             {
-                var triggerZone = GetComponentInParent<TriggerZone>();
-                if (triggerZone != null && !string.IsNullOrEmpty(triggerZone.eventId))
-                {
-                    eventId = triggerZone.eventId;
-                }
+                eventId = triggerZone.eventId;
             }
         }
 

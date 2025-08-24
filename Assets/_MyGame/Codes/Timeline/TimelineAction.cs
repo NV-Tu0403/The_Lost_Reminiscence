@@ -1,7 +1,6 @@
-using System;
 using _MyGame.Codes.GameEventSystem;
 
-namespace Code.Timeline
+namespace _MyGame.Codes.Timeline
 {
     public class TimelineAction : IEventAction
     {
