@@ -1,4 +1,5 @@
 using System;
+using _MyGame.Codes.Dialogue;
 using _MyGame.Codes.GameEventSystem;
 using UnityEngine;
 using UnityEngine.AddressableAssets;

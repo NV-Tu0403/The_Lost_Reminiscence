@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
 using _MyGame.Codes.GameEventSystem;
+using Code.Dialogue;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     /// <summary>
     /// DialoguePanel chỉ chuyên trách phần UI:

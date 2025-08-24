@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using _MyGame.Codes.Timeline;
 using Code.Checkpoint;
 using Code.Cutscene;
 using Code.Dialogue;
 using Code.Puzzle;
-using Code.Timeline;
 using UnityEngine;
 
 namespace _MyGame.Codes.GameEventSystem

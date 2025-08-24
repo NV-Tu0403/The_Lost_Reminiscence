@@ -1,8 +1,8 @@
+using UnityEngine;
+using Code.Dialogue; // added for DialogueManager
+
 namespace _MyGame.Codes.Trigger
 {
-    using UnityEngine;
-    using Code.Dialogue; // added for DialogueManager
-
     // Hiển thị / ẩn panel tutorial khi player vào / ra vùng. Không disable zone.
     public class TutorialTriggerZone : TriggerZone
     {
@@ -61,12 +61,10 @@ namespace _MyGame.Codes.Trigger
             }
 
             // Progression tùy chọn (không disable zone)
-            if (triggerProgressionOnFirstEnter && !firstEnterTriggered && !string.IsNullOrEmpty(eventId))
+            if (!triggerProgressionOnFirstEnter || firstEnterTriggered || string.IsNullOrEmpty(eventId)) return;
+            if (TryExecuteProgression(unlockProcess, false))
             {
-                if (TryExecuteProgression(unlockProcess, false))
-                {
-                    firstEnterTriggered = true;
-                }
+                firstEnterTriggered = true;
             }
         }
 
