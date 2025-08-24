@@ -45,11 +45,8 @@ namespace _MyGame.Codes.Boss.States.Shared
                     effectRotation);
             }
 
-            // Play soul spawn sound
-            if (Config.audioConfig.soulSpawnSound != null)
-            {
-                BossController.PlaySound(Config.audioConfig.soulSpawnSound, Config.audioConfig.sfxVolume);
-            }
+            // Play soul spawn sound (FMOD)
+            BossController.PlayFMODOneShot(Config.fmodAudioConfig.soulSpawnEvent);
         }
 
         public override void Update()

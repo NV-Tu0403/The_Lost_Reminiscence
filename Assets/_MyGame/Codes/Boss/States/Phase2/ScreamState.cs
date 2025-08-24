@@ -1,10 +1,10 @@
 using _MyGame.Codes.Boss.CoreSystem;
-using _MyGame.Codes.Boss.States.Phase2;
 using _MyGame.Codes.Boss.States.Shared;
+using Code.Boss;
 using DG.Tweening;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase2
+namespace _MyGame.Codes.Boss.States.Phase2
 {
     /// <summary>
     /// Phase 2 - Scream State: Phát âm thanh chê trách và hiệu ứng
@@ -60,11 +60,8 @@ namespace Code.Boss.States.Phase2
             // Apply scream effects
             ApplyScreamEffects();
             
-            // Play scream sound
-            if (Config.audioConfig.screamSound != null)
-            {
-                BossController.PlaySound(Config.audioConfig.screamSound, Config.audioConfig.sfxVolume);
-            }
+            // Play scream sound (FMOD)
+            BossController.PlayFMODOneShot(Config.fmodAudioConfig.screamEvent);
         }
 
         private void ApplyScreamEffects()

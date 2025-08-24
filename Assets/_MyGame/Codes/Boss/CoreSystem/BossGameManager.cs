@@ -142,15 +142,18 @@ namespace _MyGame.Codes.Boss.CoreSystem
 
         private void OnPlayerTakeDamageEvent(BossEventData data)
         {
+            if (isGameOver) return; // Ignore damage after game over
             var damage = data.intValue;
-            // Trừ máu tại đây, không để PlayerHealthBar trừ
+            
+            // Store previous health, then subtract
+            var prevHealth = currentPlayerHealth;
             currentPlayerHealth = Mathf.Max(0, currentPlayerHealth - damage);
             
             // Pass current health (không phải damage) cho UI
             OnPlayerHealthChanged?.Invoke(currentPlayerHealth);
             
-            // Check player defeated
-            if (currentPlayerHealth <= 0)
+            // Trigger PlayerDefeated only on transition from >0 to 0
+            if (prevHealth > 0 && currentPlayerHealth == 0)
             {
                 BossEventSystem.Trigger(BossEventType.PlayerDefeated);
             }

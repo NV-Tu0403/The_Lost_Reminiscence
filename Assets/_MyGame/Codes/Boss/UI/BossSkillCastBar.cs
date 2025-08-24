@@ -81,6 +81,8 @@ namespace _MyGame.Codes.Boss.UI
             BossEventSystem.Subscribe(BossEventType.SkillInterrupted, OnSkillInterrupted);
             BossEventSystem.Subscribe(BossEventType.StateChanged, OnStateChanged);
             BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeated);
+            // Hide cast bar when player dies (game over)
+            BossEventSystem.Subscribe(BossEventType.PlayerDefeated, OnPlayerDefeated);
         }
 
         private void OnSkillCasted(BossEventData data)
@@ -136,7 +138,13 @@ namespace _MyGame.Codes.Boss.UI
             // Hide boss skill cast bar UI
             SetVisible(false);
         }
-
+        
+        private void OnPlayerDefeated(BossEventData data)
+        {
+            // Ensure bar is hidden on game over
+            SetVisible(false);
+        }
+        
         private void SetVisible(bool visible)
         {
             isVisible = visible;
@@ -184,6 +192,7 @@ namespace _MyGame.Codes.Boss.UI
             BossEventSystem.Unsubscribe(BossEventType.SkillInterrupted, OnSkillInterrupted);
             BossEventSystem.Unsubscribe(BossEventType.StateChanged, OnStateChanged);
             BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeated);
+            BossEventSystem.Unsubscribe(BossEventType.PlayerDefeated, OnPlayerDefeated);
         }
     }
 }

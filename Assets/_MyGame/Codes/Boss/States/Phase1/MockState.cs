@@ -22,11 +22,8 @@ namespace _MyGame.Codes.Boss.States.Phase1
             mockTimer = 0f;
             BossEventSystem.Trigger(BossEventType.MockStarted);
             
-            // Play mock laugh sound
-            if (Config.audioConfig.mockLaughSound != null)
-            {
-                BossController.PlaySound(Config.audioConfig.mockLaughSound, Config.audioConfig.sfxVolume);
-            }
+            // Play mock laugh sound (FMOD)
+            BossController.PlayFMODOneShot(Config.fmodAudioConfig.mockLaughEvent);
             
             // Stop movement
             if (BossController.NavAgent != null)

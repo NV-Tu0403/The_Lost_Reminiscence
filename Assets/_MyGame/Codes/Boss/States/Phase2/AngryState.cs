@@ -1,5 +1,4 @@
 using Code.Boss;
-using Code.Boss.States.Phase2;
 using UnityEngine;
 
 namespace _MyGame.Codes.Boss.States.Phase2
@@ -47,7 +46,8 @@ namespace _MyGame.Codes.Boss.States.Phase2
 
         private void MoveInCircle()
         {
-            var radius = Config.phase2.circleRadius;
+            // Guard against zero/near-zero radius
+            var radius = Mathf.Max(0.1f, Config.phase2.circleRadius);
             currentAngle += (Config.phase2.angryMoveSpeed / radius) * Time.deltaTime;
             
             var targetPosition = centerPosition + new Vector3(

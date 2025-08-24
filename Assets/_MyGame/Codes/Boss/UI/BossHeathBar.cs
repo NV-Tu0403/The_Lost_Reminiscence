@@ -50,6 +50,8 @@ namespace _MyGame.Codes.Boss.UI
             BossEventSystem.Subscribe(BossEventType.HealthChanged, OnHealthChanged);
             BossEventSystem.Subscribe(BossEventType.PhaseChanged, OnPhaseChanged);
             BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeated);
+            // Hide health bar when player is defeated (game over)
+            BossEventSystem.Subscribe(BossEventType.PlayerDefeated, OnPlayerDefeated);
         }
 
         private void OnHealthChanged(BossEventData data)
@@ -110,11 +112,19 @@ namespace _MyGame.Codes.Boss.UI
             // Hide boss health bar and phase name UI
             gameObject.SetActive(false);
         }
+        
+        private void OnPlayerDefeated(BossEventData data)
+        {
+            // Hide health bar on game over
+            gameObject.SetActive(false);
+        }
 
         private void OnDestroy()
         {
             BossEventSystem.Unsubscribe(BossEventType.HealthChanged, OnHealthChanged);
             BossEventSystem.Unsubscribe(BossEventType.PhaseChanged, OnPhaseChanged);
+            BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeated);
+            BossEventSystem.Unsubscribe(BossEventType.PlayerDefeated, OnPlayerDefeated);
         }
     }
 }

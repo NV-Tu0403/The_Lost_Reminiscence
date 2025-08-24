@@ -1,6 +1,5 @@
 using _MyGame.Codes.Boss.CoreSystem;
 using Code.Boss;
-using Code.Boss.States.Phase2;
 using UnityEngine;
 
 namespace _MyGame.Codes.Boss.States.Phase2
@@ -40,10 +39,9 @@ namespace _MyGame.Codes.Boss.States.Phase2
             {
                 fearZoneCastEffect = Object.Instantiate(Config.phase2.fearZoneCastEffectPrefab, fearZonePosition, Quaternion.identity);
             }
-            if (Config.audioConfig.fearZoneSound != null)
-            {
-                BossController.PlaySound(Config.audioConfig.fearZoneSound, Config.audioConfig.ambientVolume);
-            }
+            
+            // FMOD one-shot for fear zone cast
+            BossController.PlayFMODOneShot(Config.fmodAudioConfig.fearZoneEvent);
         }
 
         public override void Update()
@@ -172,16 +170,13 @@ namespace _MyGame.Codes.Boss.States.Phase2
         
         private void StartHeartbeatSound()
         {
-            if (Config.audioConfig.heartbeatSound == null) return;
-            BossController.AudioSource.clip = Config.audioConfig.heartbeatSound;
-            BossController.AudioSource.loop = true;
-            BossController.AudioSource.Play();
+            // Use FMOD looping instance via BossController helper
+            BossController.StartHeartbeatLoop();
         }
         
         private void StopHeartbeatSound()
         {
-            BossController.AudioSource.Stop();
-            BossController.AudioSource.loop = false;
+            BossController.StopHeartbeatLoop();
         }
         
         public override void Exit()

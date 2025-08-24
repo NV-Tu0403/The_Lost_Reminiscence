@@ -19,7 +19,7 @@ namespace _MyGame.Codes.Boss.States.Phase2
             BossController.PlayAnimation("Cook"); // Play death/cook animation
             
             BossEventSystem.Trigger(BossEventType.SkillInterrupted); 
-            BossEventSystem.Trigger(BossEventType.BossDefeated); 
+            // Removed early BossDefeated trigger to avoid duplicate events
             
             // Stop all movement
             if (BossController.NavAgent != null)
@@ -60,6 +60,7 @@ namespace _MyGame.Codes.Boss.States.Phase2
                     BossController.transform.position, 
                     Quaternion.identity);
                 
+                // Emit BossDefeated ONCE when loot is created
                 BossEventSystem.Trigger(BossEventType.BossDefeated, new BossEventData(memoryFragment));
             }
             else

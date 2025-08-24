@@ -4,6 +4,9 @@ using _MyGame.Codes.Boss.States.Phase2;
 using Code.Boss;
 using UnityEngine;
 using UnityEngine.AI;
+using FMODUnity; // Added for FMOD integration
+using FMOD.Studio; // Added for FMOD EventInstance
+using STOP_MODE = FMOD.Studio.STOP_MODE; // Alias FMOD Studio STOP_MODE
 
 namespace _MyGame.Codes.Boss.CoreSystem
 {
@@ -38,6 +41,14 @@ namespace _MyGame.Codes.Boss.CoreSystem
         private Vector3 initialPosition;
         private Quaternion initialRotation;
         
+        // FMOD: cached looping instances
+        private EventInstance heartbeatInstance;
+        private bool heartbeatActive = false;
+        
+        // Animator parameter hashes
+        private static readonly int MoveXHash = Animator.StringToHash("MoveX");
+        private static readonly int MoveYHash = Animator.StringToHash("MoveY");
+        
         // Public Properties
         public BossConfig Config => bossConfig;
         public NavMeshAgent NavAgent => navMeshAgent;
@@ -57,6 +68,8 @@ namespace _MyGame.Codes.Boss.CoreSystem
         private void Awake()
         {
             InitializeComponents();
+            // Listen for player defeat to pause boss systems and stop audio loops
+            BossEventSystem.Subscribe(BossEventType.PlayerDefeated, OnPlayerDefeatedEvent);
         }
 
         private void Start()
@@ -193,12 +206,8 @@ namespace _MyGame.Codes.Boss.CoreSystem
                 
                 BossEventSystem.Trigger(BossEventType.BossTakeDamage, new BossEventData(damage));
                 
-                // Play damage sound
-                if (audioSource && bossConfig.audioConfig.damageSound)
-                {
-                    audioSource.PlayOneShot(bossConfig.audioConfig.damageSound, 
-                        bossConfig.audioConfig.sfxVolume);
-                }
+                // FMOD: damage SFX
+                PlayFMODOneShot(bossConfig.fmodAudioConfig.damageEvent);
             }
             else
             {
@@ -212,12 +221,8 @@ namespace _MyGame.Codes.Boss.CoreSystem
             healthSystem.TakeDamage(damage);
             BossEventSystem.Trigger(BossEventType.BossTakeDamage, new BossEventData(damage));
             
-            // Play damage sound
-            if (audioSource && bossConfig.audioConfig.damageSound)
-            {
-                audioSource.PlayOneShot(bossConfig.audioConfig.damageSound, 
-                    bossConfig.audioConfig.sfxVolume);
-            }
+            // FMOD: damage SFX
+            PlayFMODOneShot(bossConfig.fmodAudioConfig.damageEvent);
         }
 
         public void ChangeState(BossState newState)
@@ -248,19 +253,14 @@ namespace _MyGame.Codes.Boss.CoreSystem
 
         private void DefeatBoss()
         {
-            // Trigger defeat events
-            BossEventSystem.Trigger(BossEventType.BossDefeated);
-            OnBossDefeated?.Invoke();
-            
             // Change to cook state for phase 2
             ChangeState(new CookState());
             
-            // Play defeat sound
-            if (audioSource && bossConfig.audioConfig.defeatSound)
-            {
-                audioSource.PlayOneShot(bossConfig.audioConfig.defeatSound, 
-                    bossConfig.audioConfig.sfxVolume);
-            }
+            // FMOD: defeat SFX
+            PlayFMODOneShot(bossConfig.fmodAudioConfig.defeatEvent);
+            
+            // Optional callback for external systems
+            OnBossDefeated?.Invoke();
         }
 
         public void PlayAnimation(string animationName)
@@ -275,24 +275,63 @@ namespace _MyGame.Codes.Boss.CoreSystem
 
         public void PlaySound(AudioClip clip, float volume = 1f)
         {
+            // Legacy AudioClip path (kept for backward compatibility)
             if (audioSource && clip)
             {
                 audioSource.PlayOneShot(clip, volume * bossConfig.audioConfig.masterVolume);
             }
         }
 
+        // --- FMOD Helpers ---
+        public void PlayFMODOneShot(EventReference evt)
+        {
+            if (!evt.IsNull)
+            {
+                RuntimeManager.PlayOneShot(evt, transform.position);
+            }
+        }
+
+        public void PlayFMODOneShotAtPosition(EventReference evt, Vector3 position)
+        {
+            if (!evt.IsNull)
+            {
+                RuntimeManager.PlayOneShot(evt, position);
+            }
+        }
+
+        // Heartbeat loop control used by FearZone
+        public void StartHeartbeatLoop()
+        {
+            if (heartbeatActive) return;
+            var evt = bossConfig.fmodAudioConfig.heartbeatEvent;
+            if (evt.IsNull) return;
+            heartbeatInstance = RuntimeManager.CreateInstance(evt);
+            // Use recommended overload with GameObject to avoid obsolete warning
+            RuntimeManager.AttachInstanceToGameObject(heartbeatInstance, gameObject);
+            heartbeatInstance.start();
+            heartbeatActive = true;
+        }
+
+        public void StopHeartbeatLoop()
+        {
+            if (!heartbeatActive) return;
+            heartbeatInstance.stop(STOP_MODE.ALLOWFADEOUT);
+            heartbeatInstance.release();
+            heartbeatActive = false;
+        }
+
         // --- Animation Parameters for Move States ---
         public void SetMoveDirection(float x, float y)
         {
             if (animator == null) return;
-            animator.SetFloat("MoveX", x);
-            animator.SetFloat("MoveY", y);
+            animator.SetFloat(MoveXHash, x);
+            animator.SetFloat(MoveYHash, y);
         }
         public void ResetMoveDirection()
         {
             if (animator == null) return;
-            animator.SetFloat("MoveX", 0f);
-            animator.SetFloat("MoveY", 0f);
+            animator.SetFloat(MoveXHash, 0f);
+            animator.SetFloat(MoveYHash, 0f);
         }
 
         // Xử lý va chạm với Bullet
@@ -314,8 +353,14 @@ namespace _MyGame.Codes.Boss.CoreSystem
                 healthSystem.OnPhaseHealthDepleted -= OnPhaseCompleted;
             }
             
+            // Unsubscribe events
+            BossEventSystem.Unsubscribe(BossEventType.PlayerDefeated, OnPlayerDefeatedEvent);
+            
+            // Stop any looping FMOD instances
+            StopHeartbeatLoop();
+            
             ClearDecoys();
-            BossEventSystem.ClearAllListeners();
+            // Removed ClearAllListeners to avoid wiping unrelated listeners globally
         }
 
         /// <summary>
@@ -349,6 +394,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
             // Clear any ongoing effects
             StopAllCoroutines();
             
+            // Stop any looping FMOD instances
+            StopHeartbeatLoop();
+            
             // Clear soul manager
             if (soulManager != null)
             {
@@ -356,6 +404,17 @@ namespace _MyGame.Codes.Boss.CoreSystem
             }
             
             Debug.Log($"[BossController] Boss reset - Phase: {currentPhase}");
+        }
+
+        private void OnPlayerDefeatedEvent(BossEventData data)
+        {
+            // Stop looping audio and pause boss AI when player is defeated
+            StopHeartbeatLoop();
+            if (navMeshAgent != null)
+            {
+                navMeshAgent.isStopped = true;
+            }
+            enabled = false; // stop Update()
         }
     }
 }

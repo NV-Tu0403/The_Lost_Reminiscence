@@ -32,11 +32,8 @@ namespace Code.Boss.States.Phase1
             skillActivated = false;
             BossEventSystem.Trigger(BossEventType.DecoyStarted);
             BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Decoy" });
-            // Play decoy spawn sound
-            if (Config.audioConfig.decoySpawnSound != null)
-            {
-                BossController.PlaySound(Config.audioConfig.decoySpawnSound, Config.audioConfig.sfxVolume);
-            }
+            // Play decoy spawn sound (FMOD)
+            BossController.PlayFMODOneShot(Config.fmodAudioConfig.decoySpawnEvent);
             // Đăng ký lắng nghe sự kiện GuideSignal
             BossEventSystem.Subscribe(BossEventType.FaSkillUsed, OnFaSkillUsed);
         }
