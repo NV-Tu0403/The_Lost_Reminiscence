@@ -140,16 +140,25 @@ namespace _MyGame.Codes.Boss.CoreSystem
             OnBossDefeated?.Invoke();
             Debug.Log("[BossGameManager] Boss has been defeated!");
             
-            // Start defeat timeline via EventBus; credits will be handled externally
+            // Start defeat timeline via EventBus; when it finishes, end the session
             var cfg = bossController != null ? bossController.Config : null;
             if (cfg != null && !string.IsNullOrEmpty(cfg.bossDefeatTimelineId))
             {
                 var evt = new BaseEventData
                 {
                     eventId = cfg.bossDefeatTimelineId,
-                    OnFinish = () => { /* No-op: external system will handle credits/next steps */ }
+                    OnFinish = () =>
+                    {
+                        // Call end-session hook after the timeline completes
+                        CoreEvent.Instance.TriggerEndSession();
+                    }
                 };
                 EventBus.Publish("StartTimeline", evt);
+            }
+            else
+            {
+                // If no timeline configured, end the session immediately
+                CoreEvent.Instance.TriggerEndSession();
             }
         }
 
