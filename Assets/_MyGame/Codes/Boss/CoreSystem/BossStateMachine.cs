@@ -1,4 +1,6 @@
 
+using _MyGame.Codes.Boss.CoreSystem;
+
 namespace Code.Boss
 {
     /// <summary>

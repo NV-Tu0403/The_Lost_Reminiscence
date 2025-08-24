@@ -1,6 +1,7 @@
+using Code.Boss;
 using UnityEngine;
 
-namespace Code.Boss.States.Shared
+namespace _MyGame.Codes.Boss.States.Shared
 {
     /// <summary>
     /// Phase Change State: Chuyển đổi từ Phase 1 sang Phase 2
@@ -18,11 +19,8 @@ namespace Code.Boss.States.Shared
             Debug.Log("[Boss State] Entered PhaseChangeState - Chuyển đổi từ Phase 1 sang Phase 2");
             //BossController.PlayAnimation("PhaseChange");
             
-            // Play phase change sound
-            if (Config.audioConfig.phaseChangeSound != null)
-            {
-                BossController.PlaySound(Config.audioConfig.phaseChangeSound, Config.audioConfig.sfxVolume);
-            }
+            // Play phase change sound (FMOD)
+            BossController.PlayFMODOneShot(Config.fmodAudioConfig.phaseChangeEvent);
             
             // Clear any remaining decoys and souls
             BossController.ClearDecoys();

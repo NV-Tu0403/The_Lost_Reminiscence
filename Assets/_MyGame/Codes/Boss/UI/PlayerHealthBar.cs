@@ -1,8 +1,8 @@
 using System.Collections;
+using _MyGame.Codes.Boss.CoreSystem;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Code.Boss;
 
 namespace _MyGame.Codes.Boss.UI
 {

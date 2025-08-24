@@ -15,15 +15,10 @@ namespace _MyGame.Codes.Trigger
         protected bool CanProgress()
         {
             if (string.IsNullOrEmpty(eventId)) return false;
-            if (ProgressionManager.Instance == null || EventExecutor.Instance == null)
-            {
-                Debug.LogWarning($"[{GetType().Name}] ProgressionManager hoặc EventExecutor chưa sẵn sàng.");
-                return false;
-            }
-
-            if (ProgressionManager.Instance.CanTrigger(eventId) ||
-                ProgressionManager.Instance.IsWaitingForEvent(eventId)) return true;
-            Debug.Log($"[{GetType().Name}] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
+            if (ProgressionManager.Instance != null && EventExecutor.Instance != null)
+                return ProgressionManager.Instance.CanTrigger(eventId) ||
+                       ProgressionManager.Instance.IsWaitingForEvent(eventId);
+            Debug.LogWarning($"[{GetType().Name}] ProgressionManager hoặc EventExecutor chưa sẵn sàng.");
             return false;
         }
         

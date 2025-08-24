@@ -2,7 +2,7 @@ using System;
 using FMODUnity;
 using UnityEngine;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Cấu hình toàn bộ boss - File config duy nhất để điều chỉnh toàn bộ boss
@@ -43,14 +43,17 @@ namespace Code.Boss
         [Space]
         public UIConfig uiConfig;
         
-        [Header("Audio Settings")]
-        [Space]
-        public AudioConfig audioConfig;
+        // [Header("Audio Settings")]
+        // [Space]
+        // public AudioConfig audioConfig;
         
         [Header("FMOD Studio Settings")]
         [Space]
         public FMODAudioConfig fmodAudioConfig;
 
+        [Header("Cinematics & Credits")]
+        [Tooltip("Timeline ID (Resources/Timelines/<ID>) to play when boss is defeated")] 
+        public string bossDefeatTimelineId = "BossDefeatTimeline";
     }
 
     [Serializable]
@@ -129,29 +132,29 @@ namespace Code.Boss
         public AnimationCurve uiAnimationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);          // Curve cho smooth animation
     }
 
-    [Serializable]
-    public class AudioConfig
-    {
-        [Header("Phase 1 Audio")]
-        public AudioClip mockLaughSound;
-        public AudioClip decoySpawnSound;
-        public AudioClip soulSpawnSound;
-        
-        [Header("Phase 2 Audio")]
-        public AudioClip screamSound;
-        public AudioClip fearZoneSound;
-        public AudioClip heartbeatSound;
-        
-        [Header("General Audio")]
-        public AudioClip phaseChangeSound;
-        public AudioClip damageSound;
-        public AudioClip defeatSound;
-        
-        [Header("Volume Settings")]
-        [Range(0f, 1f)] public float masterVolume = 1f;
-        [Range(0f, 1f)] public float sfxVolume = 0.8f;
-        [Range(0f, 1f)] public float ambientVolume = 0.6f;
-    }
+    // [Serializable]
+    // public class AudioConfig
+    // {
+    //     [Header("Phase 1 Audio")]
+    //     public AudioClip mockLaughSound;
+    //     public AudioClip decoySpawnSound;
+    //     public AudioClip soulSpawnSound;
+    //     
+    //     [Header("Phase 2 Audio")]
+    //     public AudioClip screamSound;
+    //     public AudioClip fearZoneSound;
+    //     public AudioClip heartbeatSound;
+    //     
+    //     [Header("General Audio")]
+    //     public AudioClip phaseChangeSound;
+    //     public AudioClip damageSound;
+    //     public AudioClip defeatSound;
+    //     
+    //     [Header("Volume Settings")]
+    //     [Range(0f, 1f)] public float masterVolume = 1f;
+    //     [Range(0f, 1f)] public float sfxVolume = 0.8f;
+    //     [Range(0f, 1f)] public float ambientVolume = 0.6f;
+    // }
     
     [Serializable]
     public class FMODAudioConfig
@@ -169,6 +172,7 @@ namespace Code.Boss
         public EventReference damageEvent;
         public EventReference defeatEvent;
     }
+    
 
     public enum BossDebugPhase
     {

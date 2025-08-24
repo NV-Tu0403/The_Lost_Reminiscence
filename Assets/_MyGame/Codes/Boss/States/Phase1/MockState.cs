@@ -1,6 +1,9 @@
+using _MyGame.Codes.Boss.CoreSystem;
+using Code.Boss;
+using Code.Boss.States.Phase1;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase1
+namespace _MyGame.Codes.Boss.States.Phase1
 {
     /// <summary>
     /// Phase 1 - Mock State: Boss phát tư thế vặn vẹo và tiếng cười méo mó
@@ -19,11 +22,8 @@ namespace Code.Boss.States.Phase1
             mockTimer = 0f;
             BossEventSystem.Trigger(BossEventType.MockStarted);
             
-            // Play mock laugh sound
-            if (Config.audioConfig.mockLaughSound != null)
-            {
-                BossController.PlaySound(Config.audioConfig.mockLaughSound, Config.audioConfig.sfxVolume);
-            }
+            // Play mock laugh sound (FMOD)
+            BossController.PlayFMODOneShot(Config.fmodAudioConfig.mockLaughEvent);
             
             // Stop movement
             if (BossController.NavAgent != null)
@@ -44,12 +44,6 @@ namespace Code.Boss.States.Phase1
 
         public override void Exit()
         {
-            // // Reset movement speed
-            // if (BossController.NavAgent != null)
-            // {
-            //     BossController.NavAgent.speed = Config.moveSpeed;
-            // }
-            // BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() { }

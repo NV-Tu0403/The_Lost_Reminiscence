@@ -1,9 +1,10 @@
+using _MyGame.Codes.Boss.CoreSystem;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using DG.Tweening;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.UI
 {
    /// <summary>
     /// Thanh cast skill ở dưới thanh máu boss
@@ -80,6 +81,8 @@ namespace Code.Boss
             BossEventSystem.Subscribe(BossEventType.SkillInterrupted, OnSkillInterrupted);
             BossEventSystem.Subscribe(BossEventType.StateChanged, OnStateChanged);
             BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeated);
+            // Hide cast bar when player dies (game over)
+            BossEventSystem.Subscribe(BossEventType.PlayerDefeated, OnPlayerDefeated);
         }
 
         private void OnSkillCasted(BossEventData data)
@@ -135,7 +138,13 @@ namespace Code.Boss
             // Hide boss skill cast bar UI
             SetVisible(false);
         }
-
+        
+        private void OnPlayerDefeated(BossEventData data)
+        {
+            // Ensure bar is hidden on game over
+            SetVisible(false);
+        }
+        
         private void SetVisible(bool visible)
         {
             isVisible = visible;
@@ -183,6 +192,7 @@ namespace Code.Boss
             BossEventSystem.Unsubscribe(BossEventType.SkillInterrupted, OnSkillInterrupted);
             BossEventSystem.Unsubscribe(BossEventType.StateChanged, OnStateChanged);
             BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeated);
+            BossEventSystem.Unsubscribe(BossEventType.PlayerDefeated, OnPlayerDefeated);
         }
     }
 }

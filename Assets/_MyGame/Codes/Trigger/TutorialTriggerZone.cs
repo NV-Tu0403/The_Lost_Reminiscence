@@ -1,6 +1,5 @@
 using _MyGame.Codes.Dialogue;
 using UnityEngine;
-using Code.Dialogue; // added for DialogueManager
 
 namespace _MyGame.Codes.Trigger
 {
