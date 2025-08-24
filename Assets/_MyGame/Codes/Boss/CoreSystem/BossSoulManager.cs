@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using _MyGame.Codes.Boss.Behaviors;
+using _MyGame.Codes.Boss.CoreSystem;
 using UnityEngine;
 
 namespace Code.Boss

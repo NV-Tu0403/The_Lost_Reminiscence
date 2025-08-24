@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Quản lý hệ thống máu của Boss

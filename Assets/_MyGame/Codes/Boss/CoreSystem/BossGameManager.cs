@@ -1,10 +1,10 @@
-using System;
 using _MyGame.Codes.Boss.UI;
+using Code.Boss;
 using Tu_Develop.Import.Scripts;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using _MyGame.Codes.GameEventSystem; // for EventBus and BaseEventData
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Manager tổng thể cho Boss system - quản lý game state, restart, và tích hợp với Fa Agent
@@ -27,7 +27,6 @@ namespace Code.Boss
         public static BossGameManager Instance { get; private set; }
         
         private bool isGameOver = false;
-        private bool bossFightStarted = false;
         
         // Events for external systems
         public System.Action<int> OnBossPhaseChanged;
@@ -104,22 +103,18 @@ namespace Code.Boss
             if (bossSkillCastBar != null) bossSkillCastBar.gameObject.SetActive(true);
             
             // Initialize UI với boss controller mới spawn
-            if (bossController != null)
-            {
-                // Reset current health khi bắt đầu boss fight
-                currentPlayerHealth = 3;
+            if (bossController == null) return;
+            // Reset current health khi bắt đầu boss fight
+            currentPlayerHealth = 3;
                 
-                if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config); 
-                if (bossHealthBar != null) bossHealthBar.Initialize(bossController);
-                if (bossSkillCastBar != null) bossSkillCastBar.Initialize(bossController);
-            }
+            if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config); 
+            if (bossHealthBar != null) bossHealthBar.Initialize(bossController);
+            if (bossSkillCastBar != null) bossSkillCastBar.Initialize(bossController);
         }
         
         #region Boss Events
         private void OnBossFightStartedEvent(BossEventData data)
         {
-            bossFightStarted = true;
-            
             // Update boss controller reference từ trigger zone
             if (bossTriggerZone != null)
             {
@@ -144,19 +139,34 @@ namespace Code.Boss
         {
             OnBossDefeated?.Invoke();
             Debug.Log("[BossGameManager] Boss has been defeated!");
+            
+            // Start defeat timeline via EventBus; credits will be handled externally
+            var cfg = bossController != null ? bossController.Config : null;
+            if (cfg != null && !string.IsNullOrEmpty(cfg.bossDefeatTimelineId))
+            {
+                var evt = new BaseEventData
+                {
+                    eventId = cfg.bossDefeatTimelineId,
+                    OnFinish = () => { /* No-op: external system will handle credits/next steps */ }
+                };
+                EventBus.Publish("StartTimeline", evt);
+            }
         }
 
         private void OnPlayerTakeDamageEvent(BossEventData data)
         {
+            if (isGameOver) return; // Ignore damage after game over
             var damage = data.intValue;
-            // Trừ máu tại đây, không để PlayerHealthBar trừ
+            
+            // Store previous health, then subtract
+            var prevHealth = currentPlayerHealth;
             currentPlayerHealth = Mathf.Max(0, currentPlayerHealth - damage);
             
             // Pass current health (không phải damage) cho UI
             OnPlayerHealthChanged?.Invoke(currentPlayerHealth);
             
-            // Check player defeated
-            if (currentPlayerHealth <= 0)
+            // Trigger PlayerDefeated only on transition from >0 to 0
+            if (prevHealth > 0 && currentPlayerHealth == 0)
             {
                 BossEventSystem.Trigger(BossEventType.PlayerDefeated);
             }
@@ -188,7 +198,7 @@ namespace Code.Boss
         #region Fa Agent Integration
         private void OnRequestRadarSkill(BossEventData data)
         {
-            Debug.Log("[BossGameManager] Requesting Fa to use Radar skill to destroy souls");
+            //Debug.Log("[BossGameManager] Requesting Fa to use Radar skill to destroy souls");
             if (faAgent != null)
             {
                 faAgent.UseGuideSignal();
@@ -202,7 +212,7 @@ namespace Code.Boss
         private void OnRequestOtherSkill(BossEventData data)
         {
             var skillName = data.stringValue ?? "Unknown";
-            Debug.Log($"[BossGameManager] Requesting Fa to use skill: {skillName}");
+            //Debug.Log($"[BossGameManager] Requesting Fa to use skill: {skillName}");
             if (faAgent != null)
             {
                 switch (skillName)
@@ -239,7 +249,6 @@ namespace Code.Boss
             // Reset time scale
             Time.timeScale = 1f;
             isGameOver = false;
-            bossFightStarted = false;
             
             // Hide all UI
             HideAllUI();
@@ -256,27 +265,23 @@ namespace Code.Boss
         
         private void ResetBossSystem()
         {
-            if (bossController != null)
-            {
-                Destroy(bossController.gameObject);
-                bossController = null;
-                Debug.Log("[BossGameManager] Boss destroyed for restart");
-            }
+            if (bossController == null) return;
+            Destroy(bossController.gameObject);
+            bossController = null;
+            Debug.Log("[BossGameManager] Boss destroyed for restart");
         }
         
         private void ResetTriggerZone()
         {
-            if (bossTriggerZone != null)
-            {
-                bossTriggerZone.ResetTrigger();
-                Debug.Log("[BossGameManager] Trigger zone reset");
-            }
+            if (bossTriggerZone == null) return;
+            bossTriggerZone.ResetTrigger();
+            Debug.Log("[BossGameManager] Trigger zone reset");
         }
         
         private void ResetPlayerHealth()
         {
             // Reset current health tracking
-            currentPlayerHealth = 3; // Sửa từ 6 về 3
+            currentPlayerHealth = 3; 
             
             // Trigger event to reset player health UI
             BossEventSystem.Trigger(BossEventType.PlayerHealthReset, new BossEventData(3)); // Sửa từ 6 về 3

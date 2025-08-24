@@ -1,6 +1,9 @@
+using _MyGame.Codes.Boss.CoreSystem;
+using Code.Boss;
+using Code.Boss.States.Phase1;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase1
+namespace _MyGame.Codes.Boss.States.Phase1
 {
     /// <summary>
     /// Phase 1 - Lure State: Boss tiến lại gần người chơi rồi rút lui

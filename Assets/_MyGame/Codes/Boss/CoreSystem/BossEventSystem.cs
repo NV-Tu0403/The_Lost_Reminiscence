@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Hệ thống sự kiện riêng cho Boss, tách biệt với GameEventSystem
@@ -113,10 +113,7 @@ namespace Code.Boss
 
         // Player events
         PlayerDefeated,
-        PlayerHealthReset,
-        
-        // UI Notification Events
-        ShowDefeatNotification, // Hiển thị thông báo boss bị đánh bại
+        PlayerHealthReset
     }
 
     /// <summary>
