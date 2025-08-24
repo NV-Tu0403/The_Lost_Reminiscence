@@ -9,8 +9,8 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
     public string FileName => "PlayerCheckPoint.json";
     [SerializeField] private Transform playerTransform;
     public Transform PlayerTransform => playerTransform;
-    [SerializeField] private Transform characterCameraTransform;
-    [SerializeField] private Camera characterCamera; // nếu cần lấy FOV
+    private Transform characterCameraTransform;
+    [SerializeField] private Camera characterCamera;
     public string CurrentMap { get; private set; } = "Unknown";
     private PlayerCheckPointData _lastLoadedData;
     private bool _isDirty;
@@ -345,7 +345,7 @@ public class PlayerCheckPoint : MonoBehaviour, ISaveable
             }
         }
 
-        Vector3 targetPos = new Vector3(0, 20, 0);
+        Vector3 targetPos = new Vector3(0, 5, 0);
         if (playerTransform.TryGetComponent(out Rigidbody rb))
         {
             rb.linearVelocity = Vector3.zero;

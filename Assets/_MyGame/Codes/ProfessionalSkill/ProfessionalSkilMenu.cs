@@ -81,8 +81,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         //e.OnChangeScene += async (nameScene, pos) => await OnChangeScene(nameScene, pos);
         e.OnChangeScene += (nameScene, pos) => OnChangeScene(nameScene, pos);
-
-
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -201,7 +199,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         // Kiểm tra null trước khi sử dụng
         if (UserAccountManager.Instance == null)
         {
-            Debug.LogWarning("UserAccountManager.Instance is null! Trying get");
+            //Debug.LogWarning("UserAccountManager.Instance is null! Trying get");
             return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
         }
         if (SaveGameManager.Instance == null)

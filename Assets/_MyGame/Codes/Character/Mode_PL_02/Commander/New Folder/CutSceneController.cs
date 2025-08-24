@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using _MyGame.Codes.Timeline;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Video;
 
 public class CutSceneController : MonoBehaviour
-{    
+{
 
     public static CutSceneController Instance { get; private set; }
 
@@ -17,6 +18,8 @@ public class CutSceneController : MonoBehaviour
     private CutSceneEvent currentCutSceneEvent;                 // Sự kiện CutScene hiện tại đang được phát
     [SerializeField] private float currentTime = 0f;            // Thời gian hiện tại của CutScene đang phát
     [SerializeField] private GameObject currentInstance;        // Theo dõi instance hiện tại
+
+    [SerializeField] private GameObject player;
 
     private void Awake()
     {
@@ -35,7 +38,7 @@ public class CutSceneController : MonoBehaviour
 
     private void LateUpdate()
     {
-       ClearCutSceneItemTemp();
+        ClearCutSceneItemTemp();
     }
 
     /// <summary>
@@ -48,6 +51,7 @@ public class CutSceneController : MonoBehaviour
         if (currentCutSceneEvent.cutSceneItems == null || currentCutSceneEvent.cutSceneItems.Length == 0) return;
 
         currentIndex = 0;
+        ActiveObjWhenCutSceneRuning(false);
         PlayNextCutScene();
     }
 
@@ -143,8 +147,26 @@ public class CutSceneController : MonoBehaviour
             }
             CutSceneItemTemp.Clear(); // Xóa mảng
             Debug.Log("CutSceneItemTemp cleared.");
+            ActiveObjWhenCutSceneRuning(true);
+            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         }
         return;
+    }
+
+    private void ActiveObjWhenCutSceneRuning(bool oke)
+    {
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
+        if (player != null)
+        {
+            player.SetActive(oke);
+        }
+        else
+        {
+            Debug.Log("quan que");
+        }
     }
 
     private void DemoPlayCS()
