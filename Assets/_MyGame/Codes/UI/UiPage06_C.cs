@@ -137,7 +137,7 @@ public class UiPage06_C : MonoBehaviour
                 {
                     obj.logout_login.text = "Logout";
                     if (ProfessionalSkilMenu.Instance.CurrentbackupOke) obj.connect_register.text = "Override save";
-                    else obj.connect_register.text = "...";
+                    else obj.connect_register.text = "Override save";
                 }
                 if (type == AccountStateType.ConectingServer)
                 {

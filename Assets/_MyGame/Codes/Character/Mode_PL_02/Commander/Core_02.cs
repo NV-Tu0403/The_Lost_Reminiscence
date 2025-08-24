@@ -23,11 +23,11 @@ public class Core_02 : PlayerEventListenerBase
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            Debug.Log("B key pressed");
-            CoreEvent.Instance.TriggerEndSession();
-        }
+        //if (Input.GetKeyDown(KeyCode.B))
+        //{
+        //    Debug.Log("B key pressed");
+        //    CoreEvent.Instance.TriggerEndSession();
+        //}
     }
 
     public override void RegisterEvent(PlayerEvent e)
