@@ -20,22 +20,17 @@ namespace _MyGame.Codes.Puzzle.Test
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
-            {
-
-                if (IvokePotal())
-                {
-                    Debug.Log($"[CheatChangeScene] chuyển cảnh đến '{targetSceneName}'.");
-                    Destroy(gameObject); // Xóa đối tượng sau khi chuyển cảnh
-                }
-            }
+            if (!other.CompareTag("Player")) return;
+            if (!CheckPortal()) return;
+            Debug.Log($"[CheatChangeScene] chuyển cảnh đến '{targetSceneName}'.");
+            Destroy(gameObject); // Xóa đối tượng sau khi chuyển cảnh
         }
 
-        private bool IvokePotal()
+        private bool CheckPortal()
         {
             try
             {
-                Vector3 pos = new Vector3(0, 20, 0);
+                var pos = new Vector3(0, 20, 0);
                 CoreEvent.Instance.triggerChangeScene(targetSceneName, pos);
                 return true;
             }
@@ -43,7 +38,6 @@ namespace _MyGame.Codes.Puzzle.Test
             {
                 Debug.LogError($"[CheatChangeScene] Lỗi khi chuyển cảnh: {e.Message}");
                 return false;
-                throw;
             }
         }
 
