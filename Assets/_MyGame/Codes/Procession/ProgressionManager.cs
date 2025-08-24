@@ -51,7 +51,7 @@ namespace _MyGame.Codes.Procession
             if (progressionDataSo != null)
             {
                 progression = progressionDataSo.ToGameProgression();
-                Debug.Log("[ProgressionManager] Loaded from SO");
+                //Debug.Log("[ProgressionManager] Loaded from SO");
                 return;
             }
             Debug.LogError("ProgressionDataSO is null!");
@@ -87,11 +87,11 @@ namespace _MyGame.Codes.Procession
         /// </summary>
         public void HandleEventFinished(string eventId)
         {
-            Debug.Log($"[ProgressionManager] Event Finished: {eventId}");
+            //Debug.Log($"[ProgressionManager] Event Finished: {eventId}");
 
             if (TryCompleteSubProcess(eventId) || TryCompleteMainProcess(eventId))
             {
-                Debug.Log($"[ProgressionManager] Progress updated for event '{eventId}'");
+                //Debug.Log($"[ProgressionManager] Progress updated for event '{eventId}'");
             }
             else
             {
@@ -109,12 +109,12 @@ namespace _MyGame.Codes.Procession
                 var sub = main.subProcesses?.Find(s => s.id == eventId);
                 if (sub == null || sub.status == MainProcess.ProcessStatus.Completed) continue;
                 sub.status = MainProcess.ProcessStatus.Completed;
-                Debug.Log($"[ProgressionManager] SubProcess '{eventId}' marked Completed.");
+                //Debug.Log($"[ProgressionManager] SubProcess '{eventId}' marked Completed.");
                 GrantRewards(sub.Rewards);
                 if (main.subProcesses.All(s2 => s2.status == MainProcess.ProcessStatus.Completed))
                 {
                     main.status = MainProcess.ProcessStatus.Completed;
-                    Debug.Log($"[ProgressionManager] MainProcess '{main.id}' marked Completed.");
+                    //Debug.Log($"[ProgressionManager] MainProcess '{main.id}' marked Completed.");
                     GrantRewards(main.Rewards);
                 }
 
@@ -131,7 +131,7 @@ namespace _MyGame.Codes.Procession
             var mainMatch = progression.mainProcesses.Find(m => m.id == eventId);
             if (mainMatch == null || mainMatch.status == MainProcess.ProcessStatus.Completed) return false;
             mainMatch.status = MainProcess.ProcessStatus.Completed;
-            Debug.Log($"[ProgressionManager] MainProcess '{eventId}' marked Completed (direct).");
+            //Debug.Log($"[ProgressionManager] MainProcess '{eventId}' marked Completed (direct).");
             GrantRewards(mainMatch.Rewards);
             IsDirty = true;
             return true;
@@ -166,7 +166,7 @@ namespace _MyGame.Codes.Procession
             if (mainProcess is { status: MainProcess.ProcessStatus.Locked })
             {
                 mainProcess.status = MainProcess.ProcessStatus.InProgress;
-                Debug.Log($"[ProgressionManager] Unlocked MainProcess '{id}'");
+                //Debug.Log($"[ProgressionManager] Unlocked MainProcess '{id}'");
                 IsDirty = true;
                 return;
             }
@@ -177,7 +177,7 @@ namespace _MyGame.Codes.Procession
                          .Where(subProcess => subProcess is { status: MainProcess.ProcessStatus.Locked }))
             {
                 subProcess.status = MainProcess.ProcessStatus.InProgress;
-                Debug.Log($"[ProgressionManager] Unlocked SubProcess '{id}'");
+               // Debug.Log($"[ProgressionManager] Unlocked SubProcess '{id}'");
                 IsDirty = true;
                 return;
             }
@@ -399,7 +399,7 @@ namespace _MyGame.Codes.Procession
                     if (zone.eventId != checkpointSub.id) continue;
                     var pos = zone.transform.position;
                     var rot = zone.transform.rotation;
-                    Debug.Log($"[ProgressionManager] Teleport player về checkpoint '{checkpointSub.id}' tại {pos}");
+                    //Debug.Log($"[ProgressionManager] Teleport player về checkpoint '{checkpointSub.id}' tại {pos}");
                     PlayerRespawnManager.Instance.TeleportToCheckpoint(pos, rot);
                     return;
                 }
