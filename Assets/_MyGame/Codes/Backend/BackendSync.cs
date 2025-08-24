@@ -470,7 +470,7 @@ namespace _MyGame.Codes.Backend
             www.timeout = 30;
             yield return www.SendWebRequest();
 
-            Debug.Log($"📡 Response: {www.responseCode} - {www.result}");
+            Debug.Log($"[Backend]📡 Response: {www.responseCode} - {www.result}");
 
             if (www.result == UnityWebRequest.Result.Success)
             {
@@ -478,7 +478,7 @@ namespace _MyGame.Codes.Backend
             }
             else
             {
-                Debug.LogError($"❌ Request failed: {www.downloadHandler?.text ?? www.error}");
+                Debug.LogError($"❌[Backend] Request failed: {www.downloadHandler?.text ?? www.error}");
                 callback(false, www.downloadHandler?.text ?? www.error);
             }
 
