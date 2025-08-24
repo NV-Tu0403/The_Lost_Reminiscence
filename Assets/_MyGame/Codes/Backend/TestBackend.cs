@@ -1,10 +1,9 @@
 using System.Collections;
-using _MyGame.Codes.Backend;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Code.Backend
+namespace _MyGame.Codes.Backend
 {
     public class TestBackend : MonoBehaviour
     {

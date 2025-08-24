@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Collections;
 using System;
 using _MyGame.Codes.Backend;
-using Code.Backend;
 using UnityEngine.Experimental.GlobalIllumination;
 using UnityEditor;
 

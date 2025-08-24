@@ -66,7 +66,7 @@ namespace _MyGame.Codes.GameEventSystem
                 return;
             }
 
-            Debug.Log($"[EventManager] Event '{eventId}' finished. Updating progression...");
+            //Debug.Log($"[EventManager] Event '{eventId}' finished. Updating progression...");
 
             ProgressionManager.Instance.HandleEventFinished(eventId);
             UpdateEventIndex(eventId);

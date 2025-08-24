@@ -149,7 +149,6 @@ namespace _MyGame.Codes.Backend
             // Quét tất cả file trong saveDir
             var allFiles = Directory.GetFiles(saveDir, "*.*", SearchOption.AllDirectories);
             var filesList = new List<object>();
-            var totalFiles = allFiles.Length;
             var anyError = false;
 
             foreach (var filePath in allFiles)
@@ -197,9 +196,6 @@ namespace _MyGame.Codes.Backend
 
                         break;
                     }
-                    default:
-                        // Bỏ qua các định dạng khác
-                        break;
                 }
 
                 yield return null; // tránh block main thread quá lâu
