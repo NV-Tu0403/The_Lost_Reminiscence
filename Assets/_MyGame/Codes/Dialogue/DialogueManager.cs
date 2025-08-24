@@ -1,17 +1,25 @@
 using System;
-using _MyGame.Codes.Dialogue;
 using _MyGame.Codes.GameEventSystem;
+using _MyGame.Codes.Timeline;
+using Code.Dialogue;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     public class DialogueManager : MonoBehaviour
     {
         [SerializeField] private FullDialoguePanel fullDialoguePanel;
         [SerializeField] private BubbleDialoguePanel bubbleDialoguePanel;
         [SerializeField] private StoryDialoguePanel storyDialoguePanel; 
+        
+        [Header("Player Lock")]
+        [SerializeField] private bool lockPlayerOnFullDialogue = true;
+        [SerializeField] private string playerTag = "Player";
+        private GameObject lockedPlayer;
+        private PlayerLocker.Snapshot playerSnapshot;
+        private bool isPlayerLocked;
         
         /// <summary>
         /// Quản lý hiển thị hội thoại:
@@ -64,11 +72,13 @@ namespace Code.Dialogue
         {
             var dialogue = handle.Result;
             var onDialogueEnd = CallEvent(onFinish);
+
             // Kiểm tra displayMode và hiển thị panel tương ứng
             switch (dialogue.displayMode)
             {
                 case DialogueDisplayMode.FullPanel:
-                    fullDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
+                    LockPlayer();
+                    fullDialoguePanel.ShowDialogue(dialogue, WrapEndWithUnlock(onDialogueEnd));
                     break;
                 case DialogueDisplayMode.BubblePanel:
                     bubbleDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
@@ -80,6 +90,18 @@ namespace Code.Dialogue
                 default:
                     Debug.LogWarning($"DialogueNodeSO {dialogueId} không có displayMode hợp lệ!");
                     break;
+            }
+
+            return;
+
+            // Helper to wrap end callback with unlock when needed
+            Action WrapEndWithUnlock(Action endCb)
+            {
+                return () =>
+                {
+                    UnlockPlayer();
+                    endCb?.Invoke();
+                };
             }
         }
 
@@ -121,6 +143,8 @@ namespace Code.Dialogue
         private void OnDisable()
         {
             EventBus.Unsubscribe("StartDialogue", OnStartDialogueEvent);
+            // In case object is disabled while a full dialogue is active, ensure unlock
+            UnlockPlayer();
         }
         
         /// <summary>
@@ -156,6 +180,33 @@ namespace Code.Dialogue
         {
             if (bubbleDialoguePanel == null) return;
             bubbleDialoguePanel.HideManually();
+        }
+        
+        private void LockPlayer()
+        {
+            if (!lockPlayerOnFullDialogue || isPlayerLocked) return;
+            var player = !string.IsNullOrEmpty(playerTag) ? GameObject.FindGameObjectWithTag(playerTag) : null;
+            if (!player)
+            {
+                Debug.LogWarning("[DialogueManager] Không tìm thấy Player theo tag để khóa input trong FullDialogue.");
+                return;
+            }
+            lockedPlayer = player;
+            playerSnapshot = PlayerLocker.Lock(player);
+            isPlayerLocked = true;
+        }
+
+        private void UnlockPlayer()
+        {
+            if (!isPlayerLocked)
+                return;
+
+            if (lockedPlayer)
+            {
+                PlayerLocker.Unlock(lockedPlayer, playerSnapshot);
+            }
+            lockedPlayer = null;
+            isPlayerLocked = false;
         }
     }
 }
