@@ -1,6 +1,8 @@
+using Code.Boss;
+using Code.Boss.States.Phase1;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase1
+namespace _MyGame.Codes.Boss.States.Phase1
 {
     /// <summary>
     /// Phase 1 - Idle State: Boss đứng yên tại chỗ

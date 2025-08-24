@@ -1,3 +1,5 @@
+using _MyGame.Codes.Boss.CoreSystem;
+using _MyGame.Codes.Boss.States.Phase1;
 using UnityEngine;
 
 namespace Code.Boss.States.Phase1

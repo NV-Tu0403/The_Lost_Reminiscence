@@ -1,3 +1,4 @@
+using _MyGame.Codes.Boss.CoreSystem;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;

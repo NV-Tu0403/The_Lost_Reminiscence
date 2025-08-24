@@ -1,3 +1,6 @@
+using _MyGame.Codes.Boss.CoreSystem;
+using _MyGame.Codes.Boss.States.Phase1;
+using _MyGame.Codes.Boss.States.Phase2;
 using UnityEngine;
 
 namespace Code.Boss.States.Shared
@@ -94,11 +97,11 @@ namespace Code.Boss.States.Shared
             // Transition based on current phase
             if (BossController.CurrentPhase == 1)
             {
-                BossController.ChangeState(new Phase1.IdleState());
+                BossController.ChangeState(new IdleState());
             }
             else // Phase 2
             {
-                BossController.ChangeState(new Phase2.AngryState());
+                BossController.ChangeState(new AngryState());
             }
         }
 

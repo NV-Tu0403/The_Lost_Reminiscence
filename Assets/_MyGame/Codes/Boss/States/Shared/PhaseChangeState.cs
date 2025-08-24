@@ -1,6 +1,7 @@
+using Code.Boss;
 using UnityEngine;
 
-namespace Code.Boss.States.Shared
+namespace _MyGame.Codes.Boss.States.Shared
 {
     /// <summary>
     /// Phase Change State: Chuyển đổi từ Phase 1 sang Phase 2

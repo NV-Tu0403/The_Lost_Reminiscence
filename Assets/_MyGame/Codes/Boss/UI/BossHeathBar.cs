@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using _MyGame.Codes.Boss.CoreSystem;
 
 namespace Code.Boss
 {

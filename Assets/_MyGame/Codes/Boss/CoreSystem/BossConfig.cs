@@ -2,7 +2,7 @@ using System;
 using FMODUnity;
 using UnityEngine;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Cấu hình toàn bộ boss - File config duy nhất để điều chỉnh toàn bộ boss

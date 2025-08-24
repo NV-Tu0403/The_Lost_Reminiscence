@@ -1,10 +1,9 @@
-using System;
 using _MyGame.Codes.Boss.UI;
+using Code.Boss;
 using Tu_Develop.Import.Scripts;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Manager tổng thể cho Boss system - quản lý game state, restart, và tích hợp với Fa Agent
@@ -27,7 +26,6 @@ namespace Code.Boss
         public static BossGameManager Instance { get; private set; }
         
         private bool isGameOver = false;
-        private bool bossFightStarted = false;
         
         // Events for external systems
         public System.Action<int> OnBossPhaseChanged;
@@ -104,22 +102,18 @@ namespace Code.Boss
             if (bossSkillCastBar != null) bossSkillCastBar.gameObject.SetActive(true);
             
             // Initialize UI với boss controller mới spawn
-            if (bossController != null)
-            {
-                // Reset current health khi bắt đầu boss fight
-                currentPlayerHealth = 3;
+            if (bossController == null) return;
+            // Reset current health khi bắt đầu boss fight
+            currentPlayerHealth = 3;
                 
-                if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config); 
-                if (bossHealthBar != null) bossHealthBar.Initialize(bossController);
-                if (bossSkillCastBar != null) bossSkillCastBar.Initialize(bossController);
-            }
+            if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config); 
+            if (bossHealthBar != null) bossHealthBar.Initialize(bossController);
+            if (bossSkillCastBar != null) bossSkillCastBar.Initialize(bossController);
         }
         
         #region Boss Events
         private void OnBossFightStartedEvent(BossEventData data)
         {
-            bossFightStarted = true;
-            
             // Update boss controller reference từ trigger zone
             if (bossTriggerZone != null)
             {
@@ -239,7 +233,6 @@ namespace Code.Boss
             // Reset time scale
             Time.timeScale = 1f;
             isGameOver = false;
-            bossFightStarted = false;
             
             // Hide all UI
             HideAllUI();

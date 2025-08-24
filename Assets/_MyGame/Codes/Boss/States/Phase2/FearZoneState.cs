@@ -1,7 +1,9 @@
-using System.Collections.Generic;
+using _MyGame.Codes.Boss.CoreSystem;
+using Code.Boss;
+using Code.Boss.States.Phase2;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase2
+namespace _MyGame.Codes.Boss.States.Phase2
 {
     /// <summary>
     /// Phase 2 - Fear Zone State: Tạo vùng tối dưới chân người chơi
@@ -227,13 +229,6 @@ namespace Code.Boss.States.Phase2
             isCasting = true;
             castTimer = 0f;
             skillTimer = 0f;
-            
-            // // Reset movement speed
-            // if (BossController.NavAgent != null)
-            // {
-            //     BossController.NavAgent.speed = Config.moveSpeed;
-            // }
-            // BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() {}

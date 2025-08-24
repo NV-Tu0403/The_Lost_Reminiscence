@@ -1,6 +1,8 @@
+using Code.Boss;
+using Code.Boss.States.Phase2;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase2
+namespace _MyGame.Codes.Boss.States.Phase2
 {
     /// <summary>
     /// Phase 2 - Angry State: Boss di chuyển xoay quanh trung tâm NavMesh
@@ -8,7 +10,7 @@ namespace Code.Boss.States.Phase2
     public class AngryState : BossState
     {
         private float stateTimer;
-        private float currentAngle = 0f;
+        private float currentAngle;
         private Vector3 centerPosition;
         private const bool CanTransition = true;
 
@@ -64,12 +66,6 @@ namespace Code.Boss.States.Phase2
         
         public override void Exit()
         {
-            // // Reset movement speed
-            // if (BossController.NavAgent != null)
-            // {
-            //     BossController.NavAgent.speed = Config.moveSpeed;
-            // }
-            // BossController.ResetMoveDirection();
         }
 
         public override void OnTakeDamage() { }

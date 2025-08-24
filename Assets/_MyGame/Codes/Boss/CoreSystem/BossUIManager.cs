@@ -1,7 +1,8 @@
 using _MyGame.Codes.Boss.UI;
+using Code.Boss;
 using UnityEngine;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Quản lý UI của Boss
@@ -76,24 +77,5 @@ namespace Code.Boss
                 Debug.LogWarning("BossDefeatNotification not found in scene! Please add BossDefeatNotification component to a UI GameObject.");
             }
         }
-
-        // Methods để show/hide UI
-        // public void ShowBossHealthBar(bool show)
-        // {
-        //     if (bossHealthBar != null)
-        //         bossHealthBar.gameObject.SetActive(show);
-        // }
-        //
-        // public void ShowSkillCastBar(bool show)
-        // {
-        //     if (skillCastBar != null)
-        //         skillCastBar.gameObject.SetActive(show);
-        // }
-        //
-        // public void ShowPlayerHealthBar(bool show)
-        // {
-        //     if (playerHealthBar != null)
-        //         playerHealthBar.gameObject.SetActive(show);
-        // }
     }
 }

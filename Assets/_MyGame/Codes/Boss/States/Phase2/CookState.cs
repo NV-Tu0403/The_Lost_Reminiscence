@@ -1,7 +1,8 @@
-using TMPro;
+using _MyGame.Codes.Boss.CoreSystem;
+using Code.Boss;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase2
+namespace _MyGame.Codes.Boss.States.Phase2
 {
     /// <summary>
     /// Phase 2 - Cook State: Boss bị đánh bại và rớt mảnh ghép

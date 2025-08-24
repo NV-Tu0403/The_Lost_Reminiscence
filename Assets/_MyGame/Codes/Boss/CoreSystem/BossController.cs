@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using _MyGame.Codes.Boss.CoreSystem;
+using _MyGame.Codes.Boss.States.Phase1;
+using _MyGame.Codes.Boss.States.Phase2;
 using UnityEngine;
 using UnityEngine.AI;
 using Code.Boss.States.Phase1;
