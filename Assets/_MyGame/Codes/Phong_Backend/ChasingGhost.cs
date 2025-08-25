@@ -15,12 +15,10 @@ public class ChasingGhost : MonoBehaviour
 
     [Tooltip("Thời gian tồn tại của con ma (giây)")]
     public float lifeTime = 15f;
-
-    [Tooltip("Thời gian giữa mỗi lần trừ máu (giây)")]
-    public float damageCooldown = 2f;
+    
+    // Xóa biến damageCooldown vì không cần nữa
 
     private Transform playerTarget;
-    private float lastDamageTime = -99f;
     private Rigidbody rb;
 
     void Start()
@@ -47,33 +45,36 @@ public class ChasingGhost : MonoBehaviour
     {
         if (playerTarget != null)
         {
-            // --- LOGIC DI CHUYỂN ---
             Vector3 targetPosition = playerTarget.position + Vector3.up * hoverHeight;
             transform.position = Vector3.Lerp(transform.position, targetPosition, moveSpeed * Time.deltaTime);
-
-            // --- LOGIC XOAY ĐÚNG ---
+            
             Vector3 directionToPlayer = playerTarget.position - transform.position;
-            directionToPlayer.y = 0; // Chỉ xoay ngang
+            directionToPlayer.y = 0;
 
             if (directionToPlayer.sqrMagnitude > 0.01f)
             {
-                // Xoay trục Z+ (phía trước) về hướng người chơi
                 Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
         }
     }
 
+    // --- THAY ĐỔI LOGIC KHI VA CHẠM ---
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && Time.time > lastDamageTime + damageCooldown)
+        // Chỉ cần kiểm tra va chạm với Player
+        if (other.CompareTag("Player"))
         {
             PlayerPuzzleInteractor playerInteractor = other.GetComponent<PlayerPuzzleInteractor>();
             if (playerInteractor != null)
             {
-                Debug.Log("Ghost touched the player!");
-                playerInteractor.TakePuzzleDamage();
-                lastDamageTime = Time.time;
+                Debug.Log("Ghost caught the player!");
+                
+                // Gọi hàm dịch chuyển người chơi về điểm xuất phát
+                playerInteractor.TeleportToStart();
+
+                // Sau khi bắt được người chơi, con ma sẽ tự biến mất
+                Destroy(gameObject);
             }
         }
     }

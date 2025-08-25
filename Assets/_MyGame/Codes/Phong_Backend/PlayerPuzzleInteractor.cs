@@ -28,16 +28,12 @@ public class PlayerPuzzleInteractor : MonoBehaviour
 
     public void PickupPicture(CollectiblePicture pictureToPickup)
     {
-        // --- THAY ĐỔI QUAN TRỌNG Ở ĐÂY ---
-        // 1. Kiểm tra xem mảnh tranh có script lơ lửng không
         FloatMovement floatScript = pictureToPickup.GetComponent<FloatMovement>();
         if (floatScript != null)
         {
-            // 2. Vô hiệu hóa script đó để nó ngừng di chuyển
             floatScript.enabled = false;
             Debug.Log("Đã tắt hiệu ứng lơ lửng của mảnh tranh.");
         }
-        // ------------------------------------
 
         collectedPictures.Add(pictureToPickup);
         pictureToPickup.gameObject.SetActive(false);
@@ -61,8 +57,7 @@ public class PlayerPuzzleInteractor : MonoBehaviour
     {
         return collectedPictures.FirstOrDefault();
     }
-
-    // Các hàm còn lại giữ nguyên...
+    
     private void OnTriggerEnter(Collider other)
     {
         IInteractable interactableObject = other.GetComponent<IInteractable>();
@@ -74,6 +69,7 @@ public class PlayerPuzzleInteractor : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        // Dòng code `?.gameObject` sẽ kiểm tra null an toàn trước khi truy cập
         if (currentInteractable != null && other.gameObject == (currentInteractable as MonoBehaviour)?.gameObject)
         {
             currentInteractable = null;
@@ -102,5 +98,26 @@ public class PlayerPuzzleInteractor : MonoBehaviour
         {
             Debug.LogError("GAME OVER! Bạn đã hết máu giải đố.");
         }
+    }
+
+    public void TeleportToStart()
+    {
+        DungeonStartPoint startPoint = FindObjectOfType<DungeonStartPoint>();
+        if (startPoint != null)
+        {
+            Debug.Log("Player has been caught! Teleporting to start...");
+            TeleportPlayer(startPoint.transform.position);
+        }
+        else
+        {
+            Debug.LogError("Không tìm thấy DungeonStartPoint trong scene! Không thể dịch chuyển người chơi về điểm bắt đầu.");
+        }
+    }
+
+    // --- HÀM MỚI ĐỂ SỬA LỖI ---
+    // Hàm này cho phép các script khác xóa tham chiếu một cách an toàn
+    public void ClearCurrentInteractable()
+    {
+        currentInteractable = null;
     }
 }

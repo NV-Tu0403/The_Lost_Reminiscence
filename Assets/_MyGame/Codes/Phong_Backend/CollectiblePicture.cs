@@ -29,27 +29,28 @@ public class CollectiblePicture : MonoBehaviour, IInteractable
     {
         if (isInteracted || interactor == null) return;
 
-        isInteracted = true; // Đánh dấu đã tương tác để tránh gọi lại
+        isInteracted = true;
 
         if (isFake)
         {
-            // Nếu là tranh giả, bắt đầu hiệu ứng tan biến và triệu hồi ma
             Debug.Log("Đây là tranh giả! Một linh hồn đã được giải phóng!");
+            
+            // Xóa tham chiếu đến vật thể này ngay lập tức để tránh lỗi
+            interactor.ClearCurrentInteractable();
+            
             StartCoroutine(FakePictureEffect(interactor.transform));
         }
         else
         {
-            // Nếu là tranh thật, báo cho Player để nhặt
+            // Xóa tham chiếu và nhặt tranh thật
+            interactor.ClearCurrentInteractable();
             interactor.PickupPicture(this);
         }
     }
 
     private IEnumerator FakePictureEffect(Transform playerTransform)
     {
-        // Tắt collider ngay lập tức
         GetComponent<Collider>().enabled = false;
-
-        // Bắt đầu hiệu ứng tan biến
         Material mat = pictureRenderer.material;
         float elapsedTime = 0f;
 
@@ -61,10 +62,7 @@ public class CollectiblePicture : MonoBehaviour, IInteractable
             yield return null;
         }
 
-        // Triệu hồi ma sau khi tan biến xong
         SpawnPunishmentGhost(playerTransform);
-
-        // Hủy đối tượng tranh giả
         Destroy(gameObject);
     }
 
@@ -76,7 +74,6 @@ public class CollectiblePicture : MonoBehaviour, IInteractable
             return;
         }
 
-        // Vị trí spawn ở phía sau người chơi
         Vector3 spawnPosition = playerTransform.position - playerTransform.forward * 3f + Vector3.up * 1f;
         Quaternion spawnRotation = Quaternion.LookRotation(playerTransform.position - spawnPosition);
         Instantiate(ghostPrefab, spawnPosition, spawnRotation);
