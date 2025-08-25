@@ -191,6 +191,11 @@ public class PlayerController_02 : PlayerEventListenerBase
             // tăng gravity
             _rigidbody.AddForce(Vector3.down * extraGravity, ForceMode.Acceleration);
         }
+
+        if (_playerInput.dir == Vector3.zero && isGrounded)
+        {
+            LowFork(0f);
+        }
     }
 
     #region base Event/state
@@ -726,6 +731,19 @@ public class PlayerController_02 : PlayerEventListenerBase
             _navMeshAgent.enabled = check;
 
         }
+    }
+
+    /// <summary>
+    /// giảm quán tính ngang về 0
+    /// </summary>
+    public void LowFork(float vels)
+    {
+        if (_rigidbody == null) return;
+        Vector3 vel = _rigidbody.linearVelocity;
+        vel.x = vels;
+        vel.z = vels;
+        _rigidbody.linearVelocity = vel;
+
     }
 
     #endregion
