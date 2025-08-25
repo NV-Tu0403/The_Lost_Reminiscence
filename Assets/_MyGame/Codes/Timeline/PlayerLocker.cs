@@ -12,6 +12,9 @@ namespace _MyGame.Codes.Timeline
             public bool RbKinematic, RbGravity;
             public bool AgentEnabled, AgentStopped;
             public MonoBehaviour[] DisabledInputs;
+            // Camera lock snapshot
+            public bool HasCamera;
+            public MonoBehaviour[] DisabledCameraInputs;
         }
 
         public static GameObject FindByTag(string tag) => GameObject.FindGameObjectWithTag(tag);
@@ -41,6 +44,29 @@ namespace _MyGame.Codes.Timeline
             return s;
         }
 
+        // Overload: Lock player + optionally camera
+        public static Snapshot Lock(GameObject player, bool includeCamera)
+        {
+            var s = Lock(player);
+            if (!includeCamera) return s;
+
+            var mainCam = Camera.main ? Camera.main.gameObject : FindByTag("MainCamera");
+            if (mainCam)
+            {
+                var camBehaviours = mainCam.GetComponents<MonoBehaviour>();
+                var disabledCam = new System.Collections.Generic.List<MonoBehaviour>();
+                foreach (var sc in camBehaviours)
+                {
+                    if (!sc.enabled) continue;
+                    sc.enabled = false; disabledCam.Add(sc);
+                }
+                s.HasCamera = true;
+                s.DisabledCameraInputs = disabledCam.ToArray();
+            }
+
+            return s;
+        }
+
         public static void Unlock(GameObject player, Snapshot s)
         {
             // Restore input
@@ -54,6 +80,15 @@ namespace _MyGame.Codes.Timeline
             // Restore Agent
             var ag = player.GetComponent<NavMeshAgent>();
             if (s.HasAgent && ag) { ag.enabled = s.AgentEnabled; ag.isStopped = s.AgentStopped; }
+
+            // Restore camera behaviours
+            if (s.DisabledCameraInputs != null)
+            {
+                foreach (var sc in s.DisabledCameraInputs)
+                {
+                    if (sc) sc.enabled = true;
+                }
+            }
         }
     }
 
