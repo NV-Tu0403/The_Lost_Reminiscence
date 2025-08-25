@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     public static class TypewriterEffect
     {

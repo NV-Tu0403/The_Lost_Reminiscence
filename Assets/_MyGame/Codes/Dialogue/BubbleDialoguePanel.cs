@@ -5,7 +5,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     public class BubbleDialoguePanel : MonoBehaviour
     {
@@ -20,11 +20,13 @@ namespace Code.Dialogue
         private Action onDialogueEnd;
         private Coroutine typingCoroutine;
         private CanvasGroup canvasGroup;
-        private const float TypewriterDelay = 0.05f;
+        private const float TypewriterDelay = 0.005f;
 
         private bool isPersistent; // new flag
-        private DialogueNodeSo currentNode; // cache if needed
         
+        public event Action TypingCompleted; // raised when typewriter completes
+        public bool IsTyping { get; private set; }
+
         private void Awake()
         {
             canvasGroup = GetComponent<CanvasGroup>();
@@ -59,7 +61,6 @@ namespace Code.Dialogue
             EventBus.Publish("StartDialogue");
             gameObject.SetActive(true);
             onDialogueEnd = onEnd;
-            currentNode = node;
             ShowAnimation();
             ShowNode(node, persistent);
         }
@@ -88,7 +89,10 @@ namespace Code.Dialogue
         /// </summary>
         private IEnumerator TypewriterCoroutine(DialogueNodeSo node, bool persistent)
         {
+            IsTyping = true;
             yield return TypewriterEffect.PlayLocalized(dialogueText, node.dialogueText, TypewriterDelay);
+            IsTyping = false;
+            TypingCompleted?.Invoke();
             if (!persistent)
             {
                 yield return new WaitForSeconds(timeToHide);
@@ -111,7 +115,7 @@ namespace Code.Dialogue
             HideAnimation();
         }
 
-        
+
         /// <summary>
         /// Hiệu ứng hiển thị và ẩn bubble dialogue:
         /// - Hiển thị với hiệu ứng fade-in và scale.

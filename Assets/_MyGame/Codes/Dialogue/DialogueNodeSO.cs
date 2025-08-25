@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Localization;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     public enum SpeakerName
     {

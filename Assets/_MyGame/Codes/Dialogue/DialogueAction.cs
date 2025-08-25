@@ -1,6 +1,6 @@
 using _MyGame.Codes.GameEventSystem;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     public class DialogueAction : IEventAction
     {

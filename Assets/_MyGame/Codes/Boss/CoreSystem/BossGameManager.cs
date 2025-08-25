@@ -5,7 +5,6 @@ using Tu_Develop.Import.Scripts;
 using UnityEngine;
 using _MyGame.Codes.GameEventSystem;
 using _MyGame.Codes.Dialogue; 
-using _MyGame.Codes.Boss.States.Phase1; 
 using _MyGame.Codes.Boss.States.Phase2; 
 using _MyGame.Codes.Boss.States.Shared; 
 using Code.Boss.States.Phase1; 
@@ -31,10 +30,6 @@ namespace _MyGame.Codes.Boss.CoreSystem
         [SerializeField] private BossSkillCastBar bossSkillCastBar;
         
         [Header("Dialogue Hints (Addressable IDs)")]
-        [Tooltip("Addressable ID for Lure hint bubble (optional)")]
-        [SerializeField] private string lureHintDialogueId;
-        [Tooltip("Addressable ID for Mock hint bubble (optional)")]
-        [SerializeField] private string mockHintDialogueId;
         [Tooltip("Addressable ID for Decoy hint bubble")]
         [SerializeField] private string decoyHintDialogueId;
         [Tooltip("Addressable ID for Soul hint bubble")]
@@ -54,7 +49,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
         public System.Action<int> OnPlayerHealthChanged;
         public System.Action OnBossFightStarted;
 
-        // Thêm field để track current health
+        // Track current player health
         private int currentPlayerHealth = 3; 
         // Track states that already showed a hint (show once per state)
         private readonly HashSet<string> shownHintStates = new HashSet<string>();
@@ -110,6 +105,8 @@ namespace _MyGame.Codes.Boss.CoreSystem
             BossEventSystem.Subscribe(BossEventType.RequestOtherSkill, OnRequestOtherSkill);
             // Dialogue hints driven by StateChanged for auto-hide and per-state show-once
             BossEventSystem.Subscribe(BossEventType.StateChanged, OnStateChangedEvent);
+            // Auto-hide hint when cast finishes
+            BossEventSystem.Subscribe(BossEventType.SkillInterrupted, OnSkillInterruptedEvent);
         }
 
         private void HideAllUI()
@@ -240,36 +237,64 @@ namespace _MyGame.Codes.Boss.CoreSystem
         #region Dialogue Hint Handlers
         private void OnStateChangedEvent(BossEventData data)
         {
-            // Always hide the previous hint when switching states (auto-hide on transition)
-            HideHintBubble();
-            
             var newStateName = data?.stringValue;
-            if (string.IsNullOrEmpty(newStateName)) return;
-            
-            // Only show once per state type per session
-            if (shownHintStates.Contains(newStateName)) return;
-            
             var id = ResolveDialogueIdByStateName(newStateName);
-            if (string.IsNullOrEmpty(id)) return;
+            var dm = DialogueManager.Instance;
+
+            // If new state is not a hint state -> defer hide to let current typing finish (avoid cutting off)
+            if (string.IsNullOrEmpty(id))
+            {
+                if (dm != null)
+                {
+                    dm.HideBubbleTutorialDeferred();
+                }
+                else
+                {
+                    HideHintBubble();
+                }
+                return;
+            }
+
+            // New state has a hint -> show immediately, but only once per state per fight
+            if (string.IsNullOrEmpty(newStateName) || shownHintStates.Contains(newStateName)) return;
+            // Clear any existing bubble instantly to make room for new hint
+            HideHintBubble();
             ShowHintBubble(id);
             shownHintStates.Add(newStateName);
         }
 
-        private string ResolveDialogueIdByStateName(string stateName)
+        private void OnSkillInterruptedEvent(BossEventData data)
         {
-            return stateName switch
+            // Casting finished -> defer hide bubble until typewriter completes
+            var dm = DialogueManager.Instance;
+            if (dm != null)
             {
-                nameof(LureState) => lureHintDialogueId,
-                nameof(MockState) => mockHintDialogueId,
-                nameof(DecoyState) => decoyHintDialogueId,
-                nameof(SoulState) => soulHintDialogueId,
-                nameof(FearZoneState) => fearZoneHintDialogueId,
-                nameof(ScreamState) => screamHintDialogueId,
-                _ => null
-            };
+                dm.HideBubbleTutorialDeferred();
+            }
+            else
+            {
+                HideHintBubble();
+            }
         }
 
-        private static void ShowHintBubble(string dialogueId)
+        private string ResolveDialogueIdByStateName(string stateName)
+        {
+            switch (stateName)
+            {
+                case nameof(DecoyState):
+                    return decoyHintDialogueId;
+                case nameof(SoulState):
+                    return soulHintDialogueId;
+                case nameof(FearZoneState):
+                    return fearZoneHintDialogueId;
+                case nameof(ScreamState):
+                    return screamHintDialogueId;
+                default:
+                    return null;
+            }
+        }
+
+        private void ShowHintBubble(string dialogueId)
         {
             if (string.IsNullOrEmpty(dialogueId)) return;
             var dm = DialogueManager.Instance;
@@ -281,7 +306,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             dm.ShowBubbleTutorial(dialogueId);
         }
 
-        private static void HideHintBubble()
+        private void HideHintBubble()
         {
             var dm = DialogueManager.Instance;
             if (dm == null) return;
@@ -418,6 +443,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             BossEventSystem.Unsubscribe(BossEventType.RequestRadarSkill, OnRequestRadarSkill);
             BossEventSystem.Unsubscribe(BossEventType.RequestOtherSkill, OnRequestOtherSkill);
             BossEventSystem.Unsubscribe(BossEventType.StateChanged, OnStateChangedEvent);
+            BossEventSystem.Unsubscribe(BossEventType.SkillInterrupted, OnSkillInterruptedEvent);
         }
     }
 }
