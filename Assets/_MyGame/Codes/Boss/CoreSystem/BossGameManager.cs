@@ -1,8 +1,13 @@
+using System.Collections.Generic;
 using _MyGame.Codes.Boss.UI;
 using Code.Boss;
 using Tu_Develop.Import.Scripts;
 using UnityEngine;
-using _MyGame.Codes.GameEventSystem; // for EventBus and BaseEventData
+using _MyGame.Codes.GameEventSystem;
+using _MyGame.Codes.Dialogue; 
+using _MyGame.Codes.Boss.States.Phase2; 
+using _MyGame.Codes.Boss.States.Shared; 
+using Code.Boss.States.Phase1; 
 
 namespace _MyGame.Codes.Boss.CoreSystem
 {
@@ -24,6 +29,16 @@ namespace _MyGame.Codes.Boss.CoreSystem
         [SerializeField] private BossHealthBar bossHealthBar;
         [SerializeField] private BossSkillCastBar bossSkillCastBar;
         
+        [Header("Dialogue Hints (Addressable IDs)")]
+        [Tooltip("Addressable ID for Decoy hint bubble")]
+        [SerializeField] private string decoyHintDialogueId;
+        [Tooltip("Addressable ID for Soul hint bubble")]
+        [SerializeField] private string soulHintDialogueId;
+        [Tooltip("Addressable ID for Fear Zone hint bubble")]
+        [SerializeField] private string fearZoneHintDialogueId;
+        [Tooltip("Addressable ID for Scream hint bubble")]
+        [SerializeField] private string screamHintDialogueId;
+        
         public static BossGameManager Instance { get; private set; }
         
         private bool isGameOver = false;
@@ -31,11 +46,13 @@ namespace _MyGame.Codes.Boss.CoreSystem
         // Events for external systems
         public System.Action<int> OnBossPhaseChanged;
         public System.Action OnBossDefeated;
-        public System.Action<int> OnPlayerHealthChanged; // Giờ sẽ pass currentHealth thay vì damage
+        public System.Action<int> OnPlayerHealthChanged;
         public System.Action OnBossFightStarted;
 
-        // Thêm field để track current health
+        // Track current player health
         private int currentPlayerHealth = 3; 
+        // Track states that already showed a hint (show once per state)
+        private readonly HashSet<string> shownHintStates = new HashSet<string>();
 
         private void Awake()
         {
@@ -86,6 +103,10 @@ namespace _MyGame.Codes.Boss.CoreSystem
             BossEventSystem.Subscribe(BossEventType.BossSpawned, OnBossSpawned);
             BossEventSystem.Subscribe(BossEventType.RequestRadarSkill, OnRequestRadarSkill);
             BossEventSystem.Subscribe(BossEventType.RequestOtherSkill, OnRequestOtherSkill);
+            // Dialogue hints driven by StateChanged for auto-hide and per-state show-once
+            BossEventSystem.Subscribe(BossEventType.StateChanged, OnStateChangedEvent);
+            // Auto-hide hint when cast finishes
+            BossEventSystem.Subscribe(BossEventType.SkillInterrupted, OnSkillInterruptedEvent);
         }
 
         private void HideAllUI()
@@ -126,6 +147,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
             
             OnBossFightStarted?.Invoke();
             Debug.Log("[BossGameManager] Boss fight started - UI activated!");
+            
+            // Reset one-time hint tracking on new fight
+            shownHintStates.Clear();
         }
 
         private void OnPhaseChangedEvent(BossEventData data)
@@ -137,6 +161,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
 
         private void OnBossDefeatedEvent(BossEventData data)
         {
+            // Hide any hint bubble when fight ends
+            HideHintBubble();
+            
             OnBossDefeated?.Invoke();
             Debug.Log("[BossGameManager] Boss has been defeated!");
             
@@ -188,6 +215,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
             isGameOver = true;
             Debug.Log("[BossGameManager] Player defeated - Game Over");
             
+            // Hide any hint bubble on game over
+            HideHintBubble();
+            
             // Show Game Over UI
             if (gameOverUI != null)
             {
@@ -198,9 +228,89 @@ namespace _MyGame.Codes.Boss.CoreSystem
             Time.timeScale = 0f;
         }
 
-        private void OnBossSpawned(BossEventData data)
+        private static void OnBossSpawned(BossEventData data)
         {
             Debug.Log("[BossGameManager] Boss has spawned and is ready for battle!");
+        }
+        #endregion
+
+        #region Dialogue Hint Handlers
+        private void OnStateChangedEvent(BossEventData data)
+        {
+            var newStateName = data?.stringValue;
+            var id = ResolveDialogueIdByStateName(newStateName);
+            var dm = DialogueManager.Instance;
+
+            // If new state is not a hint state -> defer hide to let current typing finish (avoid cutting off)
+            if (string.IsNullOrEmpty(id))
+            {
+                if (dm != null)
+                {
+                    dm.HideBubbleTutorialDeferred();
+                }
+                else
+                {
+                    HideHintBubble();
+                }
+                return;
+            }
+
+            // New state has a hint -> show immediately, but only once per state per fight
+            if (string.IsNullOrEmpty(newStateName) || shownHintStates.Contains(newStateName)) return;
+            // Clear any existing bubble instantly to make room for new hint
+            HideHintBubble();
+            ShowHintBubble(id);
+            shownHintStates.Add(newStateName);
+        }
+
+        private void OnSkillInterruptedEvent(BossEventData data)
+        {
+            // Casting finished -> defer hide bubble until typewriter completes
+            var dm = DialogueManager.Instance;
+            if (dm != null)
+            {
+                dm.HideBubbleTutorialDeferred();
+            }
+            else
+            {
+                HideHintBubble();
+            }
+        }
+
+        private string ResolveDialogueIdByStateName(string stateName)
+        {
+            switch (stateName)
+            {
+                case nameof(DecoyState):
+                    return decoyHintDialogueId;
+                case nameof(SoulState):
+                    return soulHintDialogueId;
+                case nameof(FearZoneState):
+                    return fearZoneHintDialogueId;
+                case nameof(ScreamState):
+                    return screamHintDialogueId;
+                default:
+                    return null;
+            }
+        }
+
+        private void ShowHintBubble(string dialogueId)
+        {
+            if (string.IsNullOrEmpty(dialogueId)) return;
+            var dm = DialogueManager.Instance;
+            if (dm == null)
+            {
+                Debug.LogWarning("[BossGameManager] DialogueManager not found, cannot show hint bubble.");
+                return;
+            }
+            dm.ShowBubbleTutorial(dialogueId);
+        }
+
+        private void HideHintBubble()
+        {
+            var dm = DialogueManager.Instance;
+            if (dm == null) return;
+            dm.HideBubbleTutorial();
         }
         #endregion
 
@@ -262,6 +372,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
             // Hide all UI
             HideAllUI();
             
+            // Hide any active dialogue hint
+            HideHintBubble();
+            
             // Reset boss system first (destroy current boss)
             ResetBossSystem();
             
@@ -270,6 +383,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
             
             // Reset Player Health
             ResetPlayerHealth();
+            
+            // Reset one-time hint tracking on restart
+            shownHintStates.Clear();
         }
         
         private void ResetBossSystem()
@@ -326,6 +442,8 @@ namespace _MyGame.Codes.Boss.CoreSystem
             BossEventSystem.Unsubscribe(BossEventType.BossSpawned, OnBossSpawned);
             BossEventSystem.Unsubscribe(BossEventType.RequestRadarSkill, OnRequestRadarSkill);
             BossEventSystem.Unsubscribe(BossEventType.RequestOtherSkill, OnRequestOtherSkill);
+            BossEventSystem.Unsubscribe(BossEventType.StateChanged, OnStateChangedEvent);
+            BossEventSystem.Unsubscribe(BossEventType.SkillInterrupted, OnSkillInterruptedEvent);
         }
     }
 }

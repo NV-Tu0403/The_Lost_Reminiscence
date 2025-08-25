@@ -1,7 +1,6 @@
 using System;
 using _MyGame.Codes.GameEventSystem;
 using _MyGame.Codes.Timeline;
-using Code.Dialogue;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -20,6 +19,9 @@ namespace _MyGame.Codes.Dialogue
         private GameObject lockedPlayer;
         private PlayerLocker.Snapshot playerSnapshot;
         private bool isPlayerLocked;
+
+        // Track deferred hide subscription to avoid duplicates
+        private bool waitingHideBubble;
         
         /// <summary>
         /// Quản lý hiển thị hội thoại:
@@ -179,9 +181,50 @@ namespace _MyGame.Codes.Dialogue
         public void HideBubbleTutorial()
         {
             if (bubbleDialoguePanel == null) return;
+            // If waiting for deferred hide, unsubscribe first
+            if (waitingHideBubble)
+            {
+                TryUnsubscribeBubbleTyping();
+                waitingHideBubble = false;
+            }
             bubbleDialoguePanel.HideManually();
         }
-        
+
+        // New: hide bubble after typewriter finishes; if not typing, hide immediately
+        public void HideBubbleTutorialDeferred()
+        {
+            if (bubbleDialoguePanel == null) return;
+            if (!bubbleDialoguePanel.gameObject.activeInHierarchy)
+            {
+                return; // nothing to hide
+            }
+            if (bubbleDialoguePanel.IsTyping)
+            {
+                if (waitingHideBubble) return; // already waiting
+                bubbleDialoguePanel.TypingCompleted += OnBubbleTypingCompleted;
+                waitingHideBubble = true;
+            }
+            else
+            {
+                HideBubbleTutorial();
+            }
+        }
+
+        private void OnBubbleTypingCompleted()
+        {
+            TryUnsubscribeBubbleTyping();
+            waitingHideBubble = false;
+            HideBubbleTutorial();
+        }
+
+        private void TryUnsubscribeBubbleTyping()
+        {
+            if (bubbleDialoguePanel != null)
+            {
+                bubbleDialoguePanel.TypingCompleted -= OnBubbleTypingCompleted;
+            }
+        }
+
         private void LockPlayer()
         {
             if (!lockPlayerOnFullDialogue || isPlayerLocked) return;
