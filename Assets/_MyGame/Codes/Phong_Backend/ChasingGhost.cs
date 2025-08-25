@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
-// Xóa RequireComponent NavMeshAgent vì không dùng nữa
-[RequireComponent(typeof(Collider))] 
+[RequireComponent(typeof(Collider))]
+[RequireComponent(typeof(Rigidbody))]
 public class ChasingGhost : MonoBehaviour
 {
     [Tooltip("Tốc độ bay của con ma")]
@@ -21,11 +21,13 @@ public class ChasingGhost : MonoBehaviour
 
     private Transform playerTarget;
     private float lastDamageTime = -99f;
-
+    private Rigidbody rb;
 
     void Start()
     {
-        // Tìm đối tượng Player bằng Tag
+        rb = GetComponent<Rigidbody>();
+        rb.useGravity = false;
+
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
         {
@@ -34,36 +36,34 @@ public class ChasingGhost : MonoBehaviour
         else
         {
             Debug.LogError("Không tìm thấy đối tượng Player! Hãy chắc chắn nhân vật của bạn có tag 'Player'.");
-            Destroy(gameObject); // Tự hủy nếu không tìm thấy người chơi
+            Destroy(gameObject);
             return;
         }
 
-        // Tự động hủy con ma sau một khoảng thời gian
         Destroy(gameObject, lifeTime);
     }
-
+    
     void Update()
     {
         if (playerTarget != null)
         {
-            // --- LOGIC DI CHUYỂN MỚI ---
-            // 1. Xác định vị trí đích: là vị trí của người chơi nhưng ở độ cao lơ lửng
+            // --- LOGIC DI CHUYỂN ---
             Vector3 targetPosition = playerTarget.position + Vector3.up * hoverHeight;
-
-            // 2. Di chuyển mượt mà về phía đích
             transform.position = Vector3.Lerp(transform.position, targetPosition, moveSpeed * Time.deltaTime);
 
-            // 3. Xoay mượt mà để nhìn về phía người chơi
-            Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
-            if (directionToPlayer != Vector3.zero)
+            // --- LOGIC XOAY ĐÚNG ---
+            Vector3 directionToPlayer = playerTarget.position - transform.position;
+            directionToPlayer.y = 0; // Chỉ xoay ngang
+
+            if (directionToPlayer.sqrMagnitude > 0.01f)
             {
+                // Xoay trục Z+ (phía trước) về hướng người chơi
                 Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
         }
     }
 
-    // Hàm OnTriggerEnter vẫn giữ nguyên
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player") && Time.time > lastDamageTime + damageCooldown)
