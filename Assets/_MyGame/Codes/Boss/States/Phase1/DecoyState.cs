@@ -1,9 +1,9 @@
 using _MyGame.Codes.Boss.Behaviors;
 using _MyGame.Codes.Boss.CoreSystem;
-using _MyGame.Codes.Boss.States.Phase1;
+using Code.Boss;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase1
+namespace _MyGame.Codes.Boss.States.Phase1
 {
     /// <summary>
     /// Phase 1 - Decoy State: Spawn 2 bóng ảo (1 thật 1 giả) truy đuổi người chơi
@@ -32,7 +32,7 @@ namespace Code.Boss.States.Phase1
             isCasting = true;
             skillActivated = false;
             BossEventSystem.Trigger(BossEventType.DecoyStarted);
-            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Decoy" });
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "TRIỆU HỒI BẢN NGÃ" });
             // Play decoy spawn sound (FMOD)
             BossController.PlayFMODOneShot(Config.fmodAudioConfig.decoySpawnEvent);
             // Đăng ký lắng nghe sự kiện GuideSignal

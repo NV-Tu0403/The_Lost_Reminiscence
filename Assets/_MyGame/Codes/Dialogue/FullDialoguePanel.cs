@@ -65,11 +65,11 @@ namespace _MyGame.Codes.Dialogue
             Core.Instance.IsDialoguePlaying = true;
             Core.Instance.ActiveMouseCursor(true);
 
-            // Lock player + camera để chuột không kéo camera
+            // Chỉ lock camera để chuột không kéo camera; giữ nguyên input của player
             player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
-                lockSnapshot = PlayerLocker.Lock(player, includeCamera: true);
+                lockSnapshot = PlayerLocker.LockCameraOnly(player);
             }
             
             gameObject.SetActive(true);

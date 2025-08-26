@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using _MyGame.Codes.Boss.States.Phase1;
 using _MyGame.Codes.Boss.UI;
 using Code.Boss;
 using Tu_Develop.Import.Scripts;
@@ -6,8 +7,7 @@ using UnityEngine;
 using _MyGame.Codes.GameEventSystem;
 using _MyGame.Codes.Dialogue; 
 using _MyGame.Codes.Boss.States.Phase2; 
-using _MyGame.Codes.Boss.States.Shared; 
-using Code.Boss.States.Phase1; 
+using _MyGame.Codes.Boss.States.Shared;
 
 namespace _MyGame.Codes.Boss.CoreSystem
 {
@@ -28,6 +28,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
         [SerializeField] private PlayerHealthBar playerHealthBar;
         [SerializeField] private BossHealthBar bossHealthBar;
         [SerializeField] private BossSkillCastBar bossSkillCastBar;
+        [SerializeField] private BossPhasePanel bossPhasePanel; 
         
         [Header("Dialogue Hints (Addressable IDs)")]
         [Tooltip("Addressable ID for Decoy hint bubble")]
@@ -91,6 +92,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             if (playerHealthBar == null) playerHealthBar = FindFirstObjectByType<PlayerHealthBar>();
             if (bossHealthBar == null) bossHealthBar = FindFirstObjectByType<BossHealthBar>();
             if (bossSkillCastBar == null) bossSkillCastBar = FindFirstObjectByType<BossSkillCastBar>();
+            if (bossPhasePanel == null) bossPhasePanel = FindFirstObjectByType<BossPhasePanel>(); // find phase panel if not assigned
         }
 
         private void RegisterBossEvents()
@@ -114,6 +116,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             if (playerHealthBar != null) playerHealthBar.gameObject.SetActive(false);
             if (bossHealthBar != null) bossHealthBar.gameObject.SetActive(false);
             if (bossSkillCastBar != null) bossSkillCastBar.gameObject.SetActive(false);
+            if (bossPhasePanel != null) bossPhasePanel.gameObject.SetActive(false); // hide phase panel root object
             if (gameOverUI != null) gameOverUI.SetActive(false);
         }
 
@@ -122,6 +125,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             if (playerHealthBar != null) playerHealthBar.gameObject.SetActive(true);
             if (bossHealthBar != null) bossHealthBar.gameObject.SetActive(true);
             if (bossSkillCastBar != null) bossSkillCastBar.gameObject.SetActive(true);
+            if (bossPhasePanel != null) bossPhasePanel.gameObject.SetActive(true); // ensure phase panel enabled (it will self-hide panelRoot)
             
             // Initialize UI với boss controller mới spawn
             if (bossController == null) return;
@@ -131,6 +135,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config); 
             if (bossHealthBar != null) bossHealthBar.Initialize(bossController);
             if (bossSkillCastBar != null) bossSkillCastBar.Initialize(bossController);
+            if (bossPhasePanel != null) bossPhasePanel.Initialize(bossController);
         }
         
         #region Boss Events
@@ -144,6 +149,12 @@ namespace _MyGame.Codes.Boss.CoreSystem
             
             // Show boss UI
             ShowBossUI();
+            
+            // Show Phase immediately to avoid missing early PhaseChanged event
+            if (bossPhasePanel != null && bossController != null)
+            {
+                bossPhasePanel.ShowPhaseNow(bossController.CurrentPhase);
+            }
             
             OnBossFightStarted?.Invoke();
             Debug.Log("[BossGameManager] Boss fight started - UI activated!");
