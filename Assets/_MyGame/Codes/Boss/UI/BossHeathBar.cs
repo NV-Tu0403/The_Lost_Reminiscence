@@ -14,7 +14,6 @@ namespace _MyGame.Codes.Boss.UI
         [Header("UI Components")]
         [SerializeField] private Slider healthSlider;
         [SerializeField] private TextMeshProUGUI healthText;
-        [SerializeField] private TextMeshProUGUI phaseText;
         
         private BossController bossController;
         private UIConfig uiConfig;
@@ -48,7 +47,6 @@ namespace _MyGame.Codes.Boss.UI
         private void RegisterEvents()
         {
             BossEventSystem.Subscribe(BossEventType.HealthChanged, OnHealthChanged);
-            BossEventSystem.Subscribe(BossEventType.PhaseChanged, OnPhaseChanged);
             BossEventSystem.Subscribe(BossEventType.BossDefeated, OnBossDefeated);
             // Hide health bar when player is defeated (game over)
             BossEventSystem.Subscribe(BossEventType.PlayerDefeated, OnPlayerDefeated);
@@ -70,10 +68,10 @@ namespace _MyGame.Codes.Boss.UI
             {
                 StopCoroutine(healthAnimationCoroutine);
             }
-            healthAnimationCoroutine = StartCoroutine(AnimateHealthBarSmooth(currentHealth, maxHealth));
+            healthAnimationCoroutine = StartCoroutine(AnimateHealthBarSmooth(currentHealth));
         }
 
-        private IEnumerator AnimateHealthBarSmooth(int currentHealth, int maxHealth)
+        private IEnumerator AnimateHealthBarSmooth(int currentHealth)
         {
             if (healthSlider == null || uiConfig == null) yield break;
             
@@ -97,16 +95,6 @@ namespace _MyGame.Codes.Boss.UI
             healthSlider.value = targetValue;
         }
 
-        private void OnPhaseChanged(BossEventData data)
-        {
-            var newPhase = data.intValue;
-            
-            if (phaseText != null)
-            {
-                phaseText.text = $"Phase {newPhase}";
-            }
-        }
-
         private void OnBossDefeated(BossEventData data)
         {
             // Hide boss health bar and phase name UI
@@ -122,7 +110,6 @@ namespace _MyGame.Codes.Boss.UI
         private void OnDestroy()
         {
             BossEventSystem.Unsubscribe(BossEventType.HealthChanged, OnHealthChanged);
-            BossEventSystem.Unsubscribe(BossEventType.PhaseChanged, OnPhaseChanged);
             BossEventSystem.Unsubscribe(BossEventType.BossDefeated, OnBossDefeated);
             BossEventSystem.Unsubscribe(BossEventType.PlayerDefeated, OnPlayerDefeated);
         }

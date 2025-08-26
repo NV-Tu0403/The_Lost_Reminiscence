@@ -41,10 +41,25 @@ namespace _MyGame.Codes.Boss.CoreSystem
         /// </summary>
         public static void Trigger(BossEventType eventType, BossEventData data = null)
         {
-            if (eventListeners.TryGetValue(eventType, out var eventListener))
+            if (eventListeners.TryGetValue(eventType, out var listeners))
             {
-                foreach (var listener in eventListener)
+                // Iterate backwards so we can remove invalid listeners on the fly
+                for (int i = listeners.Count - 1; i >= 0; i--)
                 {
+                    var listener = listeners[i];
+                    if (listener == null)
+                    {
+                        listeners.RemoveAt(i);
+                        continue;
+                    }
+
+                    // If target is a UnityEngine.Object that has been destroyed, prune it
+                    if (listener.Target is UnityEngine.Object unityTarget && unityTarget == null)
+                    {
+                        listeners.RemoveAt(i);
+                        continue;
+                    }
+
                     try
                     {
                         listener?.Invoke(data);

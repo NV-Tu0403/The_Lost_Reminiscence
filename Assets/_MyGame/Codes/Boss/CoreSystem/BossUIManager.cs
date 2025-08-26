@@ -1,5 +1,4 @@
 using _MyGame.Codes.Boss.UI;
-using Code.Boss;
 using UnityEngine;
 
 namespace _MyGame.Codes.Boss.CoreSystem
@@ -64,6 +63,8 @@ namespace _MyGame.Codes.Boss.CoreSystem
             {
                 Debug.LogWarning("PlayerHealthBar not found in scene! Please add PlayerHealthBar component to a UI GameObject.");
             }
+
+            // Removed PhasePanel initialization from here; BossGameManager owns it
         }
     }
 }
