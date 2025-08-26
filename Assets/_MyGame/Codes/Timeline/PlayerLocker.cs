@@ -67,6 +67,28 @@ namespace _MyGame.Codes.Timeline
             return s;
         }
 
+        // New: Lock only camera controls, do NOT touch player inputs
+        public static Snapshot LockCameraOnly(GameObject player)
+        {
+            Snapshot s = new Snapshot();
+
+            var mainCam = Camera.main ? Camera.main.gameObject : FindByTag("MainCamera");
+            if (mainCam)
+            {
+                var camBehaviours = mainCam.GetComponents<MonoBehaviour>();
+                var disabledCam = new System.Collections.Generic.List<MonoBehaviour>();
+                foreach (var sc in camBehaviours)
+                {
+                    if (!sc.enabled) continue;
+                    sc.enabled = false; disabledCam.Add(sc);
+                }
+                s.HasCamera = true;
+                s.DisabledCameraInputs = disabledCam.ToArray();
+            }
+
+            return s;
+        }
+
         public static void Unlock(GameObject player, Snapshot s)
         {
             // Restore input

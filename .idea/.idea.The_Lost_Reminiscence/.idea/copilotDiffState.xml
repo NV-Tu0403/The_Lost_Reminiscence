@@ -186,6 +186,15 @@
             </PendingDiffInfo>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/Assets/_MyGame/Codes/Character/InputLockManager.cs">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/Assets/_MyGame/Codes/Character/InputLockManager.cs" />
+              <option name="originalContent" value="&#10;" />
+              <option name="updatedContent" value="using _MyGame.Codes.GameEventSystem;&#10;using UnityEngine;&#10;&#10;namespace Code.Character&#10;{&#10;    [DisallowMultipleComponent]&#10;    public class InputLockManager : MonoBehaviour&#10;    {&#10;        // Deprecated: Use PlayerLocker directly at call sites.&#10;        private PlayerController playerController;&#10;        private CharacterInput playerInput;&#10;&#10;        private void Awake()&#10;        {&#10;            if (playerController == null)&#10;                playerController = GetComponentInParent&lt;PlayerController&gt;();&#10;            if (playerInput == null)&#10;                playerInput = GetComponentInParent&lt;CharacterInput&gt;();&#10;            &#10;            // Deprecated — no event subscriptions. Intentionally left blank.&#10;        }&#10;&#10;        private void OnDestroy()&#10;        {&#10;            // Deprecated — no event unsubscriptions. Intentionally left blank.&#10;        }&#10;&#10;        // No-op: kept only for backward compatibility if invoked directly elsewhere&#10;        private void OnLockInput(object data)&#10;        {&#10;            // Intentionally do nothing. PlayerLocker should be used instead.&#10;        }&#10;&#10;        // No-op: kept only for backward compatibility if invoked directly elsewhere&#10;        private void OnUnlockInput(object data)&#10;        {&#10;            // Intentionally do nothing. PlayerLocker should be used instead.&#10;        }&#10;    }&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/Assets/_MyGame/Codes/Guidance/HOW_TO_USE_GUIDANCE.md">
           <value>
             <PendingDiffInfo>

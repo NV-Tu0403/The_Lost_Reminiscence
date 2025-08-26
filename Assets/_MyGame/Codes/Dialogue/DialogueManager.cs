@@ -14,7 +14,7 @@ namespace _MyGame.Codes.Dialogue
         [SerializeField] private StoryDialoguePanel storyDialoguePanel; 
         
         [Header("Player Lock")]
-        [SerializeField] private bool lockPlayerOnFullDialogue = true;
+        [SerializeField] private bool lockPlayerOnFullDialogue; 
         [SerializeField] private string playerTag = "Player";
         private GameObject lockedPlayer;
         private PlayerLocker.Snapshot playerSnapshot;
@@ -79,8 +79,8 @@ namespace _MyGame.Codes.Dialogue
             switch (dialogue.displayMode)
             {
                 case DialogueDisplayMode.FullPanel:
-                    LockPlayer();
-                    fullDialoguePanel.ShowDialogue(dialogue, WrapEndWithUnlock(onDialogueEnd));
+                    // Do not lock player here; FullDialoguePanel handles camera-only lock internally
+                    fullDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
                     break;
                 case DialogueDisplayMode.BubblePanel:
                     bubbleDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
@@ -92,18 +92,6 @@ namespace _MyGame.Codes.Dialogue
                 default:
                     Debug.LogWarning($"DialogueNodeSO {dialogueId} không có displayMode hợp lệ!");
                     break;
-            }
-
-            return;
-
-            // Helper to wrap end callback with unlock when needed
-            Action WrapEndWithUnlock(Action endCb)
-            {
-                return () =>
-                {
-                    UnlockPlayer();
-                    endCb?.Invoke();
-                };
             }
         }
 
