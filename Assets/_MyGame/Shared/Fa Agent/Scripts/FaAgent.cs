@@ -26,7 +26,6 @@ namespace Tu_Develop.Import.Scripts
 
         [Header("UI Settings")]
         [SerializeField] private UIFaSkill? uiFaSkill;
-        
 
         private readonly Dictionary<string, float> _cooldownTimers = new Dictionary<string, float>();
 
@@ -72,6 +71,7 @@ namespace Tu_Develop.Import.Scripts
             // Trả về thời gian cooldown còn lại của skill, nếu không có thì trả về 0
             return _cooldownTimers.GetValueOrDefault(skillName, 0f);
         }
+
         // Hàm này sẽ được gọi từ Behavior Graph để bắt đầu đếm ngược
         private void StartSkillCooldown(string skillName, float duration)
         {
@@ -211,6 +211,15 @@ namespace Tu_Develop.Import.Scripts
 
         void Update()
         {
+            if (faBha && faBha.BlackboardReference != null)
+            {
+                var player = GameObject.FindGameObjectWithTag("Player");
+                if (player != null)
+                {
+                    faBha.BlackboardReference.SetVariableValue("Player", player);
+                }
+            }
+
             // Giảm cooldown mỗi frame
             var keys = new List<string>(_cooldownTimers.Keys);
             foreach (string key in keys)
