@@ -2,29 +2,33 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace Code.Puzzle.OpenGate
+namespace _MyGame.Codes.Puzzle.OpenGate
 {
     public class NoteGlowController : MonoBehaviour
     {
+        private static readonly int emissionColor = Shader.PropertyToID("_EmissionColor");
+        
         [SerializeField] public Renderer[] noteRenderers;
         [SerializeField] private Color glowColor = new Color(6f, 3f, 0f);
         [SerializeField] private float glowIntensity = 1f;
         [SerializeField] public float delayBetweenNotes = 0.2f;
 
         public Action OnGlowComplete;
+        // Invoked each time a note starts glowing (passes the note index)
+        public Action<int> OnNoteGlow;
 
-        private Material[] _noteMats;
+        private Material[] noteMats;
 
         private void Awake()
         {
-            _noteMats = new Material[noteRenderers.Length];
-            for (int i = 0; i < noteRenderers.Length; i++)
+            noteMats = new Material[noteRenderers.Length];
+            for (var i = 0; i < noteRenderers.Length; i++)
             {
-                _noteMats[i] = noteRenderers[i].material;
-                _noteMats[i].SetColor("_EmissionColor", Color.black);
-                _noteMats[i].DisableKeyword("_EMISSION");
+                noteMats[i] = noteRenderers[i].material;
+                noteMats[i].SetColor(emissionColor, Color.black);
+                noteMats[i].DisableKeyword("_EMISSION");
 
-                _noteMats[i].globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+                noteMats[i].globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
                 DynamicGI.SetEmissive(noteRenderers[i], Color.black);
             }
         }
@@ -36,10 +40,12 @@ namespace Code.Puzzle.OpenGate
 
         private IEnumerator GlowNotesSequentially()
         {
-            for (int i = 0; i < _noteMats.Length; i++)
+            for (var i = 0; i < noteMats.Length; i++)
             {
-                _noteMats[i].EnableKeyword("_EMISSION");
-                _noteMats[i].SetColor("_EmissionColor", glowColor * glowIntensity);
+                noteMats[i].EnableKeyword("_EMISSION");
+                noteMats[i].SetColor(emissionColor, glowColor * glowIntensity);
+                // Notify per-note glow
+                OnNoteGlow?.Invoke(i);
                 yield return new WaitForSeconds(delayBetweenNotes);
             }
 
@@ -49,10 +55,12 @@ namespace Code.Puzzle.OpenGate
         public void ForceGlowAll()
         {
             StopAllCoroutines();
-            for (int i = 0; i < _noteMats.Length; i++)
+            for (var i = 0; i < noteMats.Length; i++)
             {
-                _noteMats[i].EnableKeyword("_EMISSION");
-                _noteMats[i].SetColor("_EmissionColor", glowColor * glowIntensity);
+                noteMats[i].EnableKeyword("_EMISSION");
+                noteMats[i].SetColor(emissionColor, glowColor * glowIntensity);
+                // Notify per-note glow in forced mode as well
+                OnNoteGlow?.Invoke(i);
             }
             OnGlowComplete?.Invoke();
         }

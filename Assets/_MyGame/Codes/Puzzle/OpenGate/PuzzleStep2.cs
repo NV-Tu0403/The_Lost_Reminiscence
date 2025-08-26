@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Code.Puzzle;
 using DG.Tweening;
+using FMODUnity;
 using UnityEngine;
 
-namespace Code.Puzzle.OpenGate
+namespace _MyGame.Codes.Puzzle.OpenGate
 {
     public class PuzzleStep2 : PuzzleStepCameraBase, IPuzzleStep
     {
@@ -37,14 +40,16 @@ namespace Code.Puzzle.OpenGate
         [SerializeField] private List<ParticleSystem> gateParticles;
         
         [Header("Audio")]
-        [Tooltip("Âm thanh")]
+        [Tooltip("Âm thanh mở cổng (Unity AudioSource)")]
         [SerializeField] private AudioSource gateAudio;
-        [SerializeField] private AudioSource noteAudio;
+
+        [Header("FMOD")]
+        [Tooltip("FMOD events cho từng nốt (thứ tự phải khớp với mảng noteRenderers)")]
+        [SerializeField] private EventReference[] noteEvents;
 
         public void StartStep(Action onComplete)
         {
             extraNote.SetActive(true);
-            
             if (!CheckCameraAvailable(onComplete)) return;
 
             var playerCam = GetPlayerCam(out var characterCamera);
@@ -54,11 +59,24 @@ namespace Code.Puzzle.OpenGate
             {
                 if (noteGlowController != null)
                 {
-                    noteGlowController.OnGlowComplete = () =>
+                    // Play FMOD event per note index as it glows
+                    noteGlowController.OnNoteGlow = idx =>
                     {
-                        noteAudio?.Play();
-                        OpenGate();
+                        if (noteGlowController.noteRenderers == null || idx < 0 || idx >= noteGlowController.noteRenderers.Length)
+                            return;
+                        if (noteEvents == null || idx >= noteEvents.Length)
+                            return;
+
+                        var evt = noteEvents[idx];
+                        if (evt.IsNull) return;
+                        var pos = noteGlowController.noteRenderers[idx] != null
+                            ? noteGlowController.noteRenderers[idx].transform.position
+                            : transform.position;
+                        RuntimeManager.PlayOneShot(evt, pos);
                     };
+
+                    // When all notes are done glowing, open the gate
+                    noteGlowController.OnGlowComplete = OpenGate;
                     noteGlowController.TriggerGlowSequence();
                 }
                 else
@@ -68,9 +86,9 @@ namespace Code.Puzzle.OpenGate
             });
 
             // Delay đúng thời gian glow + open + hold
-            float totalWait = gateTweenDuration + gateOpenDuration + 
-                              (noteGlowController != null ? 
-                                  noteGlowController.delayBetweenNotes * noteGlowController.noteRenderers.Length : 0);
+            var totalWait = gateTweenDuration + gateOpenDuration + 
+                            (noteGlowController != null ? 
+                                noteGlowController.delayBetweenNotes * noteGlowController.noteRenderers.Length : 0);
 
             seq.AppendInterval(totalWait);
             ReturnCameraToPlayer(seq, playerCam, cameraMoveDuration, onComplete, characterCamera);
@@ -88,12 +106,9 @@ namespace Code.Puzzle.OpenGate
             // Phát hiệu ứng VFX 
             if (gateParticles != null && gateParticles.Count > 0)
             {
-                foreach (var particle in gateParticles)
+                foreach (var particle in gateParticles.Where(particle => particle != null))
                 {
-                    if (particle != null)
-                    {
-                        particle.Play();
-                    }
+                    particle.Play();
                 }
             }
 
@@ -102,38 +117,36 @@ namespace Code.Puzzle.OpenGate
                 gateAudio.Play();
 
             // Tween cổng mở
-            Vector3 targetPos = gate.position + openOffset;
+            var targetPos = gate.position + openOffset;
             gate.DOMove(targetPos, gateTweenDuration)
                 .SetEase(Ease.OutQuad)
                 .OnComplete(() => Debug.Log("[PuzzleStep2] Cổng đã mở xong"));
         }
 
         // --- DEV MODE SUPPORT ---
-        public void ForceOpenGateAndGlow(bool instant = false)
+        private void ForceOpenGateAndGlow(bool instant = false)
         {
             // Bật note
             if (extraNote != null) extraNote.SetActive(true);
-            // Sáng tất cả đèn
+            // Sáng tất cả đèn (sẽ bắn OnNoteGlow từng nốt => phát FMOD)
             if (noteGlowController != null) noteGlowController.ForceGlowAll();
             // Mở cổng ngay lập tức
             if (gate != null)
             {
                 gate.position += openOffset;
             }
-            if (!instant)
+
+            if (instant) return;
+            // Phát hiệu ứng VFX
+            if (gateParticles != null)
             {
-                // Phát hiệu ứng VFX
-                if (gateParticles != null)
+                foreach (var particle in gateParticles.Where(particle => particle != null))
                 {
-                    foreach (var particle in gateParticles)
-                    {
-                        if (particle != null) particle.Play();
-                    }
+                    particle.Play();
                 }
-                // Phát âm thanh
-                if (gateAudio != null) gateAudio.Play();
-                if (noteAudio != null) noteAudio.Play();
             }
+            // Phát âm thanh mở cổng (Unity AudioSource)
+            if (gateAudio != null) gateAudio.Play();
         }
 
         public void ForceComplete(bool instant = true)
