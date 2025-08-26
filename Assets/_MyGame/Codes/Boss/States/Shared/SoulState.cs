@@ -29,7 +29,7 @@ namespace _MyGame.Codes.Boss.States.Shared
             skillTimer = 0f;
             isCasting = true;
             BossEventSystem.Trigger(BossEventType.SoulStateStarted);
-            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Soul" });
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "TRIỆU HỒI DỤC HỒN" });
 
             // Lấy vị trí spawn từ GameObject trong scene
             var spawnPoint = GameObject.Find("SoulSpawnPoint");

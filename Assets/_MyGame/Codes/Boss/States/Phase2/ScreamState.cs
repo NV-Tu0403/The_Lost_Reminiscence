@@ -30,7 +30,7 @@ namespace _MyGame.Codes.Boss.States.Phase2
             
             
             BossEventSystem.Trigger(BossEventType.ScreamStarted);
-            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Scream" });
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "ĐỊNH HÌNH NỖI SỢ" });
         }
 
         public override void Update()

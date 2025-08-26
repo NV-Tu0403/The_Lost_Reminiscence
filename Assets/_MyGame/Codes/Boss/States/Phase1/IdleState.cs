@@ -1,5 +1,4 @@
 using Code.Boss;
-using Code.Boss.States.Phase1;
 using UnityEngine;
 
 namespace _MyGame.Codes.Boss.States.Phase1

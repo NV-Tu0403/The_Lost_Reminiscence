@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using _MyGame.Codes.Boss.States.Phase1;
 using _MyGame.Codes.Boss.UI;
 using Code.Boss;
 using Tu_Develop.Import.Scripts;
@@ -6,8 +7,7 @@ using UnityEngine;
 using _MyGame.Codes.GameEventSystem;
 using _MyGame.Codes.Dialogue; 
 using _MyGame.Codes.Boss.States.Phase2; 
-using _MyGame.Codes.Boss.States.Shared; 
-using Code.Boss.States.Phase1; 
+using _MyGame.Codes.Boss.States.Shared;
 
 namespace _MyGame.Codes.Boss.CoreSystem
 {

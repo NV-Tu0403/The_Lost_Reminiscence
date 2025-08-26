@@ -32,7 +32,7 @@ namespace _MyGame.Codes.Boss.States.Phase2
             skillTimer = 0f;
             isCasting = true;
             BossEventSystem.Trigger(BossEventType.FearZoneCreated);
-            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Fear Zone" });
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "VÙNG KHIẾP SỢ" });
             fearZonePosition = BossController.Player.position;
             
             if (Config.phase2.fearZoneCastEffectPrefab != null)
