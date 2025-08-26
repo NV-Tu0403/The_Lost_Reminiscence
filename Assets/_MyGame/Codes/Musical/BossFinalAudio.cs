@@ -17,15 +17,7 @@ namespace _MyGame.Codes.Musical
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.H))
-            {
-                _bgmInstance.setParameterByName("FieldOfAge", 0f);
-            }
-
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                _bgmInstance.setParameterByName("FieldOfAge", 1f);
-            }
+            
         }
 
         private void OnDestroy()
