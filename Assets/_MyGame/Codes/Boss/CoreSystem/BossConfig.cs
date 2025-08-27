@@ -43,13 +43,13 @@ namespace _MyGame.Codes.Boss.CoreSystem
         [Space]
         public UIConfig uiConfig;
         
-        // [Header("Audio Settings")]
-        // [Space]
-        // public AudioConfig audioConfig;
-        
         [Header("FMOD Studio Settings")]
         [Space]
         public FMODAudioConfig fmodAudioConfig;
+
+        [Header("Visual Effects")]
+        [Tooltip("Prefab effect sẽ spawn khi chuyển Phase 1 -> 2 và đi theo boss tới khi boss chết")]
+        public GameObject phaseChangeFollowEffectPrefab;
 
         [Header("Cinematics & Credits")]
         [Tooltip("Timeline ID (Resources/Timelines/<ID>) to play when boss is defeated")] 
@@ -131,30 +131,6 @@ namespace _MyGame.Codes.Boss.CoreSystem
         public float uiAnimationSpeed = 1f;                                                                     // Tốc độ animation chung cho UI
         public AnimationCurve uiAnimationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);          // Curve cho smooth animation
     }
-
-    // [Serializable]
-    // public class AudioConfig
-    // {
-    //     [Header("Phase 1 Audio")]
-    //     public AudioClip mockLaughSound;
-    //     public AudioClip decoySpawnSound;
-    //     public AudioClip soulSpawnSound;
-    //     
-    //     [Header("Phase 2 Audio")]
-    //     public AudioClip screamSound;
-    //     public AudioClip fearZoneSound;
-    //     public AudioClip heartbeatSound;
-    //     
-    //     [Header("General Audio")]
-    //     public AudioClip phaseChangeSound;
-    //     public AudioClip damageSound;
-    //     public AudioClip defeatSound;
-    //     
-    //     [Header("Volume Settings")]
-    //     [Range(0f, 1f)] public float masterVolume = 1f;
-    //     [Range(0f, 1f)] public float sfxVolume = 0.8f;
-    //     [Range(0f, 1f)] public float ambientVolume = 0.6f;
-    // }
     
     [Serializable]
     public class FMODAudioConfig
@@ -168,9 +144,16 @@ namespace _MyGame.Codes.Boss.CoreSystem
         public EventReference fearZoneEvent;
         public EventReference heartbeatEvent;
         [Header("General Audio")]
-        public EventReference phaseChangeEvent;
         public EventReference damageEvent;
         public EventReference defeatEvent;
+        
+        [Header("Boss BGM")]
+        [Tooltip("BGM phát khi boss vừa spawn (zone được kích hoạt)")]
+        public EventReference bossSpawnBGMEvent;
+        [Tooltip("BGM cho Phase 1")]
+        public EventReference bossPhase1BGMEvent;
+        [Tooltip("BGM cho Phase 2")]
+        public EventReference bossPhase2BGMEvent;
     }
     
 

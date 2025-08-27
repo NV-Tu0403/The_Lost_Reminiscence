@@ -1,4 +1,4 @@
-using Code.Boss;
+using _MyGame.Codes.Boss.CoreSystem;
 using UnityEngine;
 
 namespace _MyGame.Codes.Boss.States.Shared
@@ -8,19 +8,18 @@ namespace _MyGame.Codes.Boss.States.Shared
     /// </summary>
     public class PhaseChangeState : BossState
     {
-        private float transitionTimer;
-        private bool transitionCompleted = false;
+        private float _transitionTimer;
+        private bool _transitionCompleted = false;
 
         public override void Enter()
         {
-            transitionTimer = 0f;
-            transitionCompleted = false;
+            _transitionTimer = 0f;
+            _transitionCompleted = false;
             
             Debug.Log("[Boss State] Entered PhaseChangeState - Chuyển đổi từ Phase 1 sang Phase 2");
-            //BossController.PlayAnimation("PhaseChange");
             
-            // Play phase change sound (FMOD)
-            BossController.PlayFMODOneShot(Config.fmodAudioConfig.phaseChangeEvent);
+            // Spawn follow effect that sticks to the boss until death
+            BossController.SpawnPhaseChangeFollowEffect();
             
             // Clear any remaining decoys and souls
             BossController.ClearDecoys();
@@ -29,27 +28,17 @@ namespace _MyGame.Codes.Boss.States.Shared
 
         public override void Update()
         {
-            transitionTimer += Time.deltaTime;
+            _transitionTimer += Time.deltaTime;
 
-            if (!(transitionTimer >= 2f) || transitionCompleted) return; // 2 second transition
-            transitionCompleted = true;
+            if (!(_transitionTimer >= 2f) || _transitionCompleted) return; // 2 second transition
+            _transitionCompleted = true;
             BossController.ChangeToPhase(2);
         }
 
-        public override void Exit()
-        {
-            // BossController.ResetMoveDirection();
-            // BossController.NavAgent.speed = Config.moveSpeed;
-        }
+        public override void Exit() { }
 
-        public override void OnTakeDamage()
-        {
-            // Cannot take damage during phase transition
-        }
+        public override void OnTakeDamage() { }
 
-        public override bool CanBeInterrupted()
-        {
-            return false;
-        }
+        public override bool CanBeInterrupted() => false;
     }
 }

@@ -42,7 +42,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
         
         public static BossGameManager Instance { get; private set; }
         
-        private bool isGameOver = false;
+        private bool _isGameOver = false;
         
         // Events for external systems
         public System.Action<int> OnBossPhaseChanged;
@@ -51,9 +51,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
         public System.Action OnBossFightStarted;
 
         // Track current player health
-        private int currentPlayerHealth = 3; 
+        private int _currentPlayerHealth = 3; 
         // Track states that already showed a hint (show once per state)
-        private readonly HashSet<string> shownHintStates = new HashSet<string>();
+        private readonly HashSet<string> _shownHintStates = new HashSet<string>();
 
         private void Awake()
         {
@@ -130,7 +130,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             // Initialize UI với boss controller mới spawn
             if (bossController == null) return;
             // Reset current health khi bắt đầu boss fight
-            currentPlayerHealth = 3;
+            _currentPlayerHealth = 3;
                 
             if (playerHealthBar != null) playerHealthBar.Initialize(3, bossController.Config); 
             if (bossHealthBar != null) bossHealthBar.Initialize(bossController);
@@ -160,7 +160,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             Debug.Log("[BossGameManager] Boss fight started - UI activated!");
             
             // Reset one-time hint tracking on new fight
-            shownHintStates.Clear();
+            _shownHintStates.Clear();
         }
 
         private void OnPhaseChangedEvent(BossEventData data)
@@ -202,18 +202,18 @@ namespace _MyGame.Codes.Boss.CoreSystem
 
         private void OnPlayerTakeDamageEvent(BossEventData data)
         {
-            if (isGameOver) return; // Ignore damage after game over
+            if (_isGameOver) return; // Ignore damage after game over
             var damage = data.intValue;
             
             // Store previous health, then subtract
-            var prevHealth = currentPlayerHealth;
-            currentPlayerHealth = Mathf.Max(0, currentPlayerHealth - damage);
+            var prevHealth = _currentPlayerHealth;
+            _currentPlayerHealth = Mathf.Max(0, _currentPlayerHealth - damage);
             
             // Pass current health (không phải damage) cho UI
-            OnPlayerHealthChanged?.Invoke(currentPlayerHealth);
+            OnPlayerHealthChanged?.Invoke(_currentPlayerHealth);
             
             // Trigger PlayerDefeated only on transition from >0 to 0
-            if (prevHealth > 0 && currentPlayerHealth == 0)
+            if (prevHealth > 0 && _currentPlayerHealth == 0)
             {
                 BossEventSystem.Trigger(BossEventType.PlayerDefeated);
             }
@@ -221,9 +221,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
 
         private void OnPlayerDefeatedEvent(BossEventData data)
         {
-            if (isGameOver) return;
+            if (_isGameOver) return;
             
-            isGameOver = true;
+            _isGameOver = true;
             Debug.Log("[BossGameManager] Player defeated - Game Over");
             
             // Hide any hint bubble on game over
@@ -267,11 +267,11 @@ namespace _MyGame.Codes.Boss.CoreSystem
             }
 
             // New state has a hint -> show immediately, but only once per state per fight
-            if (string.IsNullOrEmpty(newStateName) || shownHintStates.Contains(newStateName)) return;
+            if (string.IsNullOrEmpty(newStateName) || _shownHintStates.Contains(newStateName)) return;
             // Clear any existing bubble instantly to make room for new hint
             HideHintBubble();
             ShowHintBubble(id);
-            shownHintStates.Add(newStateName);
+            _shownHintStates.Add(newStateName);
         }
 
         private void OnSkillInterruptedEvent(BossEventData data)
@@ -378,7 +378,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             
             // Reset time scale
             Time.timeScale = 1f;
-            isGameOver = false;
+            _isGameOver = false;
             
             // Hide all UI
             HideAllUI();
@@ -396,7 +396,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             ResetPlayerHealth();
             
             // Reset one-time hint tracking on restart
-            shownHintStates.Clear();
+            _shownHintStates.Clear();
         }
         
         private void ResetBossSystem()
@@ -417,7 +417,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
         private void ResetPlayerHealth()
         {
             // Reset current health tracking
-            currentPlayerHealth = 3; 
+            _currentPlayerHealth = 3; 
             
             // Trigger event to reset player health UI
             BossEventSystem.Trigger(BossEventType.PlayerHealthReset, new BossEventData(3)); // Sửa từ 6 về 3
@@ -439,7 +439,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
         /// <summary>
         /// Kiểm tra game có đang ở trạng thái Game Over không
         /// </summary>
-        public bool IsGameOver() => isGameOver;
+        public bool IsGameOver() => _isGameOver;
         #endregion
 
         private void OnDestroy()

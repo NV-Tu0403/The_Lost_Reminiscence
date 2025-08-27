@@ -17,20 +17,20 @@ namespace _MyGame.Codes.Musical
         private EventInstance _bgmInstance;
         private EventInstance _bossStateInstance;
 
-        private void Start()
-        {
-            // Kiểm tra và khởi tạo bgmInstance
-            if (mapBGMEvent.IsNull)
-            {
-                Debug.LogWarning("mapBGMEvent chưa được gán trong Inspector!");
-                return;
-            }
-
-            _bgmInstance = RuntimeManager.CreateInstance(mapBGMEvent);
-            _bgmInstance.start();
-            _bgmInstance.setVolume(0f); // Bắt đầu với volume 0
-            StartCoroutine(FadeAudio(_bgmInstance, fadeInTime, 1.0f)); // Fade in bgm
-        }
+        // private void Start()
+        // {
+        //     // Kiểm tra và khởi tạo bgmInstance
+        //     if (mapBGMEvent.IsNull)
+        //     {
+        //         Debug.LogWarning("mapBGMEvent chưa được gán trong Inspector!");
+        //         return;
+        //     }
+        //
+        //     _bgmInstance = RuntimeManager.CreateInstance(mapBGMEvent);
+        //     _bgmInstance.start();
+        //     _bgmInstance.setVolume(0f); // Bắt đầu với volume 0
+        //     StartCoroutine(FadeAudio(_bgmInstance, fadeInTime, 1.0f)); // Fade in bgm
+        // }
 
         public void PlayState(int stateIndex)
         {

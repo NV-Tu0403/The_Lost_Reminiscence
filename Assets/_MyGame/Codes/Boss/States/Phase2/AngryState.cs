@@ -1,3 +1,5 @@
+using _MyGame.Codes.Boss.CoreSystem;
+using _MyGame.Codes.Musical;
 using Code.Boss;
 using UnityEngine;
 
@@ -8,21 +10,21 @@ namespace _MyGame.Codes.Boss.States.Phase2
     /// </summary>
     public class AngryState : BossState
     {
-        private float stateTimer;
-        private float currentAngle;
-        private Vector3 centerPosition;
+        private float _stateTimer;
+        private float _currentAngle;
+        private Vector3 _centerPosition;
         private const bool CanTransition = true;
 
         public override void Enter()
         {
-            stateTimer = 0f;
-            centerPosition = BossController.NavMeshCenter != null ? 
+            _stateTimer = 0f;
+            _centerPosition = BossController.NavMeshCenter != null ? 
                            BossController.NavMeshCenter.position : 
                            BossController.transform.position;
             
-            Debug.Log("[Boss State] Entered AngryState - Boss di chuyển xoay quanh trung tâm NavMesh");
+            // Debug.Log("[Boss State] Entered AngryState - Boss di chuyển xoay quanh trung tâm NavMesh");
             // Animation: set move direction 
-            var tangent = new Vector3(-Mathf.Sin(currentAngle), 0, Mathf.Cos(currentAngle));
+            var tangent = new Vector3(-Mathf.Sin(_currentAngle), 0, Mathf.Cos(_currentAngle));
             BossController.SetMoveDirection(tangent.x, tangent.z);
             // Set movement speed for angry state
             if (BossController.NavAgent != null)
@@ -33,12 +35,12 @@ namespace _MyGame.Codes.Boss.States.Phase2
 
         public override void Update()
         {
-            stateTimer += Time.deltaTime;
+            _stateTimer += Time.deltaTime;
             
             // Move in circle around center
             MoveInCircle();
             
-            if (stateTimer >= Config.phase2.angryMoveDuration && CanTransition)
+            if (_stateTimer >= Config.phase2.angryMoveDuration && CanTransition)
             {
                 BossController.ChangeState(new FearZoneState());
             }
@@ -48,15 +50,15 @@ namespace _MyGame.Codes.Boss.States.Phase2
         {
             // Guard against zero/near-zero radius
             var radius = Mathf.Max(0.1f, Config.phase2.circleRadius);
-            currentAngle += (Config.phase2.angryMoveSpeed / radius) * Time.deltaTime;
+            _currentAngle += (Config.phase2.angryMoveSpeed / radius) * Time.deltaTime;
             
-            var targetPosition = centerPosition + new Vector3(
-                Mathf.Cos(currentAngle) * radius,
+            var targetPosition = _centerPosition + new Vector3(
+                Mathf.Cos(_currentAngle) * radius,
                 0,
-                Mathf.Sin(currentAngle) * radius
+                Mathf.Sin(_currentAngle) * radius
             );
             // Cập nhật hướng di chuyển cho animation
-            var tangent = new Vector3(-Mathf.Sin(currentAngle), 0, Mathf.Cos(currentAngle));
+            var tangent = new Vector3(-Mathf.Sin(_currentAngle), 0, Mathf.Cos(_currentAngle));
             BossController.SetMoveDirection(tangent.x, tangent.z);
             if (BossController.NavAgent != null)
             {
