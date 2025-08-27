@@ -44,6 +44,13 @@ namespace _MyGame.Codes.Boss.CoreSystem
         // FMOD: cached looping instances
         private EventInstance heartbeatInstance;
         private bool heartbeatActive = false;
+        // New: Boss BGM instances
+        private EventInstance spawnBGMInstance;
+        private bool spawnBGMActive = false;
+        private EventInstance phase1BGMInstance;
+        private bool phase1BGMActive = false;
+        private EventInstance phase2BGMInstance;
+        private bool phase2BGMActive = false;
         
         // Animator parameter hashes
         private static readonly int MoveXHash = Animator.StringToHash("MoveX");
@@ -137,6 +144,8 @@ namespace _MyGame.Codes.Boss.CoreSystem
         private void StartBoss()
         {
             BossEventSystem.Trigger(BossEventType.BossSpawned);
+            // Start spawn BGM
+            StartSpawnBGM();
             // Debug: chọn phase khi test bằng enum
             switch (bossConfig.debugStartPhase)
             {
@@ -182,6 +191,19 @@ namespace _MyGame.Codes.Boss.CoreSystem
             // Trigger phase change event
             BossEventSystem.Trigger(BossEventType.PhaseChanged, new BossEventData(newPhase));
             OnPhaseChanged?.Invoke(newPhase);
+
+            // Handle BGMs per phase
+            if (newPhase == 1)
+            {
+                StopSpawnBGM();
+                StartPhase1BGM();
+            }
+            else if (newPhase == 2)
+            {
+                StopSpawnBGM();
+                StopPhase1BGM();
+                StartPhase2BGM();
+            }
 
             switch (newPhase)
             {
@@ -259,6 +281,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
             // FMOD: defeat SFX
             PlayFMODOneShot(bossConfig.fmodAudioConfig.defeatEvent);
             
+            // Stop all BGMs
+            StopAllBossBGMs();
+            
             // Optional callback for external systems
             OnBossDefeated?.Invoke();
         }
@@ -320,6 +345,71 @@ namespace _MyGame.Codes.Boss.CoreSystem
             heartbeatActive = false;
         }
 
+        // --- Boss BGM control ---
+        private void StartSpawnBGM()
+        {
+            if (spawnBGMActive) return;
+            var evt = bossConfig.fmodAudioConfig.bossSpawnBGMEvent;
+            if (evt.IsNull) return;
+            spawnBGMInstance = RuntimeManager.CreateInstance(evt);
+            RuntimeManager.AttachInstanceToGameObject(spawnBGMInstance, gameObject);
+            spawnBGMInstance.start();
+            spawnBGMActive = true;
+        }
+
+        private void StopSpawnBGM()
+        {
+            if (!spawnBGMActive) return;
+            spawnBGMInstance.stop(STOP_MODE.ALLOWFADEOUT);
+            spawnBGMInstance.release();
+            spawnBGMActive = false;
+        }
+
+        private void StartPhase1BGM()
+        {
+            if (phase1BGMActive) return;
+            var evt = bossConfig.fmodAudioConfig.bossPhase1BGMEvent;
+            if (evt.IsNull) return;
+            phase1BGMInstance = RuntimeManager.CreateInstance(evt);
+            RuntimeManager.AttachInstanceToGameObject(phase1BGMInstance, gameObject);
+            phase1BGMInstance.start();
+            phase1BGMActive = true;
+        }
+
+        private void StopPhase1BGM()
+        {
+            if (!phase1BGMActive) return;
+            phase1BGMInstance.stop(STOP_MODE.ALLOWFADEOUT);
+            phase1BGMInstance.release();
+            phase1BGMActive = false;
+        }
+
+        private void StartPhase2BGM()
+        {
+            if (phase2BGMActive) return;
+            var evt = bossConfig.fmodAudioConfig.bossPhase2BGMEvent;
+            if (evt.IsNull) return;
+            phase2BGMInstance = RuntimeManager.CreateInstance(evt);
+            RuntimeManager.AttachInstanceToGameObject(phase2BGMInstance, gameObject);
+            phase2BGMInstance.start();
+            phase2BGMActive = true;
+        }
+
+        private void StopPhase2BGM()
+        {
+            if (!phase2BGMActive) return;
+            phase2BGMInstance.stop(STOP_MODE.ALLOWFADEOUT);
+            phase2BGMInstance.release();
+            phase2BGMActive = false;
+        }
+
+        private void StopAllBossBGMs()
+        {
+            StopSpawnBGM();
+            StopPhase1BGM();
+            StopPhase2BGM();
+        }
+
         // --- Animation Parameters for Move States ---
         public void SetMoveDirection(float x, float y)
         {
@@ -358,6 +448,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             
             // Stop any looping FMOD instances
             StopHeartbeatLoop();
+            StopAllBossBGMs();
             
             ClearDecoys();
             // Removed ClearAllListeners to avoid wiping unrelated listeners globally
@@ -396,6 +487,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
             
             // Stop any looping FMOD instances
             StopHeartbeatLoop();
+            StopAllBossBGMs();
             
             // Clear soul manager
             if (soulManager != null)
@@ -410,6 +502,7 @@ namespace _MyGame.Codes.Boss.CoreSystem
         {
             // Stop looping audio and pause boss AI when player is defeated
             StopHeartbeatLoop();
+            StopAllBossBGMs();
             if (navMeshAgent != null)
             {
                 navMeshAgent.isStopped = true;

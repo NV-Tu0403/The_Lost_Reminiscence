@@ -1,4 +1,5 @@
 using _MyGame.Codes.Boss.CoreSystem;
+using _MyGame.Codes.Musical;
 using Code.Boss;
 using UnityEngine;
 
@@ -9,6 +10,9 @@ namespace _MyGame.Codes.Boss.States.Phase1
     /// </summary>
     public class LureState : BossState
     {
+        private BossFinalAudio _audio;
+
+        
         private enum LurePhase { Approaching, Retreating, Completed }
         private LurePhase currentPhase = LurePhase.Approaching;
         private Vector3 originalPosition;
