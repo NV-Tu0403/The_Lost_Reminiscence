@@ -128,7 +128,12 @@ namespace _MyGame.Codes.Boss.CoreSystem
 
         // Player events
         PlayerDefeated,
-        PlayerHealthReset
+        PlayerHealthReset,
+        
+        // Heart-rate UI integration
+        PlayerHealthChanged,
+        PlayerEnteredFearZone,
+        PlayerExitedFearZone
     }
 
     /// <summary>
