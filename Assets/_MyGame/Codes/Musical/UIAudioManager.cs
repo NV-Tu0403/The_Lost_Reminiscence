@@ -15,16 +15,29 @@ namespace _MyGame.Codes.Musical
         
         public AudioMixer audioMixer; // AudioMixer để điều chỉnh âm lượng
 
-        private void Start()
+        //private void Start()
+        //{
+        //    //// Khởi tạo giá trị slider từ PlayerPrefs, mặc định 0.8f nếu chưa có
+        //    //masterSlider.value = PlayerPrefs.GetFloat("MasterVol", 0.8f);
+
+        //    // Áp dụng giá trị ban đầu cho tất cả các bus
+        //    SetMasterVolume(masterSlider.value);
+
+        //    // Thêm listener để cập nhật khi slider thay đổi
+        //    masterSlider.onValueChanged.AddListener(SetMasterVolume);
+        //}
+
+        private void OnEnable()
         {
-            // Khởi tạo giá trị slider từ PlayerPrefs, mặc định 0.8f nếu chưa có
-            masterSlider.value = PlayerPrefs.GetFloat("MasterVol", 0.8f);
-
-            // Áp dụng giá trị ban đầu cho tất cả các bus
+            // Đảm bảo giá trị slider luôn đồng bộ với PlayerPrefs khi bật menu
+            //masterSlider.value = PlayerPrefs.GetFloat("MasterVol", 0.8f);
             SetMasterVolume(masterSlider.value);
-
-            // Thêm listener để cập nhật khi slider thay đổi
             masterSlider.onValueChanged.AddListener(SetMasterVolume);
+        }
+
+        private void OnDisable()
+        {
+            masterSlider.onValueChanged.RemoveListener(SetMasterVolume);
         }
 
         public void SetMasterVolume(Slider masterValue)

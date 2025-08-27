@@ -351,18 +351,21 @@
             switch (item.uIActionType)
             {
                 case UIActionType.Back:
-                    await TurnToPage(item.targetPage, true);
+                    if (Core.Instance.CurrentCoreState != CoreStateType.PauseSessionState.ToString())
+                    {
+                        await TurnToPage(item.targetPage, true);
+                    }
                     break;
                 case UIActionType.ContinueSession:
                     if (!string.IsNullOrWhiteSpace(ProfessionalSkilMenu.Instance.selectedSaveFolder))// Iem tà đạo (CHƯA CÓ TG FIX)
                     {
                         Core.Instance.ActiveMenu(true, false);
                         await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerContinueSession(), true);
-                        Core.Instance.ActiveMenu(false, false);
                         if (!cameraZoomController.ZoomState)
                         {
                             await TurnToPage(item.targetPage, false);
                         }
+                        Core.Instance.ActiveMenu(false, false);
                     }
                     break;
                 case UIActionType.RefreshSaveList:
@@ -480,17 +483,16 @@
         {
             switch (item.uIActionType)
             {
-                //case UIActionType.ResumeSession:
-                //    CoreEvent.Instance.triggerResumedSession();
-                //    break;
-                //case UIActionType.Setting:
-                //    await TurnToPage(item.targetPage, true);
-
-                //    break;
-
                 case UIActionType.Back:
-                    await TurnToPage(item.targetPage, true);
-                    //await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
+                    if (Core.Instance.CurrentCoreState == CoreStateType.PauseSessionState.ToString())
+                    {
+                        item.targetPage = 7;
+                        await TurnToPage(item.targetPage, true);
+                    }
+                    else
+                    {
+                        await TurnToPage(item.targetPage, true);
+                    }
                     break;
             }
         }
@@ -546,7 +548,6 @@
                 turnPageTcs = new TaskCompletionSource<bool>();
 
             var newLeftPageNumber = pageNumber % 2 == 0 ? pageNumber - 1 : pageNumber;
-
             if (Mathf.Abs(newLeftPageNumber - book.CurrentLeftPageNumber) > 2)
             {
                 flipping = true;
