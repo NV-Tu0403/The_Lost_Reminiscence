@@ -113,12 +113,14 @@ namespace _MyGame.Codes.Boss.States.Phase2
                     _playerInZoneTime = 0f;
                     ApplyFearEffects(true);
                     StartHeartbeatSound();
+                    BossEventSystem.Trigger(BossEventType.PlayerEnteredFearZone);
                     break;
                 case false when _playerInZone:
                     _playerInZone = false;
                     _playerInZoneTime = 0f;
                     ApplyFearEffects(false);
                     StopHeartbeatSound();
+                    BossEventSystem.Trigger(BossEventType.PlayerExitedFearZone);
                     break;
             }
             if (_playerInZone)
@@ -181,6 +183,10 @@ namespace _MyGame.Codes.Boss.States.Phase2
         public override void Exit()
         {
             StopHeartbeatSound();
+            if (_playerInZone)
+            {
+                BossEventSystem.Trigger(BossEventType.PlayerExitedFearZone);
+            }
             
             // Cleanup tốc độ player nếu vẫn đang bị giảm
             if (_playerInZone)

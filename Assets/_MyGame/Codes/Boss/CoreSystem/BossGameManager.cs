@@ -211,6 +211,8 @@ namespace _MyGame.Codes.Boss.CoreSystem
             
             // Pass current health (không phải damage) cho UI
             OnPlayerHealthChanged?.Invoke(_currentPlayerHealth);
+            // Broadcast for decoupled listeners (heart-rate UI)
+            BossEventSystem.Trigger(BossEventType.PlayerHealthChanged, new BossEventData(_currentPlayerHealth));
             
             // Trigger PlayerDefeated only on transition from >0 to 0
             if (prevHealth > 0 && _currentPlayerHealth == 0)
@@ -420,7 +422,9 @@ namespace _MyGame.Codes.Boss.CoreSystem
             _currentPlayerHealth = 3; 
             
             // Trigger event to reset player health UI
-            BossEventSystem.Trigger(BossEventType.PlayerHealthReset, new BossEventData(3)); // Sửa từ 6 về 3
+            BossEventSystem.Trigger(BossEventType.PlayerHealthReset, new BossEventData(3));
+            // Also broadcast PlayerHealthChanged for listeners like heart-rate UI
+            BossEventSystem.Trigger(BossEventType.PlayerHealthChanged, new BossEventData(3));
             Debug.Log("[BossGameManager] Player health reset");
         }
         #endregion
