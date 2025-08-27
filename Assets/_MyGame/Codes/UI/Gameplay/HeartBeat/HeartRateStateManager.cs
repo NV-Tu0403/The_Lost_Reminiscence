@@ -1,10 +1,11 @@
+using _ThirdParty.SWP_HeartRateMonitor.Scripts;
 using UnityEngine;
 
 namespace Code.UI.Gameplay.HeartBeat
 {
     public class HeartRateStateManager : MonoBehaviour
     {
-        [SerializeField] private SWP_HeartRateMonitor heartRateMonitor;
+        [SerializeField] private SwpHeartRateMonitor heartRateMonitor;
 
         public enum HeartState
         {
@@ -23,7 +24,7 @@ namespace Code.UI.Gameplay.HeartBeat
         {
             if (heartRateMonitor == null)
             {
-                heartRateMonitor = GetComponent<SWP_HeartRateMonitor>();
+                heartRateMonitor = GetComponent<SwpHeartRateMonitor>();
                 if (heartRateMonitor == null)
                 {
                     Debug.LogError("HeartRateMonitor component not found!");
@@ -53,33 +54,33 @@ namespace Code.UI.Gameplay.HeartBeat
             switch (state)
             {
                 case HeartState.Normal:
-                    heartRateMonitor.BeatsPerMinute = 90;
-                    heartRateMonitor.FlatLine = false;
-                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.NormalColour);
+                    heartRateMonitor.beatsPerMinute = 90;
+                    heartRateMonitor.flatLine = false;
+                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.normalColour);
                     break;
 
                 case HeartState.FastScared:
-                    heartRateMonitor.BeatsPerMinute = 140;
-                    heartRateMonitor.FlatLine = false;
-                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.MediumColour);
+                    heartRateMonitor.beatsPerMinute = 140;
+                    heartRateMonitor.flatLine = false;
+                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.mediumColour);
                     break;
 
                 case HeartState.SlowWeak:
-                    heartRateMonitor.BeatsPerMinute = 40;
-                    heartRateMonitor.FlatLine = false;
-                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.BadColour);
+                    heartRateMonitor.beatsPerMinute = 40;
+                    heartRateMonitor.flatLine = false;
+                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.badColour);
                     break;
 
                 case HeartState.Unconscious:
-                    heartRateMonitor.BeatsPerMinute = 0;
-                    heartRateMonitor.FlatLine = true;
-                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.FlatlineColour);
+                    heartRateMonitor.beatsPerMinute = 0;
+                    heartRateMonitor.flatLine = true;
+                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.flatlineColour);
                     break;
 
                 case HeartState.FastThenNormal:
-                    heartRateMonitor.BeatsPerMinute = 140;
-                    heartRateMonitor.FlatLine = false;
-                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.MediumColour);
+                    heartRateMonitor.beatsPerMinute = 140;
+                    heartRateMonitor.flatLine = false;
+                    heartRateMonitor.SetHeartRateColour(heartRateMonitor.mediumColour);
                     transitionTimer = 0f; // Bắt đầu đếm nhưng không tự động chuyển
                     break;
             }

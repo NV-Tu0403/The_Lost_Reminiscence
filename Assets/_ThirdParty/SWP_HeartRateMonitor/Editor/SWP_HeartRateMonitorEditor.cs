@@ -5,9 +5,10 @@
 
 using UnityEngine;
 using System.Collections;
+using _ThirdParty.SWP_HeartRateMonitor.Scripts;
 using UnityEditor;
 
-[CustomEditor(typeof(SWP_HeartRateMonitor))]
+[CustomEditor(typeof(SwpHeartRateMonitor))]
 public class SWP_HeartRateMonitorEditor : Editor
 {
 	static public bool ShowHeader = true;
@@ -16,7 +17,7 @@ public class SWP_HeartRateMonitorEditor : Editor
 
 	public override void OnInspectorGUI()
 	{
-		SWP_HeartRateMonitor _HeartRateMonitorScript = (SWP_HeartRateMonitor)target;  
+		SwpHeartRateMonitor _HeartRateMonitorScript = (SwpHeartRateMonitor)target;  
 		
 		#region GLOBAL STATIC CONTROLS
 		if (SWP_HeartRateMonitorEditor.ShowHeader)
@@ -48,21 +49,21 @@ public class SWP_HeartRateMonitorEditor : Editor
 		#if UNITY_4_3 || UNITY_4_5 || UNITY_4_6 || UNITY_5_0
 		_HeartRateMonitorScript.EnableSound = EditorGUILayout.ToggleLeft("Enable Sound", _HeartRateMonitorScript.EnableSound);
 		#else
-		_HeartRateMonitorScript.EnableSound = EditorGUILayout.Toggle("Enable Sound", _HeartRateMonitorScript.EnableSound);
+		_HeartRateMonitorScript.enableSound = EditorGUILayout.Toggle("Enable Sound", _HeartRateMonitorScript.enableSound);
 		#endif
 		EditorGUILayout.EndHorizontal();
 		
-		if (_HeartRateMonitorScript.EnableSound)
+		if (_HeartRateMonitorScript.enableSound)
 		{
 			#if UNITY_4_3 || UNITY_4_5 || UNITY_4_6 || UNITY_5_0
 			EditorGUILayout.BeginVertical(EditorStyles.miniButtonMid);
 			#else
 			EditorGUILayout.BeginVertical();
 			#endif
-			_HeartRateMonitorScript.SoundVolume = EditorGUILayout.Slider("Sound Volume", _HeartRateMonitorScript.SoundVolume, 0f, 1f);
-			_HeartRateMonitorScript.Heart1Sound = (AudioClip) EditorGUILayout.ObjectField("Heart 1 Sound", _HeartRateMonitorScript.Heart1Sound, typeof(AudioClip), false);
-			_HeartRateMonitorScript.Heart2Sound = (AudioClip) EditorGUILayout.ObjectField("Heart 2 Sound", _HeartRateMonitorScript.Heart2Sound, typeof(AudioClip), false);
-			_HeartRateMonitorScript.FlatlineSound = (AudioClip) EditorGUILayout.ObjectField("Flatline Sound", _HeartRateMonitorScript.FlatlineSound, typeof(AudioClip), false);
+			_HeartRateMonitorScript.soundVolume = EditorGUILayout.Slider("Sound Volume", _HeartRateMonitorScript.soundVolume, 0f, 1f);
+			_HeartRateMonitorScript.heart1Sound = (AudioClip) EditorGUILayout.ObjectField("Heart 1 Sound", _HeartRateMonitorScript.heart1Sound, typeof(AudioClip), false);
+			_HeartRateMonitorScript.heart2Sound = (AudioClip) EditorGUILayout.ObjectField("Heart 2 Sound", _HeartRateMonitorScript.heart2Sound, typeof(AudioClip), false);
+			_HeartRateMonitorScript.flatlineSound = (AudioClip) EditorGUILayout.ObjectField("Flatline Sound", _HeartRateMonitorScript.flatlineSound, typeof(AudioClip), false);
 			EditorGUILayout.EndVertical();
 		}
 		#endregion
@@ -81,27 +82,27 @@ public class SWP_HeartRateMonitorEditor : Editor
 		EditorGUILayout.BeginVertical();
 		#endif
 
-		_HeartRateMonitorScript.BeatsPerMinute = EditorGUILayout.IntSlider("Beats Per Minute", _HeartRateMonitorScript.BeatsPerMinute, 0, 240);		
+		_HeartRateMonitorScript.beatsPerMinute = EditorGUILayout.IntSlider("Beats Per Minute", _HeartRateMonitorScript.beatsPerMinute, 0, 240);		
 		
 		#if UNITY_4_3 || UNITY_4_5 || UNITY_4_6 || UNITY_5_0
 		_HeartRateMonitorScript.FlatLine = EditorGUILayout.ToggleLeft("Flatline", _HeartRateMonitorScript.FlatLine);
 		EditorGUILayout.Separator();
 		_HeartRateMonitorScript.ShowBlip = EditorGUILayout.ToggleLeft("Show Leading Blip", _HeartRateMonitorScript.ShowBlip);
 		#else
-		_HeartRateMonitorScript.FlatLine = EditorGUILayout.Toggle("Flatline", _HeartRateMonitorScript.FlatLine);
+		_HeartRateMonitorScript.flatLine = EditorGUILayout.Toggle("Flatline", _HeartRateMonitorScript.flatLine);
 		EditorGUILayout.Separator();
-		_HeartRateMonitorScript.ShowBlip = EditorGUILayout.Toggle("Show Leading Blip", _HeartRateMonitorScript.ShowBlip);
+		_HeartRateMonitorScript.showBlip = EditorGUILayout.Toggle("Show Leading Blip", _HeartRateMonitorScript.showBlip);
 		#endif
 
-		_HeartRateMonitorScript.Blip = (GameObject) EditorGUILayout.ObjectField("Blip Prefab", _HeartRateMonitorScript.Blip, typeof(GameObject), false);
-		_HeartRateMonitorScript.BlipSize = EditorGUILayout.Slider("Blip Size", _HeartRateMonitorScript.BlipSize, 0.1f, 10f);
-		_HeartRateMonitorScript.BlipTrailStartSize = EditorGUILayout.Slider("Blip Trail Start Size", _HeartRateMonitorScript.BlipTrailStartSize, 0.1f, 10f);
-		_HeartRateMonitorScript.BlipTrailEndSize = EditorGUILayout.Slider("Blip Trail End Size", _HeartRateMonitorScript.BlipTrailEndSize, 0f, 10f);
+		_HeartRateMonitorScript.blip = (GameObject) EditorGUILayout.ObjectField("Blip Prefab", _HeartRateMonitorScript.blip, typeof(GameObject), false);
+		_HeartRateMonitorScript.blipSize = EditorGUILayout.Slider("Blip Size", _HeartRateMonitorScript.blipSize, 0.1f, 10f);
+		_HeartRateMonitorScript.blipTrailStartSize = EditorGUILayout.Slider("Blip Trail Start Size", _HeartRateMonitorScript.blipTrailStartSize, 0.1f, 10f);
+		_HeartRateMonitorScript.blipTrailEndSize = EditorGUILayout.Slider("Blip Trail End Size", _HeartRateMonitorScript.blipTrailEndSize, 0f, 10f);
 		EditorGUILayout.Separator();
-		_HeartRateMonitorScript.BlipMonitorWidth = EditorGUILayout.FloatField("Blip Width", _HeartRateMonitorScript.BlipMonitorWidth);
-		_HeartRateMonitorScript.BlipMonitorHeightModifier = EditorGUILayout.FloatField("Blip Height Modifier", _HeartRateMonitorScript.BlipMonitorHeightModifier);
+		_HeartRateMonitorScript.blipMonitorWidth = EditorGUILayout.FloatField("Blip Width", _HeartRateMonitorScript.blipMonitorWidth);
+		_HeartRateMonitorScript.blipMonitorHeightModifier = EditorGUILayout.FloatField("Blip Height Modifier", _HeartRateMonitorScript.blipMonitorHeightModifier);
 
-		_HeartRateMonitorScript.MainMaterial = (Material) EditorGUILayout.ObjectField("Main Material", _HeartRateMonitorScript.MainMaterial, typeof(Material), false);
+		_HeartRateMonitorScript.mainMaterial = (Material) EditorGUILayout.ObjectField("Main Material", _HeartRateMonitorScript.mainMaterial, typeof(Material), false);
 		
 		EditorGUILayout.EndVertical();
 		#endregion
@@ -120,10 +121,10 @@ public class SWP_HeartRateMonitorEditor : Editor
 		EditorGUILayout.BeginVertical();
 		#endif   
 		
-		_HeartRateMonitorScript.NormalColour = EditorGUILayout.ColorField("Normal Colour", _HeartRateMonitorScript.NormalColour);
-		_HeartRateMonitorScript.MediumColour = EditorGUILayout.ColorField("Medium Colour", _HeartRateMonitorScript.MediumColour);
-		_HeartRateMonitorScript.BadColour = EditorGUILayout.ColorField("Bad Colour", _HeartRateMonitorScript.BadColour);
-		_HeartRateMonitorScript.FlatlineColour = EditorGUILayout.ColorField("Flatline Colour", _HeartRateMonitorScript.FlatlineColour);
+		_HeartRateMonitorScript.normalColour = EditorGUILayout.ColorField("Normal Colour", _HeartRateMonitorScript.normalColour);
+		_HeartRateMonitorScript.mediumColour = EditorGUILayout.ColorField("Medium Colour", _HeartRateMonitorScript.mediumColour);
+		_HeartRateMonitorScript.badColour = EditorGUILayout.ColorField("Bad Colour", _HeartRateMonitorScript.badColour);
+		_HeartRateMonitorScript.flatlineColour = EditorGUILayout.ColorField("Flatline Colour", _HeartRateMonitorScript.flatlineColour);
 				
 		EditorGUILayout.EndVertical();	
 		#endregion
@@ -134,7 +135,7 @@ public class SWP_HeartRateMonitorEditor : Editor
 			if (SWP_HeartRateMonitorEditor.ShowTitles)  
 			{
 				EditorGUILayout.BeginHorizontal(EditorStyles.objectFieldThumb);
-				EditorGUILayout.LabelField("Quick Debug Controls (" + (_HeartRateMonitorScript.FlatLine ? "FLATLINE" : (_HeartRateMonitorScript.BeatsPerMinute + "BPM")) + ")");
+				EditorGUILayout.LabelField("Quick Debug Controls (" + (_HeartRateMonitorScript.flatLine ? "FLATLINE" : (_HeartRateMonitorScript.beatsPerMinute + "BPM")) + ")");
 				EditorGUILayout.EndHorizontal();
 			}
 			
@@ -146,20 +147,20 @@ public class SWP_HeartRateMonitorEditor : Editor
 			EditorGUILayout.BeginHorizontal();
 			
 			if (GUILayout.Button("Normal") && Application.isPlaying)
-				_HeartRateMonitorScript.FlatLine = false;
+				_HeartRateMonitorScript.flatLine = false;
 			
 			if (GUILayout.Button("Flatline") && Application.isPlaying)
-				_HeartRateMonitorScript.FlatLine = true;
+				_HeartRateMonitorScript.flatLine = true;
 			
 			EditorGUILayout.EndHorizontal();		
 			
 			EditorGUILayout.BeginHorizontal(); 
 			
 			if (GUILayout.Button("-10 BPM") && Application.isPlaying)
-				_HeartRateMonitorScript.BeatsPerMinute -= 10;
+				_HeartRateMonitorScript.beatsPerMinute -= 10;
 			
 			if (GUILayout.Button("+10 BPM") && Application.isPlaying)
-				_HeartRateMonitorScript.BeatsPerMinute += 10;
+				_HeartRateMonitorScript.beatsPerMinute += 10;
 			
 			EditorGUILayout.EndHorizontal();		
 		    			
@@ -168,16 +169,16 @@ public class SWP_HeartRateMonitorEditor : Editor
 			EditorGUILayout.LabelField("Test Colours:", GUILayout.MaxWidth(90));
 			
 			if (GUILayout.Button("Normal") && Application.isPlaying)
-				_HeartRateMonitorScript.SetHeartRateColour(_HeartRateMonitorScript.NormalColour);
+				_HeartRateMonitorScript.SetHeartRateColour(_HeartRateMonitorScript.normalColour);
 			
 			if (GUILayout.Button("Medium") && Application.isPlaying)
-				_HeartRateMonitorScript.SetHeartRateColour(_HeartRateMonitorScript.MediumColour);
+				_HeartRateMonitorScript.SetHeartRateColour(_HeartRateMonitorScript.mediumColour);
 
 			if (GUILayout.Button("Bad") && Application.isPlaying)
-				_HeartRateMonitorScript.SetHeartRateColour(_HeartRateMonitorScript.BadColour);
+				_HeartRateMonitorScript.SetHeartRateColour(_HeartRateMonitorScript.badColour);
 			
 			if (GUILayout.Button("Flatline") && Application.isPlaying)
-				_HeartRateMonitorScript.SetHeartRateColour(_HeartRateMonitorScript.FlatlineColour);
+				_HeartRateMonitorScript.SetHeartRateColour(_HeartRateMonitorScript.flatlineColour);
 			
 			EditorGUILayout.EndHorizontal();		
 			
