@@ -574,8 +574,10 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         if (player == null)
         {
             Debug.LogError("[OnChangeScene] Player not found before change.");
-            return false;
+            //return false;
         }
+
+        Core_02.Instance._stateMachine.HandleAction(CharacterActionType.Idle);
 
         cutSceneController.PlayCutScene(UIActionType.ContinueSession);
 
