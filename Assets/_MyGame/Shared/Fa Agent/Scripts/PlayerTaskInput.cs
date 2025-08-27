@@ -24,26 +24,28 @@ public class PlayerTaskInput : MonoBehaviour
     
     [SerializeField] private Volume postProcessVolume;
     private Vignette _vignette;
-    
+
+    bool isOke = false;
+
 
     // Dùng OnEnable và OnDisable để đăng ký và hủy đăng ký sự kiện
-    private void OnEnable()
-    {
-        if (faAgentReadyChannel != null)
-        {
-            faAgentReadyChannel.OnFaAgentReady += SetFaAgentReference;
-        }
-        _isCommandMode = false;
-    }
+    //private void OnEnable()
+    //{
+    //    if (faAgentReadyChannel != null)
+    //    {
+    //        faAgentReadyChannel.OnFaAgentReady += SetFaAgentReference;
+    //    }
+    //    _isCommandMode = false;
+    //}
 
-    private void OnDisable()
-    {
-        if (faAgentReadyChannel != null)
-        {
-            faAgentReadyChannel.OnFaAgentReady -= SetFaAgentReference;
-        }
-    }
-    
+    //private void OnDisable()
+    //{
+    //    if (faAgentReadyChannel != null)
+    //    {
+    //        faAgentReadyChannel.OnFaAgentReady -= SetFaAgentReference;
+    //    }
+    //}
+
     private void SetFaAgentReference(FaAgent agent)
     {
         faAgent = agent;
@@ -62,7 +64,21 @@ public class PlayerTaskInput : MonoBehaviour
         }
         
     }
-    
+
+    private void LateUpdate()
+    {
+
+        if (isOke) return;
+
+        if (faAgentReadyChannel != null)
+        {
+            faAgentReadyChannel.OnFaAgentReady += SetFaAgentReference;
+        }
+        _isCommandMode = false;
+
+        isOke = true;
+    }
+
     private void Update()
     {
         if (faAgent == null) return;
