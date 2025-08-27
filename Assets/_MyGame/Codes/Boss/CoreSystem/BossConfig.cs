@@ -47,6 +47,10 @@ namespace _MyGame.Codes.Boss.CoreSystem
         [Space]
         public FMODAudioConfig fmodAudioConfig;
 
+        [Header("Visual Effects")]
+        [Tooltip("Prefab effect sẽ spawn khi chuyển Phase 1 -> 2 và đi theo boss tới khi boss chết")]
+        public GameObject phaseChangeFollowEffectPrefab;
+
         [Header("Cinematics & Credits")]
         [Tooltip("Timeline ID (Resources/Timelines/<ID>) to play when boss is defeated")] 
         public string bossDefeatTimelineId = "BossDefeatTimeline";
@@ -140,7 +144,6 @@ namespace _MyGame.Codes.Boss.CoreSystem
         public EventReference fearZoneEvent;
         public EventReference heartbeatEvent;
         [Header("General Audio")]
-        public EventReference phaseChangeEvent;
         public EventReference damageEvent;
         public EventReference defeatEvent;
         

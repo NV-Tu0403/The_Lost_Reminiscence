@@ -1,5 +1,4 @@
 using _MyGame.Codes.Boss.CoreSystem;
-using Code.Boss;
 using UnityEngine;
 
 namespace _MyGame.Codes.Boss.States.Phase2
@@ -9,14 +8,14 @@ namespace _MyGame.Codes.Boss.States.Phase2
     /// </summary>
     public class CookState : BossState
     {
-        private float cookTimer;
-        private bool defeatEmitted;
+        private float _cookTimer;
+        private bool _defeatEmitted;
         
         public override void Enter()
         {
-            cookTimer = 0f;
-            defeatEmitted = false;
-            BossController.PlayAnimation("Cook");
+            _cookTimer = 0f;
+            _defeatEmitted = false;
+            //BossController.PlayAnimation("Cook");
             
             BossEventSystem.Trigger(BossEventType.SkillInterrupted);
             
@@ -33,17 +32,17 @@ namespace _MyGame.Codes.Boss.States.Phase2
 
         public override void Update()
         {
-            cookTimer += Time.deltaTime;
+            _cookTimer += Time.deltaTime;
             
             // Emit BossDefeated once after cook duration (no memory fragment drop)
-            if (!defeatEmitted && cookTimer >= Config.phase2.cookStateDuration)
+            if (!_defeatEmitted && _cookTimer >= Config.phase2.cookStateDuration)
             {
                 BossEventSystem.Trigger(BossEventType.BossDefeated);
-                defeatEmitted = true;
+                _defeatEmitted = true;
             }
             
             // Destroy boss shortly after to end the fight cleanly
-            if (cookTimer >= Config.phase2.cookStateDuration + 1f)
+            if (_cookTimer >= Config.phase2.cookStateDuration + 1f)
             {
                 CompleteBossDefeat();
             }

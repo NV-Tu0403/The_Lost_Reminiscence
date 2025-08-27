@@ -1,7 +1,3 @@
-
-using System;
-using _MyGame.Codes.Musical;
-
 namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
