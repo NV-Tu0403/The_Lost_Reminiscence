@@ -1,3 +1,4 @@
+using System;
 using _MyGame.Codes.Dialogue;
 using UnityEngine;
 
@@ -20,8 +21,8 @@ namespace _MyGame.Codes.Trigger
         [SerializeField] private bool triggerProgressionOnFirstEnter = false; // chỉ trigger progression 1 lần
         [SerializeField] private bool unlockProcess = false; // có unlock trước khi trigger event không
         
-        private bool firstEnterTriggered;
-        private bool bubbleShownOnce;
+        private bool _firstEnterTriggered;
+        private bool _bubbleShownOnce;
 
         protected override bool IsValidTrigger(Collider other)
         {
@@ -33,17 +34,17 @@ namespace _MyGame.Codes.Trigger
             // Bubble dialogue mode
             if (useBubbleDialogue)
             {
-                if (!bubbleShownOnce || reShowOnReEnter)
+                if (!_bubbleShownOnce || reShowOnReEnter)
                 {
                     if (!string.IsNullOrEmpty(dialogueId) && DialogueManager.Instance != null)
                     {
-                        if (reShowOnReEnter && bubbleShownOnce)
+                        if (reShowOnReEnter && _bubbleShownOnce)
                         {
                             // đảm bảo clear cũ trước khi show lại (tránh overlap tween)
                             DialogueManager.Instance.HideBubbleTutorial();
                         }
                         DialogueManager.Instance.ShowBubbleTutorial(dialogueId);
-                        bubbleShownOnce = true;
+                        _bubbleShownOnce = true;
                     }
                     else if (string.IsNullOrEmpty(dialogueId))
                     {
@@ -61,10 +62,10 @@ namespace _MyGame.Codes.Trigger
             }
 
             // Progression tùy chọn (không disable zone)
-            if (!triggerProgressionOnFirstEnter || firstEnterTriggered || string.IsNullOrEmpty(eventId)) return;
+            if (!triggerProgressionOnFirstEnter || _firstEnterTriggered || string.IsNullOrEmpty(eventId)) return;
             if (TryExecuteProgression(unlockProcess, false))
             {
-                firstEnterTriggered = true;
+                _firstEnterTriggered = true;
             }
         }
 
@@ -84,6 +85,5 @@ namespace _MyGame.Codes.Trigger
                     tutorialPanel.SetActive(false);
             }
         }
-        
     }
 }
