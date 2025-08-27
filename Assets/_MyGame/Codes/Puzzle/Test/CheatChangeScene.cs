@@ -9,8 +9,15 @@ namespace _MyGame.Codes.Puzzle.Test
         [FormerlySerializedAs("TargetSceneName")][SerializeField] private string targetSceneName;
         [SerializeField] private Portal_Controller portalController;
 
+        CoreEvent _coreEvent;
+
         private void Update()
         {
+            if (_coreEvent == null)
+            {
+                _coreEvent = CoreEvent.Instance;
+            }
+
             if (!Input.GetKeyDown(KeyCode.F12)) return;
             if (portalController != null)
             {
@@ -31,7 +38,7 @@ namespace _MyGame.Codes.Puzzle.Test
             try
             {
                 var pos = new Vector3(0, 20, 0);
-                CoreEvent.Instance.triggerChangeScene(targetSceneName, pos);
+                _coreEvent.triggerChangeScene(targetSceneName, pos);
                 return true;
             }
             catch (System.Exception e)
