@@ -31,14 +31,16 @@ public class CutSceneController : MonoBehaviour
 
     private void Update()
     {
+
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
         InvokePointLogic();
 
         DemoPlayCS();
-    }
-
-    private void LateUpdate()
-    {
         ClearCutSceneItemTemp();
+        //bugLol(); // tạm chống bug 
     }
 
     /// <summary>
@@ -155,10 +157,6 @@ public class CutSceneController : MonoBehaviour
 
     private void ActiveObjWhenCutSceneRuning(bool oke)
     {
-        if (player == null)
-        {
-            player = GameObject.FindGameObjectWithTag("Player");
-        }
         if (player != null)
         {
             player.SetActive(oke);
@@ -169,30 +167,37 @@ public class CutSceneController : MonoBehaviour
         }
     }
 
+    private void bugLol()
+    {
+        // lấy cả inactive, không cần sort => nhanh hơn
+        var directors = Object.FindObjectsByType<PlayableDirector>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        var videos = Object.FindObjectsByType<VideoPlayer>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        if (directors == null && videos == null) return;
+
+        ActiveObjWhenCutSceneRuning(true);
+        PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+
+
+        // XÓA COMPONENT
+        //foreach (var d in directors) if (d) Destroy(d);        
+        //foreach (var v in videos) if (v) Destroy(v);
+
+        // xóa cả GameObject:
+        foreach (var d in directors) if (d) Destroy(d.gameObject);
+        foreach (var v in videos) if (v) Destroy(v.gameObject);
+
+    }
+
     private void DemoPlayCS()
     {
         // // cần: using UnityEngine.Playables; using UnityEngine.Video;
         if (Input.GetKeyDown(KeyCode.U))
         {
-            // lấy cả inactive, không cần sort => nhanh hơn
-            var directors = Object.FindObjectsByType<PlayableDirector>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None);
-
-            var videos = Object.FindObjectsByType<VideoPlayer>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None);
-
-
-            ActiveObjWhenCutSceneRuning(true);
-            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
-
-            // XÓA COMPONENT
-            //foreach (var d in directors) if (d) Destroy(d);        
-            //foreach (var v in videos) if (v) Destroy(v);
-
-            // xóa cả GameObject:
-            foreach (var d in directors) if (d) Destroy(d.gameObject);
-            foreach (var v in videos) if (v) Destroy(v.gameObject);
-
+            bugLol();
         }
     }
 }
