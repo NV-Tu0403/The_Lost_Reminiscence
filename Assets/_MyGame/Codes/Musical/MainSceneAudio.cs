@@ -15,22 +15,19 @@ namespace _MyGame.Codes.Musical
         private EventInstance _ambientInstance;
         
         // Khởi tạo và phát ambient khi bắt đầu scene
-        private void Start()
-        {
-            _ambientInstance = RuntimeManager.CreateInstance(ambientGbEvent);
-            _ambientInstance.start();
-            
-            
-        }
+        // private void Start()
+        // {
+        //     _ambientInstance = RuntimeManager.CreateInstance(ambientGbEvent);
+        //     _ambientInstance.start();
+        // }
         
         // Khi player đi vào trigger, phát BGM
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
-            {
-                _bgmInstance = RuntimeManager.CreateInstance(mapBGMEvent);
-                _bgmInstance.start();
-            }
+            if (!other.CompareTag("Player")) return;
+            Debug.Log("[MainSceneAudio] Player entered BGM trigger area." + mapBGMEvent);
+            _bgmInstance = RuntimeManager.CreateInstance(mapBGMEvent);
+            _bgmInstance.start();
         }
 
         // Giải phóng tài nguyên âm thanh khi object bị huỷ

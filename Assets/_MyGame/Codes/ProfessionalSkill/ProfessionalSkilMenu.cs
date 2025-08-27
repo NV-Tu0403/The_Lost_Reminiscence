@@ -300,7 +300,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             // unsubscribe ngay lập tức
             SceneController.Instance.OnSceneFullyReady -= onFullyReady;
 
-            // đảm bảo Player có tồn tại; nếu không, log + thử chờ ngắn (optional)
+            // đảm bảo Player có tồn tại
             var playerGO = GameObject.FindGameObjectWithTag("Player");
             if (playerGO == null)
             {

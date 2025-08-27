@@ -1,7 +1,4 @@
-
-using _MyGame.Codes.Boss.CoreSystem;
-
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Base class cho tất cả các state của boss
@@ -16,7 +13,6 @@ namespace Code.Boss
         public abstract void Exit();
         public abstract void OnTakeDamage();
         public abstract bool CanBeInterrupted();
-        
         public virtual bool CanTakeDamage()
         {
             return BossController != null && BossController.CurrentPhase >= 2;
@@ -34,24 +30,24 @@ namespace Code.Boss
     /// </summary>
     public class BossStateMachine
     {
-        private BossState currentState;
-        private BossController bossController;
+        private BossState _currentState;
+        private BossController _bossController;
 
         public void Initialize(BossController controller)
         {
-            bossController = controller;
+            _bossController = controller;
         }
 
         public void ChangeState(BossState newState)
         {
-            currentState?.Exit();
+            _currentState?.Exit();
             
-            var previousState = currentState;
-            currentState = newState;
-            if (currentState != null)
+            var previousState = _currentState;
+            _currentState = newState;
+            if (_currentState != null)
             {
-                currentState.Initialize(bossController, bossController.Config); // Set config
-                currentState.Enter(); 
+                _currentState.Initialize(_bossController, _bossController.Config); // Set config
+                _currentState.Enter(); 
             }
             
             // Trigger state change event
@@ -61,22 +57,22 @@ namespace Code.Boss
 
         public void Update()
         {
-            currentState?.Update();
+            _currentState?.Update();
         }
 
         public void OnTakeDamage()
         {
-            currentState?.OnTakeDamage();
+            _currentState?.OnTakeDamage();
         }
 
         public bool CanTakeDamage()
         {
-            return currentState?.CanTakeDamage() ?? false;
+            return _currentState?.CanTakeDamage() ?? false;
         }
         
         public bool CanBeInterrupted()
         {
-            return currentState?.CanBeInterrupted() ?? true; 
+            return _currentState?.CanBeInterrupted() ?? true; 
         }
     }
 }

@@ -1,3 +1,5 @@
+using _MyGame.Codes.Boss.CoreSystem;
+using _MyGame.Codes.Musical;
 using Code.Boss;
 using UnityEngine;
 
@@ -8,15 +10,15 @@ namespace _MyGame.Codes.Boss.States.Phase1
     /// </summary>
     public class IdleState : BossState
     {
-        private float idleTimer;
-        private bool canTransition = true;
-
+        private float _idleTimer;
+        private const bool CanTransition = true;
+        
         public override void Enter()
         {
-            Debug.Log("[Boss State] Entered IdleState - Boss đứng yên tại chỗ");
+            //Debug.Log("[Boss State] Entered IdleState - Boss đứng yên tại chỗ");
             BossController.PlayAnimation("Idle");
             
-            idleTimer = 0f;
+            _idleTimer = 0f;
             // Stop movement
             if (BossController.NavAgent != null)
             {
@@ -26,15 +28,14 @@ namespace _MyGame.Codes.Boss.States.Phase1
 
         public override void Update()
         {
-            idleTimer += Time.deltaTime;
+            _idleTimer += Time.deltaTime;
             
-            if (idleTimer >= Config.phase1.idleDuration && canTransition)
+            if (_idleTimer >= Config.phase1.idleDuration && CanTransition)
             {
                 BossController.ChangeState(new LureState());
             }
         }
-
-
+        
         public override void Exit() {}
 
         public override void OnTakeDamage() {}
