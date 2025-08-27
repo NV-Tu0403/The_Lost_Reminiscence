@@ -306,10 +306,11 @@
                     await TurnToPage(item.targetPage, true);
                     Core.Instance.ActiveMenu(true, false);
                     await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerNewSession(), true);
-                    //CoreEvent.Instance.triggerNewSession();
-                    await TurnToPage(7, false);
+                    if (!cameraZoomController.ZoomState)
+                    {
+                        await TurnToPage(7, false);
+                    }
                     Core.Instance.ActiveMenu(false, false);
-                    //CutSceneController.Instance.PlayCutScene(UIActionType.NewSession);
                     break;
                 case UIActionType.SavePanel:
                     await TurnToPage(item.targetPage, true);
