@@ -171,9 +171,28 @@ public class CutSceneController : MonoBehaviour
 
     private void DemoPlayCS()
     {
+        // // cần: using UnityEngine.Playables; using UnityEngine.Video;
         if (Input.GetKeyDown(KeyCode.U))
         {
-            PlayCutScene(UIActionType.NewSession);
+            // lấy cả inactive, không cần sort => nhanh hơn
+            var directors = Object.FindObjectsByType<PlayableDirector>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            var videos = Object.FindObjectsByType<VideoPlayer>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+
+            ActiveObjWhenCutSceneRuning(true);
+            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+
+            // XÓA COMPONENT
+            //foreach (var d in directors) if (d) Destroy(d);        
+            //foreach (var v in videos) if (v) Destroy(v);
+
+            // xóa cả GameObject:
+            foreach (var d in directors) if (d) Destroy(d.gameObject);
+            foreach (var v in videos) if (v) Destroy(v.gameObject);
+
         }
     }
 }
