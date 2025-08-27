@@ -5,18 +5,11 @@ namespace _MyGame.Codes.AnimationBehavior
 {
     public class PuzzlePlayAudio : StateMachineBehaviour
     {
-        private MainSceneAudio _mainSceneAudio;
         
         // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
-        override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-        {
-            MainSceneAudio audio = animator.GetComponent<MainSceneAudio>();
-
-            if (audio != null)
-            {
-                audio.PlayNoteSound();
-            }
-        }
+        // override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        // {
+        // }
 
         // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
         //override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
