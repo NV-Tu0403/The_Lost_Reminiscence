@@ -29,8 +29,6 @@ namespace _MyGame.Codes.Musical
 
         private void OnEnable()
         {
-            // Đảm bảo giá trị slider luôn đồng bộ với PlayerPrefs khi bật menu
-            //masterSlider.value = PlayerPrefs.GetFloat("MasterVol", 0.8f);
             SetMasterVolume(masterSlider.value);
             masterSlider.onValueChanged.AddListener(SetMasterVolume);
         }
