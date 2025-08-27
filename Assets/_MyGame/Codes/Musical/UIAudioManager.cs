@@ -12,39 +12,36 @@ namespace _MyGame.Codes.Musical
     public class UIAudioManager : MonoBehaviour
     {
         [SerializeField] private Slider masterSlider; // Slider duy nhất cho âm lượng tổng
-        
-        public AudioMixer audioMixer; // AudioMixer để điều chỉnh âm lượng
-
-        //private void Start()
-        //{
-        //    //// Khởi tạo giá trị slider từ PlayerPrefs, mặc định 0.8f nếu chưa có
-        //    //masterSlider.value = PlayerPrefs.GetFloat("MasterVol", 0.8f);
-
-        //    // Áp dụng giá trị ban đầu cho tất cả các bus
-        //    SetMasterVolume(masterSlider.value);
-
-        //    // Thêm listener để cập nhật khi slider thay đổi
-        //    masterSlider.onValueChanged.AddListener(SetMasterVolume);
-        //}
+        [SerializeField] private AudioMixer audioMixer; // AudioMixer để điều chỉnh âm lượng
 
         private void OnEnable()
         {
-            SetMasterVolume(masterSlider.value);
+            if (masterSlider == null)
+            {
+                Debug.LogWarning("masterSlider chưa được gán trong Inspector!");
+                enabled = false;
+                return;
+            }
+
+            // Tải giá trị từ PlayerPrefs, mặc định 0.8f
+            float savedValue = PlayerPrefs.GetFloat("MasterVol", 0.8f);
+            masterSlider.value = savedValue;
+
+            // Áp dụng giá trị ban đầu
+            SetMasterVolume(savedValue);
+
+            // Thêm listener
             masterSlider.onValueChanged.AddListener(SetMasterVolume);
         }
 
         private void OnDisable()
         {
-            masterSlider.onValueChanged.RemoveListener(SetMasterVolume);
+            if (masterSlider != null)
+            {
+                masterSlider.onValueChanged.RemoveListener(SetMasterVolume);
+            }
         }
 
-        public void SetMasterVolume(Slider masterValue)
-        {
-            var value = Mathf.Clamp01(masterValue.value);
-            SetMasterVolume(value);
-        }
-        
-        
         /// <summary>
         /// Thiết lập âm lượng tổng cho tất cả các bus (Music, SFX, Ambience, UI) dựa trên giá trị slider.
         /// <para><b>Tooltip:</b> Gắn vào slider để điều chỉnh volume tổng (0-1) cho mọi loại âm thanh.</para>
@@ -52,24 +49,34 @@ namespace _MyGame.Codes.Musical
         /// <param name="value">Giá trị volume từ slider (0-1).</param>
         private void SetMasterVolume(float value)
         {
-            // Giới hạn giá trị trong khoảng 0-1
             value = Mathf.Clamp01(value);
 
-            // Áp dụng giá trị cho tất cả các bus
-            FMODSystem.Instance.SetBusVolume("Music", value);
-            FMODSystem.Instance.SetBusVolume("SFX", value);
-            FMODSystem.Instance.SetBusVolume("Ambience", value);
-            FMODSystem.Instance.SetBusVolume("UI", value);
+            // Áp dụng giá trị cho tất cả các bus nếu FMODSystem.Instance tồn tại
+            if (FMODSystem.Instance != null)
+            {
+                FMODSystem.Instance.SetBusVolume("Music", value);
+                FMODSystem.Instance.SetBusVolume("SFX", value);
+                FMODSystem.Instance.SetBusVolume("Ambience", value);
+                FMODSystem.Instance.SetBusVolume("UI", value);
+            }
+            else
+            {
+                Debug.LogWarning("FMODSystem.Instance là null. Kiểm tra xem FMODSystem đã được khởi tạo chưa!");
+            }
 
-            // Lưu giá trị vào PlayerPrefs
-            PlayerPrefs.SetFloat("MasterVol", value);
-            PlayerPrefs.Save(); // Đảm bảo lưu ngay lập tức
-            
             // Set giá trị cho AudioMixer nếu cần
             if (audioMixer != null)
             {
                 audioMixer.SetFloat("MasterVolume", Mathf.Log10(value) * 20); // Chuyển đổi sang dB
             }
+            else
+            {
+                Debug.LogWarning("audioMixer chưa được gán trong Inspector!");
+            }
+
+            // Lưu giá trị vào PlayerPrefs
+            PlayerPrefs.SetFloat("MasterVol", value);
+            PlayerPrefs.Save();
         }
     }
 }
