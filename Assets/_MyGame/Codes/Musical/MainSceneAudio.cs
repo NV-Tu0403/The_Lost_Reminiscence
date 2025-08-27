@@ -4,30 +4,26 @@ using UnityEngine;
 
 namespace _MyGame.Codes.Musical
 {
+    // Quản lý âm thanh chính cho Main Scene
     public class MainSceneAudio : MonoBehaviour
     {
+        // Sự kiện BGM bản đồ
         [SerializeField] private EventReference mapBGMEvent;
+        // Sự kiện âm thanh ambient
         [SerializeField] private EventReference ambientGbEvent;
-        
-        [SerializeField] private EventReference noteFmodEvent;
         private EventInstance _bgmInstance;
         private EventInstance _ambientInstance;
         
+        // Khởi tạo và phát ambient khi bắt đầu scene
         private void Start()
         {
             _ambientInstance = RuntimeManager.CreateInstance(ambientGbEvent);
             _ambientInstance.start();
+            
+            
         }
         
-        public void PlayNoteSound()
-        {
-            if (!noteFmodEvent.IsNull)
-            {
-                RuntimeManager.PlayOneShot(noteFmodEvent);
-            }
-        }
-
-
+        // Khi player đi vào trigger, phát BGM
         private void OnTriggerEnter(Collider other)
         {
             if (other.CompareTag("Player"))
@@ -37,7 +33,7 @@ namespace _MyGame.Codes.Musical
             }
         }
 
-
+        // Giải phóng tài nguyên âm thanh khi object bị huỷ
         private void OnDestroy()
         {
             _bgmInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
