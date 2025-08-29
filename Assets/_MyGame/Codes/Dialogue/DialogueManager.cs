@@ -1,10 +1,11 @@
 using System;
 using _MyGame.Codes.GameEventSystem;
+using _MyGame.Codes.Timeline;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     public class DialogueManager : MonoBehaviour
     {
@@ -12,14 +13,32 @@ namespace Code.Dialogue
         [SerializeField] private BubbleDialoguePanel bubbleDialoguePanel;
         [SerializeField] private StoryDialoguePanel storyDialoguePanel; 
         
+        [Header("Player Lock")]
+        [SerializeField] private bool lockPlayerOnFullDialogue; 
+        [SerializeField] private string playerTag = "Player";
+        private GameObject lockedPlayer;
+        private PlayerLocker.Snapshot playerSnapshot;
+        private bool isPlayerLocked;
+
+        // Track deferred hide subscription to avoid duplicates
+        private bool waitingHideBubble;
+        
         /// <summary>
         /// Quản lý hiển thị hội thoại:
         /// - Singleton quản lý toàn bộ hệ thống dialogue.
         /// - Chứa tham chiếu tới FullDialoguePanel và BubbleDialoguePanel.
         /// - Ẩn panel khi khởi tạo.
         /// </summary>
+        public static DialogueManager Instance { get; private set; }
+        
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
             if (fullDialoguePanel != null) fullDialoguePanel.gameObject.SetActive(false);
             if (bubbleDialoguePanel != null) bubbleDialoguePanel.gameObject.SetActive(false);
             if (storyDialoguePanel != null) storyDialoguePanel.gameObject.SetActive(false);
@@ -55,10 +74,12 @@ namespace Code.Dialogue
         {
             var dialogue = handle.Result;
             var onDialogueEnd = CallEvent(onFinish);
+
             // Kiểm tra displayMode và hiển thị panel tương ứng
             switch (dialogue.displayMode)
             {
                 case DialogueDisplayMode.FullPanel:
+                    // Do not lock player here; FullDialoguePanel handles camera-only lock internally
                     fullDialoguePanel.ShowDialogue(dialogue, onDialogueEnd);
                     break;
                 case DialogueDisplayMode.BubblePanel:
@@ -112,6 +133,8 @@ namespace Code.Dialogue
         private void OnDisable()
         {
             EventBus.Unsubscribe("StartDialogue", OnStartDialogueEvent);
+            // In case object is disabled while a full dialogue is active, ensure unlock
+            UnlockPlayer();
         }
         
         /// <summary>
@@ -124,6 +147,97 @@ namespace Code.Dialogue
         {
             if (data is not BaseEventData eventData) return;
             StartDialogue(eventData.eventId, eventData.OnFinish);
+        }
+
+        // Public API cho tutorial gọi bubble persistent
+        public void ShowBubbleTutorial(string dialogueId)
+        {
+            if (string.IsNullOrEmpty(dialogueId) || bubbleDialoguePanel == null) return;
+            Addressables.LoadAssetAsync<DialogueNodeSo>(dialogueId).Completed += handle =>
+            {
+                if (handle.Status == AsyncOperationStatus.Succeeded)
+                {
+                    bubbleDialoguePanel.ShowDialoguePersistent(handle.Result);
+                }
+                else
+                {
+                    Debug.LogWarning($"[DialogueManager] Không load được dialogue (tutorial) id={dialogueId}");
+                }
+            };
+        }
+        
+        public void HideBubbleTutorial()
+        {
+            if (bubbleDialoguePanel == null) return;
+            // If waiting for deferred hide, unsubscribe first
+            if (waitingHideBubble)
+            {
+                TryUnsubscribeBubbleTyping();
+                waitingHideBubble = false;
+            }
+            bubbleDialoguePanel.HideManually();
+        }
+
+        // New: hide bubble after typewriter finishes; if not typing, hide immediately
+        public void HideBubbleTutorialDeferred()
+        {
+            if (bubbleDialoguePanel == null) return;
+            if (!bubbleDialoguePanel.gameObject.activeInHierarchy)
+            {
+                return; // nothing to hide
+            }
+            if (bubbleDialoguePanel.IsTyping)
+            {
+                if (waitingHideBubble) return; // already waiting
+                bubbleDialoguePanel.TypingCompleted += OnBubbleTypingCompleted;
+                waitingHideBubble = true;
+            }
+            else
+            {
+                HideBubbleTutorial();
+            }
+        }
+
+        private void OnBubbleTypingCompleted()
+        {
+            TryUnsubscribeBubbleTyping();
+            waitingHideBubble = false;
+            HideBubbleTutorial();
+        }
+
+        private void TryUnsubscribeBubbleTyping()
+        {
+            if (bubbleDialoguePanel != null)
+            {
+                bubbleDialoguePanel.TypingCompleted -= OnBubbleTypingCompleted;
+            }
+        }
+
+        private void LockPlayer()
+        {
+            if (!lockPlayerOnFullDialogue || isPlayerLocked) return;
+            var player = !string.IsNullOrEmpty(playerTag) ? GameObject.FindGameObjectWithTag(playerTag) : null;
+            if (!player)
+            {
+                Debug.LogWarning("[DialogueManager] Không tìm thấy Player theo tag để khóa input trong FullDialogue.");
+                return;
+            }
+            lockedPlayer = player;
+            playerSnapshot = PlayerLocker.Lock(player);
+            isPlayerLocked = true;
+        }
+
+        private void UnlockPlayer()
+        {
+            if (!isPlayerLocked)
+                return;
+
+            if (lockedPlayer)
+            {
+                PlayerLocker.Unlock(lockedPlayer, playerSnapshot);
+            }
+            lockedPlayer = null;
+            isPlayerLocked = false;
         }
     }
 }

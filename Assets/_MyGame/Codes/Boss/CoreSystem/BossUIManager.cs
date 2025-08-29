@@ -1,7 +1,7 @@
 using _MyGame.Codes.Boss.UI;
 using UnityEngine;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Quản lý UI của Boss
@@ -12,7 +12,6 @@ namespace Code.Boss
         private BossHealthBar bossHealthBar;
         private BossSkillCastBar skillCastBar;
         private PlayerHealthBar playerHealthBar;
-        private Notification defeatNotification;
         
         
         public BossUIManager(BossController controller)
@@ -34,7 +33,7 @@ namespace Code.Boss
             if (bossHealthBar != null)
             {
                 bossHealthBar.Initialize(bossController);
-                Debug.Log("Boss Health Bar found and initialized");
+                //Debug.Log("Boss Health Bar found and initialized");
             }
             else
             {
@@ -46,7 +45,7 @@ namespace Code.Boss
             if (skillCastBar != null)
             {
                 skillCastBar.Initialize(bossController);
-                Debug.Log("Boss Skill Cast Bar found and initialized");
+                //Debug.Log("Boss Skill Cast Bar found and initialized");
             }
             else
             {
@@ -58,42 +57,14 @@ namespace Code.Boss
             if (playerHealthBar != null)
             {
                 playerHealthBar.Initialize(3, bossController.Config); 
-                Debug.Log("Player Health Bar found and initialized");
+                //Debug.Log("Player Health Bar found and initialized");
             }
             else
             {
                 Debug.LogWarning("PlayerHealthBar not found in scene! Please add PlayerHealthBar component to a UI GameObject.");
             }
 
-            // Tìm BossDefeatNotification trong scene
-            defeatNotification = Object.FindFirstObjectByType<Notification>();
-            if (defeatNotification != null)
-            {
-                Debug.Log("Boss Defeat Notification found and initialized");
-            }
-            else
-            {
-                Debug.LogWarning("BossDefeatNotification not found in scene! Please add BossDefeatNotification component to a UI GameObject.");
-            }
+            // Removed PhasePanel initialization from here; BossGameManager owns it
         }
-
-        // Methods để show/hide UI
-        // public void ShowBossHealthBar(bool show)
-        // {
-        //     if (bossHealthBar != null)
-        //         bossHealthBar.gameObject.SetActive(show);
-        // }
-        //
-        // public void ShowSkillCastBar(bool show)
-        // {
-        //     if (skillCastBar != null)
-        //         skillCastBar.gameObject.SetActive(show);
-        // }
-        //
-        // public void ShowPlayerHealthBar(bool show)
-        // {
-        //     if (playerHealthBar != null)
-        //         playerHealthBar.gameObject.SetActive(show);
-        // }
     }
 }

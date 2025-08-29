@@ -1,6 +1,10 @@
+using _MyGame.Codes.Boss.CoreSystem;
+using _MyGame.Codes.Boss.States.Phase1;
+using _MyGame.Codes.Boss.States.Phase2;
+using Code.Boss;
 using UnityEngine;
 
-namespace Code.Boss.States.Shared
+namespace _MyGame.Codes.Boss.States.Shared
 {
     /// <summary>
     /// Soul State: Teleport và spawn soul (dùng cho cả Phase 1 và Phase 2)
@@ -25,7 +29,7 @@ namespace Code.Boss.States.Shared
             skillTimer = 0f;
             isCasting = true;
             BossEventSystem.Trigger(BossEventType.SoulStateStarted);
-            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Soul" });
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "TRIỆU HỒI DỤC HỒN" });
 
             // Lấy vị trí spawn từ GameObject trong scene
             var spawnPoint = GameObject.Find("SoulSpawnPoint");
@@ -41,11 +45,8 @@ namespace Code.Boss.States.Shared
                     effectRotation);
             }
 
-            // Play soul spawn sound
-            if (Config.audioConfig.soulSpawnSound != null)
-            {
-                BossController.PlaySound(Config.audioConfig.soulSpawnSound, Config.audioConfig.sfxVolume);
-            }
+            // Play soul spawn sound (FMOD)
+            BossController.PlayFMODOneShot(Config.fmodAudioConfig.soulSpawnEvent);
         }
 
         public override void Update()
@@ -94,11 +95,11 @@ namespace Code.Boss.States.Shared
             // Transition based on current phase
             if (BossController.CurrentPhase == 1)
             {
-                BossController.ChangeState(new Phase1.IdleState());
+                BossController.ChangeState(new IdleState());
             }
             else // Phase 2
             {
-                BossController.ChangeState(new Phase2.AngryState());
+                BossController.ChangeState(new AngryState());
             }
         }
 

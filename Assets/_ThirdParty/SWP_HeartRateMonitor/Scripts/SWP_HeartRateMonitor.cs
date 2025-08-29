@@ -2,163 +2,177 @@
 // Copyright © 2013 SketchWork Productions Limited
 //       support@sketchworkdev.com
 //-------------------------------------------------------
-using UnityEngine;
+
+using System;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
-/// <summary>
-/// This is the Heart Rate Monitor main script and controls every element of the control.
-/// </summary>
-public class SWP_HeartRateMonitor : MonoBehaviour
+namespace _ThirdParty.SWP_HeartRateMonitor.Scripts
 {
-	enum SoundType {HeartBeat1, HeartBeat2, Flatline};
-
-	public int BeatsPerMinute = 90; // Beats per minute.
-	public bool FlatLine = false; // Initialise a flat line.
-	
-	public bool ShowBlip = true; // Show the blip circle at the front of the monitor line.
-	public GameObject Blip; // The blip game object.
-	public float BlipSize = 1f; // The size of the blip circle at the front of the line.
-	public float BlipTrailStartSize = 0.2f; // The size of the monitor trail line nearest to the blip circle.
-	public float BlipTrailEndSize = 0.1f; // The size of the monitor line at the end before it fades out.
-	public float BlipMonitorWidth = 40f; // The actual width of the entire monitor control.
-	public float BlipMonitorHeightModifier = 1f; // The actual height of the entire monitor control.
-		
-	public bool EnableSound = true;
-	public float SoundVolume = 1f;
-	public AudioClip Heart1Sound;
-	public AudioClip Heart2Sound;
-	public AudioClip FlatlineSound;
-	private bool bFlatLinePlayed = false;
-
-	private float LineSpeed = 0.3f;
-	private GameObject NewClone;
-	private float TrailTime;
-	private float BeatsPerSecond;
-	private float LastUpdate = 0f;
-	private Vector3 BlipOffset = Vector3.zero;
-	private float DisplayXEnd;
-	
-	public Material MainMaterial;
-	
-	public Color NormalColour = new Color(0f, 1f, 0f, 1f);
-	public Color MediumColour = new Color(1f, 1f, 0f, 1f);	
-	public Color BadColour = new Color(1f, 0f, 0f, 1f);
-	public Color FlatlineColour = new Color(1f, 0f, 0f, 1f); // Automatic when BeatsPerMinute is Zero
-	
-	// Use this for initialization
-	void Start()
+	/// <summary>
+	/// This is the Heart Rate Monitor main script and controls every element of the control.
+	/// </summary>
+	public class SwpHeartRateMonitor : MonoBehaviour
 	{
-		BeatsPerSecond = 60f / BeatsPerMinute;
-		BlipOffset = new Vector3 (transform.position.x - (BlipMonitorWidth / 2), transform.position.y, transform.position.z);
-		DisplayXEnd = BlipOffset.x + BlipMonitorWidth;
-		CreateClone();
-		TrailTime = NewClone.GetComponentInChildren<TrailRenderer>().time;
-	}
+		private static readonly int TintColor = Shader.PropertyToID("_TintColor");
+
+		private enum SoundType {HeartBeat1, HeartBeat2, Flatline};
+
+		[FormerlySerializedAs("BeatsPerMinute")] public int beatsPerMinute = 90; // Beats per minute.
+		[FormerlySerializedAs("FlatLine")] public bool flatLine = false; // Initialise a flat line.
 	
-	// Update is called once per frame
-	void Update()
-	{
-		BeatsPerSecond = 60f / BeatsPerMinute;
-		BlipOffset = new Vector3 (transform.position.x - (BlipMonitorWidth / 2), transform.position.y, transform.position.z);
-		DisplayXEnd = BlipOffset.x + BlipMonitorWidth;
+		[FormerlySerializedAs("ShowBlip")] public bool showBlip = true; // Show the blip circle at the front of the monitor line.
+		[FormerlySerializedAs("Blip")] public GameObject blip; // The blip game object.
+		[FormerlySerializedAs("BlipSize")] public float blipSize = 1f; // The size of the blip circle at the front of the line.
+		[FormerlySerializedAs("BlipTrailStartSize")] public float blipTrailStartSize = 0.2f; // The size of the monitor trail line nearest to the blip circle.
+		[FormerlySerializedAs("BlipTrailEndSize")] public float blipTrailEndSize = 0.1f; // The size of the monitor line at the end before it fades out.
+		[FormerlySerializedAs("BlipMonitorWidth")] public float blipMonitorWidth = 40f; // The actual width of the entire monitor control.
+		[FormerlySerializedAs("BlipMonitorHeightModifier")] public float blipMonitorHeightModifier = 1f; // The actual height of the entire monitor control.
 		
-		if (NewClone.transform.position.x > DisplayXEnd)
-		{			
-			if (NewClone != null)
-			{
-				GameObject OldClone = NewClone;
-				StartCoroutine(WaitThenDestroy(OldClone));
-			}
-			
-			CreateClone();
-		}
-		else if (!FlatLine)
-			NewClone.transform.position += new Vector3(BlipMonitorWidth * Time.deltaTime * LineSpeed, Random.Range(-0.05f, 0.05f), 0);
-		else
+		[FormerlySerializedAs("EnableSound")] public bool enableSound = true;
+		[FormerlySerializedAs("SoundVolume")] public float soundVolume = 1f;
+		[FormerlySerializedAs("Heart1Sound")] public AudioClip heart1Sound;
+		[FormerlySerializedAs("Heart2Sound")] public AudioClip heart2Sound;
+		[FormerlySerializedAs("FlatlineSound")] public AudioClip flatlineSound;
+		private bool _bFlatLinePlayed;
+
+		private const float LineSpeed = 0.3f;
+		private GameObject _newClone;
+		private float _trailTime;
+		private float _beatsPerSecond;
+		private float _lastUpdate;
+		private Vector3 _blipOffset = Vector3.zero;
+		private float _displayXEnd;
+	
+		[FormerlySerializedAs("MainMaterial")] public Material mainMaterial;
+	
+		[FormerlySerializedAs("NormalColour")] public Color normalColour = new Color(0f, 1f, 0f, 1f);
+		[FormerlySerializedAs("MediumColour")] public Color mediumColour = new Color(1f, 1f, 0f, 1f);	
+		[FormerlySerializedAs("BadColour")] public Color badColour = new Color(1f, 0f, 0f, 1f);
+		[FormerlySerializedAs("FlatlineColour")] public Color flatlineColour = new Color(1f, 0f, 0f, 1f); // Automatic when BeatsPerMinute is Zero
+	
+		// Use this for initialization
+		private void Start()
 		{
-			NewClone.transform.position += new Vector3(BlipMonitorWidth * Time.deltaTime * LineSpeed, 0, 0);
+			_beatsPerSecond = 60f / beatsPerMinute;
+			_blipOffset = new Vector3 (transform.position.x - (blipMonitorWidth / 2), transform.position.y, transform.position.z);
+			_displayXEnd = _blipOffset.x + blipMonitorWidth;
+			CreateClone();
+			_trailTime = _newClone.GetComponentInChildren<TrailRenderer>().time;
+		}
+	
+		// Update is called once per frame
+		private void Update()
+		{
+			_beatsPerSecond = 60f / beatsPerMinute;
+			_blipOffset = new Vector3 (transform.position.x - (blipMonitorWidth / 2), transform.position.y, transform.position.z);
+			_displayXEnd = _blipOffset.x + blipMonitorWidth;
+		
+			if (_newClone.transform.position.x > _displayXEnd)
+			{			
+				if (_newClone != null)
+				{
+					var oldClone = _newClone;
+					StartCoroutine(WaitThenDestroy(oldClone));
+				}
 			
-			if (!bFlatLinePlayed)
+				CreateClone();
+			}
+			else if (!flatLine)
+				_newClone.transform.position += new Vector3(blipMonitorWidth * Time.deltaTime * LineSpeed, Random.Range(-0.05f, 0.05f), 0);
+			else
 			{
-				PlayHeartSound(SoundType.Flatline, SoundVolume);
-				bFlatLinePlayed = true;
+				_newClone.transform.position += new Vector3(blipMonitorWidth * Time.deltaTime * LineSpeed, 0, 0);
+			
+				if (!_bFlatLinePlayed)
+				{
+					PlayHeartSound(SoundType.Flatline, soundVolume);
+					_bFlatLinePlayed = true;
+				}
+			}
+		
+			if (beatsPerMinute <= 0 || flatLine)
+				_lastUpdate = Time.time;
+			else if (Time.time - _lastUpdate >= _beatsPerSecond)
+			{			
+				_lastUpdate = Time.time;
+				StartCoroutine(PerformBlip());
+			}
+		}
+
+		private IEnumerator PerformBlip()
+		{
+			if (_bFlatLinePlayed)
+				_bFlatLinePlayed = false;
+		
+			if (!_bFlatLinePlayed)
+				PlayHeartSound(SoundType.HeartBeat1, soundVolume);
+		
+			_newClone.transform.position = new Vector3(_newClone.transform.position.x, (10f * blipMonitorHeightModifier) + Random.Range(0f, (2f * blipMonitorHeightModifier)) + _blipOffset.y, _blipOffset.z);
+			yield return new WaitForSeconds(0.03f);		
+			_newClone.transform.position = new Vector3(_newClone.transform.position.x, (-5f * blipMonitorHeightModifier) - Random.Range(0f, (3f * blipMonitorHeightModifier)) + _blipOffset.y, _blipOffset.z);
+			yield return new WaitForSeconds(0.02f);		
+			_newClone.transform.position = new Vector3(_newClone.transform.position.x, (3f * blipMonitorHeightModifier) + Random.Range(0f, (2f * blipMonitorHeightModifier)) + _blipOffset.y, _blipOffset.z);
+			yield return new WaitForSeconds(0.02f);		
+			_newClone.transform.position = new Vector3(_newClone.transform.position.x, (2f * blipMonitorHeightModifier) + Random.Range(0f, (1f * blipMonitorHeightModifier)) + _blipOffset.y, _blipOffset.z);
+			yield return new WaitForSeconds(0.02f);		
+		
+			_newClone.transform.position = new Vector3(_newClone.transform.position.x, 0f + _blipOffset.y, _blipOffset.z);
+
+			yield return new WaitForSeconds(0.2f);		
+		
+			if (!_bFlatLinePlayed)
+				PlayHeartSound(SoundType.HeartBeat2, soundVolume);
+		}
+
+		private void CreateClone()
+		{
+			_newClone = Instantiate(blip, new Vector3(_blipOffset.x, _blipOffset.y, _blipOffset.z), Quaternion.identity) as GameObject;
+			_newClone.transform.parent = gameObject.transform;
+		
+			_newClone.GetComponentInChildren<TrailRenderer>().startWidth = blipTrailStartSize;
+			_newClone.GetComponentInChildren<TrailRenderer>().endWidth = blipTrailEndSize;
+			_newClone.transform.localScale = new Vector3(blipSize,blipSize,blipSize);
+
+			_newClone.GetComponent<MeshRenderer>().enabled = showBlip;
+		}
+
+		private IEnumerator WaitThenDestroy(GameObject oldClone)
+		{
+			oldClone.GetComponent<MeshRenderer>().enabled = false;
+			yield return new WaitForSeconds(_trailTime);
+			Destroy(oldClone);
+		}
+
+		private void PlayHeartSound(SoundType soundType, float fSoundVolume)
+		{
+			if (!enableSound)
+				return;
+
+			switch (soundType)
+			{
+				case SoundType.HeartBeat1:
+					GetComponent<AudioSource>().PlayOneShot(heart1Sound, fSoundVolume);
+					break;
+				case SoundType.HeartBeat2:
+					GetComponent<AudioSource>().PlayOneShot(heart2Sound, fSoundVolume);
+					break;
+				case SoundType.Flatline:
+					GetComponent<AudioSource>().PlayOneShot(flatlineSound, fSoundVolume);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(soundType), soundType, null);
 			}
 		}
 		
-		if (BeatsPerMinute <= 0 || FlatLine)
-			LastUpdate = Time.time;
-		else if (Time.time - LastUpdate >= BeatsPerSecond)
-		{			
-			LastUpdate = Time.time;
-			StartCoroutine(PerformBlip());
+		public void SetHeartRateColour(Color newColour)
+		{
+			if (mainMaterial == null)
+				throw new System.ArgumentException("You are trying to change the colour without having the 'MainMaterial' set in the control.  It must be set to the 'BlipMaterial' in order to use the colour changer.");
+		
+			mainMaterial.SetColor(TintColor, newColour);
 		}
-	}
-	
-	IEnumerator PerformBlip()
-	{
-		if (bFlatLinePlayed)
-			bFlatLinePlayed = false;
-		
-		if (!bFlatLinePlayed)
-			PlayHeartSound(SoundType.HeartBeat1, SoundVolume);
-		
-		NewClone.transform.position = new Vector3(NewClone.transform.position.x, (10f * BlipMonitorHeightModifier) + Random.Range(0f, (2f * BlipMonitorHeightModifier)) + BlipOffset.y, BlipOffset.z);
-		yield return new WaitForSeconds(0.03f);		
-		NewClone.transform.position = new Vector3(NewClone.transform.position.x, (-5f * BlipMonitorHeightModifier) - Random.Range(0f, (3f * BlipMonitorHeightModifier)) + BlipOffset.y, BlipOffset.z);
-		yield return new WaitForSeconds(0.02f);		
-		NewClone.transform.position = new Vector3(NewClone.transform.position.x, (3f * BlipMonitorHeightModifier) + Random.Range(0f, (2f * BlipMonitorHeightModifier)) + BlipOffset.y, BlipOffset.z);
-		yield return new WaitForSeconds(0.02f);		
-		NewClone.transform.position = new Vector3(NewClone.transform.position.x, (2f * BlipMonitorHeightModifier) + Random.Range(0f, (1f * BlipMonitorHeightModifier)) + BlipOffset.y, BlipOffset.z);
-		yield return new WaitForSeconds(0.02f);		
-		
-		NewClone.transform.position = new Vector3(NewClone.transform.position.x, 0f + BlipOffset.y, BlipOffset.z);
-
-		yield return new WaitForSeconds(0.2f);		
-		
-		if (!bFlatLinePlayed)
-			PlayHeartSound(SoundType.HeartBeat2, SoundVolume);
-	}
-	
-	void CreateClone()
-	{
-		NewClone = Instantiate(Blip, new Vector3(BlipOffset.x, BlipOffset.y, BlipOffset.z), Quaternion.identity) as GameObject;
-		NewClone.transform.parent = gameObject.transform;
-		
-		NewClone.GetComponentInChildren<TrailRenderer>().startWidth = BlipTrailStartSize;
-		NewClone.GetComponentInChildren<TrailRenderer>().endWidth = BlipTrailEndSize;
-		NewClone.transform.localScale = new Vector3(BlipSize,BlipSize,BlipSize);
-
-		if (ShowBlip)
-			NewClone.GetComponent<MeshRenderer>().enabled = true;
-		else
-			NewClone.GetComponent<MeshRenderer>().enabled = false;
-	}
-	
-	IEnumerator WaitThenDestroy(GameObject OldClone)
-	{
-		OldClone.GetComponent<MeshRenderer>().enabled = false;
-		yield return new WaitForSeconds(TrailTime);
-		DestroyObject(OldClone);
-	}
-	
-	void PlayHeartSound(SoundType _SoundType, float fSoundVolume)
-	{
-		if (!EnableSound)
-			return;
-		
-		if (_SoundType == SoundType.HeartBeat1)
-			GetComponent<AudioSource>().PlayOneShot(Heart1Sound, fSoundVolume);
-		else if (_SoundType == SoundType.HeartBeat2)
-			GetComponent<AudioSource>().PlayOneShot(Heart2Sound, fSoundVolume);
-		else if (_SoundType == SoundType.Flatline)
-			GetComponent<AudioSource>().PlayOneShot(FlatlineSound, fSoundVolume);
-	}
-		
-	public void SetHeartRateColour(Color _NewColour)
-	{
-		if (MainMaterial == null)
-			throw new System.ArgumentException("You are trying to change the colour without having the 'MainMaterial' set in the control.  It must be set to the 'BlipMaterial' in order to use the colour changer.");
-		
-		MainMaterial.SetColor("_TintColor", _NewColour);
 	}
 }

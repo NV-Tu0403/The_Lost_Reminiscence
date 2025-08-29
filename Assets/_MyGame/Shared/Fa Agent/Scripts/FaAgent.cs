@@ -1,5 +1,7 @@
 ﻿#nullable enable
 using System.Collections.Generic;
+using _MyGame.Codes.Boss.CoreSystem;
+using _MyGame.Codes.Musical;
 using Code.UI.Gameplay;
 using FMODUnity;
 using Tu_Develop.Import.Scripts.EventConfig;
@@ -24,7 +26,6 @@ namespace Tu_Develop.Import.Scripts
 
         [Header("UI Settings")]
         [SerializeField] private UIFaSkill? uiFaSkill;
-        
 
         private readonly Dictionary<string, float> _cooldownTimers = new Dictionary<string, float>();
 
@@ -70,6 +71,7 @@ namespace Tu_Develop.Import.Scripts
             // Trả về thời gian cooldown còn lại của skill, nếu không có thì trả về 0
             return _cooldownTimers.GetValueOrDefault(skillName, 0f);
         }
+
         // Hàm này sẽ được gọi từ Behavior Graph để bắt đầu đếm ngược
         private void StartSkillCooldown(string skillName, float duration)
         {
@@ -176,23 +178,6 @@ namespace Tu_Develop.Import.Scripts
             if (faBha && faBha.BlackboardReference != null)
             {
                // 1. Setup IdleConfig
-               if (idleConfigBlackboard != null && idleConfigDialogue != null)
-               {
-                   // Set dialogue đầu tiên
-                   var result = idleConfigBlackboard.SetVariableValue("Dialogues", idleConfigDialogue.dialogueSets[0].dialogues);
-                   if (!result)
-                   {
-                       Debug.LogError("Không thể gán biến 'Dialogues' trên Blackboard!");
-                   }
-                   else
-                   {
-                       Debug.Log("Đã gán biến 'Dialogues' thành công.");
-                   }
-               }
-               else
-               {
-                   Debug.LogWarning("Chưa gán IdleConfig Blackboard hoặc Dialogue!");
-               }
                // 2. Setup PuzzleConfig
                // 3. Setup CombatConfig
                // 4. Setup PlayerInformation
@@ -226,6 +211,15 @@ namespace Tu_Develop.Import.Scripts
 
         void Update()
         {
+            if (faBha && faBha.BlackboardReference != null)
+            {
+                var player = GameObject.FindGameObjectWithTag("Player");
+                if (player != null)
+                {
+                    faBha.BlackboardReference.SetVariableValue("Player", player);
+                }
+            }
+
             // Giảm cooldown mỗi frame
             var keys = new List<string>(_cooldownTimers.Keys);
             foreach (string key in keys)
@@ -337,7 +331,7 @@ namespace Tu_Develop.Import.Scripts
         {
             if (!IsSkillAvailable("ProtectiveAura")) return;
             StartSkillCooldown("ProtectiveAura", 20f);
-            Code.Boss.BossEventSystem.Trigger(Code.Boss.BossEventType.FaSkillUsed, new Code.Boss.BossEventData("ProtectiveAura"));
+            BossEventSystem.Trigger(BossEventType.FaSkillUsed, new BossEventData("ProtectiveAura"));
         }
 
         public void UseGuideSignal()
@@ -345,7 +339,7 @@ namespace Tu_Develop.Import.Scripts
             if (!IsSkillAvailable("GuideSignal")) return;
             Debug.Log("Thực thi kỹ năng TinHieuDanLoi (GuideSignal)!");
             StartSkillCooldown("GuideSignal", 10f);
-            Code.Boss.BossEventSystem.Trigger(Code.Boss.BossEventType.FaSkillUsed, new Code.Boss.BossEventData("GuideSignal"));
+            BossEventSystem.Trigger(BossEventType.FaSkillUsed, new BossEventData("GuideSignal"));
         }
 
         public void UseKnowledgeLight()
@@ -353,7 +347,7 @@ namespace Tu_Develop.Import.Scripts
             if (!IsSkillAvailable("KnowledgeLight")) return;
             Debug.Log("Thực thi kỹ năng AnhSangTriThuc (KnowledgeLight)!");
             StartSkillCooldown("KnowledgeLight", 15f);
-            Code.Boss.BossEventSystem.Trigger(Code.Boss.BossEventType.FaSkillUsed, new Code.Boss.BossEventData("KnowledgeLight"));
+            BossEventSystem.Trigger(BossEventType.FaSkillUsed, new BossEventData("KnowledgeLight"));
         }
 
         #endregion

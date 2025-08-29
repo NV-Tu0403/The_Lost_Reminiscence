@@ -1,24 +1,23 @@
-using TMPro;
+using _MyGame.Codes.Boss.CoreSystem;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase2
+namespace _MyGame.Codes.Boss.States.Phase2
 {
     /// <summary>
-    /// Phase 2 - Cook State: Boss bị đánh bại và rớt mảnh ghép
+    /// Phase 2 - Cook State: Boss bị đánh bại (không rớt Memory Fragment)
     /// </summary>
     public class CookState : BossState
     {
-        private float cookTimer;
-        private bool memoryFragmentDropped = false;
+        private float _cookTimer;
+        private bool _defeatEmitted;
         
         public override void Enter()
         {
-            cookTimer = 0f;
-            memoryFragmentDropped = false;
-            BossController.PlayAnimation("Cook"); // Play death/cook animation
+            _cookTimer = 0f;
+            _defeatEmitted = false;
+            //BossController.PlayAnimation("Cook");
             
-            BossEventSystem.Trigger(BossEventType.SkillInterrupted); 
-            BossEventSystem.Trigger(BossEventType.BossDefeated); 
+            BossEventSystem.Trigger(BossEventType.SkillInterrupted);
             
             // Stop all movement
             if (BossController.NavAgent != null)
@@ -33,38 +32,19 @@ namespace Code.Boss.States.Phase2
 
         public override void Update()
         {
-            cookTimer += Time.deltaTime;
-            if (cookTimer >= Config.phase2.cookStateDuration && !memoryFragmentDropped)
+            _cookTimer += Time.deltaTime;
+            
+            // Emit BossDefeated once after cook duration (no memory fragment drop)
+            if (!_defeatEmitted && _cookTimer >= Config.phase2.cookStateDuration)
             {
-                DropMemoryFragment();
-                memoryFragmentDropped = true;
+                BossEventSystem.Trigger(BossEventType.BossDefeated);
+                _defeatEmitted = true;
             }
             
-            if (cookTimer >= Config.phase2.cookStateDuration + 1f)
+            // Destroy boss shortly after to end the fight cleanly
+            if (_cookTimer >= Config.phase2.cookStateDuration + 1f)
             {
                 CompleteBossDefeat();
-            }
-        }
-        
-        private void DropMemoryFragment()
-        {
-            // Trigger defeat notification trước khi drop memory fragment
-            BossEventSystem.Trigger(BossEventType.ShowDefeatNotification, 
-                new BossEventData("Ngươi!!! Hãy đợi đó! Ta sẽ trở lại!"));
-            
-            // Spawn memory fragment prefab từ BossConfig tại vị trí boss
-            if (Config.memoryFragmentPrefab != null)
-            {
-                var memoryFragment = Object.Instantiate(Config.memoryFragmentPrefab, 
-                    BossController.transform.position, 
-                    Quaternion.identity);
-                
-                BossEventSystem.Trigger(BossEventType.BossDefeated, new BossEventData(memoryFragment));
-            }
-            else
-            {
-                Debug.LogWarning("[CookState] Memory Fragment Prefab not assigned in BossConfig!");
-                BossEventSystem.Trigger(BossEventType.BossDefeated);
             }
         }
 
@@ -74,12 +54,8 @@ namespace Code.Boss.States.Phase2
         }
 
         public override void Exit() { }
-
         public override void OnTakeDamage() { }
-
         public override bool CanTakeDamage() => false;
-
         public override bool CanBeInterrupted() => false;
-
     }
 }

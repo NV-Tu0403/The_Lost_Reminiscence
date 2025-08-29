@@ -149,7 +149,6 @@ namespace _MyGame.Codes.Backend
             // Quét tất cả file trong saveDir
             var allFiles = Directory.GetFiles(saveDir, "*.*", SearchOption.AllDirectories);
             var filesList = new List<object>();
-            var totalFiles = allFiles.Length;
             var anyError = false;
 
             foreach (var filePath in allFiles)
@@ -197,9 +196,6 @@ namespace _MyGame.Codes.Backend
 
                         break;
                     }
-                    default:
-                        // Bỏ qua các định dạng khác
-                        break;
                 }
 
                 yield return null; // tránh block main thread quá lâu
@@ -470,7 +466,7 @@ namespace _MyGame.Codes.Backend
             www.timeout = 30;
             yield return www.SendWebRequest();
 
-            Debug.Log($"📡 Response: {www.responseCode} - {www.result}");
+            Debug.Log($"[Backend]📡 Response: {www.responseCode} - {www.result}");
 
             if (www.result == UnityWebRequest.Result.Success)
             {
@@ -478,7 +474,7 @@ namespace _MyGame.Codes.Backend
             }
             else
             {
-                Debug.LogError($"❌ Request failed: {www.downloadHandler?.text ?? www.error}");
+                Debug.LogError($"❌[Backend] Request failed: {www.downloadHandler?.text ?? www.error}");
                 callback(false, www.downloadHandler?.text ?? www.error);
             }
 

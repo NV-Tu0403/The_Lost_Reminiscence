@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using _MyGame.Codes.Backend;
-using Code.Backend;
 using TMPro;
 using _MyGame.Codes.Procession;
 
@@ -81,8 +80,6 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
 
         //e.OnChangeScene += async (nameScene, pos) => await OnChangeScene(nameScene, pos);
         e.OnChangeScene += (nameScene, pos) => OnChangeScene(nameScene, pos);
-
-
     }
 
     public override void UnregisterEvent(CoreEvent e)
@@ -201,7 +198,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         // Kiểm tra null trước khi sử dụng
         if (UserAccountManager.Instance == null)
         {
-            Debug.LogWarning("UserAccountManager.Instance is null! Trying get");
+            //Debug.LogWarning("UserAccountManager.Instance is null! Trying get");
             return new SaveListContext { UserName = null, Saves = new List<SaveFolder>(), IsContinueEnabled = false };
         }
         if (SaveGameManager.Instance == null)
@@ -303,7 +300,7 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
             // unsubscribe ngay lập tức
             SceneController.Instance.OnSceneFullyReady -= onFullyReady;
 
-            // đảm bảo Player có tồn tại; nếu không, log + thử chờ ngắn (optional)
+            // đảm bảo Player có tồn tại
             var playerGO = GameObject.FindGameObjectWithTag("Player");
             if (playerGO == null)
             {
@@ -577,8 +574,10 @@ public class ProfessionalSkilMenu : CoreEventListenerBase
         if (player == null)
         {
             Debug.LogError("[OnChangeScene] Player not found before change.");
-            return false;
+            //return false;
         }
+
+        Core_02.Instance._stateMachine.HandleAction(CharacterActionType.Idle);
 
         cutSceneController.PlayCutScene(UIActionType.ContinueSession);
 

@@ -5,8 +5,9 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using _MyGame.Codes.Timeline;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     /// <summary>
     /// DialoguePanel chỉ chuyên trách phần UI:
@@ -45,6 +46,10 @@ namespace Code.Dialogue
 
         // Thời gian delay giữa các ký tự (0.05s) => Lưu ý GIỮA CÁC KÝ TỰ, không phải giữa các từ.
         private const float TypewriterDelay = 0.05f;
+
+        // PlayerLocker state
+        private PlayerLocker.Snapshot lockSnapshot;
+        private GameObject player;
         
         
         /// <summary>
@@ -59,6 +64,13 @@ namespace Code.Dialogue
             // Hiện chuột
             Core.Instance.IsDialoguePlaying = true;
             Core.Instance.ActiveMouseCursor(true);
+
+            // Chỉ lock camera để chuột không kéo camera; giữ nguyên input của player
+            player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                lockSnapshot = PlayerLocker.LockCameraOnly(player);
+            }
             
             gameObject.SetActive(true);
             onDialogueEnd = onEnd;
@@ -234,6 +246,12 @@ namespace Code.Dialogue
             // Tắt chuột
             Core.Instance.IsDialoguePlaying = false;
             Core.Instance.ActiveMouseCursor(false);
+            
+            // Unlock player + camera
+            if (player != null)
+            {
+                PlayerLocker.Unlock(player, lockSnapshot);
+            }
             
             // Tắt hiệu ứng nhấp nháy
             StopBlinking(ref blinkNextTween);

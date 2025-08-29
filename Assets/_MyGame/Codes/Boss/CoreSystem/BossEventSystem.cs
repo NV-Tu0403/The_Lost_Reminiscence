@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Code.Boss
+namespace _MyGame.Codes.Boss.CoreSystem
 {
     /// <summary>
     /// Hệ thống sự kiện riêng cho Boss, tách biệt với GameEventSystem
@@ -41,10 +41,25 @@ namespace Code.Boss
         /// </summary>
         public static void Trigger(BossEventType eventType, BossEventData data = null)
         {
-            if (eventListeners.TryGetValue(eventType, out var eventListener))
+            if (eventListeners.TryGetValue(eventType, out var listeners))
             {
-                foreach (var listener in eventListener)
+                // Iterate backwards so we can remove invalid listeners on the fly
+                for (int i = listeners.Count - 1; i >= 0; i--)
                 {
+                    var listener = listeners[i];
+                    if (listener == null)
+                    {
+                        listeners.RemoveAt(i);
+                        continue;
+                    }
+
+                    // If target is a UnityEngine.Object that has been destroyed, prune it
+                    if (listener.Target is UnityEngine.Object unityTarget && unityTarget == null)
+                    {
+                        listeners.RemoveAt(i);
+                        continue;
+                    }
+
                     try
                     {
                         listener?.Invoke(data);
@@ -115,8 +130,10 @@ namespace Code.Boss
         PlayerDefeated,
         PlayerHealthReset,
         
-        // UI Notification Events
-        ShowDefeatNotification, // Hiển thị thông báo boss bị đánh bại
+        // Heart-rate UI integration
+        PlayerHealthChanged,
+        PlayerEnteredFearZone,
+        PlayerExitedFearZone
     }
 
     /// <summary>

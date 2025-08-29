@@ -1,9 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using echo17.EndlessBook;
-using echo17.EndlessBook.Demo02;
 using TMPro;
-using static echo17.EndlessBook.EndlessBook;
+
 
 
 /// <summary>
@@ -158,7 +157,7 @@ public class UIPageView : MonoBehaviour
                     item = i;
                     if (debugMode)
                     {
-                        //Debug.Log($"[UIPageView] Ray hit: {hit.collider.name} with item {i.uIActionType}");
+                        Debug.Log($"[UIPageView] Ray hit: {hit.collider.name} with item {i.uIActionType}");
                     }
                     return true;
                 }

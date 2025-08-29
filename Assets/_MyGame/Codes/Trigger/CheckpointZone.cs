@@ -1,8 +1,6 @@
-using _MyGame.Codes.GameEventSystem;
-using _MyGame.Codes.Procession;
 using UnityEngine;
 
-namespace Code.Trigger
+namespace _MyGame.Codes.Trigger
 {
     public class CheckpointZone : TriggerZone
     {
@@ -13,13 +11,8 @@ namespace Code.Trigger
 
         protected override void OnTriggered(Collider other)
         { 
-            if (!ProgressionManager.Instance.CanTrigger(eventId) &&
-                !ProgressionManager.Instance.IsWaitingForEvent(eventId))
-            {
-                Debug.Log($"[PlayerTriggerZone] Chưa đủ điều kiện để bắt đầu event '{eventId}'.");
-                return;
-            }
-            EventExecutor.Instance.TriggerEvent(eventId); 
+            if (!CanProgress()) return;
+            ExecuteProgression(false, false);
         }
     }
 }

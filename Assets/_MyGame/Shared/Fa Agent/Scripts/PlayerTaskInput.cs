@@ -5,7 +5,6 @@ using Tu_Develop.Import.Scripts.EventConfig;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.Serialization;
 
 public class PlayerTaskInput : MonoBehaviour
 {
@@ -15,42 +14,42 @@ public class PlayerTaskInput : MonoBehaviour
     [Header("Fa Components")]
     public FaAgent faAgent;
     private bool _isCommandMode;
-    
     [Header("Skills Settings")]
     private bool _isWaitingForSkill3Target; // Cờ báo cho biết hệ thống đang chờ phím 1 hoặc 2
     private float _skill3PressTime; // Mốc thời gian khi người chơi nhấn phím 3
     private const float Skill3ComboTimeout = 1.5f; // Thời gian tối đa để nhấn 1 hoặc 2 (1.5 giây)
     private const float Skill3HoldDuration = 0.5f; // Thời gian cần giữ phím 3 để kích hoạt (0.5 giây)
-    
     [SerializeField] private Volume postProcessVolume;
     private Vignette _vignette;
-    
+
+    [SerializeField] bool isOke = false;
+    [SerializeField] GameObject canvasForCombat;
 
     // Dùng OnEnable và OnDisable để đăng ký và hủy đăng ký sự kiện
-    private void OnEnable()
-    {
-        if (faAgentReadyChannel != null)
-        {
-            faAgentReadyChannel.OnFaAgentReady += SetFaAgentReference;
-        }
-        _isCommandMode = false;
-    }
+    //private void OnEnable()
+    //{
+    //    if (faAgentReadyChannel != null)
+    //    {
+    //        faAgentReadyChannel.OnFaAgentReady += SetFaAgentReference;
+    //    }
+    //    _isCommandMode = false;
+    //}
 
-    private void OnDisable()
-    {
-        if (faAgentReadyChannel != null)
-        {
-            faAgentReadyChannel.OnFaAgentReady -= SetFaAgentReference;
-        }
-    }
-    
+    //private void OnDisable()
+    //{
+    //    if (faAgentReadyChannel != null)
+    //    {
+    //        faAgentReadyChannel.OnFaAgentReady -= SetFaAgentReference;
+    //    }
+    //}
+
     private void SetFaAgentReference(FaAgent agent)
     {
         faAgent = agent;
         Debug.Log("[PlayerTaskInput] Đã nhận được tham chiếu đến FaAgent!");
-        
+
         postProcessVolume = GameObject.Find("Fa-Volume").GetComponent<Volume>();
-        
+
         // Cố gắng lấy hiệu ứng Vignette từ profile của nó
         if (postProcessVolume != null && postProcessVolume.profile.TryGet(out Vignette vignette))
         {
@@ -60,19 +59,37 @@ public class PlayerTaskInput : MonoBehaviour
         {
             Debug.LogWarning("Không tìm thấy Global Volume hoặc Vignette trong scene!");
         }
-        
+
     }
-    
+
+    private void LateUpdate()
+    {
+
+        if (isOke) return;
+
+        if (faAgentReadyChannel != null)
+        {
+            faAgentReadyChannel.OnFaAgentReady += SetFaAgentReference;
+        }
+        _isCommandMode = false;
+
+        //isOke = true;
+    }
+
     private void Update()
     {
+        if (canvasForCombat == null) canvasForCombat = GameObject.FindWithTag("CanvasCombat");
+        else canvasForCombat.SetActive(isOke);
+
         if (faAgent == null) return;
-        
+
         if (Input.GetKeyDown(KeyCode.F))
         {
             _isCommandMode = !_isCommandMode;
+            isOke = _isCommandMode;
             faAgent.ActivePlayerControl(_isCommandMode);
             if (!_isCommandMode) _isWaitingForSkill3Target = false;
-            
+
             // --- BỔ SUNG LOGIC VIGNETTE ---
             if (_vignette != null)
             {
@@ -90,13 +107,13 @@ public class PlayerTaskInput : MonoBehaviour
         }
 
         if (_isCommandMode == false) return;
-        
+
         if (!faAgent.ReturnPlayerControlFromBlackBoard())
         {
             _isCommandMode = false;
             return;
         }
-        
+
         // ƯU TIÊN 1: Nếu đang chờ combo của skill 3
         if (_isWaitingForSkill3Target)
         {
@@ -122,7 +139,7 @@ public class PlayerTaskInput : MonoBehaviour
             {
                 Debug.Log("[PlayerInput] Giữ Skill 3 -> Target: FA");
                 faAgent.OnPlayerCommand("useskill ProtectiveAura");
-                _isWaitingForSkill3Target = false; 
+                _isWaitingForSkill3Target = false;
             }
         }
         // ƯU TIÊN 2: Nếu không có combo nào đang chờ, lắng nghe input mới

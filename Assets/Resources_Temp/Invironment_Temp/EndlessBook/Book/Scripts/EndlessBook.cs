@@ -1397,6 +1397,8 @@
             PageTurnDelegate onPageTurnEnd = null
             )
         {
+            //Debug.LogWarning("Turning to page " + pageNumber);
+
             // only do this call if not already turning pages, changing state, and the not already in the page group specified
             if (isTurningPages || isChangingState || IsDraggingPage) return;
 

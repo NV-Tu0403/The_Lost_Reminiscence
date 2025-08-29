@@ -6,7 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Code.Dialogue
+namespace _MyGame.Codes.Dialogue
 {
     public class StoryDialoguePanel : MonoBehaviour
     {

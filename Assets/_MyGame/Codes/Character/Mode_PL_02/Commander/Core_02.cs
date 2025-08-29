@@ -21,6 +21,15 @@ public class Core_02 : PlayerEventListenerBase
         _stateMachine = new CharStateMachine();
     }
 
+    private void Update()
+    {
+        //if (Input.GetKeyDown(KeyCode.B))
+        //{
+        //    Debug.Log("B key pressed");
+        //    CoreEvent.Instance.TriggerEndSession();
+        //}
+    }
+
     public override void RegisterEvent(PlayerEvent e)
     {
 

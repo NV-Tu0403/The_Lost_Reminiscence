@@ -66,13 +66,13 @@ namespace _MyGame.Codes.GameEventSystem
                 return;
             }
 
-            Debug.Log($"[EventManager] Event '{eventId}' finished. Updating progression...");
+            //Debug.Log($"[EventManager] Event '{eventId}' finished. Updating progression...");
 
             ProgressionManager.Instance.HandleEventFinished(eventId);
             UpdateEventIndex(eventId);
             
             // QUAN TRỌNG: Thông báo cho GuidanceManager về event completed
-            Debug.Log($"[EventManager] Publishing event_completed for: {eventId}");
+            // Debug.Log($"[EventManager] Publishing event_completed for: {eventId}");
             EventBus.Publish("event_completed", eventData);
             
             TryTriggerNextEvent();

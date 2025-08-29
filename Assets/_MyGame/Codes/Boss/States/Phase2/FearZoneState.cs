@@ -1,95 +1,94 @@
-using System.Collections.Generic;
+using _MyGame.Codes.Boss.CoreSystem;
 using UnityEngine;
 
-namespace Code.Boss.States.Phase2
+namespace _MyGame.Codes.Boss.States.Phase2
 {
     /// <summary>
     /// Phase 2 - Fear Zone State: Tạo vùng tối dưới chân người chơi
     /// </summary>
     public class FearZoneState : BossState
     {
-        private float castTimer;
-        private float skillTimer;
-        private bool isCasting = true;
+        private float _castTimer;
+        private float _skillTimer;
+        private bool _isCasting = true;
 
 
-        private GameObject fearZoneCastEffect;
-        private GameObject fearZoneZoneEffect;
-        private GameObject fearZone;
-        private Vector3 fearZonePosition;
+        private GameObject _fearZoneCastEffect;
+        private GameObject _fearZoneZoneEffect;
+        private GameObject _fearZone;
+        private Vector3 _fearZonePosition;
 
-        private bool playerInZone = false;
-        private float playerInZoneTime = 0f;
-        private GameObject playerFearEffect; // Effect bao quanh player
+        private bool _playerInZone = false;
+        private float _playerInZoneTime = 0f;
+        private GameObject _playerFearEffect; // Effect bao quanh player
 
         public override void Enter()
         {
             Debug.Log("[Boss State] Entered FearZoneState");
             BossController.PlayAnimation("CastSkillA");
             
-            castTimer = 0f;
-            skillTimer = 0f;
-            isCasting = true;
+            _castTimer = 0f;
+            _skillTimer = 0f;
+            _isCasting = true;
             BossEventSystem.Trigger(BossEventType.FearZoneCreated);
-            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "Fear Zone" });
-            fearZonePosition = BossController.Player.position;
+            BossEventSystem.Trigger(BossEventType.SkillCasted, new BossEventData { stringValue = "VÙNG KHIẾP SỢ" });
+            _fearZonePosition = BossController.Player.position;
             
             if (Config.phase2.fearZoneCastEffectPrefab != null)
             {
-                fearZoneCastEffect = Object.Instantiate(Config.phase2.fearZoneCastEffectPrefab, fearZonePosition, Quaternion.identity);
+                _fearZoneCastEffect = Object.Instantiate(Config.phase2.fearZoneCastEffectPrefab, _fearZonePosition, Quaternion.identity);
             }
-            if (Config.audioConfig.fearZoneSound != null)
-            {
-                BossController.PlaySound(Config.audioConfig.fearZoneSound, Config.audioConfig.ambientVolume);
-            }
+            
+            // FMOD one-shot for fear zone cast
+            BossController.PlayFMODOneShot(Config.fmodAudioConfig.fearZoneEvent);
         }
 
         public override void Update()
         {
-            if (isCasting) HandleCasting();
+            if (_isCasting) HandleCasting();
             else HandleSkillActive();
         }
 
         private void HandleCasting()
         {
-            castTimer += Time.deltaTime;
+            _castTimer += Time.deltaTime;
             
             // Update skill cast progress for UI
-            var progress = castTimer / Config.phase2.fearZoneCastTime;
+            var progress = _castTimer / Config.phase2.fearZoneCastTime;
             BossEventSystem.Trigger(BossEventType.SkillCastProgress, new BossEventData(progress));
-            if (castTimer >= Config.phase2.fearZoneCastTime) ActivateSkill();
+            if (_castTimer >= Config.phase2.fearZoneCastTime) ActivateSkill();
         }
 
         private void ActivateSkill()
         {
-            isCasting = false;
+            _isCasting = false;
             BossEventSystem.Trigger(BossEventType.SkillInterrupted);
             if (Config.phase2.fearZoneZoneEffectPrefab != null)
             {
-                fearZoneZoneEffect = Object.Instantiate(Config.phase2.fearZoneZoneEffectPrefab, fearZonePosition, Quaternion.identity);
+                _fearZoneZoneEffect = Object.Instantiate(Config.phase2.fearZoneZoneEffectPrefab, _fearZonePosition, Quaternion.identity);
             }
-            if (fearZoneCastEffect != null)
+            if (_fearZoneCastEffect != null)
             {
-                Object.Destroy(fearZoneCastEffect);
-                fearZoneCastEffect = null;
+                Object.Destroy(_fearZoneCastEffect);
+                _fearZoneCastEffect = null;
             }
             CreateFearZone();
         }
         
         private void CreateFearZone()
         {
-            if (fearZone != null)
+            if (_fearZone != null)
             {
-                Object.Destroy(fearZone);
+                Object.Destroy(_fearZone);
             }
-            fearZone = new GameObject("FearZone")
+            _fearZone = new GameObject("FearZone")
             {
                 transform =
                 {
-                    position = fearZonePosition
+                    position = _fearZonePosition
                 }
             };
-            var collider = fearZone.AddComponent<SphereCollider>();
+            var collider = _fearZone.AddComponent<SphereCollider>();
             collider.isTrigger = true;
             collider.radius = Config.phase2.fearZoneRadius;
         }
@@ -97,34 +96,36 @@ namespace Code.Boss.States.Phase2
 
         private void HandleSkillActive()
         {
-            skillTimer += Time.deltaTime;
+            _skillTimer += Time.deltaTime;
             CheckPlayerInZone();
-            if (skillTimer >= Config.phase2.fearZoneDuration) BossController.ChangeState(new ScreamState());
+            if (_skillTimer >= Config.phase2.fearZoneDuration) BossController.ChangeState(new ScreamState());
         }
         
         private void CheckPlayerInZone()
         {
-            if (fearZone == null) return;
-            var distanceToPlayer = Vector3.Distance(fearZone.transform.position, BossController.Player.position);
+            if (_fearZone == null) return;
+            var distanceToPlayer = Vector3.Distance(_fearZone.transform.position, BossController.Player.position);
             var currentlyInZone = distanceToPlayer <= Config.phase2.fearZoneRadius;
             switch (currentlyInZone)
             {
-                case true when !playerInZone:
-                    playerInZone = true;
-                    playerInZoneTime = 0f;
+                case true when !_playerInZone:
+                    _playerInZone = true;
+                    _playerInZoneTime = 0f;
                     ApplyFearEffects(true);
                     StartHeartbeatSound();
+                    BossEventSystem.Trigger(BossEventType.PlayerEnteredFearZone);
                     break;
-                case false when playerInZone:
-                    playerInZone = false;
-                    playerInZoneTime = 0f;
+                case false when _playerInZone:
+                    _playerInZone = false;
+                    _playerInZoneTime = 0f;
                     ApplyFearEffects(false);
                     StopHeartbeatSound();
+                    BossEventSystem.Trigger(BossEventType.PlayerExitedFearZone);
                     break;
             }
-            if (playerInZone)
+            if (_playerInZone)
             {
-                playerInZoneTime += Time.deltaTime;
+                _playerInZoneTime += Time.deltaTime;
             }
         }
         
@@ -135,9 +136,9 @@ namespace Code.Boss.States.Phase2
             if (enable)
             {
                 // Spawn effect bao quanh player khi vào fear zone
-                if (Config.phase2.fearZonePlayerEffectPrefab != null && playerFearEffect == null)
+                if (Config.phase2.fearZonePlayerEffectPrefab != null && _playerFearEffect == null)
                 {
-                    playerFearEffect = Object.Instantiate(Config.phase2.fearZonePlayerEffectPrefab, 
+                    _playerFearEffect = Object.Instantiate(Config.phase2.fearZonePlayerEffectPrefab, 
                         BossController.Player.position, 
                         Quaternion.identity, 
                         BossController.Player);
@@ -153,10 +154,10 @@ namespace Code.Boss.States.Phase2
             else
             {
                 // Destroy effect khi player rời khỏi fear zone
-                if (playerFearEffect != null)
+                if (_playerFearEffect != null)
                 {
-                    Object.Destroy(playerFearEffect);
-                    playerFearEffect = null;
+                    Object.Destroy(_playerFearEffect);
+                    _playerFearEffect = null;
                 }
                 
                 // Khôi phục tốc độ di chuyển của player
@@ -170,24 +171,25 @@ namespace Code.Boss.States.Phase2
         
         private void StartHeartbeatSound()
         {
-            if (Config.audioConfig.heartbeatSound == null) return;
-            BossController.AudioSource.clip = Config.audioConfig.heartbeatSound;
-            BossController.AudioSource.loop = true;
-            BossController.AudioSource.Play();
+            // Use FMOD looping instance via BossController helper
+            BossController.StartHeartbeatLoop();
         }
         
         private void StopHeartbeatSound()
         {
-            BossController.AudioSource.Stop();
-            BossController.AudioSource.loop = false;
+            BossController.StopHeartbeatLoop();
         }
         
         public override void Exit()
         {
             StopHeartbeatSound();
+            if (_playerInZone)
+            {
+                BossEventSystem.Trigger(BossEventType.PlayerExitedFearZone);
+            }
             
             // Cleanup tốc độ player nếu vẫn đang bị giảm
-            if (playerInZone)
+            if (_playerInZone)
             {
                 var playerController = BossController.Player.GetComponent<PlayerController_02>();
                 if (playerController != null)
@@ -197,43 +199,36 @@ namespace Code.Boss.States.Phase2
             }
             
             // Cleanup tất cả effect ngay lập tức
-            if (playerFearEffect != null)
+            if (_playerFearEffect != null)
             {
-                Object.DestroyImmediate(playerFearEffect);
-                playerFearEffect = null;
+                Object.DestroyImmediate(_playerFearEffect);
+                _playerFearEffect = null;
             }
             
-            if (fearZoneCastEffect != null)
+            if (_fearZoneCastEffect != null)
             {
-                Object.DestroyImmediate(fearZoneCastEffect);
-                fearZoneCastEffect = null;
+                Object.DestroyImmediate(_fearZoneCastEffect);
+                _fearZoneCastEffect = null;
             }
             
-            if (fearZoneZoneEffect != null)
+            if (_fearZoneZoneEffect != null)
             {
-                Object.DestroyImmediate(fearZoneZoneEffect);
-                fearZoneZoneEffect = null;
+                Object.DestroyImmediate(_fearZoneZoneEffect);
+                _fearZoneZoneEffect = null;
             }
             
-            if (fearZone != null)
+            if (_fearZone != null)
             {
-                Object.DestroyImmediate(fearZone);
-                fearZone = null;
+                Object.DestroyImmediate(_fearZone);
+                _fearZone = null;
             }
             
             // Reset trạng thái
-            playerInZone = false;
-            playerInZoneTime = 0f;
-            isCasting = true;
-            castTimer = 0f;
-            skillTimer = 0f;
-            
-            // // Reset movement speed
-            // if (BossController.NavAgent != null)
-            // {
-            //     BossController.NavAgent.speed = Config.moveSpeed;
-            // }
-            // BossController.ResetMoveDirection();
+            _playerInZone = false;
+            _playerInZoneTime = 0f;
+            _isCasting = true;
+            _castTimer = 0f;
+            _skillTimer = 0f;
         }
 
         public override void OnTakeDamage() {}

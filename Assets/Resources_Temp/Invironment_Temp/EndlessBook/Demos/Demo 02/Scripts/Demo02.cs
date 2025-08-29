@@ -14,7 +14,7 @@
 
     public delegate void BookActionDelegate(BookActionTypeEnum actionType, int actionValue);
 
-    public class Demo02 : MonoBehaviour
+    public class Demo02 : CoreEventListenerBase
     {
         protected bool audioOn = false;
         protected bool flipping = false;
@@ -291,6 +291,7 @@
             DeTectedSave(item);
             DetectedAccoutFuntion(item);
             DetectedPauseSession(item);
+            DetectedSetting(item);
         }
 
         /// <summary>
@@ -305,10 +306,11 @@
                     await TurnToPage(item.targetPage, true);
                     Core.Instance.ActiveMenu(true, false);
                     await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerNewSession(), true);
-                    //CoreEvent.Instance.triggerNewSession();
-                    await TurnToPage(7, false);
+                    if (!cameraZoomController.ZoomState)
+                    {
+                        await TurnToPage(7, false);
+                    }
                     Core.Instance.ActiveMenu(false, false);
-                    //CutSceneController.Instance.PlayCutScene(UIActionType.NewSession);
                     break;
                 case UIActionType.SavePanel:
                     await TurnToPage(item.targetPage, true);
@@ -318,13 +320,17 @@
                     await TurnToPage(item.targetPage, false);
                     CoreEvent.Instance.triggerNewSession();
                     break;
+                case UIActionType.Setting:
+                    await TurnToPage(item.targetPage, true);
 
+                    break;
                 case UIActionType.QuitGame:
                     ClosedBack();
                     StartCoroutine(QuitAfterDelay(3f));
                     break;
             }
         }
+
         private IEnumerator QuitAfterDelay(float delay)
         {
             yield return new WaitForSeconds(delay);
@@ -346,18 +352,21 @@
             switch (item.uIActionType)
             {
                 case UIActionType.Back:
-                    await TurnToPage(item.targetPage, true);
+                    if (Core.Instance.CurrentCoreState != CoreStateType.PauseSessionState.ToString())
+                    {
+                        await TurnToPage(item.targetPage, true);
+                    }
                     break;
                 case UIActionType.ContinueSession:
                     if (!string.IsNullOrWhiteSpace(ProfessionalSkilMenu.Instance.selectedSaveFolder))// Iem tà đạo (CHƯA CÓ TG FIX)
                     {
                         Core.Instance.ActiveMenu(true, false);
                         await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerContinueSession(), true);
-                        Core.Instance.ActiveMenu(false, false);
                         if (!cameraZoomController.ZoomState)
                         {
                             await TurnToPage(item.targetPage, false);
                         }
+                        Core.Instance.ActiveMenu(false, false);
                     }
                     break;
                 case UIActionType.RefreshSaveList:
@@ -372,6 +381,10 @@
                     break;
                 case UIActionType.SyncFileSave:
                     CoreEvent.Instance.triggerSyncFileSave(ProfessionalSkilMenu.Instance.selectedSaveFolder);
+
+                    break;
+                case UIActionType.Setting:
+                    await TurnToPage(item.targetPage, true);
 
                     break;
             }
@@ -398,7 +411,7 @@
                             CoreEvent.Instance.triggerRegister(); // đăng ký tài khoản
                             UiPage06_C.Instance.ActiveObj(true, true, false, false);
                         }
-                      
+
                     }
 
                     if (accountState == AccountStateType.ConectingServer.ToString())
@@ -447,9 +460,40 @@
                 case UIActionType.ResumeSession:
                     CoreEvent.Instance.triggerResumedSession();
                     break;
+                case UIActionType.Setting:
+                    await TurnToPage(item.targetPage, true);
+
+                    break;
+
                 case UIActionType.QuitSesion:
                     await TurnToPage(item.targetPage, true);
                     await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
+                    break;
+            }
+        }
+
+        private async void OnEndSesion()
+        {
+            await Task.Delay(2000);
+            await TurnToPage(5, true);
+            await cameraZoomController.PerformZoomSequence(0, () => CoreEvent.Instance.triggerQuitSession(), false);
+
+        }
+
+        private async void DetectedSetting(UIItem item)
+        {
+            switch (item.uIActionType)
+            {
+                case UIActionType.Back:
+                    if (Core.Instance.CurrentCoreState == CoreStateType.PauseSessionState.ToString())
+                    {
+                        item.targetPage = 7;
+                        await TurnToPage(item.targetPage, true);
+                    }
+                    else
+                    {
+                        await TurnToPage(item.targetPage, true);
+                    }
                     break;
             }
         }
@@ -505,7 +549,6 @@
                 turnPageTcs = new TaskCompletionSource<bool>();
 
             var newLeftPageNumber = pageNumber % 2 == 0 ? pageNumber - 1 : pageNumber;
-
             if (Mathf.Abs(newLeftPageNumber - book.CurrentLeftPageNumber) > 2)
             {
                 flipping = true;
@@ -520,6 +563,18 @@
 
             if (isWait)
                 await turnPageTcs.Task; // Chờ cho đến khi trang lật xong
+        }
+
+        public override void RegisterEvent(CoreEvent e)
+        {
+            e.OnOpenBook += OpenFront;
+            e.OnEndSession += OnEndSesion;
+        }
+
+        public override void UnregisterEvent(CoreEvent e)
+        {
+            e.OnOpenBook -= OpenFront;
+            e.OnEndSession -= OnEndSesion;
         }
 
         // Callback khi trang lật xong

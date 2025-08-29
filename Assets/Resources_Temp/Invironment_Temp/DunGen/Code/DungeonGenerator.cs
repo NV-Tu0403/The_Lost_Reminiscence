@@ -361,7 +361,8 @@ namespace DunGen
 			// Let DungenCharacters know that they should re-check the Tile they're in
 			if (charactersShouldRecheckTile)
 			{
-				foreach (var character in Component.FindObjectsOfType<DungenCharacter>())
+				// ĐÃ SỬA LẠI DÒNG NÀY CHO CHÍNH XÁC
+				foreach (var character in UnityEngine.Object.FindObjectsByType<DungenCharacter>(FindObjectsSortMode.None))
 					character.ForceRecheckTile();
 			}
 		}
@@ -1024,14 +1025,14 @@ namespace DunGen
 			});
 
 			// Apply any post-process to be run BEFORE built-in post-processing is run
-			foreach (var step in postProcessSteps)
-			{
-				if (ShouldSkipFrame(false))
-					yield return null;
+			foreach (var step in postProcessSteps.ToList()) // <--- THÊM .ToList()
+{
+    if (ShouldSkipFrame(false))
+        yield return null;
 
-				if (step.Phase == PostProcessPhase.BeforeBuiltIn)
-					step.PostProcessCallback(this);
-			}
+    if (step.Phase == PostProcessPhase.AfterBuiltIn)
+        step.PostProcessCallback(this);
+}
 
 
 			// Waiting one frame so objects are in their expected state
@@ -1063,14 +1064,14 @@ namespace DunGen
 
 
 			// Apply any post-process to be run AFTER built-in post-processing is run
-			foreach (var step in postProcessSteps)
-			{
-				if (ShouldSkipFrame(false))
-					yield return null;
+			foreach (var step in postProcessSteps.ToList()) // <--- THÊM .ToList()
+{
+    if (ShouldSkipFrame(false))
+        yield return null;
 
-				if (step.Phase == PostProcessPhase.AfterBuiltIn)
-					step.PostProcessCallback(this);
-			}
+    if (step.Phase == PostProcessPhase.BeforeBuiltIn)
+        step.PostProcessCallback(this);
+}
 
 
 			// Finalise

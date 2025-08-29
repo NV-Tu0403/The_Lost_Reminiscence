@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using _MyGame.Codes.Timeline;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Video;
 
 public class CutSceneController : MonoBehaviour
-{    
+{
 
     public static CutSceneController Instance { get; private set; }
 
@@ -18,6 +19,8 @@ public class CutSceneController : MonoBehaviour
     [SerializeField] private float currentTime = 0f;            // Thời gian hiện tại của CutScene đang phát
     [SerializeField] private GameObject currentInstance;        // Theo dõi instance hiện tại
 
+    [SerializeField] private GameObject player;
+
     private void Awake()
     {
         if (Instance == null)
@@ -28,14 +31,16 @@ public class CutSceneController : MonoBehaviour
 
     private void Update()
     {
+
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
         InvokePointLogic();
 
         DemoPlayCS();
-    }
-
-    private void LateUpdate()
-    {
-       ClearCutSceneItemTemp();
+        ClearCutSceneItemTemp();
+        //bugLol(); // tạm chống bug 
     }
 
     /// <summary>
@@ -48,6 +53,7 @@ public class CutSceneController : MonoBehaviour
         if (currentCutSceneEvent.cutSceneItems == null || currentCutSceneEvent.cutSceneItems.Length == 0) return;
 
         currentIndex = 0;
+        ActiveObjWhenCutSceneRuning(false);
         PlayNextCutScene();
     }
 
@@ -143,15 +149,55 @@ public class CutSceneController : MonoBehaviour
             }
             CutSceneItemTemp.Clear(); // Xóa mảng
             Debug.Log("CutSceneItemTemp cleared.");
+            ActiveObjWhenCutSceneRuning(true);
+            PlayerCheckPoint.Instance.ResetPlayerPositionWord();
         }
         return;
     }
 
+    private void ActiveObjWhenCutSceneRuning(bool oke)
+    {
+        if (player != null)
+        {
+            player.SetActive(oke);
+        }
+        else
+        {
+            Debug.Log("quan que");
+        }
+    }
+
+    private void bugLol()
+    {
+        // lấy cả inactive, không cần sort => nhanh hơn
+        var directors = Object.FindObjectsByType<PlayableDirector>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        var videos = Object.FindObjectsByType<VideoPlayer>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        if (directors == null && videos == null) return;
+
+        ActiveObjWhenCutSceneRuning(true);
+        PlayerCheckPoint.Instance.ResetPlayerPositionWord();
+
+
+        // XÓA COMPONENT
+        //foreach (var d in directors) if (d) Destroy(d);        
+        //foreach (var v in videos) if (v) Destroy(v);
+
+        // xóa cả GameObject:
+        foreach (var d in directors) if (d) Destroy(d.gameObject);
+        foreach (var v in videos) if (v) Destroy(v.gameObject);
+
+    }
+
     private void DemoPlayCS()
     {
+        // // cần: using UnityEngine.Playables; using UnityEngine.Video;
         if (Input.GetKeyDown(KeyCode.U))
         {
-            PlayCutScene(UIActionType.NewSession);
+            bugLol();
         }
     }
 }
